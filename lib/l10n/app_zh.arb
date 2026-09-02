@@ -353,7 +353,6 @@
     "mineAvatarDelete": "删除头像",
     "mineAvatarUploadNew": "上传新头像",
     "mineCloudService": "第三方云备份",
-    "mineCloudServiceLoading": "加载中…",
     "cloudBackupEntrySubtitle": "第三方备份：连接测试、自动备份与恢复",
     "cloudBackupComingSoon": "备份配置功能建设中，敬请期待",
     "cloudBackupConfigTitle": "备份配置",
@@ -387,6 +386,7 @@
             }
         }
     },
+    "mineCloudServiceLoading": "加载中…",
     "mineSyncTitle": "同步",
     "mineSyncNotLoggedIn": "未登录",
     "mineSyncNotConfigured": "未配置云端",
@@ -1885,9 +1885,9 @@
     "profileLogoutHint": "退出账号不会删除本机的本地账本。云账本在重新登录后可恢复。",
     "profileLogoutConfirmTitle": "退出登录",
     "profileLogoutConfirmMessage": "确定要退出当前账号吗？",
-  "profileLogoutPendingTitle": "有尚未同步的修改",
-  "profileLogoutPendingMessage": "云端还有未同步的修改。选择「保留本地副本」会把这些账本复制为本地账本后退出：",
-  "profileLogoutKeepLocalCopy": "保留本地副本并退出",
+    "profileLogoutPendingTitle": "有尚未同步的修改",
+    "profileLogoutPendingMessage": "云端还有未同步的修改。选择「保留本地副本」会把这些账本复制为本地账本后退出：",
+    "profileLogoutKeepLocalCopy": "保留本地副本并退出",
     "profileBasicInfo": "基本资料",
     "profileAccountInfo": "账号信息",
     "editNameTitle": "编辑昵称",

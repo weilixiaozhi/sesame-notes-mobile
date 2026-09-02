@@ -2,7 +2,7 @@
 # 一键生成 Android 发布 keystore，并写入 android/key.properties
 # 适用于 macOS/Linux。需要已安装 Java（包含 keytool）。
 # 用法：
-#   ./tool/generate_android_keystore.sh \
+#   ./scripts/android_keystore/generate_android_keystore.sh \
 #       -o android/app/release.keystore \
 #       -a my-key-alias \
 #       -p my-store-pass \

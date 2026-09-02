@@ -7,12 +7,11 @@
 /// 1. 检查各语言翻译文件的完整性和状态
 /// 2. 检查各语言文件中多余的 key
 /// 3. 检测未使用的翻译 key
-library;
-
 /// 4. 提供清理选项
 ///
 /// 使用方法：
 /// dart scripts/i18n/check_status.dart
+library;
 
 import 'dart:io';
 import 'dart:convert';
