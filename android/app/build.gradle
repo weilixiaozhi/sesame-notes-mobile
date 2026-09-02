@@ -1,0 +1,149 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+    id "com.android.application"
+    // 项目在 gradle.properties 中禁用了 AGP 内置 Kotlin（android.builtInKotlin=false），
+    // 因此 app 模块的 Kotlin 源码与 JvmTarget 配置必须由 KGP 提供。
+    id "org.jetbrains.kotlin.android"
+    // Flutter Gradle 插件依赖 Android Gradle 插件提供的扩展，必须最后应用。
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+// 正式签名凭据只从未纳入版本控制的 key.properties 读取。
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    try {
+        keystorePropertiesFile.withInputStream { stream ->
+            keystoreProperties.load(stream)
+        }
+    } catch (Exception error) {
+        throw new GradleException('无法读取 android/key.properties，请检查文件格式。', error)
+    }
+}
+
+def releaseBuildRequested = gradle.startParameter.taskNames.any {
+    it.toLowerCase(Locale.ROOT).contains('release')
+}
+if (releaseBuildRequested) {
+    def requiredSigningKeys = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
+    def missingSigningKeys = requiredSigningKeys.findAll {
+        !keystoreProperties[it]?.toString()?.trim()
+    }
+    if (!keystorePropertiesFile.exists() || !missingSigningKeys.isEmpty()) {
+        throw new GradleException(
+                'Release 构建需要完整的 android/key.properties 正式签名配置。'
+        )
+    }
+
+    def releaseKeystoreFile = file(keystoreProperties['storeFile'])
+    if (!releaseKeystoreFile.isFile()) {
+        throw new GradleException(
+                "Release keystore 不存在：${releaseKeystoreFile.absolutePath}"
+        )
+    }
+}
+
+android {
+    namespace = "com.sesame.notes"
+    // compileSdk 与 Flutter 3.44 模板常量一致（36），CI 可通过 stable 渠道直接安装 platforms;android-36。
+    compileSdk = 36
+    // 与 Flutter 模板常量保持一致，满足全部插件（15 个）要求的 NDK 版本，避免对齐报错。
+    ndkVersion = "28.2.13676358"
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+
+        // Required by some plugins (e.g. flutter_local_notifications) when using newer Java APIs.
+        coreLibraryDesugaringEnabled true
+    }
+
+    defaultConfig {
+        applicationId = "com.sesame.notes"
+        minSdkVersion = flutter.minSdkVersion  // Required by record_android for voice recording
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+        // 未在命令行指定 --flavor 时默认选择 dev 风味，避免 Flutter 调试找不到 APK。
+        missingDimensionStrategy "env", "dev"
+    }
+
+    flavorDimensions += ["env"]
+    productFlavors {
+        dev {
+            dimension "env"
+            applicationIdSuffix ".dev"
+            // 启动器名称取自 src/main/res/values*/strings.xml；debug 构建由
+            // src/debug/res/values*/strings.xml 覆盖，确保 debug 包始终带「Debug」标识。
+        }
+        prod {
+            dimension "env"
+            // 启动器名称由设备语言从 res/values-*/strings.xml 读取，
+            // 实现「英文=Sesame Notes，中文/其他语言=芝麻记」的本地化名称。
+        }
+    }
+
+    signingConfigs {
+        release {
+            if (keystoreProperties['storeFile']) {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            // Debug 构建追加独立后缀，便于与生产包共存（applicationId / versionName 区分）
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+            // 启动器名称的「Debug」标识由 src/debug/res/values*/strings.xml 提供。
+        }
+        release {
+            // Release 仅接受显式配置的正式签名，避免不可升级的临时签名产物流出。
+            signingConfig = signingConfigs.release
+            // 发布包开启压缩、混淆和资源裁剪以控制体积。
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // 支持 16KB 页面大小 (Google Play 2024+ 要求)
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
+    // 禁用 prodDebug，仅保留 devDebug，让不带 --flavor 的 `flutter run` 默认使用 dev。
+}
+
+// 通过 beforeVariants 禁用 prodDebug；Release APK 统一命名为 app-<flavor>-release.apk，
+// 版本信息由 CI 发布环节按 tag 重命名。
+androidComponents {
+    beforeVariants(selector().withBuildType("debug")) { variantBuilder ->
+        if (variantBuilder.flavorName == 'prod') {
+            variantBuilder.enabled = false
+        }
+    }
+}
+
+kotlin {
+    // Kotlin 编译目标与 Java 17 保持一致。
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+dependencies {
+    // Java language desugaring support for older Android devices.
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
+}

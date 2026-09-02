@@ -1,0 +1,76 @@
+/// AA 分摊 Decimal 工具。
+///
+/// 设计意图:分摊算法 + 支出人兜底余数依赖 Decimal 全程计算,
+/// 避免浮点误差(如 10.00 / 3 = 3.333... 在 double 下累计失真)。
+/// 本工具集中封装 Decimal 入口转换 + 人均分摊 + 余数兜底逻辑,
+/// 服务层 [AaStatisticsService] 与 UI 层(AaEditPage 合计校验)共用。
+library;
+
+import 'package:decimal/decimal.dart';
+import 'package:sesame_notes/utils/currency/decimal_money.dart';
+
+/// 把金额字符串规范为 2 位小数的 Decimal。
+Decimal toDecimal2(String amount) =>
+    roundHalfEven(Decimal.parse(amount), scale: 2);
+
+/// 把数据库金额(整数分)精确转成"元"Decimal,不经过 double。
+Decimal toDecimalFromCents(int cents) {
+  return (Decimal.fromInt(cents) / Decimal.fromInt(100)).toDecimal();
+}
+
+/// Decimal → double(仅在最终展示模型调用)。
+double toDouble(Decimal d) {
+  return double.parse(d.toString());
+}
+
+/// 人均分摊:每人应摊 = floor(实付 × 100 / n) / 100。
+///
+/// 返回每人应摊金额列表(顺序与参与人列表对齐),以及"支出人实付差"
+/// (实付 - sum(每人应摊))归支出人,保证 sum(应摊) == 实付。
+///
+/// [payerIndex] 支出人在参与人列表中的下标;为 null 或越界时归第 0 个
+/// (兜底,正常调用方都会传有效下标)。
+///
+/// 例:3 人 10.00 → [3.33, 3.33, 3.34](支出人取最后位,余数 0.01 归支出人)。
+List<Decimal> splitEvenly({
+  required Decimal total,
+  required int participantCount,
+  int? payerIndex,
+}) {
+  assert(participantCount > 0, '参与人数必须 > 0');
+  // 转为"分"为单位(int)计算,避免 Decimal 除法精度问题。
+  // totalCents = total × 100(取整,Decimal 2 位小数 × 100 必为整数)。
+  final totalCents = (total * Decimal.fromInt(100)).toBigInt().toInt();
+  final perPersonCents = totalCents ~/ participantCount;
+  final remainderCents = totalCents - perPersonCents * participantCount;
+
+  // 每人基础应摊(分 → Decimal)
+  // Decimal / Decimal 返回 Rational,需 .toDecimal() 转回 Decimal。
+  final perPerson = (Decimal.fromInt(perPersonCents) / Decimal.fromInt(100))
+      .toDecimal();
+  final splits = List<Decimal>.filled(participantCount, perPerson);
+
+  // 余数(分)归支出人,保证 sum(应摊) == 实付。
+  final idx =
+      (payerIndex == null || payerIndex < 0 || payerIndex >= participantCount)
+      ? 0
+      : payerIndex;
+  splits[idx] =
+      splits[idx] +
+      (Decimal.fromInt(remainderCents) / Decimal.fromInt(100)).toDecimal();
+  return splits;
+}
+
+/// 校验指定分摊金额合计与实付精确相等。
+///
+/// 返回 true 表示校验通过。
+bool validateSplitsTotal({
+  required Decimal total,
+  required List<Decimal> splits,
+}) {
+  var sum = Decimal.zero;
+  for (final v in splits) {
+    sum = sum + v;
+  }
+  return sum == total;
+}

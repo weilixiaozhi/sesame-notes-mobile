@@ -1,0 +1,133 @@
+name: sesame_notes
+description: "Sesame Notes - 芝麻记"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^3.4.2
+
+  # drift 与 drift_dev 必须配套固定：当前 Flutter SDK(3.44.6)的 flutter_test
+  # 把 meta 锁在 1.18.0，而 drift_dev ≥2.34.1 需要 analyzer ^13(→meta ^1.18.3)，
+  # 无法解析。保持 2.34.0 配套组合，schema 工具与代码生成均可用；
+  # 若后续升级 Flutter SDK，再把 drift 与 drift_dev 一起升到 2.34.3/2.34.5。
+  drift: 2.34.0
+
+  # sqlite3 原为 drift 传递依赖：本地备份的完整性校验需以只读模式直接调其
+  # PRAGMA API（drift 裸 executor 的 ensureOpen 依赖内部接口不可用），提升为
+  # 显式直接依赖；版本仍由 pubspec.lock 固定，未引入任何新版本。
+  sqlite3: ^3.5.1
+
+  # 无 Dart API，仅用于打包原生 SQLite 二进制供 Drift FFI 加载，零 import 属正常，勿删。
+  sqlite3_flutter_libs: ^0.6.0+eol
+
+  path_provider: ^2.1.4
+  path: ^1.9.0
+
+  # 版本由 flutter_localizations 约束解析（SDK 当前锁 0.20.2），无需手动锁死。
+  intl: ^0.20.0
+
+  decimal: ^3.0.0
+  fl_chart: ^1.2.0
+  shared_preferences: ^2.3.2
+  csv: ^8.0.0
+  file_picker: ^11.0.3
+  crypto: ^3.0.5
+  uuid: ^4.5.1
+  flutter_svg: ^2.0.10+1
+
+  # Lucide 图标库（ISC 许可免署名）：全站 UI 图标与分类图标的统一来源，
+  # 单色描边字形，用法与 Material Icons 一致（Icon(LucideIcons.x, color:)）。
+  # lucide_icons 上游已停止维护（LucideIconData extends IconData 与 Flutter 3.44+
+  # 的 final class IconData 冲突），改用活跃维护的 lucide_icons_flutter
+  # （lucide 1.24 图标集，与 shadcn/ui 同源，API 完全一致）。
+  lucide_icons_flutter: ^3.1.15
+
+  http: ^1.2.2
+
+  # share_plus 13 系列均要求 win32 ^6，与 file_picker 11.x（win32 ^5.9）冲突，暂保持 12.x
+  share_plus: ^12.0.1
+
+  flutter_local_notifications: ^22.2.0
+  timezone: ^0.11.1
+  flutter_list_view: ^1.1.29
+  visibility_detector: ^0.4.0+2
+  reorderable_grid_view: ^2.2.8
+  excel: ^4.0.6
+  image_picker: ^1.1.2
+  gbk_codec: ^0.4.0
+  yaml: ^3.1.2
+  sesame_cloud_backup:
+    path: packages/sesame_cloud_backup
+  sesame_cloud_backup_supabase:
+    path: packages/sesame_cloud_backup_supabase
+  sesame_cloud_backup_webdav:
+    path: packages/sesame_cloud_backup_webdav
+  sesame_cloud_backup_s3:
+    path: packages/sesame_cloud_backup_s3
+  table_calendar: ^3.1.0
+  local_auth: ^3.0.2
+  sesame_api_client:
+    path: packages/sesame_api_client
+  flutter_secure_storage: ^9.2.4
+
+  # 生成 API client 的运行时依赖：同步层直接构造 AnyOf/BuiltList/Serializer。
+  # one_of_serializer 由 sesame_api_client 自声明，此处仅保留 lib 直接引用的三个。
+  built_collection: ^5.1.1
+  built_value: ^8.9.2
+  one_of: ^1.5.0
+
+  # 生成 client 的 HTTP 引擎（E2E 断言 DioException 时直接引用类型）。
+  dio: ^5.7.0
+
+  # WebSocket 实时通知（契约 §4.1：WS 只通知有新变更，数据仍走 Pull 游标）。
+  web_socket_channel: ^3.0.1
+  go_router: ^17.5.0
+  package_info_plus: ^9.0.1
+  url_launcher: ^6.3.2
+  cryptography: ^2.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  # 设备级集成测试随 Flutter SDK 对齐；本机或 CI 无设备时仍可解析，
+  # 设备测试通过 `flutter test integration_test/` 在模拟器或真机上运行。
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+  # 与 drift 2.34.0 配套；勿单独升级到 ≥2.34.1（见上方 drift 注释）。
+  build_runner: ^2.15.1
+  drift_dev: 2.34.0
+
+  # Testing framework enhancements
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/app_logo.svg
+    - assets/Default avatar.png
+
+# 重新生成应用启动图标（修改 pubspec 的 flutter_launcher_icons 配置后执行）
+#   flutter pub run flutter_launcher_icons
+# 说明：flutter_launcher_icons 仅支持位图，源 SVG 需先栅格化：
+#   flutter test scripts/launcher_icons/rasterize_svg.dart
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/flutter_launcher_icons/launcher_legacy.png
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/flutter_launcher_icons/adaptive_foreground.png
+  # 13% 内缩使图形实际占比降至 ~49.4%，充分落入 Android 66dp 安全圆区（66/108≈61.1%）
+  adaptive_icon_foreground_inset: 13
+  adaptive_icon_monochrome: assets/flutter_launcher_icons/adaptive_monochrome.png
+  adaptive_icon_monochrome_inset: 13

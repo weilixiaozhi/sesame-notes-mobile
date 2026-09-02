@@ -1,0 +1,35 @@
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// 将各模块构建目录统一重定向到仓库根目录的 build/ 下，便于统一清理。
+rootProject.layout.buildDirectory.set(layout.projectDirectory.dir("../build"))
+subprojects {
+    project.layout.buildDirectory.set(rootProject.layout.buildDirectory.dir(project.name))
+}
+
+// 项目在 gradle.properties 中全局禁用了 AGP 内置 Kotlin（android.builtInKotlin=false），
+// 而 file_picker 模块自身的 Kotlin 源码需要 KGP 编译，这里在 AGP 应用完成后为其单独补上。
+subprojects {
+    if (project.name == 'file_picker') {
+        project.plugins.withId('com.android.library') {
+            project.pluginManager.apply('org.jetbrains.kotlin.android')
+            // 同步 Kotlin 编译目标与 Java 的 targetCompatibility(17)，避免字节码版本不一致
+            project.tasks.configureEach { task ->
+                if (task.name.startsWith('compile') && task.name.endsWith('Kotlin')) {
+                    task.kotlinOptions.jvmTarget = '17'
+                }
+            }
+        }
+    }
+}
+subprojects {
+    project.evaluationDependsOn(":app")
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.layout.buildDirectory.get().asFile
+}

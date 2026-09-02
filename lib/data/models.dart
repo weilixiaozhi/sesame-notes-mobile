@@ -1,0 +1,64 @@
+/// 数据模型统一出口（barrel）。
+///
+/// 设计意图：
+/// UI 层（pages/widgets）只允许从本文件获取数据模型类型，
+/// 不直连 db.dart（Drift schema / 数据库定义文件）。这样
+/// schema 变更对 UI 的波及面收敛到本 barrel 一个文件——
+/// db.dart 内部的表定义、Companion、SesameDatabase 与查询 API
+/// 均不暴露给 UI。
+///
+/// 分层约定：
+/// - 写路径与查询：一律走 repositoryProvider，UI 不感知 Drift；
+/// - 读路径：StreamProvider 包装 repository 暴露的 stream，可保留；
+/// - 模型类型：经本 barrel re-export，是 UI 唯一合法的数据层依赖。
+///
+/// 注意：本文件只 re-export UI 实际使用的行类型；新增表后若 UI
+/// 需要引用其模型，须在此显式补充 show 条目（保持出口最小化）。
+library;
+
+// 非表行模型（纯 Dart 数据模型与层级构建器）统一经本 barrel 出口。
+// 设计意图：UI 与云同步层统一只认 data/models.dart 一个入口。
+export 'models/ledger_display_item.dart';
+export 'models/category_display.dart';
+export 'models/transaction_display.dart';
+export 'models/ledger_member_display.dart';
+export 'models/recurring_transaction_display.dart';
+export 'models/transaction_metadata_display.dart';
+// 冲突展示模型：页面不接触 Drift 生成的 SyncConflict Row。
+export 'models/sync_conflict_view.dart';
+export 'models/category_picker_tree.dart';
+// 出口最小化：UI 层只用到 `isCloudLedgerOf` 这一个归属判定谓词；
+// SQL 工厂 `cloudLedgerFilter` 与 `isLocalLedgerOf` 属于同步引擎内部细节,
+// 经本 barrel 的 show 白名单强制屏蔽,即使未来新增符号也不会自动泄漏给 UI。
+export 'models/ledger_kind.dart' show isCloudLedgerOf;
+// 统一数据导入模型：
+// UI 与 cloud/sync 层取 Import* 类型统一走本 barrel；落库编排逻辑仍留在
+// services/import/data_import_service.dart（依赖汇率服务）。
+export 'models/import_models.dart'
+    show
+        ImportCategory,
+        ImportCategoryPath,
+        ImportTransaction,
+        ImportData,
+        ImportResult;
+
+/// 周期记账频率枚举。
+///
+/// 数据模型层定义,页面与 Provider 统一经本门面引用,
+/// 避免页面直接依赖服务层文件。
+enum RecurringFrequency {
+  daily('daily'), // 每天
+  weekly('weekly'), // 每周
+  monthly('monthly'), // 每月
+  yearly('yearly'); // 每年
+
+  final String value;
+  const RecurringFrequency(this.value);
+
+  static RecurringFrequency fromString(String value) {
+    return RecurringFrequency.values.firstWhere(
+      (e) => e.value == value,
+      orElse: () => RecurringFrequency.monthly,
+    );
+  }
+}

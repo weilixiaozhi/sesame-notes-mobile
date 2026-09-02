@@ -1,0 +1,160 @@
+name: Test
+
+# 设计意图：在 CI 中以随机用例顺序运行全量测试，持续暴露"用例间顺序依赖"隐患。
+# 仅当用例彼此独立（不残留跨用例的全局状态）时，才能在任意排列下稳定通过；
+# 一旦出现顺序相关失败，说明存在需要在 setUp/tearDown 中隔离的全局状态，应就地修复。
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      e2e_base_url:
+        description: 可从 GitHub Runner 访问的一次性测试后端地址
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: "3.44.6"
+
+jobs:
+  test:
+    name: Flutter Test (randomized order)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
+          cache: true
+
+      - name: 安装依赖
+        run: flutter pub get
+
+      - name: 格式检查（新增代码必须 dart format 合规）
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: 静态分析（仓库约定零告警）
+        run: flutter analyze --no-pub
+
+      - name: 架构门禁（业务代码只能经生成 API Client 访问正式接口）
+        run: |
+          # lib/ 不得绕过生成 API Client 直接拼正式 API URL。
+          # 仅允许核心层（lib/core）与同步编排模块（lib/sync、sync/realtime providers）
+          # 直接引用生成包；其余业务层直连即失败。
+          if rg -l --glob '!lib/core/**' \
+             --glob '!lib/sync/**' \
+             --glob '!lib/shared/providers/sync_providers.dart' \
+             --glob '!lib/shared/providers/realtime_providers.dart' \
+             'package:sesame_api_client/' lib; then
+            echo "❌ 非 lib/core 与 lib/sync 文件直连生成 API Client，请收敛到 core/api 封装"
+            exit 1
+          fi
+          echo "✅ 架构门禁通过：生成 API Client 只允许 core 层与 sync 编排消费"
+
+      - name: 架构门禁（core 对 features 反向边为 0）
+        run: |
+          # 架构审计 M1：路由已上移 lib/router，lib/core 必须保持纯横切，
+          # 不得反向感知任何业务页面（core→features 边计数为 0）。
+          if rg -l 'package:sesame_notes/features/' lib/core; then
+            echo "❌ lib/core 出现对 features 的反向依赖，请保持 core 纯横切"
+            exit 1
+          fi
+          echo "✅ 架构门禁通过：core→features 反向边为 0"
+
+      - name: 架构门禁（零引用依赖不得回潮）
+        run: |
+          # 架构审计 L2：connectivity_plus 全仓零引用已移除声明；再次声明即失败，
+          # 防止"声明未用"的依赖重新进入 pubspec。
+          if rg -q 'connectivity_plus' pubspec.yaml; then
+            echo "❌ pubspec 声明了零引用的 connectivity_plus（架构审计 L2 已移除，勿回潮）"
+            exit 1
+          fi
+          echo "✅ 架构门禁通过：connectivity_plus 未声明"
+
+      - name: 架构基线双仓一致性（权威副本哈希）
+        run: |
+          python3 scripts/test/check_baseline_sync_test.py
+          python3 scripts/test/check_baseline_sync.py
+
+      - name: 静态依赖环检测（业务代码无环）
+        run: |
+          python3 scripts/test/project_identity_test.py
+          python3 scripts/test/api_contract_test.py
+          python3 scripts/test/check_cycles_test.py
+          python3 scripts/test/check_cycles.py
+
+      - name: 运行测试（随机顺序，持续暴露顺序依赖）
+        run: flutter test test --test-randomize-ordering-seed=random
+
+      - name: OpenAPI 生成一致性校验（生成代码不手工编辑）
+        shell: pwsh
+        run: |
+          # 重新生成 + build_runner 后与已提交输出 diff；不一致（手改生成代码
+          # 或契约漂移）即失败。需 Docker（ubuntu-latest 自带）。
+          ./scripts/openapi/generate_api_client.ps1 -Check
+
+  package_self_check:
+    name: Package Self Check (${{ matrix.package }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - sesame_api_client
+          - sesame_cloud_backup
+          - sesame_cloud_backup_s3
+          - sesame_cloud_backup_supabase
+          - sesame_cloud_backup_webdav
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: 依赖、分析与测试
+        working-directory: packages/${{ matrix.package }}
+        run: flutter pub get && flutter analyze --no-pub && flutter test --no-pub
+
+  backend_e2e:
+    name: Backend E2E (manual)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      E2E_BASE_URL: ${{ inputs.e2e_base_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: 安装依赖
+        run: flutter pub get
+
+      - name: 后端健康检查
+        run: |
+          BASE_URL="${E2E_BASE_URL%/}"
+          curl --fail --retry 5 --retry-connrefused "$BASE_URL/api/v1/health"
+
+      - name: 真实后端往返测试
+        run: |
+          BASE_URL="${E2E_BASE_URL%/}"
+          flutter test e2e/real_backend_roundtrip_test.dart --dart-define="E2E_BASE_URL=$BASE_URL"

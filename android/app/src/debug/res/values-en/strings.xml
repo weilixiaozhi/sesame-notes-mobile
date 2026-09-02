@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Debug 变体追加标识，便于与正式应用区分。 -->
+    <string name="app_name">Sesame Notes Debug</string>
+</resources>

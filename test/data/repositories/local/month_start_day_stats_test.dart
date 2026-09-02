@@ -1,0 +1,121 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/native.dart';
+
+import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/data/repositories/local/local_repository.dart';
+
+void main() {
+  late SesameDatabase db;
+  late LocalRepository repo;
+
+  setUp(() {
+    db = SesameDatabase.forTesting(NativeDatabase.memory());
+    repo = LocalRepository(db);
+  });
+
+  tearDown(() async => db.close());
+
+  /// 创建账本并返回 UUID
+  Future<String> seedLedger({int monthStartDay = 1}) {
+    return repo.createLedger(name: '测试账本', monthStartDay: monthStartDay);
+  }
+
+  /// 在账本下添加一笔交易（金额为规范化 decimal 字符串）
+  Future<void> addTx(String lid, String type, String amount, DateTime at) =>
+      repo.addTransaction(
+        ledgerId: lid,
+        type: type,
+        amount: amount,
+        happenedAt: at,
+      );
+
+  test('monthlyTotals 按起始日聚合: 6月标签 = [6.15, 7.15)', () async {
+    final lid = await seedLedger(monthStartDay: 15);
+    await addTx(lid, 'expense', '10.00', DateTime(2026, 6, 14, 23, 59)); // 5月周期
+    await addTx(lid, 'expense', '20.00', DateTime(2026, 6, 15)); // 6月周期
+    await addTx(lid, 'expense', '40.00', DateTime(2026, 7, 14, 23, 59)); // 6月周期
+    await addTx(lid, 'expense', '80.00', DateTime(2026, 7, 15)); // 7月周期
+
+    final expense = await repo.monthlyTotals(
+      ledgerId: lid,
+      month: DateTime(2026, 6, 1),
+    );
+    expect(expense, 60); // 20 + 40
+  });
+
+  test('monthlyTotals 起始日=1 退化为自然月(回归红线)', () async {
+    final lid = await seedLedger();
+    await addTx(lid, 'expense', '10.00', DateTime(2026, 6, 1));
+    await addTx(lid, 'expense', '20.00', DateTime(2026, 6, 30, 23, 59));
+    await addTx(lid, 'expense', '40.00', DateTime(2026, 7, 1));
+    final expense = await repo.monthlyTotals(
+      ledgerId: lid,
+      month: DateTime(2026, 6, 1),
+    );
+    expect(expense, 30);
+  });
+
+  test('totalsByMonth 年视图 12 桶按周期标签归位', () async {
+    final lid = await seedLedger(monthStartDay: 10);
+    await addTx(lid, 'expense', '30.00', DateTime(2027, 1, 5)); // 2026-12 标签
+    await addTx(
+      lid,
+      'expense',
+      '99.00',
+      DateTime(2026, 1, 9),
+    ); // 2025-12 标签 → 范围外
+    await addTx(lid, 'expense', '7.00', DateTime(2026, 1, 10)); // 2026-01 标签
+
+    final rows = await repo.totalsByMonth(
+      ledgerId: lid,
+      type: 'expense',
+      year: 2026,
+    );
+    expect(rows.length, 12);
+    expect(rows.firstWhere((r) => r.month.month == 1).total, 7);
+    expect(rows.firstWhere((r) => r.month.month == 12).total, 30);
+    expect(rows.fold<double>(0, (s, r) => s + r.total), 37);
+  });
+
+  test('yearlyTotals = 12 个周期之和(与 totalsByMonth 恒等)', () async {
+    final lid = await seedLedger(monthStartDay: 10);
+    await addTx(lid, 'expense', '30.00', DateTime(2027, 1, 5));
+    await addTx(lid, 'expense', '99.00', DateTime(2026, 1, 9));
+    // yearlyTotals 现在只返回支出金额（double）
+    final expense = await repo.yearlyTotals(ledgerId: lid, year: 2026);
+    expect(expense, 30);
+  });
+
+  test('watchTransactionsInMonth 按周期过滤', () async {
+    final lid = await seedLedger(monthStartDay: 15);
+    await addTx(lid, 'expense', '10.00', DateTime(2026, 6, 14)); // 5月周期
+    await addTx(lid, 'expense', '20.00', DateTime(2026, 6, 20)); // 6月周期
+    final txs = await repo
+        .watchTransactionsInMonth(ledgerId: lid, month: DateTime(2026, 6, 1))
+        .first;
+    expect(txs.length, 1);
+    expect(txs.single.amount, '20.00');
+  });
+
+  test('getDailyTotalsByMonth 半开区间包含 23:59:59.500', () async {
+    final lid = await seedLedger();
+    await addTx(lid, 'expense', '10.00', DateTime(2026, 8, 5, 23, 59, 59, 500));
+
+    final totals = await repo.getDailyTotalsByMonth(
+      ledgerId: lid,
+      month: DateTime(2026, 8, 1),
+    );
+    expect(totals['2026-08-05'], 10.0);
+  });
+
+  test('getTransactionsByDate 包含毫秒边界交易', () async {
+    final lid = await seedLedger();
+    await addTx(lid, 'expense', '10.00', DateTime(2026, 8, 5, 23, 59, 59, 500));
+
+    final txs = await repo.getTransactionsByDate(
+      ledgerId: lid,
+      date: DateTime(2026, 8, 5),
+    );
+    expect(txs, hasLength(1));
+  });
+}

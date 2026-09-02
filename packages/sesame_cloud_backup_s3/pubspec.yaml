@@ -1,0 +1,30 @@
+﻿name: sesame_cloud_backup_s3
+description: S3 provider for sesame_cloud_backup - AWS S3, Cloudflare R2, MinIO, and more
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 核心包
+  sesame_cloud_backup:
+    path: ../sesame_cloud_backup
+
+  # HTTP 客户端
+  http: ^1.1.0
+
+  # 加密库（用于签名）
+  crypto: ^3.0.3
+
+  # XML 解析
+  xml: ^6.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
