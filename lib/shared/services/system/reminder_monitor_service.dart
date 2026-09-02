@@ -1,8 +1,5 @@
-import 'dart:ui' as ui;
-
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/shared/services/notification/reminder_constants.dart';
 import 'package:sesame_notes/shared/services/notification/notification_factory.dart';
@@ -21,14 +18,16 @@ class ReminderMonitorService with WidgetsBindingObserver {
 
   DateTime? _lastCheckTime;
   static const _checkInterval = Duration(hours: 6); // 最多6小时检查一次
-  BuildContext Function()? _contextProvider;
+  ({String title, String body}) Function()? _textsProvider;
 
   /// 开始监控
   ///
-  /// [contextProvider] 用于取 l10n 文案（恢复提醒时按当前语言发送通知）；
-  /// 未注入时回退内置文案。
-  void startMonitoring({BuildContext Function()? contextProvider}) {
-    _contextProvider = contextProvider;
+  /// [textsProvider] 生成恢复提醒的通知文案（由 Composition Root 按当前
+  /// 语言装配，本服务不反向依赖 BuildContext / l10n）；未注入时回退内置文案。
+  void startMonitoring({
+    ({String title, String body}) Function()? textsProvider,
+  }) {
+    _textsProvider = textsProvider;
     WidgetsBinding.instance.addObserver(this);
     logger.info('ReminderMonitor', '✅ 记账提醒监控服务已启动');
   }
@@ -82,17 +81,15 @@ class ReminderMonitorService with WidgetsBindingObserver {
 
         final hour = prefs.getInt(ReminderPrefs.hour) ?? 21;
         final minute = prefs.getInt(ReminderPrefs.minute) ?? 0;
-        final ctx = _contextProvider?.call();
-        // 优先取注入的 BuildContext（跟随当前语言）；拿不到时按系统语言解析，
-        // 不硬编码中文兜底（文案统一收敛到 l10n）。
-        final l10n = (ctx != null && ctx.mounted)
-            ? AppLocalizations.of(ctx)
-            : lookupAppLocalizations(ui.PlatformDispatcher.instance.locale);
+        // 文案由 Composition Root 注入（跟随当前语言）；未注入时用内置兜底。
+        final texts = _textsProvider?.call();
+        final title = texts?.title ?? '记账提醒';
+        final body = texts?.body ?? '记得记一笔今天的账哦';
 
         await notificationUtil.scheduleDailyReminder(
           id: ReminderPrefs.mainNotificationId,
-          title: l10n.reminderTitle,
-          body: l10n.reminderBody,
+          title: title,
+          body: body,
           hour: hour,
           minute: minute,
         );

@@ -75,7 +75,15 @@ Future<void> main() async {
   // 启动提醒监控服务（监听应用生命周期，自动恢复丢失的提醒）
   try {
     ReminderMonitorService().startMonitoring(
-      contextProvider: () => globalNavigatorKey.currentContext!,
+      textsProvider: () {
+        // 文案生成留在 Composition Root：优先取当前导航上下文（跟随语言），
+        // 拿不到时按系统语言解析兜底。
+        final ctx = globalNavigatorKey.currentContext;
+        final l10n = (ctx != null && ctx.mounted)
+            ? AppLocalizations.of(ctx)
+            : lookupAppLocalizations(PlatformDispatcher.instance.locale);
+        return (title: l10n.reminderTitle, body: l10n.reminderBody);
+      },
     );
   } catch (e) {
     logger.warning('App', '提醒监控服务启动失败（可能在不支持的平台上运行）: $e');
