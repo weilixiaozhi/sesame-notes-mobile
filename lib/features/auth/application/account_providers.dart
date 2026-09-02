@@ -23,10 +23,28 @@ import 'package:sesame_notes/shared/providers/sync_providers.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 export 'package:sesame_notes/shared/providers/account_state_provider.dart';
 
+/// 云资料缓存同步桥：token 刷新（拦截器路径）只写磁盘缓存，本桥监听
+/// 缓存写入信号并把最新资料同步进内存展示状态，避免已打开的资料 UI
+/// 停留在旧昵称/头像。仅当已登录且已有内存资料时同步；未登录时忽略。
+final profileCacheSyncBridgeProvider = Provider<void>((ref) {
+  ref.listen(profileCacheTickProvider, (previous, next) {
+    final state = ref.read(accountStateProvider);
+    if (state.status != AccountStatus.authenticated) return;
+    final profile = state.profile;
+    if (profile == null) return;
+    final cached = ref.read(cloudProfileCacheProvider).read(profile.userId);
+    if (cached != null) {
+      ref.read(accountStateProvider.notifier).updateProfile(cached);
+    }
+  });
+});
+
 /// 启动账号恢复：读 ActiveCredential + 资料缓存 → 恢复 authenticated →
 /// 后台刷新（200 原子轮换凭证束；认证类 401 清除凭证回未登录；
 /// 网络错误/5xx 保留凭证与缓存身份，等待下次重试）。
 final accountBootstrapProvider = FutureProvider<void>((ref) async {
+  // 常驻初始化缓存同步桥：拦截器刷新路径经它把新资料同步进内存
+  ref.watch(profileCacheSyncBridgeProvider);
   // 先确保 SharedPreferences 就绪：cloudProfileCacheProvider 依赖它，
   // 首个同步读取者必须等 FutureProvider 解析完成（启动主流程 await 本 provider）
   await ref.read(sharedPreferencesProvider.future);

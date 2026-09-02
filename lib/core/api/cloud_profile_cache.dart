@@ -83,7 +83,10 @@ class CloudProfileCache {
 
   final SharedPreferences _prefs;
 
-  CloudProfileCache(this._prefs);
+  /// 写入完成回调（装配时注入）；供上层把磁盘缓存变更同步进内存展示状态。
+  final void Function(CloudProfile profile)? onWrite;
+
+  CloudProfileCache(this._prefs, {this.onWrite});
 
   /// 读取指定账号的缓存资料；未缓存或损坏返回 null。
   CloudProfile? read(String userId) {
@@ -103,6 +106,8 @@ class CloudProfileCache {
         _keyPrefix + profile.userId,
         jsonEncode(profile.toJson()),
       );
+      // 写入成功才发信号：写失败（异常被吞）不触发内存同步，避免误报新值
+      onWrite?.call(profile);
     } catch (_) {
       // 缓存写入失败不影响主流程；下次在线刷新会重写
     }
@@ -122,5 +127,23 @@ final cloudProfileCacheProvider = Provider<CloudProfileCache>((ref) {
   if (prefs == null) {
     throw StateError('SharedPreferences 未就绪，云资料缓存不可用');
   }
-  return CloudProfileCache(prefs);
+  return CloudProfileCache(
+    prefs,
+    // 每次缓存写入 bump 一次版本号：上层（账号状态桥）监听该信号，
+    // 把 token 刷新等"只写磁盘"路径的最新资料同步进内存展示状态。
+    onWrite: (_) => ref.read(profileCacheTickProvider.notifier).bump(),
+  );
 });
+
+/// 云资料缓存写入信号：每次成功写入递增一次版本号。
+class ProfileCacheTickNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void bump() => state++;
+}
+
+final profileCacheTickProvider =
+    NotifierProvider<ProfileCacheTickNotifier, int>(
+      ProfileCacheTickNotifier.new,
+    );
