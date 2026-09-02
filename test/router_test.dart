@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sesame_notes/router/app_router.dart';
-import 'package:sesame_notes/navigation/route_consts.dart';
+import 'package:sesame_notes/router/route_consts.dart';
 
 void main() {
   group('GoRoute 路由表', () {

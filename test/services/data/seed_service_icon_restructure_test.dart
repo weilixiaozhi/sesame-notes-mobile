@@ -1,4 +1,4 @@
-// 分类默认图标/名称重构测试
+﻿// 分类默认图标/名称重构测试
 //
 // 验证内容：
 //   1. getDefaultIcon 返回的重构后图标名（11 处改动）正确无遗漏
@@ -7,7 +7,7 @@
 //   4. 确定性 syncId 计算与 level 关联（level 变化 → syncId 变化）
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sesame_notes/shared/services/data/seed_service.dart';
+import 'package:sesame_notes/shared/services/seed_service.dart';
 import 'package:sesame_notes/theme/icons/category_icons.dart';
 
 void main() {

@@ -1,4 +1,4 @@
-// currency_providers 层测试。
+﻿// currency_providers 层测试。
 //
 // 需求锚点（以行为为准）：
 //   1. visibleCurrenciesInitProvider：无 key 时用「13 常用 ∪ 本位币」初始化并落盘；
@@ -25,7 +25,7 @@ import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
 import 'package:sesame_notes/shared/providers/read_provider_future.dart';
-import 'package:sesame_notes/shared/services/currency/exchange_rate_service.dart';
+import 'package:sesame_notes/shared/services/exchange_rate_service.dart';
 import 'package:sesame_notes/utils/currency/currencies.dart';
 
 class _MockRepo extends Mock implements LocalRepository {}

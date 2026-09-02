@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sesame_cloud_backup_supabase/sesame_cloud_backup_supabase.dart';
 import 'package:sesame_cloud_backup_webdav/sesame_cloud_backup_webdav.dart';
@@ -24,7 +24,7 @@ import 'shared/services/notification/notification_factory.dart';
 import 'shared/services/notification/reminder_constants.dart';
 import 'package:sesame_notes/features/auth/presentation/welcome_page.dart';
 import 'package:sesame_notes/features/auth/presentation/app_lock_screen.dart';
-import 'shared/services/system/reminder_monitor_service.dart';
+import 'shared/services/reminder_monitor_service.dart';
 import 'core/logging/logger_service.dart';
 import 'l10n/app_localizations.dart';
 import 'dart:ui';

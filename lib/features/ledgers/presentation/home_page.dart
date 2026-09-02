@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:go_router/go_router.dart';
@@ -25,7 +25,7 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/shared/presentation/format_utils.dart';
 import 'package:sesame_notes/shared/presentation/category_utils.dart';
-import 'package:sesame_notes/navigation/route_consts.dart';
+import 'package:sesame_notes/router/route_consts.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/features/ledgers/presentation/sync_status_banner.dart';
 

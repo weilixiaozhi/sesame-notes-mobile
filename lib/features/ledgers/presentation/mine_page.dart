@@ -8,8 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:sesame_notes/data/models/app_update_info.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/navigation/route_consts.dart';
-import 'package:sesame_notes/shared/services/update/app_update_service.dart';
+import 'package:sesame_notes/router/route_consts.dart';
+import 'package:sesame_notes/shared/services/app_update_service.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
 /// 展示个人设置、第三方云备份与数据维护入口。

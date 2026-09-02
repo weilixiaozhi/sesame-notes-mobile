@@ -1,4 +1,4 @@
-/// 账本列表页面。
+﻿/// 账本列表页面。
 ///
 /// 账本归属模型:每本账都明确属于「本地」或「云端」,由账本自身的
 /// storage_mode 决定,而不是"当前有没有登录"。因此列表常驻两个分区标题
@@ -18,7 +18,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/ui_state_providers.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
-import 'package:sesame_notes/navigation/route_consts.dart';
+import 'package:sesame_notes/router/route_consts.dart';
 import 'package:sesame_notes/data/models.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';

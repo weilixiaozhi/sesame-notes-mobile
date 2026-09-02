@@ -21,7 +21,7 @@ import 'package:sesame_notes/data/repositories/local/local_transaction_repositor
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
-import 'package:sesame_notes/features/statistics/domain/aa_member_detail_models.dart';
+import 'package:sesame_notes/features/statistics/application/aa_member_detail_models.dart';
 import 'package:sesame_notes/shared/aa/aa_statistics_service.dart';
 
 /// 插库交易 id 自增序列（主键为 UUID 字符串，需保证同文件内唯一）。

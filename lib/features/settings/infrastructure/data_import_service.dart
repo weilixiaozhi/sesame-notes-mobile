@@ -3,7 +3,7 @@ import 'package:decimal/decimal.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/data/models/import_models.dart';
-import 'package:sesame_notes/shared/services/currency/exchange_rate_service.dart';
+import 'package:sesame_notes/shared/services/exchange_rate_service.dart';
 import 'package:sesame_notes/utils/currency/currencies.dart';
 import 'package:sesame_notes/utils/currency/decimal_money.dart';
 import 'package:sesame_notes/utils/currency/rate_math.dart';
@@ -16,7 +16,7 @@ import 'package:uuid/uuid.dart';
 /// 定位说明（共享服务，不随 DTO 下沉）：
 /// - 被 CSV 导入（UI 层）消费，备份/全量恢复路径复用同一套导入逻辑
 ///   （分类创建、批量落库、UUID 幂等去重、汇率补拉），保证各路径行为一致。
-/// - 依赖 services/currency/exchange_rate_service.dart 做导入补拉汇率，
+/// - 依赖 services/exchange_rate_service.dart 做导入补拉汇率，
 ///   故**不能**下沉到 data/（否则制造 data → services 反向依赖），
 ///   保留在 services/ 层作为共享服务，上层经本文件引用。
 /// - 数据模型（ImportCategory/ImportTransaction/ImportData/ImportResult）

@@ -1,4 +1,4 @@
-/// AA 分摊 Provider 层。
+﻿/// AA 分摊 Provider 层。
 ///
 /// 设计意图:
 /// - 新增 AA 分摊统计查询、虚拟用户 CRUD 状态入口。
@@ -33,7 +33,7 @@ import 'package:sesame_notes/shared/providers/language_provider.dart';
 import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/shared/providers/user_display_name_resolver.dart';
 import 'package:sesame_notes/shared/aa/aa_edit_models.dart';
-import 'package:sesame_notes/features/statistics/domain/aa_member_detail_models.dart';
+import 'package:sesame_notes/features/statistics/application/aa_member_detail_models.dart';
 import 'package:sesame_notes/shared/aa/aa_statistics_service.dart';
 
 /// 本地账本自我参与人的展示名:优先本地昵称(displayNameProvider),

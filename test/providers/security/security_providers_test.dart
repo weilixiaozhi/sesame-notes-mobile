@@ -1,4 +1,4 @@
-// 安全相关 provider 测试：启动初始化、异常自愈（有锁无 PIN 自动禁用）、
+﻿// 安全相关 provider 测试：启动初始化、异常自愈（有锁无 PIN 自动禁用）、
 // 持久化监听、以及 AppLockService 门面的 PIN 设置/校验。
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:sesame_notes/features/auth/application/security_providers.dart';
-import 'package:sesame_notes/features/auth/infrastructure/app_lock_service.dart';
+import 'package:sesame_notes/features/auth/application/app_lock_service.dart';
 
 import '../../helpers/test_isolation.dart';
 

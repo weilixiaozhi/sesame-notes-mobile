@@ -23,7 +23,7 @@ import 'package:sesame_notes/features/statistics/application/aa_statistics_provi
 import 'package:sesame_notes/shared/aa/aa_edit_models.dart';
 import 'package:sesame_notes/shared/aa/aa_statistics_service.dart';
 import 'package:sesame_notes/router/app_router.dart';
-import 'package:sesame_notes/navigation/route_consts.dart';
+import 'package:sesame_notes/router/route_consts.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
 /// 两个真实成员 + 一个虚拟用户参与人桩。

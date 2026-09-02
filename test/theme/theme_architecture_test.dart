@@ -1,8 +1,8 @@
-import 'dart:io';
+﻿import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sesame_notes/shared/services/data/seed_service.dart';
+import 'package:sesame_notes/shared/services/seed_service.dart';
 import 'package:sesame_notes/theme/icons/category_icons.dart';
 
 /// 主题/图标架构约束 + 图标完整性审计（统一校验流程）。

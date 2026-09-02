@@ -1,4 +1,4 @@
-// 分类模板库页面测试（flat / hierarchical 模板页 + 管理页入口）
+﻿// 分类模板库页面测试（flat / hierarchical 模板页 + 管理页入口）
 //
 // 验证内容：
 //   1. 管理页：正常模式在标题下显示"一级模板/二级模板"两个独立按钮（非文字链），
@@ -27,7 +27,7 @@ import 'package:sesame_notes/features/categories/presentation/category_manage_pa
 import 'package:sesame_notes/features/categories/presentation/category_template_flat_page.dart';
 import 'package:sesame_notes/features/categories/presentation/category_template_hierarchical_page.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
-import 'package:sesame_notes/shared/services/data/seed_service.dart';
+import 'package:sesame_notes/shared/services/seed_service.dart';
 
 /// Mock 整个 LocalRepository，按需 stub 模板页用到的方法。
 class _MockRepo extends Mock implements LocalRepository {}

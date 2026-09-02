@@ -1,4 +1,4 @@
-/// 记账页手选币种的汇率拉取:
+﻿/// 记账页手选币种的汇率拉取:
 /// 手选币种不在账本已落库的 quote 集合里,常规 refresh 拉回的组永远没有它
 /// —— refreshExchangeRatesFromUi 的 extraQuotes 参数把它并入拉取集合。
 library;
@@ -12,7 +12,7 @@ import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
-import 'package:sesame_notes/shared/services/currency/exchange_rate_service.dart';
+import 'package:sesame_notes/shared/services/exchange_rate_service.dart';
 
 /// 假汇率源:固定返回 CNY 基准的几个币种(不打网络)。
 class _FakeRateService implements ExchangeRateService {

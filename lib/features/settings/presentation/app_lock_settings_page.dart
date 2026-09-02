@@ -4,13 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/features/auth/application/security_providers.dart';
-import 'package:sesame_notes/navigation/route_consts.dart';
+import 'package:sesame_notes/router/route_consts.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/features/auth/domain/pin_setup_mode.dart';
+import 'package:sesame_notes/features/auth/presentation/pin_setup_page.dart'
+    show PinSetupMode;
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
 class AppLockSettingsPage extends ConsumerStatefulWidget {

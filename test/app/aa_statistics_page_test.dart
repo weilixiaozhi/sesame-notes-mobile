@@ -1,4 +1,4 @@
-// AA 结算统计页共享「(我)」后缀渲染测试：
+﻿// AA 结算统计页共享「(我)」后缀渲染测试：
 // 验证分摊明细行与转账方案卡基于 isSelf / fromIsSelf / toIsSelf 追加
 // 统一后缀（含前导空格），非本人保持纯名不拼接。
 library;
@@ -21,7 +21,7 @@ import 'package:sesame_notes/features/statistics/presentation/aa_statistics_page
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
-import 'package:sesame_notes/features/statistics/domain/aa_member_detail_models.dart';
+import 'package:sesame_notes/features/statistics/application/aa_member_detail_models.dart';
 import 'package:sesame_notes/shared/aa/aa_statistics_service.dart';
 
 import '../helpers/test_isolation.dart';

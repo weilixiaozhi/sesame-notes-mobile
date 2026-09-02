@@ -8,7 +8,9 @@ import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
-import 'package:sesame_notes/features/auth/domain/pin_setup_mode.dart';
+
+/// 应用锁 PIN 设置页的进入模式：创建（首次启用）或修改（已启用）。
+enum PinSetupMode { create, change }
 
 class PinSetupPage extends ConsumerStatefulWidget {
   final PinSetupMode mode;

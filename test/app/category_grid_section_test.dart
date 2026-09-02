@@ -26,7 +26,7 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/features/categories/application/category_picker_providers.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/router/app_router.dart';
-import 'package:sesame_notes/navigation/route_consts.dart';
+import 'package:sesame_notes/router/route_consts.dart';
 import 'package:sesame_notes/features/categories/presentation/widgets/category_grid_section.dart';
 
 void main() {

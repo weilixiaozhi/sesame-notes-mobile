@@ -1,4 +1,4 @@
-// hybrid（混合层次）seed 契约测试：锁死新注册默认分类的结构与质量。
+﻿// hybrid（混合层次）seed 契约测试：锁死新注册默认分类的结构与质量。
 //
 // 验证内容：
 //   1. 条目数：一级 20（9 独立 + 11 父）、二级 41、总计 61；
@@ -15,7 +15,7 @@ import 'package:drift/native.dart';
 import '../../helpers/test_isolation.dart';
 
 import 'package:sesame_notes/data/db.dart';
-import 'package:sesame_notes/shared/services/data/seed_service.dart';
+import 'package:sesame_notes/shared/services/seed_service.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 
 void main() {

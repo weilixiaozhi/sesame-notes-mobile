@@ -22,7 +22,6 @@ import 'package:sesame_notes/features/auth/presentation/edit_profile_pages.dart'
 import 'package:sesame_notes/features/auth/presentation/login_page.dart';
 import 'package:sesame_notes/features/auth/presentation/profile_page.dart';
 import 'package:sesame_notes/features/auth/presentation/register_page.dart';
-import 'package:sesame_notes/features/auth/domain/pin_setup_mode.dart';
 import 'package:sesame_notes/features/auth/presentation/pin_setup_page.dart';
 import 'package:sesame_notes/features/categories/presentation/category_edit_page.dart';
 import 'package:sesame_notes/features/categories/presentation/category_manage_page.dart';
@@ -50,9 +49,9 @@ import 'package:sesame_notes/features/transactions/presentation/exchange_rate_pa
 import 'package:sesame_notes/features/transactions/presentation/recurring_transaction_edit_page.dart';
 import 'package:sesame_notes/features/transactions/presentation/recurring_transaction_page.dart';
 import 'package:sesame_notes/shared/aa/aa_edit_models.dart';
-import 'package:sesame_notes/features/statistics/domain/aa_member_detail_models.dart';
+import 'package:sesame_notes/features/statistics/application/aa_member_detail_models.dart';
 
-import '../navigation/route_consts.dart';
+import '../router/route_consts.dart';
 
 /// 构建全部命名路由的 GoRoute 表。
 ///

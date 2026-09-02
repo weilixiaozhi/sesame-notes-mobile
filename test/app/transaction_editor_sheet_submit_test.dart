@@ -1,4 +1,4 @@
-/// TransactionEditorSheet 提交/编辑/AA/日期/作者头像流程测试。
+﻿/// TransactionEditorSheet 提交/编辑/AA/日期/作者头像流程测试。
 ///
 /// 需求锚点：
 /// - 新建提交：选分类 → 输入金额 → 完成，落库参数正确（Decimal 字符串、
@@ -26,7 +26,7 @@ import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
-import 'package:sesame_notes/navigation/route_consts.dart';
+import 'package:sesame_notes/router/route_consts.dart';
 import 'package:sesame_notes/router/app_router.dart';
 import 'package:sesame_notes/shared/aa/aa_edit_models.dart' show AaEditResult;
 import 'package:sesame_notes/theme/icons/app_icons.dart';

@@ -1,4 +1,4 @@
-// seed 默认分类契约测试:① 无「同父级作用域内」(name,kind) 重复 ② 无
+﻿// seed 默认分类契约测试:① 无「同父级作用域内」(name,kind) 重复 ② 无
 // fallback(段数错位会让名字 fallback 成 snake_case key)。锁死三语言
 // (简/繁/英)seed 二级分类质量。
 //
@@ -15,7 +15,7 @@ import 'package:drift/native.dart';
 import '../../helpers/test_isolation.dart';
 
 import 'package:sesame_notes/data/db.dart';
-import 'package:sesame_notes/shared/services/data/seed_service.dart';
+import 'package:sesame_notes/shared/services/seed_service.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 
 void main() {

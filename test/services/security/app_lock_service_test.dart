@@ -1,4 +1,4 @@
-// AppLockService 安全加固测试。
+﻿// AppLockService 安全加固测试。
 //
 // 覆盖：
 // - 新哈希为加盐 PBKDF2 格式（同 PIN 两次哈希不同，verify 仍可命中）；
@@ -8,7 +8,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:sesame_notes/features/auth/infrastructure/app_lock_service.dart';
+import 'package:sesame_notes/features/auth/application/app_lock_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -1,4 +1,4 @@
-// applyLedgerCurrencyChange 补充分支测试。
+﻿// applyLedgerCurrencyChange 补充分支测试。
 //
 // 与 ledger_currency_change_guard_test（共享账本权限守卫）互补，锁定：
 //   - 空币种 / 账本不存在 → 直接返回 false；
@@ -18,7 +18,7 @@ import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
-import 'package:sesame_notes/shared/services/currency/exchange_rate_service.dart';
+import 'package:sesame_notes/shared/services/exchange_rate_service.dart';
 import 'package:sesame_notes/features/ledgers/presentation/widgets/ledger_currency_change.dart';
 
 import '../helpers/test_isolation.dart';

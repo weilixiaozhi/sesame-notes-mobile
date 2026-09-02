@@ -1,4 +1,4 @@
-// 源链契约:首源失败滑到次源;成功记住源下次先试;全挂抛 RateFetchException;
+﻿// 源链契约:首源失败滑到次源;成功记住源下次先试;全挂抛 RateFetchException;
 // fawazahmed0 小写键解析;frankfurter 解析。
 import 'dart:convert';
 
@@ -8,7 +8,7 @@ import 'package:http/testing.dart';
 import '../helpers/test_isolation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:sesame_notes/shared/services/currency/exchange_rate_service.dart';
+import 'package:sesame_notes/shared/services/exchange_rate_service.dart';
 
 // 把解析用的 Map 包成 200 响应,等价原测试里的 ResponseBody.fromString。
 http.Response _json(Map<String, dynamic> body) => http.Response(

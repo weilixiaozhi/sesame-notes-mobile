@@ -1,4 +1,4 @@
-/// LedgerEditPage 保存流与危险区操作测试。
+﻿/// LedgerEditPage 保存流与危险区操作测试。
 
 /// 需求锚点：
 /// - 新建保存：名称必填校验、AA 开关随 createLedger 落库、虚拟用户批量落库、
@@ -30,7 +30,7 @@ import 'package:sesame_notes/features/ledgers/presentation/ledger_edit_page.dart
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
-import 'package:sesame_notes/shared/services/currency/exchange_rate_service.dart';
+import 'package:sesame_notes/shared/services/exchange_rate_service.dart';
 import 'package:sesame_notes/shared/widgets/sheet_grab_handle.dart';
 import 'package:sesame_notes/shared/widgets/text_state_switch.dart';
 

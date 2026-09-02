@@ -1,4 +1,4 @@
-/// CSV/JSON 导入路径的多币种契约:
+﻿/// CSV/JSON 导入路径的多币种契约:
 ///   - 无币种指定 → currencyCode=本位币, nativeAmount=amount
 ///   - CSV 显式指定币种列 → 优先于本位币兜底
 ///     (有汇率→折算, 无汇率→拒绝该行，绝不按 1:1 伪造快照)
@@ -16,7 +16,7 @@ import 'package:sesame_notes/data/models.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/data/repositories/support/change_recorder.dart';
 import 'package:sesame_notes/features/settings/infrastructure/data_import_service.dart';
-import 'package:sesame_notes/shared/services/currency/exchange_rate_service.dart';
+import 'package:sesame_notes/shared/services/exchange_rate_service.dart';
 
 /// 可控汇率服务：隔离公网，同时记录导入是否发起了不必要的补拉。
 class _FakeRateService implements ExchangeRateService {

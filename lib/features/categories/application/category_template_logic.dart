@@ -1,7 +1,7 @@
-import 'package:sesame_notes/l10n/app_localizations.dart';
+﻿import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/data/models.dart' as db;
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
-import 'package:sesame_notes/shared/services/data/seed_service.dart';
+import 'package:sesame_notes/shared/services/seed_service.dart';
 
 /// 分类模板条目（模板库页面展示用）
 ///

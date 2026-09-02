@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/shared/providers/simple_state_notifier.dart';
 
-import 'package:sesame_notes/shared/services/storage/avatar_picker.dart';
+import 'package:sesame_notes/shared/services/avatar_picker.dart';
 import 'package:sesame_notes/core/storage/avatar_storage.dart';
 import 'package:sesame_notes/core/storage/member_avatar_storage.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
@@ -20,7 +20,7 @@ final avatarPathProvider = FutureProvider<String?>((ref) async {
 /// 从系统相册选择并保存头像（动作函数）。
 ///
 /// 设计意图：把 `avatarPicker.pickAndSaveAvatar` 的调用收敛到 providers 层，
-/// widgets 层不直接 import services/storage/*，保持
+/// widgets 层不直接 import shared/services/*，保持
 /// `pages/widgets → providers → services → data` 单向依赖。
 Future<String?> pickAndSaveAvatarFromUi(WidgetRef ref) =>
     avatarPicker.pickAndSaveAvatar();

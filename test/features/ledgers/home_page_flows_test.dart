@@ -1,4 +1,4 @@
-/// HomePage 行为流测试（第二弹）：头部交互、下拉刷新失败/补折算、
+﻿/// HomePage 行为流测试（第二弹）：头部交互、下拉刷新失败/补折算、
 /// 账本空态与错误态、AA 入口、交易明细接线与删除流程。
 ///
 /// 第一弹（home_page_test.dart）已覆盖左右切月与下拉刷新成功/降级文案；
@@ -30,7 +30,7 @@ import 'package:sesame_notes/features/statistics/application/statistics_provider
 import 'package:sesame_notes/shared/providers/ui_state_providers.dart';
 import 'package:sesame_notes/features/statistics/application/record_history_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
-import 'package:sesame_notes/navigation/route_consts.dart';
+import 'package:sesame_notes/router/route_consts.dart';
 import 'package:sesame_notes/shared/widgets/app_empty.dart';
 
 /// Mock 整个 LocalRepository：未 stub 的方法返回默认值，避免触碰数据库。

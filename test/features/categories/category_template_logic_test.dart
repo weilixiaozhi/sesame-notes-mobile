@@ -1,4 +1,4 @@
-// 分类模板库纯函数测试：双通道已添加判定 / 勾选联动 / 全选 / 写入计划。
+﻿// 分类模板库纯函数测试：双通道已添加判定 / 勾选联动 / 全选 / 写入计划。
 //
 // 验证内容：
 //   1. ExistingCategoryIndex：确定性 id 优先 + 同名兜底的"已添加"双通道判定
@@ -20,7 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../helpers/test_isolation.dart';
 
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/shared/services/data/seed_service.dart';
+import 'package:sesame_notes/shared/services/seed_service.dart';
 import 'package:sesame_notes/features/categories/application/category_template_logic.dart';
 
 void main() {

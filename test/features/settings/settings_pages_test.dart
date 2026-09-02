@@ -1,4 +1,4 @@
-// 设置类二级页面测试：语言、外观（主题/支出配色/语言导航）、应用锁、
+﻿// 设置类二级页面测试：语言、外观（主题/支出配色/语言导航）、应用锁、
 // 提醒设置、日志中心。
 //
 // 用 ProviderContainer + 真实 SharedPreferences mock，验证页面渲染、交互后
@@ -30,7 +30,7 @@ import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/settings/application/reminder_providers.dart';
 import 'package:sesame_notes/shared/providers/language_provider.dart';
 import 'package:sesame_notes/features/auth/application/security_providers.dart';
-import 'package:sesame_notes/features/auth/infrastructure/app_lock_service.dart';
+import 'package:sesame_notes/features/auth/application/app_lock_service.dart';
 import 'package:sesame_notes/shared/services/notification/notification_factory.dart';
 import 'package:sesame_notes/shared/services/notification/notification_util.dart';
 import 'package:sesame_notes/shared/services/notification/reminder_constants.dart';

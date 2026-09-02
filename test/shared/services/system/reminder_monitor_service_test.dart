@@ -1,4 +1,4 @@
-// 提醒监控服务测试。
+﻿// 提醒监控服务测试。
 //
 // 需求锚点：监控服务只负责时钟与调度，通知文案由 Composition Root
 // 经回调注入（service 不得反向依赖 BuildContext / l10n）；恢复提醒时
@@ -13,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sesame_notes/shared/services/notification/notification_factory.dart';
 import 'package:sesame_notes/shared/services/notification/notification_util.dart';
 import 'package:sesame_notes/shared/services/notification/reminder_constants.dart';
-import 'package:sesame_notes/shared/services/system/reminder_monitor_service.dart';
+import 'package:sesame_notes/shared/services/reminder_monitor_service.dart';
 
 /// 记录调度参数的假通知实现：断言恢复提醒使用了注入文案。
 class _RecordingNotificationUtil implements NotificationUtil {

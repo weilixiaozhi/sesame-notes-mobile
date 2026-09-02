@@ -1,4 +1,4 @@
-// 汇率管理页（ExchangeRatePage）组件测试。
+﻿// 汇率管理页（ExchangeRatePage）组件测试。
 //
 // 需求锚点（以页面行为为准）：
 //   1. 首次加载（无缓存）展示弱化 loading；加载失败展示错误文案 + 重试，重试后恢复；
@@ -26,7 +26,7 @@ import 'package:sesame_notes/features/transactions/presentation/currency_manage_
 import 'package:sesame_notes/features/transactions/presentation/exchange_rate_page.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
-import 'package:sesame_notes/shared/services/currency/exchange_rate_service.dart';
+import 'package:sesame_notes/shared/services/exchange_rate_service.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
 /// Mock 整个 LocalRepository：未 stub 的方法返回默认值，不抛异常。

@@ -1,4 +1,4 @@
-/// AmountInputPanel 金额输入面板组件测试。
+﻿/// AmountInputPanel 金额输入面板组件测试。
 ///
 /// 需求锚点：
 /// - 编辑模式回填金额，外币隐含汇率（nativeAmount / amount）回填汇率行；
@@ -20,7 +20,7 @@ import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
-import 'package:sesame_notes/shared/services/currency/exchange_rate_service.dart';
+import 'package:sesame_notes/shared/services/exchange_rate_service.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/utils/currency/rate_math.dart' show EffectiveRate;
 import 'package:sesame_notes/shared/widgets/amount_expression_bar.dart';

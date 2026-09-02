@@ -13,9 +13,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/features/auth/domain/pin_setup_mode.dart';
 import 'package:sesame_notes/features/auth/presentation/pin_setup_page.dart';
-import 'package:sesame_notes/features/auth/infrastructure/app_lock_service.dart';
+import 'package:sesame_notes/features/auth/application/app_lock_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

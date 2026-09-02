@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
@@ -9,7 +9,7 @@ import 'package:sesame_notes/data/db.dart' show Ledger;
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/utils/currency/rate_math.dart';
-import 'package:sesame_notes/shared/services/currency/exchange_rate_service.dart';
+import 'package:sesame_notes/shared/services/exchange_rate_service.dart';
 import 'package:sesame_notes/utils/currency/currencies.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 // 只依赖叶子模块拿云客户端实例（server 汇率源），不 import 编排器
