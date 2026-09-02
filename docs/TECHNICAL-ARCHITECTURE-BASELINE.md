@@ -302,8 +302,8 @@ Web 与 Admin 当前是规划能力，不得描述成已交付运行时。
 - [I] 不得为了通过测试修改正确的需求断言。失败时先诊断是实现错误、测试错误还是环境不可用，并以需求为锚点。
 - [I] 实现与测试不得共享同一套未经独立验证的错误假设；金额、ID、同步和加密使用黄金向量或契约样例。
 - [A] 认证、权限、金额、同步、备份恢复等高风险逻辑覆盖率目标至少 80%；不设置全仓库 80% 指标，优先风险覆盖率，且覆盖率不能替代边界与失败路径测试。
-- [A] 主仓库门禁至少包含 lint、format check、typecheck、build、unit、真实 PostgreSQL integration/E2E、contract check、依赖方向检查和架构基线双仓一致性（权威副本哈希）。
-- [A] 移动端门禁至少包含 dart format check、flutter analyze --no-pub、unit/widget、项目身份、API 契约、循环依赖、lib/ 业务代码直连 adapter 扫描（Composition Root main.dart 是注册实现的唯一例外）、各 adapter 包 pub get/analyze/test、架构基线双仓一致性（权威副本哈希），以及全量随机顺序测试。
+- [A] 主仓库门禁至少包含 lint、format check、typecheck、build、unit、真实 PostgreSQL integration/E2E、contract check、依赖方向检查和架构基线双仓一致性（双仓逐字比对）。
+- [A] 移动端门禁至少包含 dart format check、flutter analyze --no-pub、unit/widget、项目身份、API 契约、循环依赖、lib/ 业务代码直连 adapter 扫描（Composition Root main.dart 是注册实现的唯一例外）、各 adapter 包 pub get/analyze/test、架构基线双仓一致性（双仓逐字比对），以及全量随机顺序测试。
 - [I] 合并前要求 CI 同款全量随机顺序测试 0 错误、静态检查 0 warning。
 - [A] 外部服务测试使用明确的测试实例或受控 fake；数据库集成测试使用真实 PostgreSQL 测试实例，不用 mock 证明 SQL 正确。
 
