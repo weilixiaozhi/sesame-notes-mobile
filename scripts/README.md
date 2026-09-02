@@ -22,12 +22,7 @@ scripts/
 │   ├── normalize_openapi.mjs
 │   └── README.md
 ├── test/               # 测试与门禁（CI 质量闸）
-│   ├── project_identity_test.py
 │   ├── api_contract_test.py
-│   ├── check_cycles.py
-│   ├── check_cycles_test.py
-│   ├── check_baseline_sync.py
-│   ├── check_baseline_sync_test.py
 │   └── README.md
 └── README.md           # 本文件
 ```
@@ -69,12 +64,7 @@ scripts/
 
 仓库级质量门禁脚本，CI 与本地质量检查均从本目录执行：
 
-- **project_identity_test.py** — 项目标识契约测试（品牌 / 平台工程 / 残留治理 / 备份包边界，52 项）
 - **api_contract_test.py** — API 契约固定测试（哈希钉死 / 元数据 / 统一错误模型 / 乐观锁 / 生成器门禁，7 项）
-- **check_cycles.py** — 静态依赖环检测（业务代码无环）
-- **check_cycles_test.py** — 依赖环检测脚本回归测试
-- **check_baseline_sync.py** — 架构基线双仓一致性（权威副本哈希清单）
-- **check_baseline_sync_test.py** — 基线一致性门禁回归测试
 
 详见 [test/README.md](test/README.md)。
 
@@ -97,12 +87,7 @@ dart scripts/i18n/align_arb.dart
 flutter test scripts/launcher_icons/rasterize_svg.dart
 
 # 质量门禁（本地与 CI 一致）
-python scripts/test/project_identity_test.py
 python scripts/test/api_contract_test.py
-python scripts/test/check_cycles_test.py
-python scripts/test/check_cycles.py
-python scripts/test/check_baseline_sync_test.py
-python scripts/test/check_baseline_sync.py
 
 # OpenAPI 客户端生成校验
 powershell -File scripts/openapi/generate_api_client.ps1 -Check

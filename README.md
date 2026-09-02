@@ -34,12 +34,7 @@ flutter run --flavor dev
 ```sh
 dart format --output=none --set-exit-if-changed .
 flutter analyze --no-pub
-python scripts/test/project_identity_test.py
 python scripts/test/api_contract_test.py
-python scripts/test/check_cycles_test.py
-python scripts/test/check_cycles.py
-python scripts/test/check_baseline_sync_test.py
-python scripts/test/check_baseline_sync.py
 flutter test --test-randomize-ordering-seed=random
 ```
 

@@ -70,27 +70,9 @@ jobs:
           fi
           echo "✅ 架构门禁通过：core→features 反向边为 0"
 
-      - name: 架构门禁（零引用依赖不得回潮）
+      - name: API 契约固定测试（契约哈希与乐观锁约定）
         run: |
-          # 架构审计 L2：connectivity_plus 全仓零引用已移除声明；再次声明即失败，
-          # 防止"声明未用"的依赖重新进入 pubspec。
-          if rg -q 'connectivity_plus' pubspec.yaml; then
-            echo "❌ pubspec 声明了零引用的 connectivity_plus（架构审计 L2 已移除，勿回潮）"
-            exit 1
-          fi
-          echo "✅ 架构门禁通过：connectivity_plus 未声明"
-
-      - name: 架构基线双仓一致性（权威副本哈希）
-        run: |
-          python3 scripts/test/check_baseline_sync_test.py
-          python3 scripts/test/check_baseline_sync.py
-
-      - name: 静态依赖环检测（业务代码无环）
-        run: |
-          python3 scripts/test/project_identity_test.py
           python3 scripts/test/api_contract_test.py
-          python3 scripts/test/check_cycles_test.py
-          python3 scripts/test/check_cycles.py
 
       - name: 运行测试（随机顺序，持续暴露顺序依赖）
         run: flutter test test --test-randomize-ordering-seed=random

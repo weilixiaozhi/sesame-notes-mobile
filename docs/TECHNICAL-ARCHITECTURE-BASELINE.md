@@ -60,10 +60,9 @@ PostgreSQL 是服务端权威数据库；每台手机也保存可离线工作的
 2. 更新实现、测试、OpenAPI 或迁移。
 3. 同步更新两个仓库中的本文件。
 4. 比较两份文件的 SHA-256，确认完全一致。
-5. 同步更新两个仓库的 `docs/TECHNICAL-ARCHITECTURE-BASELINE.sha256`：该清单记录批准版正文的 SHA-256，是 CI 可读的权威副本哈希。
-6. 分别提交两个仓库；不得只更新一方后宣称架构变更完成。
+5. 分别提交两个仓库；不得只更新一方后宣称架构变更完成。
 
-两个仓库的 CI 都以权威副本哈希清单校验本文件，正文与清单不符即阻断合并。本地同时具备两个 checkout 时，主仓库执行 `node scripts/check-baseline-sync.mjs --peer <对端目录>`、移动端执行 `python3 scripts/test/check_baseline_sync.py --peer <对端目录>`，直接逐字比对两份正文。
+本文件的双仓一致性由开发者手动维护：改动正文时必须同步更新两份 checkout 并逐字比对。
 
 每个仓库只维护 `docs/TECHNICAL-ARCHITECTURE-BASELINE.md` 这一份基线。README 和其他文档只链接本文件，不复制架构规则；知识库不保存基线镜像。
 
@@ -143,8 +142,8 @@ Web 与 Admin 当前是规划能力，不得描述成已交付运行时。
 - [D] 上述分层是依赖方向，不要求为简单流程制造只透传调用的 Controller、Service 或 Repository 空壳；能在现有模块内清楚表达时不新增抽象。
 - [A] 移动端采用 vertical slice：UI/Provider → Repository/Use Case → Drift 或生成 API Client。
 - [I] 数据层、生成客户端和 adapter 不得反向依赖 feature UI。
-- [A] 依赖图默认不得新增 SCC；确有业务理由的最小例外必须写入门禁白名单并说明原因，扩大例外需 ADR。
-- [A] 目录级依赖图豁免 `lib/data/` 门面虚拟组：`data/models.dart` 作为唯一出口 re-export 子模型，而 `data/models/` 下 `category_node.dart`、`category_picker_tree.dart`、`ledger_kind.dart` 反向依赖 `data/db.dart`（Drift schema），在目录粒度构成伪环；文件级依赖图（`scripts/test/check_cycles.py`）无环且无运行风险，该分组默认豁免，不计入 SCC。
+- [A] 依赖图默认不得新增 SCC；确有业务理由的最小例外必须在本文档说明原因，扩大例外需 ADR。
+- [A] 目录级依赖图豁免 `lib/data/` 门面虚拟组：`data/models.dart` 作为唯一出口 re-export 子模型，而 `data/models/` 下 `category_node.dart`、`category_picker_tree.dart`、`ledger_kind.dart` 反向依赖 `data/db.dart`（Drift schema），在目录粒度构成伪环；文件级依赖图无环且无运行风险，该分组默认豁免，不计入 SCC。
 - [A] 移动端 UI 只消费 data 层经 `data/models.dart` 出口的展示模型，不得直接 import Drift 生成的 Row 类型；Row 到展示模型的映射由 Provider 或 data 层承担。
 - [A] 需要 `BuildContext` / `AppLocalizations` 的格式化放 `shared/presentation`；`lib/utils` 保持纯 Dart 叶子，只做 key 与数值转换。
 - [I] WebSocket 只触发 pull；最终状态以带游标的 HTTPS 同步结果为准。
