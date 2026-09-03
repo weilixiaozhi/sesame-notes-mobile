@@ -1,33 +1,46 @@
 /// Mine 页入口测试。
 ///
-/// 官方账号登录/登出只由页面头部与个人资料页承载；功能列表中的云入口只用于
-/// 第三方自动备份配置，不根据官方账号会话改变文案或行为。
+/// 官方账号登录/登出只由页面头部与个人资料页承载；功能列表中的云入口
+/// （备份与云同步配置）只用于备份配置，不根据官方账号会话改变文案或行为。
 ///
-/// 测试栈：flutter_test + flutter_riverpod。Mine 页已无 sync provider，
-/// 直接渲染页面即可；MinePageHeader 的异步头像加载在测试环境下读取不到
+/// 测试栈：flutter_test + flutter_riverpod。Mine 页无官方同步 provider，
+/// 云入口状态来自第三方备份总览（CloudBackupOverview），测试注入内存数据库
+/// 与空 SharedPreferences；MinePageHeader 的异步头像加载在测试环境下读取不到
 /// 文件即返回 null，不会抛错。
 library;
 
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/router/app_router.dart';
 import 'package:sesame_notes/features/ledgers/presentation/mine_page.dart';
+import 'package:sesame_notes/shared/providers/database_providers.dart';
 
 import '../../helpers/cloud_backend_registration.dart';
 
 /// 挂载 MinePage（使用加高视口，确保列表末尾的分组入口也被构建出来）。
 ///
+/// 云入口状态 provider 读取内存数据库，注入独立容器避免污染其他测试。
 Future<void> _pumpMinePage(WidgetTester tester) async {
   // 默认 800x600 视口下第二组入口可能落在首屏外（ListView 懒构建），
   // 加高视口让全部入口 tile 都被构建，断言才能稳定命中。
   tester.view.physicalSize = const Size(800, 12000);
   addTearDown(tester.view.resetPhysicalSize);
+  final db = SesameDatabase.forTesting(NativeDatabase.memory());
+  addTearDown(db.close);
+  final container = ProviderContainer(
+    overrides: [databaseProvider.overrideWithValue(db)],
+  );
+  addTearDown(container.dispose);
   await tester.pumpWidget(
-    ProviderScope(
+    UncontrolledProviderScope(
+      container: container,
       child: MaterialApp.router(
         // 测试环境默认 locale 为 en，强制 zh 以渲染中文文案
         locale: const Locale('zh'),
@@ -51,7 +64,10 @@ void main() {
 
   // 云服务页的第三方备份入口来自注册表，等价于 main.dart 的装配。
   void Function()? unregisterBackends;
-  setUp(() => unregisterBackends = registerRealCloudBackends());
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    unregisterBackends = registerRealCloudBackends();
+  });
   tearDown(() => unregisterBackends?.call());
 
   testWidgets('Mine 页保留导入导出入口且不显示孤儿数据维护', (tester) async {
@@ -98,11 +114,12 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
   });
 
-  testWidgets('功能列表只显示第三方云备份入口', (tester) async {
+  testWidgets('功能列表展示「备份与云同步配置」统一入口（未配置时仅本地备份）', (tester) async {
     await _pumpMinePage(tester);
 
-    expect(find.text('第三方云备份'), findsOneWidget);
-    expect(find.text('第三方备份：连接测试、自动备份与恢复'), findsOneWidget);
+    expect(find.text('备份与云同步配置'), findsOneWidget);
+    // 无任何第三方配置 → 入口副标题为「仅本地备份」。
+    expect(find.text('仅本地备份'), findsOneWidget);
     expect(find.text('仅在同步时需要'), findsNothing);
     expect(find.text('点击可退出登录'), findsNothing);
   });

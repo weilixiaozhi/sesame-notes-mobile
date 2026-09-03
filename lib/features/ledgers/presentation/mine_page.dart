@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sesame_notes/shared/widgets/widgets.dart';
@@ -7,12 +7,13 @@ import 'package:sesame_notes/theme/dimens.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:sesame_notes/data/models/app_update_info.dart';
+import 'package:sesame_notes/features/ledgers/presentation/cloud_service_entry_tile.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/router/route_consts.dart';
 import 'package:sesame_notes/shared/services/app_update_service.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
-/// 展示个人设置、第三方云备份与数据维护入口。
+/// 展示个人设置、云同步与备份、数据维护入口。
 class MinePage extends StatelessWidget {
   const MinePage({super.key});
 
@@ -134,7 +135,9 @@ class MinePage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: AppDimens.p8),
-                // 一级分组：第三方备份与数据维护。
+                // 一级分组：云同步与备份
+                // 包含：备份与云同步配置 → 明细导入导出 → 配置导入导出 → 检查更新
+                // 云服务与同步状态统一经 CloudServiceEntryTile 进入。
                 SectionCard(
                   margin: EdgeInsets.fromLTRB(
                     AppDimens.p12,
@@ -144,7 +147,11 @@ class MinePage extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      _buildCloudBackupEntry(context),
+                      // 备份与云同步配置 —— 统一入口：图标与文案按备份状态切换，
+                      // 点击统一进入 CloudServicePage（不按后端类型路由分叉）。
+                      CloudServiceEntryTile(
+                        onTap: () => _openCloudService(context),
+                      ),
                       AppTokens.cardDivider(context),
                       // 明细导入导出统一进入数据迁移页面。
                       AppListTile(
@@ -208,23 +215,6 @@ class MinePage extends StatelessWidget {
     );
   }
 
-  /// 第三方云备份入口：官方账号登录与退出由个人资料区域承载。
-  Widget _buildCloudBackupEntry(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return AppListTile(
-      leading: AppIcons.cloudQueue,
-      title: l10n.mineCloudService,
-      subtitle: l10n.cloudBackupEntrySubtitle,
-      trailing: Icon(
-        AppIcons.chevronRight,
-        color: AppTokens.iconTertiary(context),
-        size: AppDimens.icon20,
-      ),
-      onTap: () => _openCloudService(context),
-    );
-  }
-
   /// 检查更新：调服务对比版本，按三态弹窗引导；失败不硬报错（unknown 态）。
   Future<void> _checkUpdate(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
@@ -264,7 +254,7 @@ class MinePage extends StatelessWidget {
     );
   }
 
-  /// 打开云服务页（账户与同步 + 第三方云备份两个区块）。
+  /// 打开云服务页（备份与云同步配置）。
   Future<void> _openCloudService(BuildContext context) async {
     await context.pushNamed(Routes.cloudService);
   }
