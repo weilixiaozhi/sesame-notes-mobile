@@ -45,7 +45,19 @@ void registerSupabaseBackend() {
           isRequired: true,
         ),
         CloudConfigField(key: 'bucket', labelKey: 'cloudBackupBucketLabel'),
-        CloudConfigField(key: 'account', labelKey: 'cloudBackupAccountLabel'),
+        // 账号与密码随配置一并保存（Supabase 存储要求登录，
+        // 凭据在配置保存后创建服务时自动登录，无独立登录入口）。
+        CloudConfigField(
+          key: 'account',
+          labelKey: 'cloudBackupAccountLabel',
+          isRequired: true,
+        ),
+        CloudConfigField(
+          key: 'password',
+          labelKey: 'cloudBackupPasswordLabel',
+          kind: CloudConfigFieldKind.secret,
+          isRequired: true,
+        ),
       ],
       importLegacy: (json) => {
         'url': json['supabaseUrl'],
@@ -65,6 +77,17 @@ void registerSupabaseBackend() {
         // 使用默认的 users/{userId}/ 结构，基础包支持但业务层不配置
         'pathPrefix': null,
       });
+
+      // 凭配置内账号密码自动登录：上传/下载/连接测试都经本构建器创建服务，
+      // 登录失败向上抛，由调用方按失败处理（自动备份记 dirty）。
+      final account = (config.settings['account'] as String?)?.trim();
+      final password = (config.settings['password'] as String?) ?? '';
+      if (account != null && account.isNotEmpty) {
+        await provider.auth.signInWithAccount(
+          account: account,
+          password: password,
+        );
+      }
 
       // Auth service 直接从 provider 获取
       return (provider: provider, auth: provider.auth);
