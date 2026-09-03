@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/shared/providers/theme_providers.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/shared/aa/aa_decimal_util.dart';
@@ -159,6 +159,20 @@ class _AaEditPageState extends ConsumerState<AaEditPage> {
       if (o.id == id) return o.name;
     }
     return AppLocalizations.of(context).aaUnknownUser;
+  }
+
+  /// 未手选支出人(默认 = 创建人 = 本人)的展示名:按账本归属分口径。
+  ///
+  /// 本地账本恒显固定本地身份「单机芝麻仔」;云账本显当前云 Profile 昵称
+  /// (正常恒非空,注册即分配),缓存未就绪时防御性回退固定本地身份。
+  String _selfDisplayName(AppLocalizations l10n) {
+    final ledger = ref.watch(currentLedgerDisplayProvider).asData?.value;
+    if (ledger?.storageMode == 'cloud') {
+      final cloud =
+          ref.watch(accountStateProvider).profile?.displayName?.trim() ?? '';
+      if (cloud.isNotEmpty) return cloud;
+    }
+    return l10n.mineLocalName;
   }
 
   /// 切换某参与人勾选态;支出人锁定不可反选。
@@ -579,19 +593,18 @@ class _AaEditPageState extends ConsumerState<AaEditPage> {
     List<AaParticipantOption> options,
   ) {
     // 展示名:未手选时 [_resolveDefaultPayerId] 已把操作者 id 填入 _paidById,
-    // 此处反查名册即「我」(与参与人锁定行同名,三处口径一致);仅当操作者
-    // 不在名册(解析放弃)时回退本地昵称/「我」兜底展示。手选/编辑回填后
-    // 同样反查名册真实成员名。
-    final localName = ref.read(displayNameProvider).trim();
+    // 此处反查名册即「我」(与参与人锁定行同名,三处口径一致)。
+    // 未手选 = 默认支出人 = 创建人(本人):按账本归属展示——
+    // 本地账本固定「单机芝麻仔」,云账本显当前云 Profile 昵称(§6.4)。
     // 未手选(_paidById 为 null)时操作者即「我」,恒为本人;手选后按名册
     // option.isSelf 判定,与参与人锁定行 / picker 行的本人口径一致。
     final payerIsSelf = _paidById == null
         ? true
         : options.where((o) => o.id == _paidById).firstOrNull?.isSelf ?? false;
-    // 纯名展示:未手选时本地昵称 / 「未设置昵称」兜底(不拼接「(我)」,
-    // 后缀交给 UI 层共享 meSuffixSpan 统一渲染);手选反查名册名。
+    // 纯名展示(不拼接「(我)」,后缀交给 UI 层共享 meSuffixSpan 统一渲染);
+    // 手选反查名册名。
     final payerName = _paidById == null
-        ? (localName.isNotEmpty ? localName : l10n.mineSlogan)
+        ? _selfDisplayName(l10n)
         : _optionName(options, _paidById!);
     return InkWell(
       onTap: () async {

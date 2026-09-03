@@ -151,23 +151,17 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
     final categoryMap =
         categoryMapAsync.value ?? <String, db.CategoryDisplay>{};
 
-    // 共享账本成员表(userId→成员),详情 sheet 用于协作成员 / AA 支出人展示名
+    // 共享账本成员表(member id→成员),详情 sheet 用于协作成员 / AA 支出人展示名。
+    // 全量非 tombstone(含 LEFT/REMOVED):历史交易仍引用已离开成员,必须保留展示名;
+    // 本人展示由详情 sheet 按账本归属解析,这里无需传本地昵称。
     final ledger = ref.watch(currentLedgerDisplayProvider).asData?.value;
-    // schema v1 无 syncId：成员表按账本 UUID 直查；共享判定用 [isSharedLedger]。
-    var memberMap = const <String, LedgerMemberDisplay>{};
-    if (ledger != null && _isSharedLedger(ledger)) {
-      final members = ref
-          .watch(ledgerMemberDisplaysProvider(ledger.id))
-          .asData
-          ?.value;
-      if (members != null) {
-        memberMap = {for (final m in members) m.id: m};
-      }
-    }
-    // 本地账本无成员表:取本地昵称供详情页兜底展示(纯本地,不依赖云端登录态)
-    final localOwnerName = (ledger != null && _isSharedLedger(ledger))
-        ? null
-        : ref.read(displayNameProvider);
+    final memberMap = (ledger != null && _isSharedLedger(ledger))
+        ? ref
+                  .watch(ledgerMemberDisplayMapProvider(ledger.id))
+                  .asData
+                  ?.value ??
+              const <String, LedgerMemberDisplay>{}
+        : const <String, LedgerMemberDisplay>{};
 
     return Scaffold(
       body: Column(
@@ -247,7 +241,6 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
                         currentSortType,
                         categoryMap,
                         memberMap,
-                        localOwnerName,
                         ledger?.aaEnabled ?? false,
                       );
                     },
@@ -486,7 +479,6 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
     SortType currentSortType,
     Map<String, db.CategoryDisplay> categoryMap,
     Map<String, LedgerMemberDisplay> memberMap,
-    String? localOwnerName,
     bool aaEnabled,
   ) {
     if (transactions.isEmpty) {
@@ -581,8 +573,6 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
                 transaction: transaction,
                 category: cat,
                 memberDisplayMap: memberMap,
-                // 本地账本无成员表:传本地昵称供详情页兜底展示(纯本地,不依赖云端登录态)
-                localOwnerDisplayName: localOwnerName,
                 // 账本是否开启分摊决定底部按钮态(单/双)与右上角删除 icon 布局
                 aaEnabled: aaEnabled,
                 onEdit: () => TransactionEditUtils.editTransaction(

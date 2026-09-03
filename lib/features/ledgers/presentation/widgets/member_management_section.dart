@@ -10,7 +10,7 @@
 //   (保存账本拿到 ledgerId 后批量落库),避免"保存→返回→重新进入→配置"的长路径。
 // - 成员数据源:共享账本(成员数 > 1)查本地 LedgerMembers 镜像表,
 //   单人/本地账本无成员表,展示"所有者(我)"。
-import 'dart:io' show File;
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,10 +23,10 @@ import 'package:sesame_notes/features/ledgers/application/ledger_actions.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/widgets/text_state_switch.dart';
 import 'package:sesame_notes/shared/widgets/me_suffix.dart';
-import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
-import 'package:sesame_notes/shared/providers/avatar_providers.dart';
+import 'package:sesame_notes/features/ledgers/application/member_directory_providers.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/data/models.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
@@ -111,9 +111,8 @@ class MemberManagementSection extends ConsumerStatefulWidget {
 
 class _MemberManagementSectionState
     extends ConsumerState<MemberManagementSection> {
-  /// 新建态/本地账本下推导的当前用户信息(异步加载,用于展示"所有者(我)")。
+  /// 新建态/本地账本下推导的当前设备身份(异步加载,用于派生所有者成员 id)。
   String _ownerSelfId = '';
-  String? _ownerDisplayName;
 
   /// 邀请码有效期选项:1 天 / 3 天 / 7 天。
   static const _expiryOptions = <int>[24, 72, 168];
@@ -128,27 +127,31 @@ class _MemberManagementSectionState
   @override
   void initState() {
     super.initState();
-    // 仅在无成员镜像(新建态/本地账本)时加载当前用户信息作为所有者展示。
     if (widget.ledgerExternalId == null || widget.ledgerExternalId!.isEmpty) {
+      // 仅在无成员镜像(新建态/本地账本)时加载当前用户信息作为所有者展示。
       _loadCurrentUserInfo();
+    } else {
+      // §13.4:进入成员管理(成员身份页面)时按需刷新成员公开资料(幂等 + 防抖)。
+      final container = ProviderScope.containerOf(context, listen: false);
+      unawaited(
+        refreshLedgerMemberDirectory(container, widget.ledgerExternalId!),
+      );
     }
   }
 
-  /// 加载本地设备身份与昵称,作为新建态/本地账本的所有者展示。
+  /// 加载本地设备身份,作为新建态/本地账本的所有者展示。
   ///
-  /// 新建态没有成员镜像表,但账本创建者必然是当前用户,
-  /// 故从 localSelfId + displayNameProvider 推导用户信息展示"所有者(我)"行。
+  /// 新建态没有成员镜像表,但账本创建者必然是当前用户,故从 localSelfId
+  /// 推导本人成员 id;展示名按本地身份固定文案「单机芝麻仔」渲染(§6.4)。
   Future<void> _loadCurrentUserInfo() async {
     try {
       final selfId = await ref.read(localSelfIdProvider.future);
-      final localName = ref.read(displayNameProvider).trim();
       if (!mounted) return;
       setState(() {
         _ownerSelfId = selfId;
-        _ownerDisplayName = localName.isEmpty ? null : localName;
       });
     } catch (_) {
-      // 推导失败不影响 UI,所有者行仍会展示兜底文本"我"。
+      // 推导失败不影响 UI,所有者行仍会以固定本地身份展示。
     }
   }
 
@@ -754,12 +757,9 @@ class _MemberManagementSectionState
 
   /// 新建态/本地账本:构造"所有者(我)"行作为唯一成员。
   ///
-  /// 从 [_ownerDisplayName]/[_ownerSelfId] 推导;仅在确有显示名时设置
-  /// displayName,否则留空交给 _MemberTile 统一处理占位:
-  /// - 有 selfId:标题回退到 selfId,保证可读性;
-  /// - 无 selfId:标题展示「未设置昵称」占位,头像位展示 person 图标。
+  /// 本地身份展示名固定为「单机芝麻仔」(纯名,「(我)」后缀由 _MemberTile
+  /// 统一渲染),与云昵称无关(§6.4/§I-04)。
   List<LedgerMemberDisplay> _buildOwnerAsMember() {
-    final hasName = _ownerDisplayName?.isNotEmpty == true;
     final selfId = _ownerSelfId;
     // 本地账本/新建态的 self member：id 按 uuidV5(ledgerId, localSelfId)
     // 派生（同账本稳定），与登录/退出无关。
@@ -768,7 +768,7 @@ class _MemberManagementSectionState
       LedgerMemberDisplay(
         id: memberId,
         ledgerId: widget.ledgerExternalId ?? '',
-        displayName: hasName ? _ownerDisplayName! : '',
+        displayName: AppLocalizations.of(context).mineLocalName,
         memberType: 'LOCAL',
         role: 'owner',
         avatarVersion: 0,
@@ -865,9 +865,12 @@ class _MemberTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    // 标题优先用昵称;昵称为空时回退占位文案,保证每一行都能看到可读名称。
+    // 标题优先用昵称(账号注册即分配,恒非空);昵称为空的防御兜底用「未知」,
+    // 绝不回退展示 member id。
     final hasDisplayName = member.displayName.isNotEmpty;
-    final displayName = hasDisplayName ? member.displayName : l10n.mineSlogan;
+    final displayName = hasDisplayName
+        ? member.displayName
+        : l10n.aaUnknownUser;
     final isOwner = member.role == 'owner';
     // 本人判定:本地账本 LOCAL 成员恒为本人;共享账本成员绑定当前账号
     // （linked_account_id == 当前登录 userId）即本人。
@@ -952,34 +955,39 @@ class _MemberAvatar extends ConsumerWidget {
         (member.linkedAccountId != null &&
             member.linkedAccountId!.isNotEmpty &&
             member.linkedAccountId == sessionUserId);
-    // 本人头像优先走本地文件（离线可用、上传后即时生效），
-    // 与「我的页」头像同一数据源。
+    // 本人头像：云已登录且有云头像走成员缓存（上传后即时生效、离线可用）；
+    // 本地本人/云无头像统一回退正式默认头像，不再读旧的本地头像文件。
     if (isSelf) {
-      final avatarAsync = ref.watch(avatarPathProvider);
-      final localPath = avatarAsync.asData?.value;
-      if (localPath != null && localPath.isNotEmpty) {
-        return ClipOval(
-          child: Image.file(
-            File(localPath),
-            width: 40,
-            height: 40,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => const PersonAvatar(
-              size: AppDimens.icon40,
-              iconSize: AppDimens.icon16,
-            ),
-          ),
+      final account = ref.read(accountStateProvider);
+      final profile = account.profile;
+      if (account.isAuthenticated && profile != null) {
+        return MemberAvatar(
+          userId: profile.userId,
+          version: profile.avatarVersion,
+          hasAvatar: profile.avatarUrl != null,
+          size: AppDimens.icon40,
+          iconSize: AppDimens.icon16,
         );
       }
+      return const ClipOval(
+        child: Image(
+          image: AssetImage(kDefaultAvatarAsset),
+          width: AppDimens.icon40,
+          height: AppDimens.icon40,
+          fit: BoxFit.cover,
+        ),
+      );
     }
 
-    // 非本人成员:统一走磁盘缓存(断网可用),未配置头像/加载失败回退占位。
+    // 非本人真实成员:统一走磁盘缓存(断网可用),未配置头像/加载失败回退正式默认头像。
     return MemberAvatar(
-      userId: member.id,
+      userId: member.linkedAccountId,
       // schema v1 无头像版本列,恒为 0,仅作本地缓存键兼容。
       version: 0,
       hasAvatar:
-          member.avatarUrl != null && member.avatarUrl!.trim().isNotEmpty,
+          member.linkedAccountId != null &&
+          member.avatarUrl != null &&
+          member.avatarUrl!.trim().isNotEmpty,
       size: AppDimens.icon40,
       iconSize: AppDimens.icon16,
     );

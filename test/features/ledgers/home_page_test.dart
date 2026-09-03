@@ -27,7 +27,6 @@ import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/features/ledgers/presentation/home_page.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
-import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/features/statistics/application/statistics_providers.dart';
 import 'package:sesame_notes/shared/providers/ui_state_providers.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
@@ -35,6 +34,7 @@ import 'package:sesame_notes/shared/widgets/app_empty.dart';
 import 'package:sesame_notes/shared/widgets/format_money.dart';
 import 'package:sesame_notes/shared/widgets/primary_header.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
+import 'package:sesame_notes/features/transactions/presentation/widgets/transaction/transaction_list_item.dart';
 
 /// Mock 整个 LocalRepository：未 stub 的方法返回默认值（null/0/false），不抛异常。
 /// 测试仅 stub HomePage 真正调用的 transactionsWithCategoryAll，其余 provider
@@ -109,6 +109,10 @@ void main() {
     when(
       () => repo.countUnconvertedForeignTx(any()),
     ).thenAnswer((_) async => 0);
+    // 共享账本展示映射默认空成员目录;避免未 stub 调用触发日志定时器。
+    when(
+      () => repo.getMembersByLedger(any()),
+    ).thenAnswer((_) async => <LedgerMember>[]);
   });
 
   /// 构建带 overrides 的测试宿主，selectedMonth 初始值可定制。
@@ -701,13 +705,10 @@ void main() {
     await ledgerCtrl.close();
   });
 
-  // ==================== 共享账本带成员主页渲染（const {} 崩溃回归） ====================
-  testWidgets('共享账本带成员时首页渲染不崩溃（const {} 不可变 Map 写入崩溃回归）', (tester) async {
-    // 复现场景：共享账本（memberCount>1）且有真实成员列表。
-    // 修复前 _MonthPage.build 用 const {} 作 fold 种子 → 回调 m[mem.userId]=...
-    // 写入不可变 Map → 抛 UnsupportedError。该分支仅在「成员列表非空」时执行，
-    // 故此前「共享账本 + 有成员」进入首页即崩。这里 override ledgerMembersProvider
-    // 返回非空成员，覆盖崩溃路径；交易流为空（无数据骨架屏）不影响 fold 执行。
+  // ==================== 共享账本展示名接线回归 ====================
+  testWidgets('共享账本:交易详情显示成员昵称而非裸 member id(成员映射接线回归)', (tester) async {
+    // 复现场景:共享账本(memberCount>1)+ 真实成员列表。此前首页恒传 const {} 成员映射,
+    // 详情 sheet 解析不到成员 → 裸显 member id(UUID 乱码)。
     testLedger = Ledger(
       id: 'ledger-1',
       name: '测试共享账本',
@@ -717,17 +718,21 @@ void main() {
       role: 'owner',
       memberCount: 2,
       storageMode: 'cloud',
+      selfMemberId: 'self-member-1',
       createdAt: DateTime(2026, 1, 1),
       updatedAt: DateTime(2026, 1, 1),
     );
 
-    final members = <LedgerMember>[
+    // 全量成员目录(含本人与他人),由首页经 ledgerMemberDisplayMapProvider 读取。
+    when(
+      () => repo.getMembersByLedger('ledger-1'),
+    ).thenAnswer((_) async => <LedgerMember>[
       LedgerMember(
-        id: 'user-001',
+        id: 'self-member-1',
         ledgerId: 'ledger-1',
-        displayName: '小明',
+        displayName: '我的昵称',
         memberType: 'REGISTERED',
-        linkedAccountId: 'user-001',
+        linkedAccountId: 'cloud-user-1',
         role: 'owner',
         avatarVersion: 0,
         status: 'ACTIVE',
@@ -736,11 +741,11 @@ void main() {
         updatedAt: DateTime(2024, 1, 1),
       ),
       LedgerMember(
-        id: 'user-002',
+        id: 'other-member-1',
         ledgerId: 'ledger-1',
-        displayName: '小红',
+        displayName: '他人昵称',
         memberType: 'REGISTERED',
-        linkedAccountId: 'user-002',
+        linkedAccountId: 'other-cloud-1',
         role: 'editor',
         avatarVersion: 0,
         status: 'ACTIVE',
@@ -748,25 +753,45 @@ void main() {
         createdAt: DateTime(2024, 1, 2),
         updatedAt: DateTime(2024, 1, 2),
       ),
-    ];
-
-    await tester.pumpWidget(
-      buildApp(
-        extraOverrides: [
-          // 返回「非空」成员列表，覆盖 fold 写入路径。
-          ledgerMembersProvider.overrideWith(
-            (ref, ledgerId) => Future.value(members),
+    ]);
+    // 他人创建/编辑的交易:修复前创建者/编辑者会裸显 other-member-1。
+    registerTxsStream(
+      () => Stream<List<_TxItem>>.value([
+        (
+          t: Transaction(
+            id: 'tx-1',
+            ledgerId: 'ledger-1',
+            txType: 'expense',
+            amount: '12',
+            happenedAt: DateTime(2026, 1, 1, 8, 30),
+            excludeFromStats: false,
+            currencyCode: 'CNY',
+            nativeAmount: '12',
+            version: 1,
+            createdByMemberId: 'other-member-1',
+            lastEditedByMemberId: 'other-member-1',
+            createdAt: DateTime(2026, 1, 1, 8, 30),
+            updatedAt: DateTime(2026, 1, 1, 8, 30),
           ),
-        ],
-      ),
+          category: null,
+        ),
+      ]),
     );
-    await prime(tester);
-    // 多 pump 几帧，确保 ledgerMembersProvider 的 Future 数据到达并完成 rebuild。
-    await tester.pump(const Duration(milliseconds: 100));
 
-    // 若 const {} 问题复现，ledgerMembersProvider 数据到达后的 rebuild 会在
-    // fold 写入时抛 UnsupportedError，pump 会直接失败。此断言即回归信号。
-    expect(find.byType(HomePage), findsOneWidget);
+    await tester.pumpWidget(buildApp());
+    await prime(tester);
+    // flutter_list_view 子项不参与 onstage 遍历,用 skipOffstage: false 定位,
+    // 并通过 TransactionListItem.onTap 打开详情 sheet(子项不可直接 tap)。
+    final rowFinder = find.byType(TransactionListItem, skipOffstage: false);
+    await pumpUntilFound(tester, rowFinder);
+    tester.widget<TransactionListItem>(rowFinder).onTap?.call();
+    await pumpUntilFound(tester, find.text('创建者'));
+
+    // 创建者/最后编辑者显示成员昵称,绝不裸显 member id。
+    expect(find.text('他人昵称'), findsNWidgets(2));
+    expect(find.text('other-member-1'), findsNothing);
+    // 收尾:等待详情 sheet 流模式切换与日志保存定时器结束。
+    await tester.pump(const Duration(seconds: 3));
   });
 
   // ==================== 下拉刷新：结果在指示器内展示（不弹 toast） ====================

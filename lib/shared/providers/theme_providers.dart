@@ -61,24 +61,3 @@ final expenseColorSchemeInitProvider = FutureProvider<void>((ref) async {
     await prefs.setString('expenseColorScheme', next);
   });
 });
-
-// 用户显示名(昵称)。本地真值存 prefs 'displayName';云端模式下改动
-// 会推到 server,其余云模式 / 纯本地只存本地。空串 = 未设置。v1 不支持"清空已设
-// 昵称"——不会推空串给 server,因此无需改后端 / 包层(包层对空串本就 throw)。
-final displayNameProvider =
-    NotifierProvider<SimpleStateNotifier<String>, String>(
-      () => SimpleStateNotifier((ref) => ''),
-    );
-
-// 显示名持久化初始化:启动加载 prefs + 监听变化写回本地,并在 cloud 模式下推送。
-// 写法与 themeMode 等外观项一致(自己管理 prefs 读写与 cloud 推送)。
-final displayNameInitProvider = FutureProvider<void>((ref) async {
-  final prefs = await ref.read(sharedPreferencesProvider.future);
-  final saved = prefs.getString('displayName');
-  if (saved != null) {
-    ref.read(displayNameProvider.notifier).set(saved);
-  }
-  ref.listen<String>(displayNameProvider, (prev, next) async {
-    await prefs.setString('displayName', next);
-  });
-});

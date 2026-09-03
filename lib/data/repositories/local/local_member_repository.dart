@@ -347,6 +347,88 @@ class LocalLedgerMemberRepository {
     return false;
   }
 
+  /// §13.4:本人更新云 Profile 后,刷新本地所有账本中绑定该账号的
+  /// REGISTERED 成员展示快照(昵称/头像)。
+  ///
+  /// 只写展示字段,不触碰 updatedAt 与同步通道:成员行是服务端镜像,
+  /// 资料刷新不产生 sync mutation,也不影响服务端事件的 LWW 裁决。
+  Future<int> refreshDisplayByAccount({
+    required String userId,
+    required String? displayName,
+    required String? avatarUrl,
+    required int avatarVersion,
+  }) async {
+    final name = displayName?.trim() ?? '';
+    // 昵称恒非空(注册即分配);空值防御性跳过,避免覆盖已有昵称。
+    final fields = name.isNotEmpty
+        ? LedgerMembersCompanion(
+            displayName: d.Value(name),
+            avatarUrl: d.Value(avatarUrl),
+            avatarVersion: d.Value(avatarVersion),
+          )
+        : LedgerMembersCompanion(
+            avatarUrl: d.Value(avatarUrl),
+            avatarVersion: d.Value(avatarVersion),
+          );
+    return (db.update(db.ledgerMembers)..where(
+          (member) =>
+              member.linkedAccountId.equals(userId) &
+              member.memberType.equals('REGISTERED') &
+              member.deletedAt.isNull(),
+        ))
+        .write(fields);
+  }
+
+  /// 成员目录 REST 快照落库(§13.4 后半句):服务端成员列表接口返回的
+  /// 公开资料覆盖本地 REGISTERED 成员展示字段。
+  ///
+  /// 只镜像展示资料,不改变成员生命周期、不登记同步变更;远端已有而
+  /// 本地缺失的成员补一行镜像,缺失的本地行保留(生命周期以同步为准)。
+  Future<void> applyDirectorySnapshot({
+    required String ledgerId,
+    required List<LedgerDirectoryMember> members,
+  }) async {
+    for (final m in members) {
+      final existing = await getById(m.memberId);
+      final displayName = m.displayName.trim().isNotEmpty
+          ? m.displayName
+          : existing?.displayName ?? '';
+      if (existing == null) {
+        await db
+            .into(db.ledgerMembers)
+            .insert(
+              LedgerMembersCompanion.insert(
+                id: m.memberId,
+                ledgerId: ledgerId,
+                displayName: displayName,
+                memberType: 'REGISTERED',
+                linkedAccountId: d.Value(m.linkedAccountId),
+                role: d.Value(m.role),
+                status: d.Value(m.status),
+                avatarUrl: d.Value(m.avatarUrl),
+                avatarVersion: d.Value(m.avatarVersion),
+                joinedAt: d.Value(m.joinedAt),
+                updatedAt: m.joinedAt,
+              ),
+            );
+      } else {
+        await (db.update(db.ledgerMembers)..where(
+              (row) => row.id.equals(m.memberId),
+            ))
+            .write(
+              LedgerMembersCompanion(
+                displayName: d.Value(displayName),
+                linkedAccountId: d.Value(m.linkedAccountId),
+                role: d.Value(m.role),
+                status: d.Value(m.status),
+                avatarUrl: d.Value(m.avatarUrl),
+                avatarVersion: d.Value(m.avatarVersion),
+              ),
+            );
+      }
+    }
+  }
+
   // ---------------------------------------------------------------
   // 变更登记（PLACEHOLDER 成员以 member 实体进同步通道）
   // ---------------------------------------------------------------
@@ -376,4 +458,42 @@ class LocalLedgerMemberRepository {
 /// 构造契约形状的 member payload（与 push 侧生成模型 wire name 对齐）。
 String placeholderPayload(LedgerMember m) {
   return jsonEncode({'display_name': m.displayName});
+}
+
+/// 成员目录 REST 快照条目(§13.4):服务端成员列表接口公开资料的最小形状。
+class LedgerDirectoryMember {
+  const LedgerDirectoryMember({
+    required this.memberId,
+    required this.displayName,
+    this.linkedAccountId,
+    required this.role,
+    required this.status,
+    this.avatarUrl,
+    required this.avatarVersion,
+    required this.joinedAt,
+  });
+
+  /// 服务端权威 member id(账本内 canonical 成员标识)。
+  final String memberId;
+
+  /// 公开昵称(恒非空:账号注册即分配)。
+  final String displayName;
+
+  /// 绑定账号 userId(仅 REGISTERED 成员有)。
+  final String? linkedAccountId;
+
+  /// 账本内角色:owner/editor。
+  final String role;
+
+  /// 成员生命周期:ACTIVE/LEFT/REMOVED。
+  final String status;
+
+  /// 头像 URL(服务端相对路径由服务层归一化为绝对地址)。
+  final String? avatarUrl;
+
+  /// 头像版本号(本地缓存键)。
+  final int avatarVersion;
+
+  /// 加入时间。
+  final DateTime joinedAt;
 }

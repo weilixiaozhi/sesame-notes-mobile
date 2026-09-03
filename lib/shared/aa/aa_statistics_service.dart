@@ -1,4 +1,4 @@
-﻿import 'package:decimal/decimal.dart';
+import 'package:decimal/decimal.dart';
 
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
@@ -342,10 +342,12 @@ class AaStatisticsService {
     }
 
     final participants = paidTotals.keys.map((pid) {
+      // 展示名解析不到统一「未知」:真实成员昵称恒非空(注册即分配),
+      // 空值只可能来自脏数据,绝不裸显 member id。
+      final name = displayNameMap[pid];
       return AaParticipantSummary(
         participantId: pid,
-        displayName:
-            displayNameMap[pid] ?? (allParticipants.contains(pid) ? pid : '未知'),
+        displayName: (name != null && name.isNotEmpty) ? name : '未知',
         totalPaid: toDouble(paidTotals[pid] ?? Decimal.zero),
         totalShouldPay: toDouble(shouldPayTotals[pid] ?? Decimal.zero),
         isSelf: selfMap[pid] ?? false,
@@ -415,10 +417,10 @@ class AaStatisticsService {
       result.add(
         AaTransfer(
           from: maxDebtor,
-          fromName: nameOf[maxDebtor] ?? maxDebtor,
+          fromName: nameOf[maxDebtor] ?? '未知',
           fromIsSelf: selfOf[maxDebtor] ?? false,
           to: maxCreditor,
-          toName: nameOf[maxCreditor] ?? maxCreditor,
+          toName: nameOf[maxCreditor] ?? '未知',
           toIsSelf: selfOf[maxCreditor] ?? false,
           amount: toDouble(roundHalfEven(amount, scale: 2)),
         ),

@@ -1,10 +1,12 @@
 // UserDisplayNameResolver 展示名解析器测试。
 //
-// 覆盖展示名解析优先级:
-//   1. 共享账本成员表(displayName)
-//   2. 本人(selfMemberId → 本地昵称 → 「未设置昵称」)
+// 覆盖需求口径(账号一期 §6.2/§6.4/§8.9):
+//   1. 共享账本成员表(成员目录缓存昵称,恒非空——注册即分配昵称)
+//   2. 本人(selfMemberId):
+//      - 本地账本 LOCAL 成员恒显固定本地身份「单机芝麻仔」
+//      - 云账本 REGISTERED 成员(绑定当前账号)显当前云 Profile 昵称
 //   3. 虚拟用户名
-//   4. 兜底原始 id(未知 id 不套用本地昵称,避免张冠李戴)
+//   4. 无法解析返回空串(UI 统一映射「未知」),绝不裸显原始 id。
 // 「我」= 当前账本 self member id,与设备 localSelfId 是两个不同的值。
 
 import 'dart:ui';
@@ -24,14 +26,17 @@ void main() {
 
   UserDisplayNameResolver buildResolver({
     Map<String, LedgerMemberDisplay> memberDisplayMap = const {},
-    String? localOwnerDisplayName,
     String selfMemberId = 'self-member-1',
+    String? cloudSelfUserId,
+    String? cloudSelfDisplayName,
     Map<String, String> virtualNames = const {},
   }) {
     return UserDisplayNameResolver(
       memberDisplayMap: memberDisplayMap,
-      localOwnerDisplayName: localOwnerDisplayName,
       selfMemberId: selfMemberId,
+      localSelfDisplayName: l10n.mineLocalName,
+      cloudSelfUserId: cloudSelfUserId,
+      cloudSelfDisplayName: cloudSelfDisplayName,
       virtualNames: virtualNames,
       l10n: l10n,
     );
@@ -39,15 +44,16 @@ void main() {
 
   /// 构造成员实例（填充必填字段）。
   LedgerMemberDisplay mkMember({
-    required String userId,
-    required String account,
+    required String id,
     String? displayName,
+    String memberType = 'REGISTERED',
+    String? linkedAccountId,
   }) => LedgerMemberDisplay(
-    id: 'member-$userId',
+    id: id,
     ledgerId: 'ledger-1',
     displayName: displayName ?? '',
-    memberType: 'REGISTERED',
-    linkedAccountId: userId,
+    memberType: memberType,
+    linkedAccountId: linkedAccountId,
     role: 'owner',
     avatarVersion: 0,
     status: 'ACTIVE',
@@ -57,44 +63,81 @@ void main() {
   );
 
   group('resolve 优先级', () {
-    test('1. 成员表昵称优先', () {
+    test('1. 成员表昵称优先(其他 REGISTERED 成员)', () {
       final r = buildResolver(
         memberDisplayMap: {
-          'u1': mkMember(
-            userId: 'u1',
-            account: 'alice@example.com',
-            displayName: 'Alice',
-          ),
+          'u1': mkMember(id: 'u1', displayName: 'Alice'),
         },
       );
       expect(r.resolve('u1'), 'Alice');
     });
 
-    test('1b. 成员表无昵称时回退原始 id（单轨模型无账号字段）', () {
+    test('1b. 成员表昵称为空时防御性回退「未知」,不回退原始 id', () {
       final r = buildResolver(
         memberDisplayMap: {
-          'u1': mkMember(
-            userId: 'u1',
-            account: 'alice@example.com',
-            displayName: null,
-          ),
+          'u1': mkMember(id: 'u1', displayName: null),
         },
       );
-      expect(r.resolve('u1'), 'u1');
+      expect(r.resolve('u1'), l10n.aaUnknownUser);
+      expect(r.resolve('u1'), isNot('u1'));
     });
 
-    test('2. selfMemberId 映射为本地昵称', () {
+    test('2. 本地账本本人(LOCAL)恒显固定本地身份,即使登录且有云昵称', () {
       final r = buildResolver(
-        localOwnerDisplayName: '本地昵称',
-        selfMemberId: 'self-uuid',
+        memberDisplayMap: {
+          'self-member-1': mkMember(
+            id: 'self-member-1',
+            memberType: 'LOCAL',
+            displayName: '',
+          ),
+        },
+        cloudSelfUserId: 'cloud-user-1',
+        cloudSelfDisplayName: '云昵称',
       );
-      expect(r.resolve('self-uuid'), '本地昵称');
+      expect(r.resolve('self-member-1'), l10n.mineLocalName);
+      expect(r.resolve('self-member-1'), isNot('云昵称'));
     });
 
-    test('2b. selfMemberId 无昵称时回退「未设置昵称」', () {
-      final r = buildResolver(selfMemberId: 'self-uuid');
-      // 仅纯名,后缀由 UI 层渲染。
-      expect(r.resolve('self-uuid'), l10n.mineSlogan);
+    test('2b. 云账本本人(REGISTERED 且绑定当前账号)显示云 Profile 昵称', () {
+      final r = buildResolver(
+        memberDisplayMap: {
+          'self-member-1': mkMember(
+            id: 'self-member-1',
+            memberType: 'REGISTERED',
+            linkedAccountId: 'cloud-user-1',
+            displayName: '旧快照昵称',
+          ),
+        },
+        cloudSelfUserId: 'cloud-user-1',
+        cloudSelfDisplayName: '最新云昵称',
+      );
+      expect(r.resolve('self-member-1'), '最新云昵称');
+    });
+
+    test('2c. 云账本本人 Profile 昵称缺失时回退成员行昵称', () {
+      final r = buildResolver(
+        memberDisplayMap: {
+          'self-member-1': mkMember(
+            id: 'self-member-1',
+            memberType: 'REGISTERED',
+            linkedAccountId: 'cloud-user-1',
+            displayName: '成员行昵称',
+          ),
+        },
+        cloudSelfUserId: 'cloud-user-1',
+      );
+      expect(r.resolve('self-member-1'), '成员行昵称');
+    });
+
+    test('2d. 本人成员行缺失:云账本回退云昵称,本地账本回退固定本地身份', () {
+      final cloud = buildResolver(
+        cloudSelfUserId: 'cloud-user-1',
+        cloudSelfDisplayName: '云昵称',
+      );
+      expect(cloud.resolve('self-member-1'), '云昵称');
+
+      final local = buildResolver();
+      expect(local.resolve('self-member-1'), l10n.mineLocalName);
     });
 
     test('3. 虚拟用户名', () {
@@ -102,43 +145,19 @@ void main() {
       expect(r.resolve('vu_1'), '虚拟成员A');
     });
 
-    test('4. 未知 id 不套用本地昵称,直接兜底原始 id', () {
-      final r = buildResolver(localOwnerDisplayName: '本地昵称');
-      expect(r.resolve('unknown-id'), 'unknown-id');
+    test('4. 未知 id 返回空串(UI 映射「未知」),不套用本地昵称也不裸显 id', () {
+      final r = buildResolver(cloudSelfDisplayName: '云昵称');
+      expect(r.resolve('unknown-id'), '');
+      expect(r.resolve('unknown-id'), isNot('unknown-id'));
+      expect(r.resolve('unknown-id'), isNot('云昵称'));
     });
 
-    test('4b. 虚拟用户名优先于未知 id 兜底', () {
-      final r = buildResolver(
-        localOwnerDisplayName: '本地昵称',
-        virtualNames: {'vu_1': '虚拟成员A'},
-      );
-      expect(r.resolve('vu_1'), '虚拟成员A');
-    });
-
-    test('5. 无任何名称可用时兜底原始 id', () {
-      final r = buildResolver();
-      expect(r.resolve('unknown-id'), 'unknown-id');
-    });
-
-    test('null/空 userId 返回空串', () {
+    test('null/空 memberId 返回空串', () {
       final r = buildResolver();
       expect(r.resolve(null), '');
       expect(r.resolve(''), '');
     });
 
-    test('成员表优先于本人(成员表有此成员时用成员表)', () {
-      final r = buildResolver(
-        memberDisplayMap: {
-          'self-member-1': mkMember(
-            userId: 'self-member-1',
-            account: 'me@example.com',
-            displayName: '成员昵称',
-          ),
-        },
-        localOwnerDisplayName: '本地昵称',
-      );
-      expect(r.resolve('self-member-1'), '成员昵称');
-    });
   });
 
   group('isSelf 本人判定', () {

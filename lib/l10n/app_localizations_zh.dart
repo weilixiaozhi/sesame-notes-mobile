@@ -752,16 +752,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mineAvatarUploadNew => '上传新头像';
 
   @override
-  String get mineCloudService => '第三方云备份';
-
-  @override
-  String get cloudBackupEntrySubtitle => '第三方备份：连接测试、自动备份与恢复';
-
-  @override
-  String get cloudBackupComingSoon => '备份配置功能建设中，敬请期待';
-
-  @override
-  String get cloudBackupConfigTitle => '备份配置';
+  String get mineCloudService => '备份与云同步配置';
 
   @override
   String get cloudBackupUrlLabel => '服务地址';
@@ -804,21 +795,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cloudBackupSave => '保存配置';
-
-  @override
-  String get cloudBackupTestConnection => '测试连接';
-
-  @override
-  String get cloudBackupTestOk => '连接成功';
-
-  @override
-  String get cloudBackupTestFailed => '连接失败，请检查配置';
-
-  @override
-  String get cloudBackupSaved => '配置已保存';
-
-  @override
-  String get cloudBackupRequired => '必填项不能为空';
 
   @override
   String get cloudBackupNotConfigured => '未配置';
@@ -1923,7 +1899,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get localBackupImportFromFile => '导入文件恢复';
 
   @override
-  String get localBackupImportInvalidFile => '请选择 .sqlite 格式的备份文件';
+  String get localBackupImportInvalidFile => '请选择 .snbak 格式的备份文件';
 
   @override
   String get localBackupListEmpty => '暂无备份';
@@ -1978,6 +1954,60 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cloudTabBackupSubtitle => '点击卡片切换备份方式，首次需要配置信息';
+
+  @override
+  String get cloudBackupEntryLocalOnly => '仅本地备份';
+
+  @override
+  String get cloudBackupEntryFailed => '上次备份失败，将自动重试';
+
+  @override
+  String get cloudBackupStatusTitle => '备份状态';
+
+  @override
+  String get cloudBackupUploadNow => '立即上传到云端';
+
+  @override
+  String get cloudBackupUploading => '正在上传…';
+
+  @override
+  String get cloudBackupUploadSuccess => '上传成功';
+
+  @override
+  String get cloudBackupRestoreFromCloud => '从云端恢复';
+
+  @override
+  String get cloudBackupDownloading => '正在下载…';
+
+  @override
+  String get cloudBackupDownloadSuccess => '已下载，即将打开恢复页';
+
+  @override
+  String get cloudBackupDownloadFailed => '下载失败，请检查云端配置与网络';
+
+  @override
+  String get cloudBackupNoRemote => '云端暂无备份';
+
+  @override
+  String get cloudBackupAutoSyncTitle => '自动备份到云端';
+
+  @override
+  String get cloudBackupAutoSyncSubtitle => '每次自动备份时同步上传到云端';
+
+  @override
+  String get cloudBackupNeedPassword => '请先设置备份密码，云端备份需要密码保护';
+
+  @override
+  String get cloudBackupLogin => '登录';
+
+  @override
+  String get cloudBackupLoginSuccess => '登录成功';
+
+  @override
+  String get cloudBackupLoginFailed => '登录失败';
+
+  @override
+  String get localBackupRestoreHint => '点击备份进入恢复流程';
 
   @override
   String get cloudTabCloudSync => '云端协同';
@@ -3933,6 +3963,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mineLocalSlogan => '单机芝麻仔（我）';
 
   @override
+  String get mineLocalName => '单机芝麻仔';
+
+  @override
   String get mineLocalSubtitle => '本地使用 · 未登录';
 
   @override
@@ -4859,16 +4892,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get mineAvatarUploadNew => '上傳新頭像';
 
   @override
-  String get mineCloudService => '第三方雲端備份';
-
-  @override
-  String get cloudBackupEntrySubtitle => '第三方備份：連線測試、自動備份與還原';
-
-  @override
-  String get cloudBackupComingSoon => '備份設定功能建置中，敬請期待';
-
-  @override
-  String get cloudBackupConfigTitle => '備份配置';
+  String get mineCloudService => '備份與雲端同步配置';
 
   @override
   String get cloudBackupUrlLabel => '服務地址';
@@ -4911,21 +4935,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get cloudBackupSave => '儲存配置';
-
-  @override
-  String get cloudBackupTestConnection => '測試連線';
-
-  @override
-  String get cloudBackupTestOk => '連線成功';
-
-  @override
-  String get cloudBackupTestFailed => '連線失敗，請檢查設定';
-
-  @override
-  String get cloudBackupSaved => '配置已儲存';
-
-  @override
-  String get cloudBackupRequired => '必填項不能為空';
 
   @override
   String get cloudBackupNotConfigured => '未設定';
@@ -6030,7 +6039,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get localBackupImportFromFile => '匯入檔案恢復';
 
   @override
-  String get localBackupImportInvalidFile => '請選擇 .sqlite 格式的備份檔案';
+  String get localBackupImportInvalidFile => '請選擇 .snbak 格式的備份檔案';
 
   @override
   String get localBackupListEmpty => '暫無備份';
@@ -6085,6 +6094,60 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get cloudTabBackupSubtitle => '點擊卡片切換備份方式，首次需要配置資訊';
+
+  @override
+  String get cloudBackupEntryLocalOnly => '僅本機備份';
+
+  @override
+  String get cloudBackupEntryFailed => '上次備份失敗，將自動重試';
+
+  @override
+  String get cloudBackupStatusTitle => '備份狀態';
+
+  @override
+  String get cloudBackupUploadNow => '立即上傳到雲端';
+
+  @override
+  String get cloudBackupUploading => '正在上傳…';
+
+  @override
+  String get cloudBackupUploadSuccess => '上傳成功';
+
+  @override
+  String get cloudBackupRestoreFromCloud => '從雲端恢復';
+
+  @override
+  String get cloudBackupDownloading => '正在下載…';
+
+  @override
+  String get cloudBackupDownloadSuccess => '已下載，即將開啟恢復頁';
+
+  @override
+  String get cloudBackupDownloadFailed => '下載失敗，請檢查雲端配置與網路';
+
+  @override
+  String get cloudBackupNoRemote => '雲端暫無備份';
+
+  @override
+  String get cloudBackupAutoSyncTitle => '自動備份到雲端';
+
+  @override
+  String get cloudBackupAutoSyncSubtitle => '每次自動備份時同步上傳到雲端';
+
+  @override
+  String get cloudBackupNeedPassword => '請先設定備份密碼，雲端備份需要密碼保護';
+
+  @override
+  String get cloudBackupLogin => '登入';
+
+  @override
+  String get cloudBackupLoginSuccess => '登入成功';
+
+  @override
+  String get cloudBackupLoginFailed => '登入失敗';
+
+  @override
+  String get localBackupRestoreHint => '點擊備份進入恢復流程';
 
   @override
   String get cloudTabCloudSync => '雲端協同';
@@ -8038,6 +8101,9 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get mineLocalSlogan => '單機芝麻仔（我）';
+
+  @override
+  String get mineLocalName => '單機芝麻仔';
 
   @override
   String get mineLocalSubtitle => '本機使用 · 未登入';

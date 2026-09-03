@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,6 +8,7 @@ import 'package:sesame_notes/data/models.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
+import 'package:sesame_notes/features/ledgers/application/member_directory_providers.dart';
 import 'package:sesame_notes/router/route_consts.dart';
 import 'package:sesame_notes/features/statistics/application/aa_member_detail_models.dart';
 import 'package:sesame_notes/shared/aa/aa_statistics_service.dart';
@@ -47,42 +48,45 @@ class AaStatisticsPage extends ConsumerWidget {
     final statisticsAsync = ref.watch(aaStatisticsProvider(ledgerId));
     final excludedAsync = ref.watch(_aaNoSplitTxProvider(ledgerId));
 
-    return Scaffold(
-      body: Column(
-        children: [
-          PrimaryHeader(title: l10n.aaStatisticsTitle, showBack: true),
-          Expanded(
-            child: statisticsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) {
-                // 原始异常只进日志,页面展示统一友好文案,避免泄露实现细节。
-                logger.error(
-                  'AaStatisticsPage',
-                  'AA 分摊统计加载失败 ledger=$ledgerId',
-                  e,
-                  st,
-                );
-                return Center(
-                  child: Text(
-                    l10n.commonOperationFailed,
-                    style: TextStyle(color: AppTokens.error(context)),
-                  ),
-                );
-              },
-              // 依赖数据变更信号触发的后台重算必须保留旧数据继续展示，
-              // 否则云同步/其它设备写入本地库时整页反复转圈。
-              skipLoadingOnReload: true,
-              data: (statistics) => _buildBody(
-                context,
-                ref,
-                l10n,
-                ledgerId,
-                statistics,
-                excludedAsync.value ?? const [],
+    // §13.4:进入 AA 分摊(成员身份页面)时按需刷新成员公开资料(幂等 + 防抖)。
+    return MemberDirectoryRefresher(
+      child: Scaffold(
+        body: Column(
+          children: [
+            PrimaryHeader(title: l10n.aaStatisticsTitle, showBack: true),
+            Expanded(
+              child: statisticsAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, st) {
+                  // 原始异常只进日志,页面展示统一友好文案,避免泄露实现细节。
+                  logger.error(
+                    'AaStatisticsPage',
+                    'AA 分摊统计加载失败 ledger=$ledgerId',
+                    e,
+                    st,
+                  );
+                  return Center(
+                    child: Text(
+                      l10n.commonOperationFailed,
+                      style: TextStyle(color: AppTokens.error(context)),
+                    ),
+                  );
+                },
+                // 依赖数据变更信号触发的后台重算必须保留旧数据继续展示，
+                // 否则云同步/其它设备写入本地库时整页反复转圈。
+                skipLoadingOnReload: true,
+                data: (statistics) => _buildBody(
+                  context,
+                  ref,
+                  l10n,
+                  ledgerId,
+                  statistics,
+                  excludedAsync.value ?? const [],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

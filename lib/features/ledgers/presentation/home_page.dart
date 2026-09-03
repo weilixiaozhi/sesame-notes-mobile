@@ -11,6 +11,7 @@ import 'package:sesame_notes/features/ledgers/application/ledger_actions.dart';
 import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/statistics/application/statistics_providers.dart';
+import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
 import 'package:sesame_notes/shared/providers/ui_state_providers.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
@@ -1135,8 +1136,14 @@ class _MonthPageState extends ConsumerState<_MonthPage> {
     // _MonthPage 整体 rebuild，build 重跑时 memberMap 照常重算、头像实时更新，
     // 不依赖 StreamBuilder.builder 闭包内的 watch。
     final ledger = ref.watch(currentLedgerDisplayProvider).asData?.value;
-    // 无云端成员表：头像/展示名由列表与详情组件按本地身份
-    // （displayNameProvider）兜底渲染。
+    // 共享账本成员展示映射(全量非 tombstone,含 LEFT/REMOVED):列表项头像 +
+    // 详情 Sheet 协作成员/AA 支出人昵称解析;本地账本无成员表用空映射,
+    // 本人展示由详情组件按账本归属走固定本地身份。
+    final isShared = (ledger?.memberCount ?? 0) > 1;
+    final memberMap = (isShared && ledger != null)
+        ? ref.watch(ledgerMemberDisplayMapProvider(ledger.id)).asData?.value ??
+              const <String, LedgerMemberDisplay>{}
+        : const <String, LedgerMemberDisplay>{};
     return StreamBuilder<
       List<({TransactionDisplay t, CategoryDisplay? category})>
     >(
@@ -1176,9 +1183,8 @@ class _MonthPageState extends ConsumerState<_MonthPage> {
             text: AppLocalizations.of(context).homeNoRecords,
             subtext: AppLocalizations.of(context).homeNoRecordsSubtext,
           ),
-          // 新 schema 无云端成员表：不传成员映射（组件内部按空表处理）。
-          memberDisplayMap: const {},
-          isShared: (ledger?.memberCount ?? 0) > 1,
+          memberDisplayMap: memberMap,
+          isShared: isShared,
           // 首页使用外部自定义下拉刷新指示器（Figma 2035:81），
           // 不使用内置 RefreshIndicator；onRefresh 由 HomePage 的 NotificationListener 驱动。
           useExternalRefresh: true,
@@ -1188,12 +1194,7 @@ class _MonthPageState extends ConsumerState<_MonthPage> {
               context: context,
               transaction: tx,
               category: cat,
-              // 新 schema 无云端成员表:传空成员映射,详情页按本地身份兜底展示。
-              memberDisplayMap: const {},
-              // 本地账本无成员表:传本地昵称供详情页兜底展示(纯本地,不依赖云端登录态)
-              localOwnerDisplayName: (ledger?.memberCount ?? 0) > 1
-                  ? null
-                  : ref.read(displayNameProvider),
+              memberDisplayMap: memberMap,
               // 账本是否开启分摊决定底部按钮态(单/双)与右上角删除 icon 布局
               aaEnabled: ledger?.aaEnabled ?? false,
               onEdit: () => widget.onEdit(tx, cat),

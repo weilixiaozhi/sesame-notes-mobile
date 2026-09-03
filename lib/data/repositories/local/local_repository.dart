@@ -1618,6 +1618,26 @@ class LocalRepository {
 
   Future<void> unbindAllLocalMembers() => _memberRepo.unbindAllLocalMembers();
 
+  /// §13.4:本人更新云 Profile 后刷新同账号 REGISTERED 成员展示快照。
+  Future<int> refreshMemberDisplayByAccount({
+    required String userId,
+    required String? displayName,
+    required String? avatarUrl,
+    required int avatarVersion,
+  }) => _memberRepo.refreshDisplayByAccount(
+    userId: userId,
+    displayName: displayName,
+    avatarUrl: avatarUrl,
+    avatarVersion: avatarVersion,
+  );
+
+  /// 成员目录 REST 快照落库(公开资料镜像,不改变生命周期)。
+  Future<void> applyMemberDirectorySnapshot({
+    required String ledgerId,
+    required List<LedgerDirectoryMember> members,
+  }) =>
+      _memberRepo.applyDirectorySnapshot(ledgerId: ledgerId, members: members);
+
   Future<void> updateMemberStatus({
     required String ledgerId,
     required String accountId,

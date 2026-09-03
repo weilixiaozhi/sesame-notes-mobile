@@ -4,6 +4,8 @@ library;
 export 'package:sesame_notes/core/api/api_error_mapper.dart'
     show ApiErrorKind, mapApiError;
 
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/core/api/api_client_provider.dart';
@@ -12,6 +14,7 @@ import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/core/storage/member_avatar_storage.dart';
 import 'package:sesame_notes/features/auth/application/account_providers.dart';
 import 'package:sesame_notes/features/auth/application/account_switch_coordinator.dart';
+import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
 
 /// 页面可提交的认证与资料用例。
@@ -122,7 +125,8 @@ class AuthActions {
     }
   }
 
-  /// 上传头像，并把服务端返回的头像版本写回账号资料缓存。
+  /// 上传头像，并把服务端返回的头像版本写回账号资料缓存；
+  /// 上传字节同步写成员头像磁盘缓存，账本/成员页面即时显示新头像。
   Future<void> uploadAvatar({
     required String contentType,
     required List<int> bytes,
@@ -135,6 +139,11 @@ class AuthActions {
       if (profile == null) return;
       await _commitProfile(
         profile.copyWith(avatarUrl: result.url, avatarVersion: result.version),
+      );
+      await memberAvatarStorage.save(
+        userId: profile.userId,
+        version: result.version,
+        bytes: Uint8List.fromList(bytes),
       );
     } catch (error, stackTrace) {
       logger.error('AuthActions', '上传头像失败', error, stackTrace);
@@ -157,9 +166,29 @@ class AuthActions {
   }
 
   /// 原子更新页面即时状态与断网启动所需的账号资料缓存。
+  ///
+  /// §13.4:资料落定后批量刷新本地云账本中绑定该账号的 REGISTERED
+  /// 成员展示快照,保证成员管理/交易详情等身份页面即时显示新昵称/头像;
+  /// 快照刷新失败只记日志,不阻断资料本身已保存成功的结果。
   Future<void> _commitProfile(CloudProfile profile) async {
     ref.read(accountStateProvider.notifier).updateProfile(profile);
     await ref.read(cloudProfileCacheProvider).write(profile);
+    try {
+      await ref
+          .read(repositoryProvider)
+          .refreshMemberDisplayByAccount(
+            userId: profile.userId,
+            displayName: profile.displayName,
+            avatarUrl: profile.avatarUrl,
+            avatarVersion: profile.avatarVersion,
+          );
+    } catch (error, stackTrace) {
+      logger.warning(
+        'AuthActions',
+        '成员展示快照刷新失败 userId=${profile.userId}',
+        '$error\n$stackTrace',
+      );
+    }
   }
 }
 

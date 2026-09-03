@@ -1,4 +1,4 @@
-﻿import 'dart:math' as math;
+import 'dart:math' as math;
 
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
@@ -770,17 +770,14 @@ class _TxAuthorAvatars extends ConsumerWidget {
       error: (_, _) => const SizedBox.shrink(),
       data: (ctx) {
         if (ctx == null) return const SizedBox.shrink();
-        // 从成员列表中查找创作者/编辑者信息
+        // 从全量成员展示映射(含 LEFT/REMOVED)中查找创作者/编辑者信息。
         final membersAsync = ref.watch(
-          ledgerMemberDisplaysProvider(ctx.ledgerId),
+          ledgerMemberDisplayMapProvider(ctx.ledgerId),
         );
         return membersAsync.when(
           loading: () => const SizedBox.shrink(),
           error: (_, _) => const SizedBox.shrink(),
-          data: (members) {
-            final byId = <String, LedgerMemberDisplay>{
-              for (final m in members) m.id: m,
-            };
+          data: (byId) {
             final creator = ctx.creatorUserId != null
                 ? byId[ctx.creatorUserId]
                 : null;

@@ -2,7 +2,7 @@
 //
 // 与 aa_statistics_providers_test（本地/单人账本分支）互补，锁定：
 //   - aaParticipantOptionsProvider：共享账本从 ledgerMembersProvider 取
-//     真实成员 + 虚拟用户，displayName 缺失时回落 account；
+//     真实成员 + 虚拟用户，昵称恒非空(注册即分配),空昵称防御性回退「未知」；
 //   - aaStatisticsProvider：共享账本按成员表 + 虚拟用户组装参与人名册；
 //   - aaMemberExpenseStatsProvider：共享账本成员头像/显示名映射；
 //   - aaParticipantAvatarContextProvider：共享账本返回成员头像上下文。
@@ -19,9 +19,17 @@ import 'package:sesame_notes/data/repositories/local/local_transaction_repositor
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
+import 'package:sesame_notes/shared/providers/language_provider.dart';
 import 'package:sesame_notes/shared/providers/read_provider_future.dart';
 
 import '../../helpers/test_isolation.dart';
+import 'dart:ui' show Locale;
+
+/// 固定中文语言环境,展示名断言不随系统语言漂移。
+class _ZhLanguageNotifier extends LanguageNotifier {
+  @override
+  Locale? build() => const Locale('zh');
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -99,6 +107,7 @@ void main() {
         // 成员数据源：ledgerMembersProvider 直查 db.ledgerMembers，无需 override。
         // localSelfId 置 'u-owner'，使成员 isSelf 断言成立。
         localSelfIdProvider.overrideWith((ref) async => 'u-owner'),
+        languageProvider.overrideWith(_ZhLanguageNotifier.new),
       ],
     );
     addTearDown(container.dispose);
@@ -127,8 +136,8 @@ void main() {
     expect(byId['u-owner']?.name, 'Owner');
     expect(
       byId['u-editor']?.name,
-      '',
-      reason: 'displayName 为空时回落空串（单轨模型无 account 字段）',
+      '未知',
+      reason: '昵称恒非空(注册即分配),空昵称的防御性兜底为「未知」而非空串',
     );
     expect(byId['vu-1']?.name, '室友A');
     expect(byId['u-owner']?.isVirtual, isFalse);

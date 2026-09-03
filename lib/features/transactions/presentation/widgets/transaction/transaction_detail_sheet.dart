@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,8 +10,10 @@ import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/shared/providers/user_display_name_resolver.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/features/statistics/application/record_history_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
+import 'package:sesame_notes/features/ledgers/application/member_directory_providers.dart';
 import 'package:sesame_notes/shared/aa/aa_statistics_service.dart' show AaMode;
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
@@ -35,8 +39,8 @@ import 'package:sesame_notes/theme/icons/app_icons.dart';
 /// [memberDisplayMap] 由调用方从成员展示 Provider 构建。
 /// 用于协作成员区块与编辑历史的操作者展示。
 ///
-/// [localOwnerDisplayName] 为本地账本场景下的昵称(取自 displayNameProvider,纯本地、
-/// 不依赖云端登录态),当 userId 不在成员表且本地昵称已设置时兜底展示昵称而非 id。
+/// 本人展示名由 sheet 内部按账本归属解析:本地账本恒显固定本地身份
+/// 「单机芝麻仔」,云/共享账本显当前云 Profile 昵称,调用方无需传入。
 ///
 /// [aaEnabled] 账本是否开启分摊。开启时底部常驻「编辑分摊(左) + 编辑记账(右)」,
 /// 未开启时底部仅常驻「编辑记账」;删除 icon 始终置于右上角 trailing。
@@ -48,19 +52,20 @@ Future<void> showTransactionDetailSheet({
   required TransactionDisplay transaction,
   required CategoryDisplay? category,
   required Map<String, LedgerMemberDisplay> memberDisplayMap,
-  String? localOwnerDisplayName,
   bool aaEnabled = false,
   required Future<void> Function() onEdit,
   Future<void> Function()? onEditAa,
   required Future<void> Function() onDelete,
 }) {
+  // §13.4:打开交易详情(交易身份页面)时按需刷新成员公开资料(幂等 + 防抖)。
+  final container = ProviderScope.containerOf(context, listen: false);
+  unawaited(refreshLedgerMemberDirectory(container, transaction.ledgerId));
   return showAppSheet<void>(
     context: context,
     child: _TransactionDetailBody(
       transaction: transaction,
       category: category,
       memberDisplayMap: memberDisplayMap,
-      localOwnerDisplayName: localOwnerDisplayName,
       aaEnabled: aaEnabled,
       onEdit: onEdit,
       onEditAa: onEditAa,
@@ -73,7 +78,6 @@ class _TransactionDetailBody extends ConsumerWidget {
   final TransactionDisplay transaction;
   final CategoryDisplay? category;
   final Map<String, LedgerMemberDisplay> memberDisplayMap;
-  final String? localOwnerDisplayName;
 
   /// 账本是否开启分摊。决定底部按钮态(单/双)与右上角删除 icon 是否影响布局。
   final bool aaEnabled;
@@ -87,7 +91,6 @@ class _TransactionDetailBody extends ConsumerWidget {
     required this.transaction,
     required this.category,
     required this.memberDisplayMap,
-    this.localOwnerDisplayName,
     this.aaEnabled = false,
     required this.onEdit,
     this.onEditAa,
@@ -103,11 +106,12 @@ class _TransactionDetailBody extends ConsumerWidget {
 
   /// 构建用户展示名解析器(同步读缓存值,sheet 打开时 provider 已就绪)。
   ///
-  /// 统一解析 member id → 展示名:memberDisplayMap → 本人(selfMemberId)
-  /// → 虚拟用户 → 兜底。
+  /// 统一解析 member id → 展示名:memberDisplayMap → 本人(selfMemberId,
+  /// 按账本归属分本地/云口径)→ 虚拟用户 → 无法解析映射「未知」。
   /// 「我」= 当前账本 self member:优先 ledger.selfMemberId(登录绑定/本地账本
   /// 创建时写入);本地账本未设置时按 uuidV5(ledgerId, localSelfId) 确定性派生——
   /// 同一设备的 self 成员 id 稳定,登录/退出只改绑定不改 id,展示判定不随账号漂移。
+  /// 云身份仅在云/共享账本场景注入,本地账本不注入云昵称(I-04)。
   UserDisplayNameResolver _buildResolver(
     WidgetRef ref,
     AppLocalizations l10n,
@@ -118,15 +122,19 @@ class _TransactionDetailBody extends ConsumerWidget {
     // watch 而非 read:身份 provider 在冷启动可能尚未解析,解析完成后自动重建。
     final ledger = ref.watch(currentLedgerDisplayProvider).asData?.value;
     final localSelfId = ref.watch(localSelfIdProvider).asData?.value ?? '';
-    final localName = localOwnerDisplayName ?? ref.read(displayNameProvider);
+    final isCloudLedger = ledger?.storageMode == 'cloud';
+    // 云/共享账本才注入云账号身份;本地账本本人恒显固定本地身份。
+    final account = isCloudLedger ? ref.watch(accountStateProvider) : null;
     final storedSelf = ledger?.selfMemberId;
     final selfMemberId = (storedSelf != null && storedSelf.isNotEmpty)
         ? storedSelf
         : localSelfMemberId(transaction.ledgerId, localSelfId);
     return UserDisplayNameResolver(
       memberDisplayMap: memberDisplayMap,
-      localOwnerDisplayName: localName,
       selfMemberId: selfMemberId,
+      localSelfDisplayName: l10n.mineLocalName,
+      cloudSelfUserId: account?.profile?.userId,
+      cloudSelfDisplayName: account?.profile?.displayName,
       virtualNames: virtualNames,
       l10n: l10n,
     );
@@ -769,41 +777,47 @@ class _MemberRow extends StatelessWidget {
     this.isSelf = false,
   });
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: AppDimens.p4),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: AppTextTokens.label(
-            context,
-          ).copyWith(color: AppTokens.textSecondary(context)),
-        ),
-        Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text.rich(
-                TextSpan(
-                  text: name,
-                  style: AppTextTokens.label(
-                    context,
-                  ).copyWith(color: AppTokens.textPrimary(context)),
-                  children: [
-                    if (isSelf)
-                      meSuffixSpan(context, AppLocalizations.of(context)),
-                  ],
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+  Widget build(BuildContext context) {
+    // 解析不到的统一映射「未知」,绝不渲染空名或原始 id。
+    final displayName = name.isEmpty
+        ? AppLocalizations.of(context).aaUnknownUser
+        : name;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppDimens.p4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: AppTextTokens.label(
+              context,
+            ).copyWith(color: AppTokens.textSecondary(context)),
           ),
-        ),
-      ],
-    ),
-  );
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text.rich(
+                  TextSpan(
+                    text: displayName,
+                    style: AppTextTokens.label(
+                      context,
+                    ).copyWith(color: AppTokens.textPrimary(context)),
+                    children: [
+                      if (isSelf)
+                        meSuffixSpan(context, AppLocalizations.of(context)),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// 编辑历史行:vN 标签 + 摘要 + 操作者 · 时间。
@@ -816,7 +830,11 @@ class _HistoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 操作者解析不到时统一「未知」,不隐藏该行也不裸显 id。
     final operator = displayNameOf(h.operatorMemberId);
+    final operatorName = operator.isEmpty
+        ? AppLocalizations.of(context).aaUnknownUser
+        : operator;
     final operatorIsSelf = isSelfOf?.call(h.operatorMemberId) ?? false;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppDimens.p4),
@@ -857,29 +875,28 @@ class _HistoryRow extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (operator.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: AppDimens.p4),
-                    child: Text.rich(
-                      TextSpan(
-                        text: operator,
-                        style: AppTextTokens.caption(
-                          context,
-                        ).copyWith(color: AppTokens.textTertiary(context)),
-                        children: [
-                          // 本人操作者:追加「(我)」共享后缀,与全局规范一致。
-                          if (operatorIsSelf)
-                            meSuffixSpan(context, AppLocalizations.of(context)),
-                          TextSpan(
-                            text: ' · ${_fmtDate(h.createdAt)}',
-                            style: AppTextTokens.caption(
-                              context,
-                            ).copyWith(color: AppTokens.textTertiary(context)),
-                          ),
-                        ],
-                      ),
+                Padding(
+                  padding: const EdgeInsets.only(top: AppDimens.p4),
+                  child: Text.rich(
+                    TextSpan(
+                      text: operatorName,
+                      style: AppTextTokens.caption(
+                        context,
+                      ).copyWith(color: AppTokens.textTertiary(context)),
+                      children: [
+                        // 本人操作者:追加「(我)」共享后缀,与全局规范一致。
+                        if (operatorIsSelf)
+                          meSuffixSpan(context, AppLocalizations.of(context)),
+                        TextSpan(
+                          text: ' · ${_fmtDate(h.createdAt)}',
+                          style: AppTextTokens.caption(
+                            context,
+                          ).copyWith(color: AppTokens.textTertiary(context)),
+                        ),
+                      ],
                     ),
                   ),
+                ),
               ],
             ),
           ),

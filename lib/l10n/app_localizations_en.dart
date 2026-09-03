@@ -768,18 +768,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mineAvatarUploadNew => 'Upload New Avatar';
 
   @override
-  String get mineCloudService => 'Third-party Cloud Backup';
-
-  @override
-  String get cloudBackupEntrySubtitle =>
-      'Third-party backup: connection test, auto backup and restore';
-
-  @override
-  String get cloudBackupComingSoon =>
-      'Backup configuration is under construction';
-
-  @override
-  String get cloudBackupConfigTitle => 'Backup Config';
+  String get mineCloudService => 'Backup & Cloud Sync';
 
   @override
   String get cloudBackupUrlLabel => 'Server URL';
@@ -822,22 +811,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cloudBackupSave => 'Save Config';
-
-  @override
-  String get cloudBackupTestConnection => 'Test Connection';
-
-  @override
-  String get cloudBackupTestOk => 'Connection successful';
-
-  @override
-  String get cloudBackupTestFailed =>
-      'Connection failed, please check the config';
-
-  @override
-  String get cloudBackupSaved => 'Config saved';
-
-  @override
-  String get cloudBackupRequired => 'Required fields cannot be empty';
 
   @override
   String get cloudBackupNotConfigured => 'Not configured';
@@ -2002,7 +1975,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localBackupImportInvalidFile =>
-      'Please select a .sqlite backup file';
+      'Please select a .snbak backup file';
 
   @override
   String get localBackupListEmpty => 'No backups yet';
@@ -2064,6 +2037,64 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cloudTabBackupSubtitle =>
       'Tap a card to switch backup methods. The first setup requires configuration.';
+
+  @override
+  String get cloudBackupEntryLocalOnly => 'Local backup only';
+
+  @override
+  String get cloudBackupEntryFailed =>
+      'Last backup failed — will retry automatically';
+
+  @override
+  String get cloudBackupStatusTitle => 'Backup status';
+
+  @override
+  String get cloudBackupUploadNow => 'Upload to cloud now';
+
+  @override
+  String get cloudBackupUploading => 'Uploading…';
+
+  @override
+  String get cloudBackupUploadSuccess => 'Upload successful';
+
+  @override
+  String get cloudBackupRestoreFromCloud => 'Restore from cloud';
+
+  @override
+  String get cloudBackupDownloading => 'Downloading…';
+
+  @override
+  String get cloudBackupDownloadSuccess => 'Downloaded — opening restore page';
+
+  @override
+  String get cloudBackupDownloadFailed =>
+      'Download failed — check cloud settings and network';
+
+  @override
+  String get cloudBackupNoRemote => 'No cloud backup yet';
+
+  @override
+  String get cloudBackupAutoSyncTitle => 'Auto backup to cloud';
+
+  @override
+  String get cloudBackupAutoSyncSubtitle =>
+      'Sync upload to cloud during each auto backup';
+
+  @override
+  String get cloudBackupNeedPassword =>
+      'Set a backup password first — cloud backups require password protection';
+
+  @override
+  String get cloudBackupLogin => 'Sign in';
+
+  @override
+  String get cloudBackupLoginSuccess => 'Sign-in successful';
+
+  @override
+  String get cloudBackupLoginFailed => 'Sign-in failed';
+
+  @override
+  String get localBackupRestoreHint => 'Tap a backup to open the restore flow';
 
   @override
   String get cloudTabCloudSync => 'Cloud Sync';
@@ -4095,6 +4126,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mineLocalSlogan => 'Local Sesame (Me)';
+
+  @override
+  String get mineLocalName => 'Local Sesame';
 
   @override
   String get mineLocalSubtitle => 'Local only · Not signed in';

@@ -66,20 +66,4 @@ void main() {
     expect(prefs.getString('expenseColorScheme'), 'red');
   });
 
-  test('displayNameInit：读取并落盘', () async {
-    SharedPreferences.setMockInitialValues({'displayName': '小明'});
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-
-    await readProviderFutureFromContainer(
-      container,
-      displayNameInitProvider.future,
-    );
-    expect(container.read(displayNameProvider), '小明');
-
-    container.read(displayNameProvider.notifier).set('新名');
-    await Future<void>.delayed(Duration.zero);
-    final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('displayName'), '新名');
-  });
 }

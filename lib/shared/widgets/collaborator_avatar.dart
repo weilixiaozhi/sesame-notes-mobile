@@ -93,12 +93,14 @@ class CollaboratorAvatarGroup extends StatelessWidget {
 
     final samePerson = creatorUserId == editorUserId;
 
+    // Tooltip 展示名:昵称恒非空(账号注册即分配);解析不到时统一「未知」,
+    // 禁止裸显 member id / user id。
     final creatorName = creator?.displayName.isNotEmpty == true
         ? creator!.displayName
-        : (creatorUserId ?? '');
+        : l10n.aaUnknownUser;
     final editorName = editor?.displayName.isNotEmpty == true
         ? editor!.displayName
-        : (editorUserId ?? '');
+        : l10n.aaUnknownUser;
 
     // 同一人 → 1 个头像
     if (samePerson) {

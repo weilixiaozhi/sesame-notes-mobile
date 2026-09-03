@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +16,7 @@ import 'package:sesame_notes/features/categories/application/category_picker_pro
 import 'package:sesame_notes/shared/providers/ui_state_providers.dart';
 import 'package:sesame_notes/features/auth/application/security_providers.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
+import 'package:sesame_notes/features/ledgers/application/member_directory_providers.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
@@ -109,6 +110,8 @@ class _SesameNotesAppState extends ConsumerState<SesameNotesApp>
 
   /// App 恢复前台时刷新当前账本；失败只记录日志，不打断解锁与页面恢复。
   Future<void> _refreshDataOnResume() async {
+    // 在首个 await 之前取容器,避免跨异步间隙使用 context。
+    final container = ProviderScope.containerOf(context, listen: false);
     try {
       final ledgerId = ref.read(currentLedgerIdProvider);
       final result = await ref
@@ -117,6 +120,8 @@ class _SesameNotesAppState extends ConsumerState<SesameNotesApp>
       if (!result.ok) {
         logger.warning('AppLifecycle', '前台恢复刷新未完成，继续展示本地数据', result.error);
       }
+      // §13.4:前台恢复同时按需刷新成员公开资料(幂等 + 防抖,失败不阻塞)。
+      unawaited(refreshLedgerMemberDirectory(container, ledgerId));
     } catch (error, stackTrace) {
       logger.error('AppLifecycle', '前台恢复刷新失败', error, stackTrace);
     }

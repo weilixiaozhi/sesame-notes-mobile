@@ -1,7 +1,9 @@
-/// 记录详情 Bottom Sheet 展示名兜底测试。
+/// 记录详情 Bottom Sheet 展示名测试。
 ///
-/// 锁定:共享账本成员表(displayName) → 本人(selfMemberId → 本地昵称) → 虚拟用户
-/// → 原始 id 的兜底顺序;未知 id 不套用本地昵称,避免张冠李戴。
+/// 锁定需求口径(账号一期 §6.2/§6.4/§8.9):
+/// - 本地账本本人恒显固定本地身份「单机芝麻仔（我）」,与云昵称无关;
+/// - 云/共享账本本人显当前云 Profile 昵称(我),其他成员显成员昵称;
+/// - 解析不到统一「未知」,绝不裸显 member id。
 /// 「我」= 当前账本 self member(ledger.selfMemberId 权威,未设置时按设备身份
 /// 确定性派生),与设备 localSelfId 不是同一个值。
 library;
@@ -10,10 +12,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
 import 'package:sesame_notes/data/db.dart' show Ledger, LedgerMember;
 import 'package:sesame_notes/data/models.dart'
     show LedgerMemberDisplay, RecordEditHistoryDisplay, TransactionDisplay;
 import 'package:sesame_notes/l10n/app_localizations.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
@@ -24,22 +28,30 @@ import 'package:sesame_notes/features/transactions/presentation/widgets/transact
 
 import '../helpers/test_isolation.dart';
 
+/// 已登录账号状态:云昵称「云昵称」绑定 cloud-user-1。
+class _CloudAccountStateNotifier extends AccountStateNotifier {
+  @override
+  AccountState build() => const AccountState(
+    status: AccountStatus.authenticated,
+    profile: CloudProfile(userId: 'cloud-user-1', displayName: '云昵称'),
+  );
+}
+
 /// 渲染一个触发按钮并弹出详情 sheet。
 ///
-/// [memberDisplayMap] / [localOwnerDisplayName] 直接透传给详情 sheet;
-/// currentLedgerProvider 统一 override:详情 sheet 的 AA 区块与 AmountText
-/// (currencyCode==null 时)会 watch 它,而它内部依赖 repositoryProvider →
-/// databaseProvider,测试环境无平台通道,不拦掉整条链 pumpWidget 会因
-/// MissingPluginException 崩溃。
-/// recordEditHistoryProvider 同理,它内部走 repositoryProvider 查询编辑历史。
+/// [memberDisplayMap] 直接透传给详情 sheet;currentLedgerProvider 统一
+/// override:详情 sheet 的 AA 区块与 AmountText 会 watch 它,而它内部依赖
+/// repositoryProvider → databaseProvider,测试环境无平台通道,不拦掉整条链
+/// pumpWidget 会因 MissingPluginException 崩溃。
+/// [withCloudAccount] 为 true 时注入已登录云账号状态。
 Future<void> _openSheet(
   WidgetTester tester, {
   required TransactionDisplay transaction,
   Map<String, LedgerMemberDisplay> memberDisplayMap = const {},
-  String? localOwnerDisplayName,
   String? localSelfId,
   Ledger? ledger,
   bool aaEnabled = false,
+  bool withCloudAccount = false,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -58,6 +70,8 @@ Future<void> _openSheet(
         ),
         if (localSelfId != null)
           localSelfIdProvider.overrideWith((ref) async => localSelfId),
+        if (withCloudAccount)
+          accountStateProvider.overrideWith(_CloudAccountStateNotifier.new),
       ],
       child: MaterialApp(
         locale: const Locale('zh'),
@@ -82,7 +96,6 @@ Future<void> _openSheet(
                       transaction: transaction,
                       category: null,
                       memberDisplayMap: memberDisplayMap,
-                      localOwnerDisplayName: localOwnerDisplayName,
                       aaEnabled: aaEnabled,
                       onEdit: () async {},
                       onEditAa: () async {},
@@ -138,7 +151,7 @@ void main() {
     resetGlobalTestState();
   });
 
-  testWidgets('本地账本 + 已设置昵称:self member id 显示昵称并带「（我）」后缀,而非裸 id', (
+  testWidgets('本地账本:self member id 恒显固定本地身份「单机芝麻仔（我）」,而非裸 id', (
     tester,
   ) async {
     // 真实语义:成员 id(uuidV5 派生)与设备 localSelfId 是不同的值,
@@ -149,7 +162,6 @@ void main() {
         createdByMemberId: 'self-member-1',
         lastEditedByMemberId: 'self-member-1',
       ),
-      localOwnerDisplayName: '本地昵称',
       localSelfId: 'device-1',
       ledger: Ledger(
         id: 'ledger-1',
@@ -166,17 +178,19 @@ void main() {
       ),
     );
 
-    // 昵称出现两次(创建人 + 编辑人),均带「(我)」后缀;成员 id 不应裸显示
-    expect(find.textContaining('本地昵称', findRichText: true), findsNWidgets(2));
+    // 固定本地身份出现两次(创建人 + 编辑人),均带「(我)」后缀;成员 id 不应裸显示
+    expect(
+      find.textContaining('单机芝麻仔', findRichText: true),
+      findsNWidgets(2),
+    );
     expect(find.textContaining('(我)', findRichText: true), findsNWidgets(2));
     expect(find.text('self-member-1'), findsNothing);
+    expect(find.textContaining('未设置昵称', findRichText: true), findsNothing);
   });
 
   testWidgets('本地账本未设置 selfMemberId:按 uuidV5(ledgerId, localSelfId) 派生判定本人', (
     tester,
   ) async {
-    // 旧账本/未绑定场景:ledger.selfMemberId 为空时,self 成员 id 由设备身份
-    // 确定性派生,同一设备恒为同一成员,登录/退出不改变判定。
     final derivedSelf = localSelfMemberId('ledger-1', 'device-1');
     await _openSheet(
       tester,
@@ -184,7 +198,6 @@ void main() {
         createdByMemberId: derivedSelf,
         lastEditedByMemberId: derivedSelf,
       ),
-      localOwnerDisplayName: '本地昵称',
       localSelfId: 'device-1',
       ledger: Ledger(
         id: 'ledger-1',
@@ -201,12 +214,15 @@ void main() {
       ),
     );
 
-    // 派生成员 id 被识别为本人 → 显示本地昵称,不裸显 uuid
-    expect(find.textContaining('本地昵称', findRichText: true), findsNWidgets(2));
+    // 派生成员 id 被识别为本人 → 显示固定本地身份,不裸显 uuid
+    expect(
+      find.textContaining('单机芝麻仔', findRichText: true),
+      findsNWidgets(2),
+    );
     expect(find.text(derivedSelf), findsNothing);
   });
 
-  testWidgets('共享账本:本人成员带「（我）」后缀,他人成员仅成员名', (tester) async {
+  testWidgets('云账本:本人创建人显云昵称带「(我)」,他人编辑者显成员昵称', (tester) async {
     await _openSheet(
       tester,
       transaction: _transaction(
@@ -217,9 +233,9 @@ void main() {
         'self-member-1': LedgerMemberDisplay(
           id: 'self-member-1',
           ledgerId: 'ledger-1',
-          displayName: '我的昵称',
+          displayName: '旧快照昵称',
           memberType: 'REGISTERED',
-          linkedAccountId: 'me@example.com',
+          linkedAccountId: 'cloud-user-1',
           role: 'owner',
           avatarVersion: 0,
           status: 'ACTIVE',
@@ -232,7 +248,7 @@ void main() {
           ledgerId: 'ledger-1',
           displayName: '他人昵称',
           memberType: 'REGISTERED',
-          linkedAccountId: 'friend@example.com',
+          linkedAccountId: 'friend-cloud-1',
           role: 'editor',
           avatarVersion: 0,
           status: 'ACTIVE',
@@ -242,6 +258,7 @@ void main() {
         ),
       },
       localSelfId: 'device-1',
+      withCloudAccount: true,
       ledger: Ledger(
         id: 'ledger-1',
         name: '共享账本',
@@ -257,55 +274,14 @@ void main() {
       ),
     );
 
-    // 本人成员名 + 「(我)」后缀;他人成员仅成员名
-    expect(find.textContaining('我的昵称', findRichText: true), findsOneWidget);
+    // 本人显示当前云 Profile 昵称(而非成员行旧快照)+「(我)」;他人仅成员名
+    expect(find.textContaining('云昵称', findRichText: true), findsOneWidget);
     expect(find.textContaining('他人昵称', findRichText: true), findsOneWidget);
     expect(find.textContaining('(我)', findRichText: true), findsOneWidget);
+    expect(find.text('旧快照昵称'), findsNothing);
   });
 
-  testWidgets('本地账本 + 未设置昵称:回退显示 id', (tester) async {
-    await _openSheet(
-      tester,
-      transaction: _transaction(),
-      localOwnerDisplayName: '',
-    );
-
-    expect(find.text('u_creator'), findsOneWidget);
-    expect(find.text('u_editor'), findsOneWidget);
-  });
-
-  testWidgets('共享账本:成员表命中时优先展示成员 displayName', (tester) async {
-    await _openSheet(
-      tester,
-      transaction: _transaction(
-        createdByMemberId: 'u_cloud',
-        lastEditedByMemberId: 'u_cloud',
-      ),
-      memberDisplayMap: {
-        'u_cloud': LedgerMemberDisplay(
-          id: 'u_cloud',
-          ledgerId: 'ledger-1',
-          displayName: '云端昵称',
-          memberType: 'REGISTERED',
-          linkedAccountId: 'u_cloud',
-          role: 'owner',
-          avatarVersion: 0,
-          status: 'ACTIVE',
-          joinedAt: DateTime.utc(2026, 1, 1),
-          createdAt: DateTime.utc(2026, 1, 1),
-          updatedAt: DateTime.utc(2026, 1, 1),
-        ),
-      },
-      // 共享账本调用方按约定传 null;即使传了本地昵称,成员表优先级也应更高
-      localOwnerDisplayName: '本地昵称',
-    );
-
-    expect(find.text('云端昵称'), findsNWidgets(2));
-    expect(find.text('本地昵称'), findsNothing);
-    expect(find.text('u_cloud'), findsNothing);
-  });
-
-  testWidgets('共享账本:成员表未命中(无 displayName)回退到账号/原始 id', (tester) async {
+  testWidgets('云账本:成员解析不到/昵称为空时统一「未知」,不裸显 id', (tester) async {
     await _openSheet(
       tester,
       transaction: _transaction(),
@@ -324,15 +300,26 @@ void main() {
           updatedAt: DateTime.utc(2026, 1, 1),
         ),
       },
-      localOwnerDisplayName: '本地昵称',
+      withCloudAccount: true,
+      ledger: Ledger(
+        id: 'ledger-1',
+        name: '共享账本',
+        currency: 'CNY',
+        role: 'owner',
+        memberCount: 2,
+        monthStartDay: 1,
+        storageMode: 'cloud',
+        aaEnabled: false,
+        selfMemberId: 'self-member-1',
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+      ),
     );
 
-    // u_creator 在成员表但 displayName 为空 → 回退原始 id(单轨模型无账号字段);
-    // u_editor 不在成员表 → 原始 id(不套用本地昵称)。
-    expect(find.text('本地昵称'), findsNothing);
-    expect(find.text('creator@example.com'), findsNothing);
-    expect(find.text('u_creator'), findsOneWidget);
-    expect(find.text('u_editor'), findsOneWidget);
+    // 昵称为空的成员与未命中成员都显示「未知」;禁止裸显 member id。
+    expect(find.textContaining('未知', findRichText: true), findsNWidgets(2));
+    expect(find.text('u_creator'), findsNothing);
+    expect(find.text('u_editor'), findsNothing);
   });
 
   testWidgets('创建人/编辑人为空时不渲染协作成员区块', (tester) async {
@@ -342,51 +329,33 @@ void main() {
         createdByMemberId: null,
         lastEditedByMemberId: null,
       ),
-      localOwnerDisplayName: '本地昵称',
     );
 
-    expect(find.text('本地昵称'), findsNothing);
+    expect(find.textContaining('单机芝麻仔', findRichText: true), findsNothing);
   });
 
   testWidgets('未开启分摊:底部仅常驻「编辑记账」单按钮,右上角有删除 icon', (tester) async {
-    await _openSheet(
-      tester,
-      transaction: _transaction(),
-      localOwnerDisplayName: '本地昵称',
-      aaEnabled: false,
-    );
+    await _openSheet(tester, transaction: _transaction(), aaEnabled: false);
 
-    // sheet 内容可能超出测试 viewport,滚动到底部让 footer(底部按钮)可见
     await tester.drag(
       find.byType(SingleChildScrollView),
       const Offset(0, -500),
     );
     await tester.pumpAndSettle();
 
-    // 仅 1 个「编辑」按钮(底部 footer)
     expect(find.text('编辑记账'), findsOneWidget);
-    // 「编辑分摊」按钮不出现(账本未开启分摊)
     expect(find.text('编辑分摊'), findsNothing);
-    // 删除 icon 在右上角(trailing):IconButton 1 个。
     expect(find.byType(IconButton), findsOneWidget);
   });
 
   testWidgets('开启分摊:底部常驻「编辑分摊(左)+ 编辑记账(右)」双按钮', (tester) async {
-    await _openSheet(
-      tester,
-      transaction: _transaction(),
-      localOwnerDisplayName: '本地昵称',
-      aaEnabled: true,
-    );
+    await _openSheet(tester, transaction: _transaction(), aaEnabled: true);
 
-    // 滚动到底部让双按钮 footer 可见
     await tester.drag(find.byType(Scrollable).first, const Offset(0, -500));
     await tester.pumpAndSettle();
 
-    // 双按钮同时出现:左「编辑分摊」、右「编辑记账」
     expect(find.text('编辑分摊'), findsOneWidget);
     expect(find.text('编辑记账'), findsOneWidget);
-    // 删除 icon 仍在右上角(trailing):IconButton 1 个。
     expect(find.byType(IconButton), findsOneWidget);
   });
 
@@ -394,20 +363,20 @@ void main() {
     await _openSheet(
       tester,
       transaction: _transaction(aaMode: 0, payerMemberId: 'u1'),
-      localOwnerDisplayName: '本地昵称',
       aaEnabled: true,
     );
 
-    // 单人参与人：姓名仍在，尾部人数标注消失
     expect(
       find.textContaining('（1人）', findRichText: true),
       findsNothing,
       reason: '单人参与人无需「（1人）」尾部',
     );
+    // 未知参与人/支出人兜底渲染「未知」,不裸显 id。
     expect(
-      find.textContaining('u1', findRichText: true),
+      find.textContaining('未知', findRichText: true),
       findsWidgets,
-      reason: '未知参与人/支出人应兜底渲染原始 id',
+      reason: '未知参与人/支出人应兜底渲染「未知」而非原始 id',
     );
+    expect(find.text('u1'), findsNothing);
   });
 }

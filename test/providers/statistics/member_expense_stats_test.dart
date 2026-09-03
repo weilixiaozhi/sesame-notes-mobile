@@ -15,12 +15,30 @@ import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
+import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/avatar_providers.dart';
-import 'package:sesame_notes/shared/providers/theme_providers.dart';
+import 'package:sesame_notes/shared/providers/language_provider.dart';
 import 'package:sesame_notes/utils/member_id.dart';
+import 'dart:ui' show Locale;
 
 /// 插库交易 id 自增序列（主键为 UUID 字符串，需保证同文件内唯一）。
 var _txSeq = 0;
+
+/// 固定中文语言环境。
+class _ZhLanguageNotifier extends LanguageNotifier {
+  @override
+  Locale? build() => const Locale('zh');
+}
+
+/// 已登录云账号状态:昵称「云昵称」。
+class _CloudAccountNotifier extends AccountStateNotifier {
+  @override
+  AccountState build() => const AccountState(
+    status: AccountStatus.authenticated,
+    profile: CloudProfile(userId: 'cloud-user-1', displayName: '云昵称'),
+  );
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -31,14 +49,17 @@ void main() {
   late String ledgerId;
   late ProviderContainer container;
 
-  ProviderContainer buildContainer({String displayName = ''}) {
+  ProviderContainer buildContainer({bool cloudAccount = false}) {
     final c = ProviderContainer(
       overrides: [
         databaseProvider.overrideWithValue(db),
         repositoryProvider.overrideWithValue(repo),
         avatarPathProvider.overrideWith((ref) async => null),
         localSelfIdProvider.overrideWith((ref) async => 'local-self'),
-        displayNameProvider.overrideWithBuild((ref, notifier) => displayName),
+        // 固定中文环境,展示名断言不随系统语言漂移。
+        languageProvider.overrideWith(_ZhLanguageNotifier.new),
+        if (cloudAccount)
+          accountStateProvider.overrideWith(_CloudAccountNotifier.new),
       ],
     );
     addTearDown(c.dispose);
@@ -133,8 +154,8 @@ void main() {
     expect(u1.txCount, 2);
   });
 
-  test('本地账本：self member 解析为本人昵称，不再裸 id', () async {
-    final c = buildContainer(displayName: '我的昵称');
+  test('本地账本：self member 恒显固定本地身份「单机芝麻仔」，不再裸 id', () async {
+    final c = buildContainer();
     // 本地账本「我」= self member id（uuidV5 派生，稳定不随登录变化）。
     final selfMemberId = localSelfMemberId(ledgerId, 'local-self');
     await seedExpense(amount: '10', payerMemberId: selfMemberId);
@@ -143,20 +164,41 @@ void main() {
     final row = stats.single;
     expect(
       row.displayName,
-      '我的昵称',
-      reason: 'self member id 必须解析为本地昵称，不得出现裸 id',
+      '单机芝麻仔',
+      reason: '本地账本本人必须显示固定本地身份，不得出现裸 id',
     );
     expect(row.isSelf, isTrue, reason: 'self member 必须标记为本人');
   });
 
-  test('本地账本：未知 id 不再套本地昵称，兜底原始 id', () async {
-    final c = buildContainer(displayName: '我的昵称');
+  test('本地账本：未知 id 不套本地身份，兜底「未知」', () async {
+    final c = buildContainer();
     await seedExpense(amount: '10', payerMemberId: 'foreign-id');
 
     final stats = await c.read(memberExpenseStatsProvider(ledgerId).future);
     final row = stats.single;
     expect(row.participantId, 'foreign-id');
-    expect(row.displayName, 'foreign-id', reason: '未知 id 不得张冠李戴成我的昵称');
+    expect(row.displayName, '未知', reason: '未知 id 不得张冠李戴成固定本地身份，也不得裸显 id');
     expect(row.isSelf, isFalse);
+  });
+
+  test('云账本：本人显当前云 Profile 昵称', () async {
+    final cloudLedgerId = await repo.createLedger(
+      name: '共享账本',
+      storageMode: 'cloud',
+      aaEnabled: true,
+    );
+    final c = buildContainer(cloudAccount: true);
+    await seedExpense(amount: '10', payerMemberId: 'local-self');
+    // 将交易迁到云账本（云账本无成员行时本人回退 localSelfId 判定）。
+    await (db.update(db.transactions)..where((t) => t.id.isNotNull())).write(
+      TransactionsCompanion(ledgerId: Value(cloudLedgerId)),
+    );
+
+    final stats = await c.read(
+      memberExpenseStatsProvider(cloudLedgerId).future,
+    );
+    final row = stats.single;
+    expect(row.displayName, '云昵称', reason: '云账本本人必须显示当前云 Profile 昵称');
+    expect(row.isSelf, isTrue);
   });
 }

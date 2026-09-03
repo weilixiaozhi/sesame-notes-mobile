@@ -1434,26 +1434,8 @@ abstract class AppLocalizations {
   /// No description provided for @mineCloudService.
   ///
   /// In en, this message translates to:
-  /// **'Third-party Cloud Backup'**
+  /// **'Backup & Cloud Sync'**
   String get mineCloudService;
-
-  /// No description provided for @cloudBackupEntrySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Third-party backup: connection test, auto backup and restore'**
-  String get cloudBackupEntrySubtitle;
-
-  /// No description provided for @cloudBackupComingSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup configuration is under construction'**
-  String get cloudBackupComingSoon;
-
-  /// No description provided for @cloudBackupConfigTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup Config'**
-  String get cloudBackupConfigTitle;
 
   /// No description provided for @cloudBackupUrlLabel.
   ///
@@ -1538,36 +1520,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save Config'**
   String get cloudBackupSave;
-
-  /// No description provided for @cloudBackupTestConnection.
-  ///
-  /// In en, this message translates to:
-  /// **'Test Connection'**
-  String get cloudBackupTestConnection;
-
-  /// No description provided for @cloudBackupTestOk.
-  ///
-  /// In en, this message translates to:
-  /// **'Connection successful'**
-  String get cloudBackupTestOk;
-
-  /// No description provided for @cloudBackupTestFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Connection failed, please check the config'**
-  String get cloudBackupTestFailed;
-
-  /// No description provided for @cloudBackupSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Config saved'**
-  String get cloudBackupSaved;
-
-  /// No description provided for @cloudBackupRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Required fields cannot be empty'**
-  String get cloudBackupRequired;
 
   /// No description provided for @cloudBackupNotConfigured.
   ///
@@ -3630,7 +3582,7 @@ abstract class AppLocalizations {
   /// No description provided for @localBackupImportInvalidFile.
   ///
   /// In en, this message translates to:
-  /// **'Please select a .sqlite backup file'**
+  /// **'Please select a .snbak backup file'**
   String get localBackupImportInvalidFile;
 
   /// No description provided for @localBackupListEmpty.
@@ -3740,6 +3692,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap a card to switch backup methods. The first setup requires configuration.'**
   String get cloudTabBackupSubtitle;
+
+  /// No description provided for @cloudBackupEntryLocalOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Local backup only'**
+  String get cloudBackupEntryLocalOnly;
+
+  /// No description provided for @cloudBackupEntryFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Last backup failed — will retry automatically'**
+  String get cloudBackupEntryFailed;
+
+  /// No description provided for @cloudBackupStatusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup status'**
+  String get cloudBackupStatusTitle;
+
+  /// No description provided for @cloudBackupUploadNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload to cloud now'**
+  String get cloudBackupUploadNow;
+
+  /// No description provided for @cloudBackupUploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading…'**
+  String get cloudBackupUploading;
+
+  /// No description provided for @cloudBackupUploadSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload successful'**
+  String get cloudBackupUploadSuccess;
+
+  /// No description provided for @cloudBackupRestoreFromCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from cloud'**
+  String get cloudBackupRestoreFromCloud;
+
+  /// No description provided for @cloudBackupDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading…'**
+  String get cloudBackupDownloading;
+
+  /// No description provided for @cloudBackupDownloadSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded — opening restore page'**
+  String get cloudBackupDownloadSuccess;
+
+  /// No description provided for @cloudBackupDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed — check cloud settings and network'**
+  String get cloudBackupDownloadFailed;
+
+  /// No description provided for @cloudBackupNoRemote.
+  ///
+  /// In en, this message translates to:
+  /// **'No cloud backup yet'**
+  String get cloudBackupNoRemote;
+
+  /// No description provided for @cloudBackupAutoSyncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto backup to cloud'**
+  String get cloudBackupAutoSyncTitle;
+
+  /// No description provided for @cloudBackupAutoSyncSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync upload to cloud during each auto backup'**
+  String get cloudBackupAutoSyncSubtitle;
+
+  /// No description provided for @cloudBackupNeedPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a backup password first — cloud backups require password protection'**
+  String get cloudBackupNeedPassword;
+
+  /// No description provided for @cloudBackupLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get cloudBackupLogin;
+
+  /// No description provided for @cloudBackupLoginSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in successful'**
+  String get cloudBackupLoginSuccess;
+
+  /// No description provided for @cloudBackupLoginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in failed'**
+  String get cloudBackupLoginFailed;
+
+  /// No description provided for @localBackupRestoreHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a backup to open the restore flow'**
+  String get localBackupRestoreHint;
 
   /// No description provided for @cloudTabCloudSync.
   ///
@@ -7370,6 +7430,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Local Sesame (Me)'**
   String get mineLocalSlogan;
+
+  /// No description provided for @mineLocalName.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Sesame'**
+  String get mineLocalName;
 
   /// No description provided for @mineLocalSubtitle.
   ///

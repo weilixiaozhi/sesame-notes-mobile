@@ -1,4 +1,4 @@
-﻿/// AaEditPage 不分摊入口 widget 测试。
+/// AaEditPage 不分摊入口 widget 测试。
 ///
 /// 验证需求落地(新交互):
 /// - 不分摊交易也允许进入 AaEditPage,默认选中不分摊;
@@ -16,7 +16,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:sesame_notes/data/db.dart' as db;
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/shared/providers/theme_providers.dart';
+import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
@@ -48,6 +49,29 @@ db.Ledger _localLedger() => db.Ledger(
   updatedAt: DateTime(2026, 1, 1),
 );
 
+db.Ledger _cloudLedger() => db.Ledger(
+  id: 'ledger-1',
+  name: '共享账本',
+  currency: 'CNY',
+  role: 'owner',
+  memberCount: 2,
+  monthStartDay: 1,
+  storageMode: 'cloud',
+  aaEnabled: true,
+  selfMemberId: 'self-member-1',
+  createdAt: DateTime(2026, 1, 1),
+  updatedAt: DateTime(2026, 1, 1),
+);
+
+/// 已登录账号状态:云昵称「云昵称」。
+class _CloudAccountStateNotifier extends AccountStateNotifier {
+  @override
+  AccountState build() => const AccountState(
+    status: AccountStatus.authenticated,
+    profile: CloudProfile(userId: 'cloud-user-1', displayName: '云昵称'),
+  );
+}
+
 /// 用 Navigator push 触发页路由,结果存入 [result] 槽位。
 ///
 /// [localSelfId] 用于桩操作者身份:默认不传时走真实 UUID(不在名册,
@@ -56,12 +80,14 @@ Future<void> _openAaEdit(
   WidgetTester tester, {
   required AaEditPageArgs args,
   required void Function(AaEditResult? r) onResult,
-  String displayName = '',
   String? localSelfId,
+  bool cloudLedger = false,
 }) async {
   final repo = _MockRepo();
-  // 身份按账本归属解析需要账本行；本测试账本为本地账本。
-  when(() => repo.getLedgerById(any())).thenAnswer((_) async => _localLedger());
+  // 身份按账本归属解析需要账本行；默认本地账本。
+  when(() => repo.getLedgerById(any())).thenAnswer(
+    (_) async => cloudLedger ? _cloudLedger() : _localLedger(),
+  );
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -69,8 +95,11 @@ Future<void> _openAaEdit(
         aaParticipantOptionsProvider.overrideWith(
           (ref, ledgerId) async => _options,
         ),
-        currentLedgerProvider.overrideWith((ref) => Stream.value(null)),
-        displayNameProvider.overrideWithBuild((ref, notifier) => displayName),
+        currentLedgerProvider.overrideWith(
+          (ref) => Stream.value(cloudLedger ? _cloudLedger() : null),
+        ),
+        if (cloudLedger)
+          accountStateProvider.overrideWith(_CloudAccountStateNotifier.new),
         if (localSelfId != null)
           localSelfIdProvider.overrideWith((ref) async => localSelfId),
       ],
@@ -270,8 +299,12 @@ void main() {
       onResult: (r) => result = r,
     );
 
-    // 未手选支出人:昵称为空时显示「未设置昵称 (我)」(默认支出人 = 创建人,非「未知」)
-    expect(find.text('未设置昵称 (我)', findRichText: true), findsOneWidget);
+    // 未手选支出人(默认 = 创建人 = 本人):本地账本恒显固定本地身份
+    // 「单机芝麻仔 (我)」(§6.4),非「未知」也非云昵称。
+    expect(
+      find.textContaining('单机芝麻仔', findRichText: true),
+      findsOneWidget,
+    );
 
     // 直接确认:人均模式回传 null,参与人 null = 全部成员
     await tester.tap(find.text('完成'));
@@ -282,7 +315,7 @@ void main() {
     expect(result!.aaParticipants, isNull);
   });
 
-  testWidgets('支出人:新建未手选但已设昵称时,显示昵称', (tester) async {
+  testWidgets('支出人:新建未手选时,云账本显示云昵称 + 「(我)」后缀', (tester) async {
     await _openAaEdit(
       tester,
       args: AaEditPageArgs(
@@ -294,11 +327,12 @@ void main() {
         mode: AaMode.perPerson,
       ),
       onResult: (_) {},
-      displayName: '小计',
+      cloudLedger: true,
     );
 
-    // 未手选支出人:昵称优先于「我」,展示本地昵称 + 共享「(我)」后缀
-    expect(find.text('小计 (我)', findRichText: true), findsOneWidget);
+    // 未手选支出人(默认 = 创建人 = 本人):云账本显示当前云 Profile 昵称
+    // + 共享「(我)」后缀(§6.4)。
+    expect(find.textContaining('云昵称', findRichText: true), findsOneWidget);
     expect(find.text('未知'), findsNothing);
   });
 
@@ -382,8 +416,11 @@ void main() {
       localSelfId: 'unknown-id',
     );
 
-    // 顶部支出人展示本地昵称/「我」兜底,不反查名册。
-    expect(find.text('未设置昵称 (我)', findRichText: true), findsOneWidget);
+    // 顶部支出人展示固定本地身份「单机芝麻仔 (我)」,不反查名册。
+    expect(
+      find.textContaining('单机芝麻仔', findRichText: true),
+      findsOneWidget,
+    );
     expect(find.text('未知'), findsNothing);
 
     // 未锁定任何参与人:「张三」行可正常取消勾选。
