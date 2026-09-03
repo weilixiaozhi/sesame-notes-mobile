@@ -1,4 +1,4 @@
-﻿/// LedgerEditPage 保存流与危险区操作测试。
+/// LedgerEditPage 保存流与危险区操作测试。
 
 /// 需求锚点：
 /// - 新建保存：名称必填校验、AA 开关随 createLedger 落库、虚拟用户批量落库、
@@ -10,9 +10,9 @@
 ///   - 删除失败：错误弹窗且页面保留。
 ///
 /// 新 schema 说明：账本 id 为 UUID 字符串，LedgersCompanion 必填 id/updatedAt；
-/// 共享账本云删除/退出、邀请 syncId 轮询已从产品移除，对应用例与
-/// SyncEngine / FakeCloudProvider / 云端 deleteLedger 相关 stub 一并删除，
-/// 删除走本地 repo.deleteLedger；本地账本迁云入口见
+/// 个人账本删除走本地 repo.deleteLedger；共享账本 Owner 删除走
+/// LedgerActions.deleteSharedAsOwner（云端 REST 删除 + purge），协作者退出走
+/// LedgerActions.leaveSharedLedger（云端 /leave + purge）；本地账本迁云入口见
 /// ledger_edit_page_move_to_cloud_test.dart。
 library;
 
@@ -21,8 +21,10 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/features/ledgers/application/ledger_actions.dart';
 import 'package:sesame_notes/data/models.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
@@ -45,6 +47,9 @@ class _FailDeleteRepo extends LocalRepository {
     throw Exception('delete boom');
   }
 }
+
+/// 账本编排 mock：危险区流程只验证编排调用与导航，REST 细节由仓储/服务层测试覆盖。
+class _MockLedgerActions extends Mock implements LedgerActions {}
 
 /// 假汇率服务：立即失败且不留 pending timer，避免切币种/拉汇率路径触网。
 class _FailingRateService implements ExchangeRateService {
@@ -120,6 +125,7 @@ void main() {
     LocalRepository? useRepo,
     // 当前账本 id：新 schema 下为 UUID 字符串。
     String? currentLedgerId,
+    LedgerActions? actions,
   }) async {
     await tester.binding.setSurfaceSize(const Size(800, 2000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -135,6 +141,8 @@ void main() {
             // 避免测试环境触发真实文件库打开而挂起。
             databaseProvider.overrideWithValue(db),
             repositoryProvider.overrideWith((ref) => useRepo ?? repo),
+            if (actions != null)
+              ledgerActionsProvider.overrideWith((ref) => actions),
             currentLedgerProvider.overrideWith(
               (ref) => Stream<Ledger?>.value(null),
             ),
@@ -422,6 +430,115 @@ void main() {
       });
 
       expect(find.text(l10n.commonOperationFailed), findsWidgets);
+      await tester.pump(const Duration(seconds: 2));
+    });
+  });
+
+  group('共享账本危险区(删除共享账本/退出并删除)', () {
+    /// 构造共享账本展示项 + 编排 mock 的公共桩。
+    Future<_MockLedgerActions> stubActions(
+      LedgerDisplayItem ledger,
+      LedgerDisplayItem other,
+    ) async {
+      final actions = _MockLedgerActions();
+      // 编辑页加载走 getById；危险区切换账本走 getAll。
+      when(() => actions.getById(any())).thenAnswer((_) async => ledger);
+      when(() => actions.getAll()).thenAnswer((_) async => [ledger, other]);
+      return actions;
+    }
+
+    testWidgets('Owner：确认「删除共享账本」→ 编排执行 + toast + 返回列表', (tester) async {
+      final ledger = await seed(
+        id: 'shared-owner-flow',
+        name: '共享账本A',
+        isShared: true,
+        myRole: 'owner',
+        storageMode: 'cloud',
+      );
+      final other = await seed(id: 'other-1', name: '账本B');
+      final actions = await stubActions(ledger, other);
+      when(
+        () => actions.deleteSharedAsOwner('shared-owner-flow'),
+      ).thenAnswer((_) async {});
+      final l10n = await pump(tester, ledger: ledger, actions: actions);
+
+      await tapMoreAction(tester, l10n.ledgersDeleteShared);
+      await confirmDialog(tester);
+      await tester.runAsync(() => tester.pumpAndSettle());
+
+      verify(() => actions.deleteSharedAsOwner('shared-owner-flow')).called(1);
+      expect(find.text(l10n.ledgersDeleteSharedSuccess), findsOneWidget);
+      expect(find.byType(LedgerEditPage), findsNothing, reason: '删除成功应返回上一页');
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets('协作者：确认「退出并删除」→ 编排执行 + toast + 返回列表', (tester) async {
+      final ledger = await seed(
+        id: 'shared-editor-flow',
+        name: '共享账本A',
+        isShared: true,
+        myRole: 'editor',
+        storageMode: 'cloud',
+      );
+      final other = await seed(id: 'other-2', name: '账本B');
+      final actions = await stubActions(ledger, other);
+      when(
+        () => actions.leaveSharedLedger('shared-editor-flow'),
+      ).thenAnswer((_) async {});
+      final l10n = await pump(tester, ledger: ledger, actions: actions);
+
+      await tapMoreAction(tester, l10n.ledgersLeaveAndDelete);
+      await confirmDialog(tester);
+      await tester.runAsync(() => tester.pumpAndSettle());
+
+      verify(() => actions.leaveSharedLedger('shared-editor-flow')).called(1);
+      expect(find.text(l10n.ledgersLeaveAndDeleteSuccess), findsOneWidget);
+      expect(find.byType(LedgerEditPage), findsNothing, reason: '退出成功应返回上一页');
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets('取消确认：不触发任何编排调用，账本保留', (tester) async {
+      final ledger = await seed(
+        id: 'shared-owner-cancel',
+        name: '共享账本A',
+        isShared: true,
+        myRole: 'owner',
+        storageMode: 'cloud',
+      );
+      final other = await seed(id: 'other-3', name: '账本B');
+      final actions = await stubActions(ledger, other);
+      final l10n = await pump(tester, ledger: ledger, actions: actions);
+
+      await tapMoreAction(tester, l10n.ledgersDeleteShared);
+      await tester.tap(find.widgetWithText(OutlinedButton, '取消'));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => actions.deleteSharedAsOwner(any()));
+      expect(find.byType(LedgerEditPage), findsOneWidget);
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets('编排失败：错误弹窗且页面保留', (tester) async {
+      final ledger = await seed(
+        id: 'shared-owner-fail',
+        name: '共享账本A',
+        isShared: true,
+        myRole: 'owner',
+        storageMode: 'cloud',
+      );
+      final other = await seed(id: 'other-4', name: '账本B');
+      final actions = await stubActions(ledger, other);
+      when(
+        () => actions.deleteSharedAsOwner('shared-owner-fail'),
+      ).thenThrow(StateError('cloud boom'));
+      final l10n = await pump(tester, ledger: ledger, actions: actions);
+
+      await tapMoreAction(tester, l10n.ledgersDeleteShared);
+      await confirmDialog(tester);
+      await tester.runAsync(() => tester.pumpAndSettle());
+
+      expect(find.text(l10n.commonOperationFailed), findsWidgets);
+      expect(find.byType(LedgerEditPage), findsOneWidget, reason: '失败保留现场');
       await tester.pump(const Duration(seconds: 2));
     });
   });

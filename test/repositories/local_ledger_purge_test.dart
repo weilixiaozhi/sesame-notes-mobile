@@ -231,4 +231,80 @@ void main() {
     );
     expect(await db.select(db.ledgerMembers).get(), hasLength(1));
   });
+
+  // ==================== 单账本 purge（退出/删除共享账本） ====================
+
+  test('purgeLedger：只清目标账本全套关联数据，其他账本不动', () async {
+    final cloudA = await seedCloudLedger('云端A');
+    final cloudB = await seedCloudLedger('云端B');
+    final cloudATx = (await (db.select(
+      db.transactions,
+    )..where((t) => t.ledgerId.equals(cloudA))).get()).single.id;
+
+    await repo.purgeLedger(cloudA);
+
+    expect(await repo.getLedgerById(cloudA), isNull, reason: '目标账本行删除');
+    expect(
+      (await (db.select(
+        db.transactions,
+      )..where((t) => t.ledgerId.equals(cloudA))).get()),
+      isEmpty,
+      reason: '目标账本交易级联清除',
+    );
+    expect(
+      (await (db.select(
+        db.recordEditHistories,
+      )..where((h) => h.recordId.equals(cloudATx))).get()),
+      isEmpty,
+      reason: '目标账本编辑历史随交易清除',
+    );
+    expect(
+      (await (db.select(
+        db.syncChanges,
+      )..where((c) => c.ledgerId.equals(cloudA))).get()),
+      isEmpty,
+      reason: '目标账本待推送变更清除',
+    );
+    expect(
+      (await (db.select(
+        db.ledgerMembers,
+      )..where((m) => m.ledgerId.equals(cloudA))).get()),
+      isEmpty,
+      reason: '目标账本成员镜像清除',
+    );
+    expect(
+      (await (db.select(
+        db.sharedLedgerCategories,
+      )..where((s) => s.ledgerId.equals(cloudA))).get()),
+      isEmpty,
+      reason: '目标账本共享分类镜像清除',
+    );
+
+    // 另一本账本（含全套关联数据）原样保留。
+    expect(await repo.getLedgerById(cloudB), isNotNull);
+    expect(
+      (await (db.select(
+        db.transactions,
+      )..where((t) => t.ledgerId.equals(cloudB))).get()),
+      hasLength(1),
+      reason: '其他账本交易不受影响',
+    );
+    expect(
+      (await (db.select(
+        db.ledgerMembers,
+      )..where((m) => m.ledgerId.equals(cloudB))).get()),
+      isNotEmpty,
+      reason: '其他账本成员镜像不受影响',
+    );
+  });
+
+  test('purgeLedger 幂等：账本不存在/重复调用零副作用', () async {
+    final cloudA = await seedCloudLedger('云端A');
+
+    await repo.purgeLedger('no-such-ledger'); // 不存在：不抛错
+    await repo.purgeLedger(cloudA);
+    await repo.purgeLedger(cloudA); // 重复：不抛错
+
+    expect(await repo.getLedgerById(cloudA), isNull);
+  });
 }

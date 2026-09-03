@@ -287,10 +287,21 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
   ) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimens.p16),
+        // 与上游一致：标题内嵌卡片顶部，四周用 LTRB(16,12,16,12) 收紧。
+        padding: const EdgeInsets.fromLTRB(
+          AppDimens.p16,
+          AppDimens.p12,
+          AppDimens.p16,
+          AppDimens.p12,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              l10n.ledgersStorageLocation,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: AppDimens.p8),
             SegmentedButton<String>(
               segments: [
                 ButtonSegment(
@@ -372,9 +383,8 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
           const SizedBox(height: AppDimens.p16),
 
           // ── 1.5 存储位置（仅新建：归属在创建时决定，之后不可改）──
+          // 标题内嵌在卡片里（与上游一致），此处不再重复渲染分区标题。
           if (_isCreating) ...[
-            _buildSectionTitle(context, l10n.ledgersStorageLocation),
-            const SizedBox(height: AppDimens.p8),
             _buildStorageModeSelector(context, l10n),
             const SizedBox(height: AppDimens.p16),
           ],
@@ -549,19 +559,25 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
     );
   }
 
-  /// 账本迁云入口：仅「已存在的本地个人账本」展示。
+  /// 账本归属操作区：编辑态按归属动态生成操作项。
   ///
-  /// 设计意图：归属在创建时选择之后并非永远不变——用户后接云服务的场景必须
-  /// 有把已有本地账本搬上云的通道，否则本地账本终身无法参与同步。登录是硬
-  /// 门槛（搬运动作按当前账号 backfill 变更），未登录时入口禁用并给出登录
-  /// 引导，杜绝「点了才报错」的死路；云端账本已在云上、共享账本归属他人云端
-  /// 资源，均不给入口。
+  /// 设计意图：归属在创建时选择之后并非永远不变——
+  ///   - 本地 + 非共享 → 移动到云端（参与同步）；
+  ///   - 云端 + 非共享 → 移动到本地 + 复制到本地；
+  ///   - 云端 + 共享   → 复制到本地（共享账本归属他人云端资源，只能留档）。
+  /// 登录是硬门槛（移动动作需与服务端交互），未登录时全部禁用并给出登录引导。
   Widget _buildStorageActions(BuildContext context, AppLocalizations l10n) {
     final ledger = widget.ledger!;
-    if (ledger.isCloudLedger || ledger.isShared) {
+    final loggedIn = ref.watch(currentLedgerAccountIdProvider) != null;
+
+    final canMoveToCloud = !ledger.isCloudLedger && !ledger.isShared;
+    final canMoveToLocal = ledger.isCloudLedger && !ledger.isShared;
+    final canCopyToLocal = ledger.isCloudLedger;
+
+    if (!canMoveToCloud && !canMoveToLocal && !canCopyToLocal) {
       return const SizedBox.shrink();
     }
-    final loggedIn = ref.watch(currentLedgerAccountIdProvider) != null;
+
     return Padding(
       padding: const EdgeInsets.only(top: AppDimens.p16),
       child: Column(
@@ -572,12 +588,71 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
           Card(
             child: Column(
               children: [
-                ListTile(
-                  leading: const Icon(AppIcons.cloudUpload),
-                  title: Text(l10n.ledgersActionMoveToCloud),
-                  enabled: loggedIn,
-                  onTap: loggedIn ? () => _confirmMoveToCloud(ledger) : null,
-                ),
+                if (canMoveToCloud)
+                  ListTile(
+                    leading: const Icon(AppIcons.cloudUpload),
+                    title: Text(l10n.ledgersActionMoveToCloud),
+                    enabled: loggedIn,
+                    onTap: loggedIn
+                        ? () => _confirmStorageMove(
+                            ledger,
+                            title: l10n.ledgersActionMoveToCloud,
+                            message: l10n.ledgersMoveToCloudMessage(
+                              _editedNameForConfirm(ledger),
+                            ),
+                            successText: l10n.ledgersMoveToCloudSuccess,
+                            action: () => ref
+                                .read(ledgerStorageActionsProvider)
+                                .moveToCloud(ledger.id),
+                          )
+                        : null,
+                  ),
+                if (canMoveToLocal) ...[
+                  if (canMoveToCloud) const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(AppIcons.cloudDownload),
+                    title: Text(l10n.ledgersActionMoveToLocal),
+                    enabled: loggedIn,
+                    onTap: loggedIn
+                        ? () => _confirmStorageMove(
+                            ledger,
+                            title: l10n.ledgersActionMoveToLocal,
+                            message: l10n.ledgersMoveToLocalMessage(
+                              _editedNameForConfirm(ledger),
+                            ),
+                            successText: l10n.ledgersMoveToLocalSuccess,
+                            action: () => ref
+                                .read(ledgerStorageActionsProvider)
+                                .moveToLocal(ledger.id),
+                          )
+                        : null,
+                  ),
+                ],
+                if (canCopyToLocal) ...[
+                  if (canMoveToCloud || canMoveToLocal)
+                    const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(AppIcons.copy),
+                    title: Text(l10n.ledgersActionCopyToLocal),
+                    enabled: loggedIn,
+                    onTap: loggedIn
+                        ? () => _confirmStorageMove(
+                            ledger,
+                            title: l10n.ledgersActionCopyToLocal,
+                            message: l10n.ledgersCopyToLocalMessage(
+                              _editedNameForConfirm(ledger),
+                            ),
+                            successText: l10n.ledgersCopyToLocalSuccess,
+                            // 复制只是云端留一份本地副本，云端原件归属不变，
+                            // 编辑页快照仍然有效，无需 pop 回列表。
+                            popAfter: false,
+                            action: () => ref
+                                .read(ledgerStorageActionsProvider)
+                                .copyToLocal(ledger.id),
+                          )
+                        : null,
+                  ),
+                ],
                 if (!loggedIn)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(
@@ -601,47 +676,58 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
     );
   }
 
-  /// 迁云执行壳：二次确认 → 落盘未保存表单 → 执行 → 成功返回列表 / 失败弹窗。
+  /// 确认文案用的账本名：以表单中正在编辑的名称为准（用户可能已改名未保存）。
+  String _editedNameForConfirm(LedgerDisplayItem ledger) {
+    final edited = _nameController.text.trim();
+    return edited.isEmpty ? translateLedgerName(context, ledger.name) : edited;
+  }
+
+  /// 归属操作统一执行壳：二次确认 → 落盘未保存表单 → 执行 → 刷新 / 失败弹窗。
   ///
-  /// 失败回滚由 [LedgerStorageActions.moveToCloud] 的单事务保证：身份映射、
-  /// 归属翻云与全量 backfill 同属一个事务，任一步失败账本都原样保持本地态，
-  /// 这里只需把异常摊给用户，不做额外本地补偿。成功后编辑页持有的账本快照
-  /// 已过期（归属变了），必须 pop 回列表让刷新后的数据重新进场。
-  Future<void> _confirmMoveToCloud(LedgerDisplayItem ledger) async {
-    final l10n = AppLocalizations.of(context);
-    // 确认文案以表单中正在编辑的名称为准（用户可能已改名但尚未保存）
-    final editedName = _nameController.text.trim();
+  /// 移动/复制都基于数据库当前值生成结果，必须先落盘表单里尚未保存的
+  /// 元数据（尤其是名称 / AA 开关），否则会出现「界面上已开启、结果是关闭」
+  /// 的假状态；保存被用户取消（如币种变更确认）时中止归属操作。
+  /// 失败回滚由 [LedgerStorageActions] 的单事务保证（移动/复制失败时账本原样
+  /// 不动），这里只需把异常摊给用户。
+  ///
+  /// [popAfter] 控制成功后是否返回列表：移动到云端/本地会改变账本归属，
+  /// 编辑页持有的快照会过期，必须 pop 回列表；复制到本地不改变云端原件，
+  /// 快照仍有效，故不 pop。
+  Future<void> _confirmStorageMove(
+    LedgerDisplayItem ledger, {
+    required String title,
+    required String message,
+    required String successText,
+    required Future<void> Function() action,
+    bool popAfter = true,
+  }) async {
     final confirmed = await AppDialog.confirm<bool>(
       context,
-      title: l10n.ledgersActionMoveToCloud,
-      message: l10n.ledgersMoveToCloudMessage(
-        editedName.isEmpty
-            ? translateLedgerName(context, ledger.name)
-            : editedName,
-      ),
+      title: title,
+      message: message,
     );
     if (confirmed != true || !mounted) return;
 
-    // 状态副作用与页面挂载解耦：用户迁云后可能立即退出，ref 会随之失效。
+    // 状态副作用与页面挂载解耦：用户操作后可能立即退出，ref 会随之失效。
     final container = ProviderScope.containerOf(context, listen: false);
     try {
-      // 迁云基于数据库当前值生成云端副本，先落盘表单里尚未保存的元数据
-      // （名称 / 起始日 / AA 开关），否则会出现「界面上已开启、云端副本
-      // 却是关闭」的假状态；保存被用户取消时中止迁云。
-      if (!_formKey.currentState!.validate()) return;
-      final name = _nameController.text.trim();
-      if (name.isEmpty) return;
-      final saved = await _saveExistingLedger(name);
-      if (!saved || !mounted) return;
+      // 协作者只读态（共享账本复制留档）无表单可保存，跳过落盘步骤。
+      if (!_isReadOnly) {
+        if (!_formKey.currentState!.validate()) return;
+        final name = _nameController.text.trim();
+        if (name.isEmpty) return;
+        final saved = await _saveExistingLedger(name);
+        if (!saved || !mounted) return;
+      }
 
-      // 迁云含网络推送，执行期间显示不可关闭 loading，防重复点击。
+      // 移动含网络交互（推送/删除/确认），执行期间显示不可关闭 loading。
       showDialog<void>(
         context: context,
         barrierDismissible: false,
         builder: (_) => const Center(child: CircularProgressIndicator()),
       );
       try {
-        await ref.read(ledgerStorageActionsProvider).moveToCloud(ledger.id);
+        await action();
       } finally {
         if (mounted) Navigator.of(context, rootNavigator: true).pop();
       }
@@ -649,25 +735,26 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
 
       container.read(ledgerListRefreshProvider.notifier).tick();
       container.invalidate(currentLedgerProvider);
-      showToast(context, l10n.ledgersMoveToCloudSuccess);
-      Navigator.of(context).pop();
+      showToast(context, successText);
+      if (popAfter) Navigator.of(context).pop();
     } catch (e, st) {
-      logger.error('LedgerEditPage', '账本迁云失败(${ledger.id})', e, st);
+      logger.error('LedgerEditPage', '账本归属操作失败(${ledger.id})', e, st);
       if (!mounted) return;
       await AppDialog.error(
         context,
-        title: l10n.commonFailed,
-        message: l10n.commonOperationFailed,
+        title: AppLocalizations.of(context).commonFailed,
+        message: AppLocalizations.of(context).commonOperationFailed,
       );
     }
   }
 
-  /// 右上角「更多」菜单：收纳账本敏感操作（清空 / 删除）。
+  /// 右上角「更多」菜单：收纳账本敏感操作（清空 / 删除 / 退出并删除）。
   ///
   /// 菜单项按角色动态生成，点击后调用对应的处理函数：
   /// - 所有者：清空账本
+  /// - 共享账本 Owner：删除共享账本（云端 tombstone 级联踢人 + 广播）
+  /// - 共享账本协作者：退出并删除（云端退出 + 清本地）
   /// - 个人账本：删除账本（本地删行 + 清残留偏好）
-  /// - 共享账本：仅展示清空（新 schema 无云端踢人/退出通道）
   Widget _buildMoreMenu(BuildContext context, AppLocalizations l10n) {
     final ledger = widget.ledger!;
     final isOwner = ledger.myRole == 'owner';
@@ -675,11 +762,23 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
     return AppPopupMenu(
       items: [
         if (isOwner)
-          // 清空是可逆的警示级操作，用黄色与红色破坏级操作（删除）区分
+          // 清空是可逆的警示级操作，用黄色与红色破坏级操作（删除/退出）区分
           AppMenuItem.action(
             value: 'clear',
             label: l10n.ledgersClear,
             color: AppTokens.warning(context),
+          ),
+        if (isShared && isOwner)
+          AppMenuItem.action(
+            value: 'delete_shared',
+            label: l10n.ledgersDeleteShared,
+            isDanger: true,
+          ),
+        if (isShared && !isOwner)
+          AppMenuItem.action(
+            value: 'leave_and_delete',
+            label: l10n.ledgersLeaveAndDelete,
+            isDanger: true,
           ),
         if (!isShared)
           AppMenuItem.action(
@@ -692,6 +791,10 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
         switch (value) {
           case 'clear':
             _handleClearLedger();
+          case 'delete_shared':
+            _handleDeleteSharedLedgerAsOwner();
+          case 'leave_and_delete':
+            _handleLeaveAndDeleteSharedLedger();
           case 'delete':
             _handleDeleteLocalLedger();
         }
@@ -948,6 +1051,92 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
       await AppDialog.error(
         context,
         title: l10n.ledgersDeleteFailed,
+        message: l10n.commonOperationFailed,
+      );
+    }
+  }
+
+  /// 协作者「退出并删除」共享账本：cloud-first 退出（成员置 LEFT）→
+  /// 清本地数据。服务端 404（已退出/已被移除）幂等放行。
+  Future<void> _handleLeaveAndDeleteSharedLedger() async {
+    final l10n = AppLocalizations.of(context);
+    final ledger = widget.ledger!;
+    final allLedgers = await ref.read(ledgerActionsProvider).getAll();
+    if (!mounted) return;
+
+    final confirmed = await AppDialog.confirm<bool>(
+      context,
+      title: l10n.ledgersLeaveAndDeleteConfirm,
+      message: l10n.ledgersLeaveAndDeleteMessage(
+        translateLedgerName(context, ledger.name),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await ref.read(ledgerActionsProvider).leaveSharedLedger(ledger.id);
+      if (!mounted) return;
+
+      // 若删的是当前账本，切换走，避免 UI 指向已删账本。
+      if (ref.read(currentLedgerIdProvider) == ledger.id) {
+        final remain = allLedgers.where((l) => l.id != ledger.id).toList();
+        if (remain.isNotEmpty) {
+          ref.read(currentLedgerIdProvider.notifier).set(remain.first.id);
+        }
+      }
+      ref.invalidate(currentLedgerProvider);
+
+      showToast(context, l10n.ledgersLeaveAndDeleteSuccess);
+      if (mounted) Navigator.of(context).pop();
+    } catch (e, st) {
+      logger.error('LedgerEditPage', '退出并删除共享账本失败', e, st);
+      if (!mounted) return;
+      await AppDialog.error(
+        context,
+        title: l10n.commonFailed,
+        message: l10n.commonOperationFailed,
+      );
+    }
+  }
+
+  /// Owner「全局删除」共享账本：cloud-first 删除（服务端 tombstone 账本、
+  /// 级联撤销邀请并广播 delete change）→ 清本地数据。
+  Future<void> _handleDeleteSharedLedgerAsOwner() async {
+    final l10n = AppLocalizations.of(context);
+    final ledger = widget.ledger!;
+    final allLedgers = await ref.read(ledgerActionsProvider).getAll();
+    if (!mounted) return;
+
+    final confirmed = await AppDialog.confirm<bool>(
+      context,
+      title: l10n.ledgersDeleteSharedConfirm,
+      message: l10n.ledgersDeleteSharedMessage(
+        translateLedgerName(context, ledger.name),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await ref.read(ledgerActionsProvider).deleteSharedAsOwner(ledger.id);
+      if (!mounted) return;
+
+      // 若删的是当前账本，切换走，避免 UI 指向已删账本。
+      if (ref.read(currentLedgerIdProvider) == ledger.id) {
+        final remain = allLedgers.where((l) => l.id != ledger.id).toList();
+        if (remain.isNotEmpty) {
+          ref.read(currentLedgerIdProvider.notifier).set(remain.first.id);
+        }
+      }
+      ref.invalidate(currentLedgerProvider);
+
+      showToast(context, l10n.ledgersDeleteSharedSuccess);
+      if (mounted) Navigator.of(context).pop();
+    } catch (e, st) {
+      logger.error('LedgerEditPage', '删除共享账本失败', e, st);
+      if (!mounted) return;
+      await AppDialog.error(
+        context,
+        title: l10n.commonFailed,
         message: l10n.commonOperationFailed,
       );
     }

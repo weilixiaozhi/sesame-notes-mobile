@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_api_client/sesame_api_client.dart';
 
@@ -72,7 +73,29 @@ class SharingService {
       memberId: memberId,
     );
   }
+
+  /// 退出共享账本：服务端把本人成员置 LEFT（云访问即失效）。
+  Future<void> leaveLedger(String ledgerId) async {
+    await SharingApi(
+      client.dio,
+      client.serializers,
+    ).postLedgersByLedgerIdLeave(ledgerId: ledgerId);
+  }
+
+  /// 所有者全局删除共享账本：服务端 tombstone 账本（级联撤销邀请并广播
+  /// delete change）；owner 权限由服务端校验（403）。
+  Future<void> deleteSharedLedgerAsOwner(String ledgerId) async {
+    await LedgersApi(
+      client.dio,
+      client.serializers,
+    ).deleteLedgersByLedgerId(ledgerId: ledgerId);
+  }
 }
+
+/// 判定「退出共享账本」异常是否可视为已退出：
+/// 404 = 服务端已无本人成员（重复退出/已被移除），幂等放行。
+bool isLeaveAlreadyGone(Object error) =>
+    error is DioException && error.response?.statusCode == 404;
 
 /// Riverpod 装配：共享账本服务。
 final sharingServiceProvider = Provider<SharingService>((ref) {

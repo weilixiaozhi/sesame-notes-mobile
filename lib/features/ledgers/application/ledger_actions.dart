@@ -15,6 +15,7 @@ import 'package:sesame_notes/data/mappers/ledger_display_mapper.dart';
 import 'package:sesame_notes/data/models/ledger_display_item.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
+import 'package:sesame_notes/shared/providers/refresh_ticks.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
 
 /// 邀请预览展示模型。
@@ -240,6 +241,28 @@ class LedgerActions {
 
   /// 删除账本（本地直接删行，云上记录随后续同步清理）。
   Future<void> delete(String id) => _repo.deleteLedger(id);
+
+  /// 退出并删除共享账本（协作者）：cloud-first 退出（成员置 LEFT）→
+  /// 单账本 purge 本地数据 → 刷新账本列表。
+  ///
+  /// 服务端 404（已退出/已被移除）幂等放行，不阻断本地清理。
+  Future<void> leaveSharedLedger(String ledgerId) async {
+    try {
+      await ref.read(sharingServiceProvider).leaveLedger(ledgerId);
+    } catch (error) {
+      if (!isLeaveAlreadyGone(error)) rethrow;
+    }
+    await _repo.purgeLedger(ledgerId);
+    ref.read(ledgerListRefreshProvider.notifier).tick();
+  }
+
+  /// 全局删除共享账本（所有者）：cloud-first 删除（服务端 tombstone 账本、
+  /// 级联撤销邀请并广播 delete change）→ 单账本 purge 本地数据 → 刷新列表。
+  Future<void> deleteSharedAsOwner(String ledgerId) async {
+    await ref.read(sharingServiceProvider).deleteSharedLedgerAsOwner(ledgerId);
+    await _repo.purgeLedger(ledgerId);
+    ref.read(ledgerListRefreshProvider.notifier).tick();
+  }
 
   /// 清空账本交易，云账本逐笔登记 delete mutation。
   Future<int> clearTransactions(String ledgerId) =>

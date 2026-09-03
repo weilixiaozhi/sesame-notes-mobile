@@ -1105,6 +1105,36 @@ class LocalLedgerRepository {
       await (db.delete(db.ledgers)..where((l) => l.id.isIn(localIds))).go();
     });
   }
+
+  /// 单账本 purge：清除一本账本及其全部关联本地数据（退出/删除共享账本用）。
+  ///
+  /// 与 [purgeAllCloudLedgers] 同源级联，仅选区收敛到单账本：交易+编辑历史、
+  /// 待推送变更、成员镜像、共享分类镜像与账本行一并清除；不登记任何新变更
+  /// （云端已由 REST 完成退出/删除，再登记 delete 会二次推送）。
+  Future<void> purgeLedger(String id) async {
+    // 幂等快路径：账本不存在时零副作用。
+    final row = await (db.select(
+      db.ledgers,
+    )..where((l) => l.id.equals(id))).getSingleOrNull();
+    if (row == null) return;
+
+    final txIds = (await (db.select(
+      db.transactions,
+    )..where((t) => t.ledgerId.equals(id))).get()).map((t) => t.id).toList();
+    await db.transaction(() async {
+      await deleteTransactionsWithEditHistories(db, txIds);
+      await (db.delete(
+        db.syncChanges,
+      )..where((c) => c.ledgerId.equals(id))).go();
+      await (db.delete(
+        db.ledgerMembers,
+      )..where((m) => m.ledgerId.equals(id))).go();
+      await (db.delete(
+        db.sharedLedgerCategories,
+      )..where((s) => s.ledgerId.equals(id))).go();
+      await (db.delete(db.ledgers)..where((l) => l.id.equals(id))).go();
+    });
+  }
 }
 
 /// 构造契约形状的 ledger payload(规范化 snake_case)。

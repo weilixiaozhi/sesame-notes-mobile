@@ -9,6 +9,7 @@
 ///   页面保留并弹出失败提示。
 library;
 
+import 'package:drift/drift.dart' as d;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -299,5 +300,142 @@ void main() {
       reason: '账本已在云端，迁云入口无意义',
     );
     await tester.pump(const Duration(seconds: 3));
+  });
+
+  group('存储操作项(移动到本地/复制到本地)', () {
+    /// 云端非共享账本展示项（scope 归测试账号，移动到本地的账号域校验前提）。
+    Future<LedgerDisplayItem> seedCloudLedger(String id, String name) async {
+      await repo.createBoundLedger(id: id, name: name, syncId: 's');
+      await (db.update(db.ledgers)..where((l) => l.id.equals(id))).write(
+        LedgersCompanion(scopeAccountId: d.Value(testUserId)),
+      );
+      return LedgerDisplayItem.fromLocal(
+        id: id,
+        name: name,
+        currency: 'CNY',
+        createdAt: DateTime(2026, 1, 1),
+        transactionCount: 0,
+        expenseTotal: 0,
+        storageMode: 'cloud',
+      );
+    }
+
+    testWidgets('云端非共享账本：显示「移动到本地」+「复制到本地」，无迁云项', (tester) async {
+      await buildContainer();
+      final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
+      final ledger = await seedCloudLedger('cloud-2', '云端账本');
+      await pump(tester, ledger);
+
+      await tester.ensureVisible(find.text(l10n.ledgersActionMoveToLocal));
+      expect(find.text(l10n.ledgersActionMoveToLocal), findsOneWidget);
+      expect(find.text(l10n.ledgersActionCopyToLocal), findsOneWidget);
+      expect(find.text(l10n.ledgersActionMoveToCloud), findsNothing);
+      await tester.pump(const Duration(seconds: 3));
+    });
+
+    testWidgets('共享账本(协作者只读)：仅显示「复制到本地」', (tester) async {
+      await buildContainer();
+      final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
+      final ledger = await seedCloudLedger('cloud-3', '共享账本');
+      final shared = LedgerDisplayItem.fromLocal(
+        id: ledger.id,
+        name: ledger.name,
+        currency: ledger.currency,
+        createdAt: DateTime(2026, 1, 1),
+        transactionCount: 0,
+        expenseTotal: 0,
+        storageMode: 'cloud',
+        isShared: true,
+        memberCount: 2,
+        myRole: 'editor',
+      );
+      await pump(tester, shared);
+
+      await tester.ensureVisible(find.text(l10n.ledgersActionCopyToLocal));
+      expect(find.text(l10n.ledgersActionCopyToLocal), findsOneWidget);
+      expect(find.text(l10n.ledgersActionMoveToLocal), findsNothing);
+      expect(find.text(l10n.ledgersActionMoveToCloud), findsNothing);
+      await tester.pump(const Duration(seconds: 3));
+    });
+
+    testWidgets('未登录：移动到本地/复制到本地禁用 + 登录引导', (tester) async {
+      await buildContainer(loggedIn: false);
+      final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
+      final ledger = await seedCloudLedger('cloud-4', '云端账本');
+      await pump(tester, ledger);
+
+      await tester.ensureVisible(find.text(l10n.ledgersActionMoveToLocal));
+      expect(find.text(l10n.ledgersSectionCloudSignInHint), findsOneWidget);
+      for (final label in [
+        l10n.ledgersActionMoveToLocal,
+        l10n.ledgersActionCopyToLocal,
+      ]) {
+        final tile = tester.widget<ListTile>(
+          find.ancestor(of: find.text(label), matching: find.byType(ListTile)),
+        );
+        expect(tile.enabled, isFalse, reason: '未登录必须禁用归属操作');
+      }
+      await tester.pump(const Duration(seconds: 3));
+    });
+
+    testWidgets('移动到本地：确认后云端账本删除并发布本地副本，返回列表', (tester) async {
+      await buildContainer();
+      when(
+        () => sync.pushLedgerDelete(ledgerId: any(named: 'ledgerId')),
+      ).thenAnswer((_) async => 'accepted');
+      final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
+      final ledger = await seedCloudLedger('cloud-5', '云端账本');
+      await pump(tester, ledger);
+
+      await tester.ensureVisible(find.text(l10n.ledgersActionMoveToLocal));
+      await tester.tap(find.text(l10n.ledgersActionMoveToLocal));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.commonConfirm));
+      await tester.runAsync(() => tester.pumpAndSettle());
+
+      // 源云端账本删除，隐藏 Fork 发布为新的本地账本。
+      final rows = await db.select(db.ledgers).get();
+      expect(
+        rows.where((r) => r.id == ledger.id),
+        isEmpty,
+        reason: '源云端账本必须删除',
+      );
+      expect(rows, hasLength(1), reason: '隐藏 Fork 发布为唯一本地账本');
+      expect(rows.single.storageMode, 'local');
+      expect(find.text(l10n.ledgersMoveToLocalSuccess), findsOneWidget);
+      expect(find.byType(LedgerEditPage), findsNothing, reason: '归属已变，必须返回列表');
+      await tester.pump(const Duration(seconds: 3));
+    });
+
+    testWidgets('复制到本地：确认后云端原件保留 + 新本地副本落库 + 页面保留', (tester) async {
+      await buildContainer();
+      final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
+      final ledger = await seedCloudLedger('cloud-6', '云端账本');
+      await pump(tester, ledger);
+
+      await tester.ensureVisible(find.text(l10n.ledgersActionCopyToLocal));
+      await tester.tap(find.text(l10n.ledgersActionCopyToLocal));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.commonConfirm));
+      await tester.runAsync(() => tester.pumpAndSettle());
+
+      final rows = await db.select(db.ledgers).get();
+      expect(rows, hasLength(2), reason: '云端原件 + 本地副本');
+      expect(
+        rows.singleWhere((r) => r.id == ledger.id).storageMode,
+        'cloud',
+        reason: '云端原件归属不变',
+      );
+      final copy = rows.singleWhere((r) => r.id != ledger.id);
+      expect(copy.storageMode, 'local', reason: '副本为纯本地归属');
+      expect(copy.name, '云端账本');
+      expect(find.text(l10n.ledgersCopyToLocalSuccess), findsOneWidget);
+      expect(
+        find.byType(LedgerEditPage),
+        findsOneWidget,
+        reason: '云端原件未变，编辑页快照仍有效，不 pop',
+      );
+      await tester.pump(const Duration(seconds: 3));
+    });
   });
 }

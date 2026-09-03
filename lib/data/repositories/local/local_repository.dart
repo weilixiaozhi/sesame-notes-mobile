@@ -223,6 +223,11 @@ class LocalRepository {
   /// 退出登录 purge：整本清除全部云端账本（见 [LocalLedgerRepository.purgeAllCloudLedgers]）。
   Future<void> purgeAllCloudLedgers() => _ledgerRepo.purgeAllCloudLedgers();
 
+  /// 单账本 purge：清除一本账本及其全部关联本地数据
+  /// （见 [LocalLedgerRepository.purgeLedger]，退出/删除共享账本用）。
+  Future<void> purgeLedger(String id) =>
+      _guard('purgeLedger($id)', () => _ledgerRepo.purgeLedger(id));
+
   /// 清空账本交易，并复用单笔删除入口保证云账本逐笔登记 delete mutation。
   Future<int> clearLedgerTransactions(String ledgerId) => _guard(
     'clearLedgerTransactions($ledgerId)',

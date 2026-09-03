@@ -15,10 +15,10 @@ import '../../helpers/test_isolation.dart';
 
 /// [LedgerEditPage] 右上角「更多」菜单的角色门控组件测试。
 ///
-/// 新 schema 下账本编辑页右上角 [_buildMoreMenu]（AppPopupMenu）只承载两类
-/// 敏感操作，菜单项按「是否所有者」与「是否共享」动态生成：
-///   - 所有者共享账本 → 仅「清空」；
-///   - 协作者共享账本 → 无任何危险项（只读，不给操作入口）；
+/// 新 schema 下账本编辑页右上角 [_buildMoreMenu]（AppPopupMenu）按
+/// 「是否所有者」与「是否共享」动态生成菜单项：
+///   - 所有者共享账本 → 「清空」+「删除共享账本」；
+///   - 协作者共享账本 → 「退出并删除」（清空/删除均无权限）；
 ///   - 本地（非共享）账本 → 「清空」+「删除账本」。
 ///
 /// 共享性由 memberCount>1 表达、角色由 role 列表达（owner/editor），
@@ -107,28 +107,28 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('所有者共享账本 → 菜单仅含「清空」,不含「删除账本」/共享按钮', (tester) async {
+  testWidgets('所有者共享账本 → 「清空」+「删除共享账本」，无本地删除/退出项', (tester) async {
     final ledger = await seed('ext-owner', true, 'owner');
     final l10n = await pump(tester, ledger);
     await openMoreMenu(tester);
-    // 所有者共享账本：保留可逆的清空入口，不给本地删除入口，
-    // 也不再提供「删除共享账本/退出并删除」等云端协作动作。
+    // 所有者共享账本：保留可逆的清空入口，删除走云端级联（删除共享账本），
+    // 不给本地删除与「退出并删除」入口。
     expect(find.text(l10n.ledgersClear), findsOneWidget);
+    expect(find.text(l10n.ledgersDeleteShared), findsOneWidget);
     expect(find.text(l10n.ledgersDelete), findsNothing);
-    expect(find.text(l10n.ledgersDeleteShared), findsNothing);
     expect(find.text(l10n.ledgersLeaveAndDelete), findsNothing);
   });
 
-  testWidgets('协作者共享账本 → 菜单无任何危险项', (tester) async {
+  testWidgets('协作者共享账本 → 仅「退出并删除」，无清空/删除入口', (tester) async {
     final ledger = await seed('ext-editor', true, 'editor');
     final l10n = await pump(tester, ledger);
     await openMoreMenu(tester);
-    // 协作者只读：清空（仅所有者）与删除（仅非共享）的门控条件均不满足，
-    // 菜单为空，杜绝越权操作入口。
+    // 协作者只读：清空（仅所有者）与删除（仅非共享）都不给，
+    // 唯一危险项是「退出并删除」（云端退出 + 清本地）。
+    expect(find.text(l10n.ledgersLeaveAndDelete), findsOneWidget);
     expect(find.text(l10n.ledgersClear), findsNothing);
     expect(find.text(l10n.ledgersDelete), findsNothing);
     expect(find.text(l10n.ledgersDeleteShared), findsNothing);
-    expect(find.text(l10n.ledgersLeaveAndDelete), findsNothing);
   });
 
   testWidgets('本地（非共享）账本 → 菜单含「清空」+「删除账本」,不含共享按钮', (tester) async {
