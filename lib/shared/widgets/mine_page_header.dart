@@ -1,18 +1,17 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/router/route_consts.dart';
+import 'package:sesame_notes/shared/widgets/member_avatar.dart';
+import 'package:sesame_notes/shared/widgets/person_avatar.dart';
 import 'package:sesame_notes/shared/widgets/section_card.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/theme/typography.dart';
-
-/// 正式默认本人头像（随客户端包分发的静态资产，与 PLACEHOLDER 的人形占位不同）。
-const String kDefaultAvatarAsset = 'assets/Default avatar.png';
 
 /// 我的页头部：按 local/authenticated 两种账号状态渲染。
 ///
@@ -125,7 +124,7 @@ class _LocalHeader extends StatelessWidget {
   }
 }
 
-/// 已登录头部：云头像或默认头像 + 云昵称 + 芝麻号 + 进入箭头；整卡可点击。
+/// 已登录头部：云头像（磁盘缓存，离线可用）或默认头像 + 云昵称 + 芝麻号 + 进入箭头；整卡可点击。
 class _AuthenticatedHeader extends ConsumerWidget {
   final String? profileAvatarUrl;
 
@@ -149,13 +148,16 @@ class _AuthenticatedHeader extends ConsumerWidget {
               padding: const EdgeInsets.all(AppDimens.p20),
               child: Row(
                 children: [
-                  // 云头像或默认头像（60×60）；整张卡片共用个人资料入口。
-                  CircleAvatar(
-                    radius: 30,
-                    foregroundImage: profileAvatarUrl != null
-                        ? NetworkImage(profileAvatarUrl!)
-                        : null,
-                    backgroundImage: const AssetImage(kDefaultAvatarAsset),
+                  // 云头像走成员头像磁盘缓存（未上传/下载失败回退正式默认头像 60×60）；
+                  // 整张卡片共用个人资料入口。
+                  MemberAvatar(
+                    userId: profile?.userId,
+                    version: profile?.avatarVersion ?? 0,
+                    hasAvatar:
+                        profileAvatarUrl != null &&
+                        profileAvatarUrl!.trim().isNotEmpty,
+                    size: 60,
+                    iconSize: 27,
                   ),
                   const SizedBox(width: AppDimens.p16),
                   Expanded(

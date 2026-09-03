@@ -31,6 +31,15 @@ class ProfileService {
     }
   }
 
+  /// 归一化头像 URL：服务端返回相对路径（同源部署），
+  /// 客户端按 baseUrl 解析为绝对地址；绝对 URL 原样保留。
+  String? _absoluteAvatarUrl(String? url) {
+    if (url == null || url.isEmpty) return null;
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.hasScheme) return url;
+    return Uri.parse(client.dio.options.baseUrl).resolve(uri.toString()).toString();
+  }
+
   /// 更新昵称（trim 后 1-64，服务端校验换行与控制字符）。
   Future<CloudProfile> updateDisplayName(String displayName) async {
     try {
@@ -83,7 +92,7 @@ class ProfileService {
           );
       final data = resp.data;
       if (data == null) throw const FormatException('头像上传响应为空');
-      return (url: data.avatarUrl, version: data.avatarVersion);
+      return (url: _absoluteAvatarUrl(data.avatarUrl)!, version: data.avatarVersion);
     } catch (error, stackTrace) {
       logger.error('ProfileService', '上传头像失败', error, stackTrace);
       rethrow;
@@ -101,6 +110,7 @@ class ProfileService {
   }
 
   /// 下载指定用户头像（本人或共同账本成员）；不存在返回 null。
+  /// 契约：接口返回原始图片字节，Uint8List 可直接用于 Image.memory。
   Future<List<int>?> downloadAvatar(String userId) async {
     try {
       final resp = await ProfileApi(
@@ -109,7 +119,7 @@ class ProfileService {
       ).getProfileAvatarByUserId(userId: userId);
       final data = resp.data;
       if (data == null) return null;
-      return base64Decode(data.dataBase64);
+      return data;
     } on DioException catch (error) {
       if (error.response?.statusCode == 404) return null;
       logger.error('ProfileService', '下载头像失败', error, error.stackTrace);
@@ -158,8 +168,9 @@ class ProfileService {
       userId: data.userId,
       sesameNumber: data.sesameNumber,
       displayName: data.displayName,
-      avatarUrl: data.avatarUrl,
+      avatarUrl: _absoluteAvatarUrl(data.avatarUrl),
       avatarVersion: data.avatarVersion,
+      phone: data.phone,
       phoneMasked: data.phoneMasked,
       gender: data.gender.name,
     );

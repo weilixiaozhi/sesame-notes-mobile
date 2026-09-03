@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/aa/aa_edit_models.dart';
@@ -8,6 +9,7 @@ import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/shared/widgets/app_sheet.dart';
 import 'package:sesame_notes/shared/widgets/me_suffix.dart';
+import 'package:sesame_notes/shared/widgets/member_avatar.dart';
 import 'package:sesame_notes/shared/widgets/person_avatar.dart';
 
 /// 支出人单选 Bottom Sheet。
@@ -38,10 +40,10 @@ Future<String?> showAaPayerPickerSheet(
   );
 }
 
-/// 参与人选项行:显示名 + 虚拟用户徽标 + 选中勾。
+/// 参与人选项行:头像 + 显示名 + 虚拟用户徽标 + 选中勾。
 ///
 /// 支出人单选复用此行展示选中态。
-class _AaOptionRow extends StatelessWidget {
+class _AaOptionRow extends ConsumerWidget {
   final AaParticipantOption option;
   final bool checked;
   final VoidCallback onTap;
@@ -53,7 +55,7 @@ class _AaOptionRow extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final primary = Theme.of(context).colorScheme.primary;
     return InkWell(
       onTap: onTap,
@@ -62,12 +64,21 @@ class _AaOptionRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppDimens.p8),
         child: Row(
           children: [
-            // 参与人头像位:未设置头像时统一展示虚拟用户同等 person 图标,
-            // 虚拟用户与真实成员保持一致,不用底色区分。
-            const PersonAvatar(
-              size: AppDimens.icon28,
-              iconSize: AppDimens.icon16,
-            ),
+            // 参与人头像位:虚拟用户 person 占位;真实成员走成员头像缓存
+            // (有云头像显示云头像,未上传头像回退正式默认头像)。
+            if (option.isVirtual)
+              const PersonAvatar(
+                size: AppDimens.icon28,
+                iconSize: AppDimens.icon16,
+              )
+            else
+              MemberAvatar(
+                userId: option.id,
+                version: 0,
+                hasAvatar: true,
+                size: AppDimens.icon28,
+                iconSize: AppDimens.icon16,
+              ),
             const SizedBox(width: AppDimens.p12),
             Expanded(
               child: Row(

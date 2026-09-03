@@ -18,6 +18,7 @@ import 'package:sesame_notes/core/api/auth_session.dart';
 import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
 import 'package:sesame_notes/core/api/secure_account_store.dart';
 import 'package:sesame_notes/features/auth/application/account_providers.dart';
+import 'package:sesame_notes/shared/widgets/member_avatar.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/widgets/mine_page_header.dart';
 import 'package:sesame_notes/shared/widgets/section_card.dart';
@@ -204,7 +205,7 @@ void main() {
     expect(find.byType(SectionCard), findsOneWidget);
     expect(find.byIcon(AppIcons.info), findsNothing);
 
-    final avatarRect = tester.getRect(find.byType(CircleAvatar));
+    final avatarRect = tester.getRect(find.byType(MemberAvatar));
     final nameRect = tester.getRect(find.text('云昵称'));
     final numberRect = tester.getRect(find.text('芝麻号 123456789'));
     final chevronRect = tester.getRect(find.byIcon(AppIcons.chevronRight));

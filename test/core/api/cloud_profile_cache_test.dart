@@ -51,6 +51,7 @@ void main() {
         sesameNumber: '123456789',
         displayName: '芝麻仔000001',
         avatarVersion: 3,
+        phone: '+8613800138000',
         phoneMasked: '+86 138****8000',
         gender: 'MALE',
       );
@@ -61,6 +62,8 @@ void main() {
       expect(decoded.sesameNumber, '123456789');
       expect(decoded.avatarVersion, 3);
       expect(decoded.gender, 'MALE');
+      expect(decoded.phone, '+8613800138000');
+      expect(decoded.phoneMasked, '+86 138****8000');
     });
   });
 }

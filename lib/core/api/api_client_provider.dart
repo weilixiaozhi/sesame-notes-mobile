@@ -11,11 +11,19 @@ import 'package:sesame_notes/core/api/device_identity.dart';
 import 'package:sesame_notes/core/api/secure_account_store.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 
+/// 编译期服务端地址覆盖；未通过 --dart-define=API_BASE_URL 注入时为空串。
+const String kApiBaseUrlOverride = String.fromEnvironment('API_BASE_URL');
+
 /// 服务端地址，HTTP 与 WebSocket 连接统一由该地址派生。
 class ApiConfig {
   final String baseUrl;
 
-  const ApiConfig({this.baseUrl = 'https://api.9100300.xyz'});
+  const ApiConfig({this.baseUrl = _effectiveBaseUrl});
+
+  /// 编译期注入优先于线上默认地址（验收/联调本地后端用 dart-define 覆盖）。
+  static const String _effectiveBaseUrl = kApiBaseUrlOverride == ''
+      ? 'https://api.9100300.xyz'
+      : kApiBaseUrlOverride;
 }
 
 /// 构建带请求追踪、Bearer 认证和单飞刷新的全局 API 客户端。

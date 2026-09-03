@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **displayName** | **String** |  | 
 **avatarUrl** | **String** |  | 
 **avatarVersion** | **int** |  | 
+**phone** | **String** |  | 
 **phoneMasked** | **String** |  | 
 **gender** | **String** |  | 
 **isAdmin** | **bool** |  | 

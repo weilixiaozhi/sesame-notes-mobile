@@ -29,6 +29,7 @@ void main() {
           'display_name': '芝麻仔000001',
           'avatar_url': null,
           'avatar_version': 0,
+          'phone': '+8613800138000',
           'phone_masked': '+86 138****8000',
           'gender': 'UNSPECIFIED',
           'is_admin': false,
@@ -46,6 +47,7 @@ void main() {
       expect(candidate.session.deviceId, 'device-1');
       expect(candidate.refreshToken, 'refresh-token');
       expect(candidate.profile.sesameNumber, '123456789');
+      expect(candidate.profile.phone, '+8613800138000');
       expect(candidate.profile.phoneMasked, '+86 138****8000');
     });
   });
@@ -65,6 +67,7 @@ void main() {
           'display_name': '芝麻仔000001',
           'avatar_url': null,
           'avatar_version': 0,
+          'phone': '+8613800138000',
           'phone_masked': '+86 138****8000',
           'gender': 'UNSPECIFIED',
           'is_admin': false,

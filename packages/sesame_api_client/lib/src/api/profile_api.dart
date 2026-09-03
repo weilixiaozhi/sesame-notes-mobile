@@ -8,9 +8,9 @@ import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
+import 'dart:typed_data';
 import 'package:sesame_api_client/src/api_util.dart';
 import 'package:sesame_api_client/src/model/error.dart';
-import 'package:sesame_api_client/src/model/get_profile_avatar_by_user_id200_response.dart';
 import 'package:sesame_api_client/src/model/get_profile_me200_response.dart';
 import 'package:sesame_api_client/src/model/patch_profile_me_request.dart';
 import 'package:sesame_api_client/src/model/put_profile_avatar200_response.dart';
@@ -86,10 +86,9 @@ class ProfileApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [GetProfileAvatarByUserId200Response] as data
+  /// Returns a [Future] containing a [Response] with a [Uint8List] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<GetProfileAvatarByUserId200Response>>
-      getProfileAvatarByUserId({
+  Future<Response<Uint8List>> getProfileAvatarByUserId({
     required String userId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -104,6 +103,7 @@ class ProfileApi {
             .toString());
     final _options = Options(
       method: r'GET',
+      responseType: ResponseType.bytes,
       headers: <String, dynamic>{
         ...?headers,
       },
@@ -128,17 +128,11 @@ class ProfileApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    GetProfileAvatarByUserId200Response? _responseData;
+    Uint8List? _responseData;
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType:
-                  const FullType(GetProfileAvatarByUserId200Response),
-            ) as GetProfileAvatarByUserId200Response;
+      _responseData = rawResponse == null ? null : rawResponse as Uint8List;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -149,7 +143,7 @@ class ProfileApi {
       );
     }
 
-    return Response<GetProfileAvatarByUserId200Response>(
+    return Response<Uint8List>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

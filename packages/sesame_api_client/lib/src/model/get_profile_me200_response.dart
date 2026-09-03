@@ -18,6 +18,7 @@ part 'get_profile_me200_response.g.dart';
 /// * [displayName]
 /// * [avatarUrl]
 /// * [avatarVersion]
+/// * [phone]
 /// * [phoneMasked]
 /// * [gender]
 /// * [isAdmin]
@@ -43,6 +44,9 @@ abstract class GetProfileMe200Response
 
   @BuiltValueField(wireName: r'avatar_version')
   int get avatarVersion;
+
+  @BuiltValueField(wireName: r'phone')
+  String get phone;
 
   @BuiltValueField(wireName: r'phone_masked')
   String? get phoneMasked;
@@ -129,6 +133,11 @@ class _$GetProfileMe200ResponseSerializer
     yield serializers.serialize(
       object.avatarVersion,
       specifiedType: const FullType(int),
+    );
+    yield r'phone';
+    yield serializers.serialize(
+      object.phone,
+      specifiedType: const FullType(String),
     );
     yield r'phone_masked';
     yield object.phoneMasked == null
@@ -246,6 +255,13 @@ class _$GetProfileMe200ResponseSerializer
             specifiedType: const FullType(int),
           ) as int;
           result.avatarVersion = valueDes;
+          break;
+        case r'phone':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.phone = valueDes;
           break;
         case r'phone_masked':
           final valueDes = serializers.deserialize(

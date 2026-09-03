@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
+/// 正式默认本人头像（随客户端包分发的静态资产，与 PLACEHOLDER 的人形占位不同）。
+const String kDefaultAvatarAsset = 'assets/Default avatar.png';
+
 /// 未设置头像时的统一占位头像 —— 虚拟用户同等 person 图标。
 ///
 /// 样式与虚拟用户行头像保持一致：surfaceSecondary 圆形底 + person 图标，

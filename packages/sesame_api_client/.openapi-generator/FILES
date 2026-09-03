@@ -29,7 +29,6 @@ doc/GetLedgersByLedgerIdMemberStats200ResponseItemsInner.md
 doc/GetLedgersByLedgerIdMembers200ResponseInner.md
 doc/GetLedgersByLedgerIdSharedResources200Response.md
 doc/GetLedgersByLedgerIdTransactions200Response.md
-doc/GetProfileAvatarByUserId200Response.md
 doc/GetProfileMe200Response.md
 doc/GetSyncFull200Response.md
 doc/GetSyncFull200ResponseLedger.md
@@ -147,7 +146,6 @@ lib/src/model/get_ledgers_by_ledger_id_member_stats200_response_items_inner.dart
 lib/src/model/get_ledgers_by_ledger_id_members200_response_inner.dart
 lib/src/model/get_ledgers_by_ledger_id_shared_resources200_response.dart
 lib/src/model/get_ledgers_by_ledger_id_transactions200_response.dart
-lib/src/model/get_profile_avatar_by_user_id200_response.dart
 lib/src/model/get_profile_me200_response.dart
 lib/src/model/get_sync_full200_response.dart
 lib/src/model/get_sync_full200_response_ledger.dart
@@ -241,7 +239,6 @@ test/get_ledgers_by_ledger_id_member_stats200_response_test.dart
 test/get_ledgers_by_ledger_id_members200_response_inner_test.dart
 test/get_ledgers_by_ledger_id_shared_resources200_response_test.dart
 test/get_ledgers_by_ledger_id_transactions200_response_test.dart
-test/get_profile_avatar_by_user_id200_response_test.dart
 test/get_profile_me200_response_test.dart
 test/get_sync_full200_response_ledger_test.dart
 test/get_sync_full200_response_test.dart

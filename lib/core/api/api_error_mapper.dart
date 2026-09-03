@@ -32,6 +32,11 @@ ApiErrorKind mapApiError(Object error) {
     final status = error.response?.statusCode;
     if (status != null && status >= 500) return ApiErrorKind.server;
     final code = _extractCode(error);
+    // 4xx 但响应体解析不出业务错误码（如反代 HTML 404、网关纯文本）：
+    // 服务端有响应但语义不可识别，归为服务端异常而不是 other 的兜底文案
+    if (code.isEmpty && status != null && status >= 400) {
+      return ApiErrorKind.server;
+    }
     switch (code) {
       case 'INVALID_CREDENTIALS':
         return ApiErrorKind.invalidCredentials;

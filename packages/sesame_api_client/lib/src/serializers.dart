@@ -36,7 +36,6 @@ import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_member_stat
 import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_members200_response_inner.dart';
 import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_shared_resources200_response.dart';
 import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_transactions200_response.dart';
-import 'package:sesame_api_client/src/model/get_profile_avatar_by_user_id200_response.dart';
 import 'package:sesame_api_client/src/model/get_profile_me200_response.dart';
 import 'package:sesame_api_client/src/model/get_sync_full200_response.dart';
 import 'package:sesame_api_client/src/model/get_sync_full200_response_ledger.dart';
@@ -127,7 +126,6 @@ part 'serializers.g.dart';
   GetLedgersByLedgerIdMembers200ResponseInner,
   GetLedgersByLedgerIdSharedResources200Response,
   GetLedgersByLedgerIdTransactions200Response,
-  GetProfileAvatarByUserId200Response,
   GetProfileMe200Response,
   GetSyncFull200Response,
   GetSyncFull200ResponseLedger,

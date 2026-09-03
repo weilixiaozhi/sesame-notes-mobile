@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -81,8 +81,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         setState(() => errorText = l10n.authErrorOther);
         return;
       }
-      // 注册成功提示：本地账本不自动上传（非阻断）
-      showToast(context, l10n.authRegisterSuccessToast);
+      // 注册成功与登录一致：静默跳转，不展示提示
       if (context.canPop()) {
         context.pop(true);
       } else {

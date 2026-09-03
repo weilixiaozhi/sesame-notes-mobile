@@ -9,9 +9,10 @@ import 'person_avatar.dart';
 
 /// 成员头像（按 userId + 版本本地缓存，离线可显示）。
 ///
-/// 设计意图：成员头像磁盘缓存优先；缓存未命中
-/// 时由 [memberAvatarPathProvider] 后台下载，加载中/失败统一回退
-/// [PersonAvatar] 占位，避免断网时每次重建都闪占位或反复重拉。
+/// 设计意图：
+/// - userId 为空 = PLACEHOLDER/虚拟用户，回退 [PersonAvatar] 占位；
+/// - userId 非空 = 注册成员，缓存未命中时由 [memberAvatarPathProvider]
+///   后台下载；未上传头像/下载失败统一回退正式默认头像 [kDefaultAvatarAsset]。
 class MemberAvatar extends ConsumerWidget {
   const MemberAvatar({
     super.key,
@@ -54,7 +55,15 @@ class MemberAvatar extends ConsumerWidget {
         )
         .value;
     if (path == null || path.isEmpty) {
-      return PersonAvatar(size: size, iconSize: iconSize);
+      // 注册成员未上传头像/缓存未命中：正式默认头像（区别于虚拟用户占位）
+      return ClipOval(
+        child: Image.asset(
+          kDefaultAvatarAsset,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+        ),
+      );
     }
 
     return ClipOval(
@@ -63,7 +72,13 @@ class MemberAvatar extends ConsumerWidget {
         width: size,
         height: size,
         fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => PersonAvatar(size: size, iconSize: iconSize),
+        // 缓存文件损坏：与未上传头像一致回退正式默认头像
+        errorBuilder: (_, _, _) => Image.asset(
+          kDefaultAvatarAsset,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }

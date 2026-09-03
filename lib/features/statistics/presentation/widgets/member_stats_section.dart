@@ -3,12 +3,11 @@
 //
 // 数据源为本地 memberExpenseStatsProvider(按 paidByUserId 聚合),
 // 含真实成员 + 虚拟用户;paidByUserId 为空的交易不计入(无法归属支出人)。
-import 'dart:io' show File;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/l10n/app_localizations.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
@@ -233,24 +232,39 @@ class _StatsAvatar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 本人本地头像优先（离线可用、上传后即时生效）
-    final localPath = stat.localAvatarPath;
-    if (localPath != null && localPath.isNotEmpty) {
-      return ClipOval(
-        child: Image.file(
-          File(localPath),
-          width: 40,
-          height: 40,
+    // 虚拟用户：person 占位图标。
+    if (stat.isVirtual) {
+      return const PersonAvatar(
+        size: AppDimens.icon40,
+        iconSize: AppDimens.icon16,
+      );
+    }
+
+    // 本人头像：云已登录且有云头像走成员缓存（上传后即时生效、离线可用），
+    // 本地本人/云无头像统一回退正式默认头像，不再读旧的本地头像文件。
+    if (stat.isSelf) {
+      final account = ref.read(accountStateProvider);
+      final profile = account.profile;
+      if (account.isAuthenticated && profile != null) {
+        return MemberAvatar(
+          userId: profile.userId,
+          version: profile.avatarVersion,
+          hasAvatar: profile.avatarUrl != null,
+          size: AppDimens.icon40,
+          iconSize: AppDimens.icon16,
+        );
+      }
+      return const ClipOval(
+        child: Image(
+          image: AssetImage(kDefaultAvatarAsset),
+          width: AppDimens.icon40,
+          height: AppDimens.icon40,
           fit: BoxFit.cover,
-          errorBuilder: (_, _, _) => const PersonAvatar(
-            size: AppDimens.icon40,
-            iconSize: AppDimens.icon16,
-          ),
         ),
       );
     }
 
-    // 非本人真实成员:统一走磁盘缓存(断网可用),未配置头像/加载失败回退占位。
+    // 非本人真实成员:统一走磁盘缓存(断网可用),未配置头像/加载失败回退正式默认头像。
     return MemberAvatar(
       userId: stat.participantId,
       version: stat.avatarVersion,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/features/auth/application/account_providers.dart';
 import 'package:sesame_notes/features/auth/application/auth_actions.dart';
@@ -32,6 +33,8 @@ class _AvatarPreviewPageState extends ConsumerState<AvatarPreviewPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final profile = ref.watch(accountStateProvider).profile;
+    // 云头像接口要求鉴权：ImageProvider 需显式携带当前访问令牌
+    final token = ref.read(authSessionProvider)?.accessToken;
     final foreground = AppTokens.textOnPrimary(context).withValues(alpha: 0.9);
     final actionStyle = FilledButton.styleFrom(
       backgroundColor: Colors.white.withValues(alpha: 0.15),
@@ -109,6 +112,9 @@ class _AvatarPreviewPageState extends ConsumerState<AvatarPreviewPage> {
                   child: profile?.avatarUrl != null
                       ? Image.network(
                           profile!.avatarUrl!,
+                          headers: token == null
+                              ? null
+                              : {'Authorization': 'Bearer $token'},
                           fit: BoxFit.cover,
                           errorBuilder: (_, error, stackTrace) {
                             logger.error(

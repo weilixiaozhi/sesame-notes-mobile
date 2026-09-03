@@ -32,6 +32,11 @@ void main() {
       // TODO
     });
 
+    // String phone
+    test('to test the property `phone`', () async {
+      // TODO
+    });
+
     // String phoneMasked
     test('to test the property `phoneMasked`', () async {
       // TODO

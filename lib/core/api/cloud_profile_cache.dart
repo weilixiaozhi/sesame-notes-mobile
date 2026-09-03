@@ -8,15 +8,16 @@ import 'package:sesame_notes/core/storage/shared_preferences_provider.dart';
 
 /// 云账号个人资料缓存（按 user_id 键控，仅本人可见字段）。
 ///
-/// 设计意图：断网时仍能展示已登录身份；手机号脱敏值与性别虽不是凭证，
+/// 设计意图：断网时仍能展示已登录身份；手机号与性别虽不是凭证，
 /// 仍属于「仅本人可见」的私有资料，缓存必须按账号键控，且只有当前
-/// authenticated 账号域可读取。不保存完整手机号、密码或 Access Token。
+/// authenticated 账号域可读取。不保存密码或 Access Token。
 class CloudProfile {
   final String userId;
   final String? sesameNumber;
   final String? displayName;
   final String? avatarUrl;
   final int avatarVersion;
+  final String? phone;
   final String? phoneMasked;
   final String gender;
 
@@ -26,6 +27,7 @@ class CloudProfile {
     this.displayName,
     this.avatarUrl,
     this.avatarVersion = 0,
+    this.phone,
     this.phoneMasked,
     this.gender = 'UNSPECIFIED',
   });
@@ -35,6 +37,7 @@ class CloudProfile {
     String? displayName,
     String? avatarUrl,
     int? avatarVersion,
+    String? phone,
     String? phoneMasked,
     String? gender,
   }) => CloudProfile(
@@ -43,6 +46,7 @@ class CloudProfile {
     displayName: displayName ?? this.displayName,
     avatarUrl: avatarUrl ?? this.avatarUrl,
     avatarVersion: avatarVersion ?? this.avatarVersion,
+    phone: phone ?? this.phone,
     phoneMasked: phoneMasked ?? this.phoneMasked,
     gender: gender ?? this.gender,
   );
@@ -53,6 +57,7 @@ class CloudProfile {
     'display_name': displayName,
     'avatar_url': avatarUrl,
     'avatar_version': avatarVersion,
+    'phone': phone,
     'phone_masked': phoneMasked,
     'gender': gender,
   };
@@ -68,6 +73,7 @@ class CloudProfile {
         displayName: json['display_name'] as String?,
         avatarUrl: json['avatar_url'] as String?,
         avatarVersion: (json['avatar_version'] as num?)?.toInt() ?? 0,
+        phone: json['phone'] as String?,
         phoneMasked: json['phone_masked'] as String?,
         gender: json['gender'] as String? ?? 'UNSPECIFIED',
       );

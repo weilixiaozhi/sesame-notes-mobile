@@ -53,7 +53,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getProfileAvatarByUserId**
-> GetProfileAvatarByUserId200Response getProfileAvatarByUserId(userId)
+> Uint8List getProfileAvatarByUserId(userId)
 
 
 
@@ -80,7 +80,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**GetProfileAvatarByUserId200Response**](GetProfileAvatarByUserId200Response.md)
+[**Uint8List**](Uint8List.md)
 
 ### Authorization
 
@@ -89,7 +89,7 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: image/png, image/jpeg, image/webp, application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

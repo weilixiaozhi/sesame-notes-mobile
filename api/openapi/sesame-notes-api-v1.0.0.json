@@ -1024,6 +1024,7 @@
                         "display_name",
                         "avatar_url",
                         "avatar_version",
+                        "phone",
                         "phone_masked",
                         "gender",
                         "is_admin"
@@ -1060,6 +1061,10 @@
                         "avatar_version": {
                           "minimum": 0,
                           "type": "integer"
+                        },
+                        "phone": {
+                          "type": "string",
+                          "example": "+8613800138000"
                         },
                         "phone_masked": {
                           "anyOf": [
@@ -1294,6 +1299,7 @@
                         "display_name",
                         "avatar_url",
                         "avatar_version",
+                        "phone",
                         "phone_masked",
                         "gender",
                         "is_admin"
@@ -1330,6 +1336,10 @@
                         "avatar_version": {
                           "minimum": 0,
                           "type": "integer"
+                        },
+                        "phone": {
+                          "type": "string",
+                          "example": "+8613800138000"
                         },
                         "phone_masked": {
                           "anyOf": [
@@ -1510,6 +1520,7 @@
                         "display_name",
                         "avatar_url",
                         "avatar_version",
+                        "phone",
                         "phone_masked",
                         "gender",
                         "is_admin"
@@ -1546,6 +1557,10 @@
                         "avatar_version": {
                           "minimum": 0,
                           "type": "integer"
+                        },
+                        "phone": {
+                          "type": "string",
+                          "example": "+8613800138000"
                         },
                         "phone_masked": {
                           "anyOf": [
@@ -2971,47 +2986,24 @@
         ],
         "responses": {
           "200": {
-            "description": "Default Response",
+            "description": "原始头像图片字节",
             "content": {
-              "application/json": {
+              "image/png": {
                 "schema": {
-                  "type": "object",
-                  "required": [
-                    "content_type",
-                    "data_base64",
-                    "avatar_version"
-                  ],
-                  "properties": {
-                    "content_type": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "image/png"
-                          ]
-                        },
-                        {
-                          "type": "string",
-                          "enum": [
-                            "image/jpeg"
-                          ]
-                        },
-                        {
-                          "type": "string",
-                          "enum": [
-                            "image/webp"
-                          ]
-                        }
-                      ]
-                    },
-                    "data_base64": {
-                      "type": "string"
-                    },
-                    "avatar_version": {
-                      "minimum": 1,
-                      "type": "integer"
-                    }
-                  }
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }
@@ -3237,6 +3229,7 @@
                     "display_name",
                     "avatar_url",
                     "avatar_version",
+                    "phone",
                     "phone_masked",
                     "gender",
                     "is_admin",
@@ -3285,6 +3278,10 @@
                     "avatar_version": {
                       "minimum": 0,
                       "type": "integer"
+                    },
+                    "phone": {
+                      "type": "string",
+                      "example": "+8613800138000"
                     },
                     "phone_masked": {
                       "anyOf": [
@@ -3545,6 +3542,7 @@
                     "display_name",
                     "avatar_url",
                     "avatar_version",
+                    "phone",
                     "phone_masked",
                     "gender",
                     "is_admin",
@@ -3593,6 +3591,10 @@
                     "avatar_version": {
                       "minimum": 0,
                       "type": "integer"
+                    },
+                    "phone": {
+                      "type": "string",
+                      "example": "+8613800138000"
                     },
                     "phone_masked": {
                       "anyOf": [

@@ -86,6 +86,8 @@ class _$GetProfileMe200Response extends GetProfileMe200Response {
   @override
   final int avatarVersion;
   @override
+  final String phone;
+  @override
   final String? phoneMasked;
   @override
   final GetProfileMe200ResponseGenderEnum gender;
@@ -112,6 +114,7 @@ class _$GetProfileMe200Response extends GetProfileMe200Response {
       this.displayName,
       this.avatarUrl,
       required this.avatarVersion,
+      required this.phone,
       this.phoneMasked,
       required this.gender,
       required this.isAdmin,
@@ -139,6 +142,7 @@ class _$GetProfileMe200Response extends GetProfileMe200Response {
         displayName == other.displayName &&
         avatarUrl == other.avatarUrl &&
         avatarVersion == other.avatarVersion &&
+        phone == other.phone &&
         phoneMasked == other.phoneMasked &&
         gender == other.gender &&
         isAdmin == other.isAdmin &&
@@ -157,6 +161,7 @@ class _$GetProfileMe200Response extends GetProfileMe200Response {
     _$hash = $jc(_$hash, displayName.hashCode);
     _$hash = $jc(_$hash, avatarUrl.hashCode);
     _$hash = $jc(_$hash, avatarVersion.hashCode);
+    _$hash = $jc(_$hash, phone.hashCode);
     _$hash = $jc(_$hash, phoneMasked.hashCode);
     _$hash = $jc(_$hash, gender.hashCode);
     _$hash = $jc(_$hash, isAdmin.hashCode);
@@ -177,6 +182,7 @@ class _$GetProfileMe200Response extends GetProfileMe200Response {
           ..add('displayName', displayName)
           ..add('avatarUrl', avatarUrl)
           ..add('avatarVersion', avatarVersion)
+          ..add('phone', phone)
           ..add('phoneMasked', phoneMasked)
           ..add('gender', gender)
           ..add('isAdmin', isAdmin)
@@ -214,6 +220,10 @@ class GetProfileMe200ResponseBuilder
   int? get avatarVersion => _$this._avatarVersion;
   set avatarVersion(int? avatarVersion) =>
       _$this._avatarVersion = avatarVersion;
+
+  String? _phone;
+  String? get phone => _$this._phone;
+  set phone(String? phone) => _$this._phone = phone;
 
   String? _phoneMasked;
   String? get phoneMasked => _$this._phoneMasked;
@@ -266,6 +276,7 @@ class GetProfileMe200ResponseBuilder
       _displayName = $v.displayName;
       _avatarUrl = $v.avatarUrl;
       _avatarVersion = $v.avatarVersion;
+      _phone = $v.phone;
       _phoneMasked = $v.phoneMasked;
       _gender = $v.gender;
       _isAdmin = $v.isAdmin;
@@ -304,6 +315,8 @@ class GetProfileMe200ResponseBuilder
             avatarUrl: avatarUrl,
             avatarVersion: BuiltValueNullFieldError.checkNotNull(
                 avatarVersion, r'GetProfileMe200Response', 'avatarVersion'),
+            phone: BuiltValueNullFieldError.checkNotNull(
+                phone, r'GetProfileMe200Response', 'phone'),
             phoneMasked: phoneMasked,
             gender: BuiltValueNullFieldError.checkNotNull(
                 gender, r'GetProfileMe200Response', 'gender'),

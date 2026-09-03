@@ -10,6 +10,7 @@ import 'package:sesame_notes/features/auth/application/auth_actions.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/widgets/section_card.dart';
+import 'package:sesame_notes/theme/dimens.dart';
 
 /// 为资料页提供稳定的已登录资料，避免测试依赖真实会话与网络。
 class _AuthenticatedAccountStateNotifier extends AccountStateNotifier {
@@ -72,24 +73,29 @@ void main() {
     await tester.pumpWidget(_buildHarness(actions: actions));
     await tester.pumpAndSettle();
 
-    expect(find.text('点击更换头像'), findsOneWidget);
+    expect(find.text('点击更换头像'), findsNothing);
     expect(find.text('头像'), findsNothing);
     expect(find.text('基本资料'), findsOneWidget);
-    expect(find.text('账号信息'), findsOneWidget);
-    expect(find.text('安全'), findsOneWidget);
-    expect(find.byType(SectionCard), findsNWidgets(3));
+    expect(find.text('账号与安全'), findsOneWidget);
+    expect(find.text('安全'), findsNothing);
+    expect(find.text('登录密码'), findsOneWidget);
+    expect(find.byType(SectionCard), findsNWidgets(2));
+
+    // 分组标题与内容区统一 12px：分组标题（基本资料）与行标题（昵称）同字号
+    final basicInfoStyle = tester.widget<Text>(find.text('基本资料')).style;
+    final nicknameStyle = tester.widget<Text>(find.text('昵称')).style;
+    expect(nicknameStyle!.fontSize, basicInfoStyle!.fontSize);
 
     final avatarRect = tester.getRect(find.byType(CircleAvatar));
-    final avatarHintRect = tester.getRect(find.text('点击更换头像'));
     final basicInfoRect = tester.getRect(find.text('基本资料'));
     final nicknameRect = tester.getRect(find.text('昵称'));
     final nicknameValueRect = tester.getRect(find.text('芝麻仔382716'));
     final genderRect = tester.getRect(find.text('性别'));
     final genderValueRect = tester.getRect(find.text('未设置'));
+    final phoneRect = tester.getRect(find.text('+86 138****5678'));
 
     expect(avatarRect.center.dx, moreOrLessEquals(195));
-    expect(avatarHintRect.top, greaterThan(avatarRect.bottom));
-    expect(basicInfoRect.top, greaterThan(avatarHintRect.bottom));
+    expect(basicInfoRect.top, greaterThan(avatarRect.bottom));
     expect(nicknameValueRect.left, greaterThan(nicknameRect.right));
     expect(
       nicknameValueRect.center.dy,
@@ -97,5 +103,19 @@ void main() {
     );
     expect(genderValueRect.left, greaterThan(genderRect.right));
     expect(genderValueRect.center.dy, moreOrLessEquals(genderRect.center.dy));
+
+    // 内容右对齐：带箭头行（值+箭头整体贴卡片右缘），无箭头行值贴右缘
+    final cardRight =
+        tester.getRect(find.byType(SectionCard).first).right - AppDimens.p16;
+    const arrowGap = AppDimens.p8 + AppDimens.icon20;
+    expect(
+      nicknameValueRect.right,
+      moreOrLessEquals(cardRight - arrowGap, epsilon: 3),
+    );
+    expect(
+      genderValueRect.right,
+      moreOrLessEquals(cardRight - arrowGap, epsilon: 3),
+    );
+    expect(phoneRect.right, moreOrLessEquals(cardRight, epsilon: 3));
   });
 }

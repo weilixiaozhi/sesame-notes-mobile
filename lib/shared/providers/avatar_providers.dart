@@ -1,7 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/shared/providers/simple_state_notifier.dart';
 
 import 'package:sesame_notes/shared/services/avatar_picker.dart';
+import 'package:sesame_notes/core/api/api_client_provider.dart';
+import 'package:sesame_notes/core/api/profile_service.dart';
 import 'package:sesame_notes/core/storage/avatar_storage.dart';
 import 'package:sesame_notes/core/storage/member_avatar_storage.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
@@ -48,8 +52,17 @@ final memberAvatarPathProvider =
       }
 
       try {
-        // 云端头像下载随新认证层接入后恢复；当前仅用本地缓存。
-        return null;
+        // 仅登录态下载：云头像接口要求鉴权（Bearer 由拦截器自动携带）
+        if (ref.read(authSessionProvider) == null) return null;
+        final bytes = await ProfileService(
+          ref.read(apiClientProvider),
+        ).downloadAvatar(key.userId);
+        if (bytes == null || bytes.isEmpty) return null;
+        return await memberAvatarStorage.save(
+          userId: key.userId,
+          version: key.version,
+          bytes: Uint8List.fromList(bytes),
+        );
       } catch (e, st) {
         logger.warning('AvatarCache', '成员头像下载失败 userId=${key.userId}: $e', st);
         return null;

@@ -17,6 +17,7 @@ part 'post_auth_register201_response_user.g.dart';
 /// * [displayName]
 /// * [avatarUrl]
 /// * [avatarVersion]
+/// * [phone]
 /// * [phoneMasked]
 /// * [gender]
 /// * [isAdmin]
@@ -39,6 +40,9 @@ abstract class PostAuthRegister201ResponseUser
 
   @BuiltValueField(wireName: r'avatar_version')
   int get avatarVersion;
+
+  @BuiltValueField(wireName: r'phone')
+  String get phone;
 
   @BuiltValueField(wireName: r'phone_masked')
   String? get phoneMasked;
@@ -108,6 +112,11 @@ class _$PostAuthRegister201ResponseUserSerializer
     yield serializers.serialize(
       object.avatarVersion,
       specifiedType: const FullType(int),
+    );
+    yield r'phone';
+    yield serializers.serialize(
+      object.phone,
+      specifiedType: const FullType(String),
     );
     yield r'phone_masked';
     yield object.phoneMasked == null
@@ -187,6 +196,13 @@ class _$PostAuthRegister201ResponseUserSerializer
             specifiedType: const FullType(int),
           ) as int;
           result.avatarVersion = valueDes;
+          break;
+        case r'phone':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.phone = valueDes;
           break;
         case r'phone_masked':
           final valueDes = serializers.deserialize(

@@ -140,7 +140,6 @@ Class | Method | HTTP request | Description
  - [GetLedgersByLedgerIdMembers200ResponseInner](doc/GetLedgersByLedgerIdMembers200ResponseInner.md)
  - [GetLedgersByLedgerIdSharedResources200Response](doc/GetLedgersByLedgerIdSharedResources200Response.md)
  - [GetLedgersByLedgerIdTransactions200Response](doc/GetLedgersByLedgerIdTransactions200Response.md)
- - [GetProfileAvatarByUserId200Response](doc/GetProfileAvatarByUserId200Response.md)
  - [GetProfileMe200Response](doc/GetProfileMe200Response.md)
  - [GetSyncFull200Response](doc/GetSyncFull200Response.md)
  - [GetSyncFull200ResponseLedger](doc/GetSyncFull200ResponseLedger.md)

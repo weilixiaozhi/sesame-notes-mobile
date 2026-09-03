@@ -1,10 +1,11 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sesame_notes/l10n/app_localizations.dart';
+import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/features/auth/application/account_providers.dart';
 import 'package:sesame_notes/features/auth/application/auth_actions.dart';
 import 'package:sesame_notes/features/auth/presentation/account_logout_flow.dart';
@@ -15,7 +16,7 @@ import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/theme/typography.dart';
 
-/// 个人资料页：基本资料（头像/昵称/性别）、账号信息（芝麻号/手机号）、安全（修改密码）。
+/// 个人资料页：基本资料（头像/昵称/性别）与账号与安全（芝麻号/手机号/登录密码）。
 ///
 /// 设计意图：芝麻号与手机号只读（不提供复制）；退出登录是页面底部独立的
 /// 危险操作按钮，带说明文字，点击弹出确认对话框；不设独立「账号与安全」页。
@@ -27,6 +28,9 @@ class ProfilePage extends ConsumerStatefulWidget {
 }
 
 class _ProfilePageState extends ConsumerState<ProfilePage> {
+  /// 云头像加载失败时记录的 URL；换头像后 URL 变化会重新加载。
+  String? _failedAvatarUrl;
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +51,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(accountStateProvider);
     final profile = state.profile;
+    final avatarUrl = profile?.avatarUrl;
+    // 云头像接口要求鉴权：ImageProvider 需显式携带当前访问令牌
+    final token = ref.read(authSessionProvider)?.accessToken;
 
     return Scaffold(
       backgroundColor: AppTokens.scaffoldBackground(context),
@@ -67,66 +74,67 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(AppDimens.radius44),
                     onTap: () => context.pushNamed(Routes.profileAvatar),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: AppDimens.p40 * 2,
-                          height: AppDimens.p40 * 2,
-                          child: Stack(
-                            children: [
-                              Positioned.fill(
-                                child: CircleAvatar(
-                                  radius: AppDimens.p40,
-                                  backgroundColor: AppTokens.surfaceSecondary(
+                    child: SizedBox(
+                      width: AppDimens.p40 * 2,
+                      height: AppDimens.p40 * 2,
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: CircleAvatar(
+                              radius: AppDimens.p40,
+                              backgroundColor: AppTokens.surfaceSecondary(
+                                context,
+                              ),
+                              // 默认头像始终作为背景，云头像前景加载失败时自然回退
+                              backgroundImage: const AssetImage(
+                                kDefaultAvatarAsset,
+                              ),
+                              foregroundImage: avatarUrl == null ||
+                                      avatarUrl == _failedAvatarUrl
+                                  ? null
+                                  : NetworkImage(
+                                      avatarUrl,
+                                      headers: token == null
+                                          ? null
+                                          : {
+                                              'Authorization':
+                                                  'Bearer $token',
+                                            },
+                                    ),
+                              onForegroundImageError:
+                                  avatarUrl != null &&
+                                          avatarUrl != _failedAvatarUrl
+                                      ? (_, _) => setState(
+                                          () => _failedAvatarUrl = avatarUrl,
+                                        )
+                                      : null,
+                            ),
+                          ),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              width: AppDimens.icon28,
+                              height: AppDimens.icon28,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppTokens.primary(context),
+                                border: Border.all(
+                                  color: AppTokens.scaffoldBackground(
                                     context,
                                   ),
-                                  foregroundImage: profile?.avatarUrl != null
-                                      ? NetworkImage(profile!.avatarUrl!)
-                                      : null,
-                                  backgroundImage: profile?.avatarUrl != null
-                                      ? null
-                                      : const AssetImage(kDefaultAvatarAsset),
-                                  onForegroundImageError:
-                                      profile?.avatarUrl != null
-                                      ? (_, _) {}
-                                      : null,
+                                  width: 2,
                                 ),
                               ),
-                              Positioned(
-                                right: 0,
-                                bottom: 0,
-                                child: Container(
-                                  width: AppDimens.icon28,
-                                  height: AppDimens.icon28,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: AppTokens.primary(context),
-                                    border: Border.all(
-                                      color: AppTokens.scaffoldBackground(
-                                        context,
-                                      ),
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: const Icon(
-                                    AppIcons.edit,
-                                    size: AppDimens.icon16,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                              child: const Icon(
+                                AppIcons.edit,
+                                size: AppDimens.icon16,
+                                color: Colors.white,
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: AppDimens.p8),
-                        Text(
-                          l10n.profileAvatarChange,
-                          style: AppTextTokens.label(
-                            context,
-                          ).copyWith(color: AppTokens.primary(context)),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -167,19 +175,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       _buildRow(
                         context,
                         title: l10n.profilePhone,
-                        value: profile?.phoneMasked ?? '',
+                        value: profile?.phone ?? profile?.phoneMasked ?? '',
+                      ),
+                      AppTokens.cardDivider(context),
+                      _buildRow(
+                        context,
+                        title: l10n.profileChangePassword,
+                        onTap: () => context.pushNamed(Routes.accountPassword),
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(height: AppDimens.p20),
-                _buildSection(
-                  context,
-                  title: l10n.profileSecurity,
-                  child: _buildRow(
-                    context,
-                    title: l10n.profileChangePassword,
-                    onTap: () => context.pushNamed(Routes.accountPassword),
                   ),
                 ),
                 const SizedBox(height: AppDimens.p20),
@@ -240,7 +244,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  /// 构建资料行：标题靠左、值与可编辑箭头靠右，保持信息扫描方向一致。
+  /// 构建资料行：标题靠左、值与可编辑箭头贴卡片右缘，保持信息扫描方向一致。
   Widget _buildRow(
     BuildContext context, {
     required String title,
@@ -256,19 +260,26 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         ),
         child: Row(
           children: [
-            Expanded(child: Text(title, style: AppTextTokens.title(context))),
-            if (value != null) ...[
-              const SizedBox(width: AppDimens.p16),
-              Flexible(
-                child: Text(
-                  value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.right,
-                  style: AppTextTokens.label(context),
-                ),
-              ),
-            ],
+            Text(
+              title,
+              style: AppTextTokens.label(
+                context,
+              ).copyWith(color: AppTokens.textPrimary(context)),
+            ),
+            // 中间弹性区把值与箭头推到卡片右缘；值过长时收缩省略
+            Expanded(
+              child: value == null
+                  ? const SizedBox.shrink()
+                  : Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextTokens.label(context),
+                      ),
+                    ),
+            ),
             if (onTap != null) ...[
               const SizedBox(width: AppDimens.p8),
               Icon(

@@ -37,6 +37,7 @@ Map<String, Object> _sessionBody({String token = 'new-access'}) => {
     'display_name': '芝麻仔000001',
     'avatar_url': null,
     'avatar_version': 0,
+    'phone': '+8613800138000',
     'phone_masked': '+86 138****8000',
     'gender': 'UNSPECIFIED',
     'is_admin': false,

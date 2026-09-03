@@ -46,7 +46,6 @@ export 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_member_stat
 export 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_members200_response_inner.dart';
 export 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_shared_resources200_response.dart';
 export 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_transactions200_response.dart';
-export 'package:sesame_api_client/src/model/get_profile_avatar_by_user_id200_response.dart';
 export 'package:sesame_api_client/src/model/get_profile_me200_response.dart';
 export 'package:sesame_api_client/src/model/get_sync_full200_response.dart';
 export 'package:sesame_api_client/src/model/get_sync_full200_response_ledger.dart';
