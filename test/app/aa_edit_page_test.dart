@@ -300,7 +300,7 @@ void main() {
     );
 
     // 未手选支出人(默认 = 创建人 = 本人):本地账本恒显固定本地身份
-    // 「单机芝麻仔 (我)」(§6.4),非「未知」也非云昵称。
+    // 「单机芝麻仔 (我)」,非「未知」也非云昵称。
     expect(
       find.textContaining('单机芝麻仔', findRichText: true),
       findsOneWidget,
@@ -331,7 +331,7 @@ void main() {
     );
 
     // 未手选支出人(默认 = 创建人 = 本人):云账本显示当前云 Profile 昵称
-    // + 共享「(我)」后缀(§6.4)。
+    // + 共享「(我)」后缀。
     expect(find.textContaining('云昵称', findRichText: true), findsOneWidget);
     expect(find.text('未知'), findsNothing);
   });

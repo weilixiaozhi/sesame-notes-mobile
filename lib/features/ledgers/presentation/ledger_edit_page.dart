@@ -532,7 +532,7 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
           // 标题右侧显示"添加虚拟用户"文字链，无需外部再渲染标题。
           MemberManagementSection(
             // 云账本按账本 UUID 走成员镜像表(含进入页面的目录刷新);
-            // 本地账本/新建态置空,展示固定「所有者(我)」行(§6.4)。
+            // 本地账本/新建态置空,展示固定「所有者(我)」行。
             ledgerExternalId: ledger?.storageMode == 'cloud'
                 ? ledger?.id
                 : null,

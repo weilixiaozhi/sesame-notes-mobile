@@ -57,7 +57,7 @@ Future<void> showTransactionDetailSheet({
   Future<void> Function()? onEditAa,
   required Future<void> Function() onDelete,
 }) {
-  // §13.4:打开交易详情(交易身份页面)时按需刷新成员公开资料(幂等 + 防抖)。
+  // 打开交易详情(交易身份页面)时按需刷新成员公开资料(幂等 + 防抖)。
   final container = ProviderScope.containerOf(context, listen: false);
   unawaited(refreshLedgerMemberDirectory(container, transaction.ledgerId));
   return showAppSheet<void>(

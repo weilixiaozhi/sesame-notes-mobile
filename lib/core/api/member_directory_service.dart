@@ -4,7 +4,7 @@ import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/repositories/local/local_member_repository.dart'
     show LedgerDirectoryMember;
 
-/// 成员目录服务(§13.4 后半句):拉取服务端成员列表接口的公开资料,
+/// 成员目录服务:拉取服务端成员列表接口的公开资料,
 /// 供本地成员展示快照按需刷新。
 ///
 /// 设计意图:只封装生成客户端、格式映射与错误日志,不复制 DTO、

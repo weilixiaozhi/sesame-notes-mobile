@@ -595,7 +595,7 @@ class _AaEditPageState extends ConsumerState<AaEditPage> {
     // 展示名:未手选时 [_resolveDefaultPayerId] 已把操作者 id 填入 _paidById,
     // 此处反查名册即「我」(与参与人锁定行同名,三处口径一致)。
     // 未手选 = 默认支出人 = 创建人(本人):按账本归属展示——
-    // 本地账本固定「单机芝麻仔」,云账本显当前云 Profile 昵称(§6.4)。
+    // 本地账本固定「单机芝麻仔」,云账本显当前云 Profile 昵称。
     // 未手选(_paidById 为 null)时操作者即「我」,恒为本人;手选后按名册
     // option.isSelf 判定,与参与人锁定行 / picker 行的本人口径一致。
     final payerIsSelf = _paidById == null

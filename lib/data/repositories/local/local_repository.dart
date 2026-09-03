@@ -1623,7 +1623,7 @@ class LocalRepository {
 
   Future<void> unbindAllLocalMembers() => _memberRepo.unbindAllLocalMembers();
 
-  /// §13.4:本人更新云 Profile 后刷新同账号 REGISTERED 成员展示快照。
+  /// 本人更新云 Profile 后刷新同账号 REGISTERED 成员展示快照。
   Future<int> refreshMemberDisplayByAccount({
     required String userId,
     required String? displayName,

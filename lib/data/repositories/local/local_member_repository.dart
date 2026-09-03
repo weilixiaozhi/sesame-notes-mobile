@@ -347,7 +347,7 @@ class LocalLedgerMemberRepository {
     return false;
   }
 
-  /// §13.4:本人更新云 Profile 后,刷新本地所有账本中绑定该账号的
+  /// 本人更新云 Profile 后,刷新本地所有账本中绑定该账号的
   /// REGISTERED 成员展示快照(昵称/头像)。
   ///
   /// 只写展示字段,不触碰 updatedAt 与同步通道:成员行是服务端镜像,
@@ -379,7 +379,7 @@ class LocalLedgerMemberRepository {
         .write(fields);
   }
 
-  /// 成员目录 REST 快照落库(§13.4 后半句):服务端成员列表接口返回的
+  /// 成员目录 REST 快照落库:服务端成员列表接口返回的
   /// 公开资料覆盖本地 REGISTERED 成员展示字段。
   ///
   /// 只镜像展示资料,不改变成员生命周期、不登记同步变更;远端已有而
@@ -460,7 +460,7 @@ String placeholderPayload(LedgerMember m) {
   return jsonEncode({'display_name': m.displayName});
 }
 
-/// 成员目录 REST 快照条目(§13.4):服务端成员列表接口公开资料的最小形状。
+/// 成员目录 REST 快照条目:服务端成员列表接口公开资料的最小形状。
 class LedgerDirectoryMember {
   const LedgerDirectoryMember({
     required this.memberId,

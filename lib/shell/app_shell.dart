@@ -120,7 +120,7 @@ class _SesameNotesAppState extends ConsumerState<SesameNotesApp>
       if (!result.ok) {
         logger.warning('AppLifecycle', '前台恢复刷新未完成，继续展示本地数据', result.error);
       }
-      // §13.4:前台恢复同时按需刷新成员公开资料(幂等 + 防抖,失败不阻塞)。
+      // 前台恢复同时按需刷新成员公开资料(幂等 + 防抖,失败不阻塞)。
       unawaited(refreshLedgerMemberDirectory(container, ledgerId));
     } catch (error, stackTrace) {
       logger.error('AppLifecycle', '前台恢复刷新失败', error, stackTrace);

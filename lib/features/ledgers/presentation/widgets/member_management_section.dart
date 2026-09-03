@@ -131,7 +131,7 @@ class _MemberManagementSectionState
       // 仅在无成员镜像(新建态/本地账本)时加载当前用户信息作为所有者展示。
       _loadCurrentUserInfo();
     } else {
-      // §13.4:进入成员管理(成员身份页面)时按需刷新成员公开资料(幂等 + 防抖)。
+      // 进入成员管理(成员身份页面)时按需刷新成员公开资料(幂等 + 防抖)。
       final container = ProviderScope.containerOf(context, listen: false);
       unawaited(
         refreshLedgerMemberDirectory(container, widget.ledgerExternalId!),
@@ -142,7 +142,7 @@ class _MemberManagementSectionState
   /// 加载本地设备身份,作为新建态/本地账本的所有者展示。
   ///
   /// 新建态没有成员镜像表,但账本创建者必然是当前用户,故从 localSelfId
-  /// 推导本人成员 id;展示名按本地身份固定文案「单机芝麻仔」渲染(§6.4)。
+  /// 推导本人成员 id;展示名按本地身份固定文案「单机芝麻仔」渲染。
   Future<void> _loadCurrentUserInfo() async {
     try {
       final selfId = await ref.read(localSelfIdProvider.future);
@@ -582,6 +582,9 @@ class _MemberManagementSectionState
     }
 
     // 有成员镜像模式:从本地 LedgerMembers 镜像表拉取成员列表。
+    // 真实成员行只渲染 REGISTERED:PLACEHOLDER 由虚拟用户区块渲染;
+    // 遗留的 LOCAL 行(旧版登录绑定残留)不进入云账本成员列表,
+    // 避免本人同时出现「单机芝麻仔」与云昵称两行。
     final membersAsync = ref.watch(
       ledgerMemberDisplaysProvider(widget.ledgerExternalId!),
     );
@@ -589,7 +592,11 @@ class _MemberManagementSectionState
     return membersAsync.when(
       loading: () => _buildLoadingMemberCard(context, l10n),
       error: (_, _) => _buildErrorCard(context, l10n),
-      data: (members) => _buildContent(context, members, l10n),
+      data: (members) => _buildContent(
+        context,
+        members.where((m) => m.memberType == 'REGISTERED').toList(),
+        l10n,
+      ),
     );
   }
 
@@ -758,7 +765,7 @@ class _MemberManagementSectionState
   /// 新建态/本地账本:构造"所有者(我)"行作为唯一成员。
   ///
   /// 本地身份展示名固定为「单机芝麻仔」(纯名,「(我)」后缀由 _MemberTile
-  /// 统一渲染),与云昵称无关(§6.4/§I-04)。
+  /// 统一渲染),与云昵称无关。
   List<LedgerMemberDisplay> _buildOwnerAsMember() {
     final selfId = _ownerSelfId;
     // 本地账本/新建态的 self member：id 按 uuidV5(ledgerId, localSelfId)
@@ -874,13 +881,13 @@ class _MemberTile extends ConsumerWidget {
         (member.linkedAccountId != null &&
             member.linkedAccountId!.isNotEmpty &&
             member.linkedAccountId == sessionUserId);
-    // 标题按身份口径解析(§6.2):本人优先当前云 Profile 昵称/固定本地身份,
+    // 标题按身份口径解析:本人优先当前云 Profile 昵称/固定本地身份,
     // 即使成员行快照为空也不落「未知」;他人用成员目录昵称(注册即分配,
     // 恒非空),空昵称的防御兜底才用「未知」。
     final hasDisplayName = member.displayName.isNotEmpty;
     String displayName;
     if (isSelf && member.memberType == 'REGISTERED') {
-      // 云昵称优先(§6.2),资料缓存未就绪时回退成员行快照(正常恒非空)。
+      // 云昵称优先,资料缓存未就绪时回退成员行快照(正常恒非空)。
       final cloudName =
           ref.watch(accountStateProvider).profile?.displayName?.trim() ?? '';
       displayName = cloudName.isNotEmpty

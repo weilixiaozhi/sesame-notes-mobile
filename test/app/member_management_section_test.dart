@@ -365,9 +365,76 @@ void main() {
     expect(
       find.textContaining('单机芝麻仔', findRichText: true),
       findsOneWidget,
-      reason: '本地账本本人恒显固定本地身份(§6.4),不得显示「未知」',
+      reason: '本地账本本人恒显固定本地身份,不得显示「未知」',
     );
     expect(find.text('未知'), findsNothing);
+    await tester.pump(const Duration(seconds: 3));
+  });
+
+  testWidgets('云账本镜像模式:只渲染 REGISTERED 成员,遗留 LOCAL/占位行不出现', (tester) async {
+    // 云账本成员镜像若混入旧版登录绑定残留的 LOCAL 行或 PLACEHOLDER 行,
+    // 真实成员区只渲染 REGISTERED,虚拟用户由专用区块渲染,本人不会
+    // 同时出现「单机芝麻仔」与云昵称两行。
+    final legacyLocal = LedgerMember(
+      id: 'member-local',
+      ledgerId: 'ledger-1',
+      displayName: '',
+      memberType: 'LOCAL',
+      linkedAccountId: 'user-1',
+      role: 'editor',
+      avatarVersion: 0,
+      status: 'ACTIVE',
+      joinedAt: DateTime.utc(2026, 1, 1),
+      createdAt: DateTime.utc(2026, 1, 1),
+      updatedAt: DateTime.utc(2026, 1, 1),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ledgerMembersProvider.overrideWith(
+            (ref, ledgerId) async => [
+              _member(userId: 'user-1', role: 'owner', isSelf: true),
+              legacyLocal,
+            ],
+          ),
+          authSessionProvider.overrideWith(
+            () => _AuthSessionNotifier(
+              AuthSession(accessToken: 'x', userId: 'user-1', deviceId: 'd'),
+            ),
+          ),
+          accountStateProvider.overrideWith(_CloudAccountNotifier.new),
+        ],
+        child: MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: MemberManagementSection(
+                ledgerExternalId: 'ledger-1',
+                ledgerName: '测试账本',
+                ledgerId: 'ledger-1',
+                aaEnabled: false,
+                onAaChanged: (_) {},
+                isReadOnly: true,
+                pendingVirtualUsers: const [],
+                onPendingVirtualUsersChanged: (_) {},
+                showInviteEntry: false,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // REGISTERED 本人行显示云昵称;遗留 LOCAL 行被过滤,不出现「单机芝麻仔」。
+    expect(find.textContaining('云昵称', findRichText: true), findsOneWidget);
+    expect(
+      find.textContaining('单机芝麻仔', findRichText: true),
+      findsNothing,
+      reason: '云账本成员镜像不得渲染遗留 LOCAL 行',
+    );
     await tester.pump(const Duration(seconds: 3));
   });
 }

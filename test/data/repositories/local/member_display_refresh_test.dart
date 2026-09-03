@@ -1,4 +1,4 @@
-/// 成员展示快照刷新仓储测试(§13.4)。
+/// 成员展示快照刷新仓储测试。
 ///
 /// 锁定行为:
 /// - refreshDisplayByAccount:本人更新云 Profile 后,同 linked_account_id 的

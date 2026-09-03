@@ -48,7 +48,7 @@ class AaStatisticsPage extends ConsumerWidget {
     final statisticsAsync = ref.watch(aaStatisticsProvider(ledgerId));
     final excludedAsync = ref.watch(_aaNoSplitTxProvider(ledgerId));
 
-    // §13.4:进入 AA 分摊(成员身份页面)时按需刷新成员公开资料(幂等 + 防抖)。
+    // 进入 AA 分摊(成员身份页面)时按需刷新成员公开资料(幂等 + 防抖)。
     return MemberDirectoryRefresher(
       child: Scaffold(
         body: Column(

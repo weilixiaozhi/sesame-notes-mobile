@@ -167,7 +167,7 @@ class AuthActions {
 
   /// 原子更新页面即时状态与断网启动所需的账号资料缓存。
   ///
-  /// §13.4:资料落定后批量刷新本地云账本中绑定该账号的 REGISTERED
+  /// 资料落定后批量刷新本地云账本中绑定该账号的 REGISTERED
   /// 成员展示快照,保证成员管理/交易详情等身份页面即时显示新昵称/头像;
   /// 快照刷新失败只记日志,不阻断资料本身已保存成功的结果。
   Future<void> _commitProfile(CloudProfile profile) async {

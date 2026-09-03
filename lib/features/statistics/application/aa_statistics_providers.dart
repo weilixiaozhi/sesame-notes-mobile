@@ -36,7 +36,7 @@ import 'package:sesame_notes/shared/aa/aa_edit_models.dart';
 import 'package:sesame_notes/features/statistics/application/aa_member_detail_models.dart';
 import 'package:sesame_notes/shared/aa/aa_statistics_service.dart';
 
-/// 本地账本自我参与人的展示名:固定本地身份「单机芝麻仔」(§6.4/§10.2),
+/// 本地账本自我参与人的展示名:固定本地身份「单机芝麻仔」,
 /// 与云昵称无关(本地身份与云身份独立,I-04)。
 /// 仅返回纯名字,「(我)」后缀由 UI 层基于 isSelf 标记用共享
 /// meSuffixSpan/MeSuffix 统一渲染,不在数据层拼接。
@@ -297,7 +297,7 @@ final aaParticipantOptionsProvider = FutureProvider.autoDispose
       final ledger = await repo.getLedgerById(ledgerId);
       final isSharedLedger = (ledger?.memberCount ?? 0) > 1;
       final isCloudLedger = ledger?.storageMode == 'cloud';
-      // 云/共享账本才注入云账号身份;本地账本本人恒显固定本地身份(§6.4)。
+      // 云/共享账本才注入云账号身份;本地账本本人恒显固定本地身份。
       final account = isCloudLedger ? ref.read(accountStateProvider) : null;
       final locale =
           ref.read(languageProvider) ?? ui.PlatformDispatcher.instance.locale;
@@ -311,7 +311,7 @@ final aaParticipantOptionsProvider = FutureProvider.autoDispose
           );
           // 本人判定 = 该账本 self member（登录后由绑定服务写入）。
           final selfMemberId = await _selfMemberIdFor(ref, ledger, ledgerId);
-          // 本人云昵称:仅云/共享账本使用当前云 Profile(§6.2)。
+          // 本人云昵称:仅云/共享账本使用当前云 Profile。
           final selfCloudName = isCloudLedger
               ? account?.profile?.displayName?.trim() ?? ''
               : '';
@@ -489,7 +489,7 @@ final memberExpenseStatsProvider = FutureProvider.autoDispose
         l10n: l10n,
       );
       // 本人展示名:本地账本固定「单机芝麻仔」;云账本取当前云 Profile 昵称,
-      // 资料缓存未就绪时回退成员行昵称,再回退「未知」(§6.2/§6.4)。
+      // 资料缓存未就绪时回退成员行昵称,再回退「未知」。
       String selfDisplayName(String? rowName) {
         if (!isCloudLedger) return l10n.mineLocalName;
         final cloud = account?.profile?.displayName?.trim() ?? '';
