@@ -13,7 +13,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:sesame_api_client/sesame_api_client.dart';
 import 'package:sesame_notes/core/api/auth_session.dart';
 import 'package:sesame_notes/core/api/api_client_provider.dart';
+import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
 import 'package:sesame_notes/core/api/sharing_service.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/data/db.dart' show LedgerMember;
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
@@ -22,6 +24,15 @@ import 'package:sesame_notes/features/statistics/application/aa_statistics_provi
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/features/ledgers/presentation/widgets/member_management_section.dart';
 import 'package:sesame_notes/shared/widgets/text_state_switch.dart';
+
+/// 已登录账号状态:云昵称「云昵称」绑定 user-1。
+class _CloudAccountNotifier extends AccountStateNotifier {
+  @override
+  AccountState build() => const AccountState(
+    status: AccountStatus.authenticated,
+    profile: CloudProfile(userId: 'user-1', displayName: '云昵称'),
+  );
+}
 
 /// 构造成员桩数据 — 只填测试关心的字段,其余给固定值。
 LedgerMember _member({
@@ -262,6 +273,102 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byIcon(AppIcons.personRemove), findsNothing);
+  });
+
+  testWidgets('云账本本人行快照昵称为空:显示云昵称（我）而非「未知」', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ledgerMembersProvider.overrideWith(
+            (ref, ledgerId) async => [
+              // 成员行快照昵称为空(历史/迁移数据):本人行必须兜底当前云 Profile 昵称。
+              LedgerMember(
+                id: 'member-user-1',
+                ledgerId: 'ledger-1',
+                displayName: '',
+                memberType: 'REGISTERED',
+                linkedAccountId: 'user-1',
+                role: 'owner',
+                avatarVersion: 0,
+                status: 'ACTIVE',
+                joinedAt: DateTime.utc(2026, 1, 1),
+                createdAt: DateTime.utc(2026, 1, 1),
+                updatedAt: DateTime.utc(2026, 1, 1),
+              ),
+            ],
+          ),
+          authSessionProvider.overrideWith(
+            () => _AuthSessionNotifier(
+              AuthSession(accessToken: 'x', userId: 'user-1', deviceId: 'd'),
+            ),
+          ),
+          accountStateProvider.overrideWith(_CloudAccountNotifier.new),
+        ],
+        child: MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: MemberManagementSection(
+                ledgerExternalId: 'ledger-1',
+                ledgerName: '测试账本',
+                ledgerId: 'ledger-1',
+                aaEnabled: false,
+                onAaChanged: (_) {},
+                isReadOnly: true,
+                pendingVirtualUsers: const [],
+                onPendingVirtualUsersChanged: (_) {},
+                showInviteEntry: false,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 本人行显示当前云 Profile 昵称并带「(我)」后缀,不得显示「未知」。
+    expect(find.textContaining('云昵称', findRichText: true), findsOneWidget);
+    expect(find.text('未知'), findsNothing);
+    // 收尾:等目录刷新降级日志与 toast 计时器结算。
+    await tester.pump(const Duration(seconds: 3));
+  });
+
+  testWidgets('本地账本(无成员镜像):所有者行显示固定本地身份「单机芝麻仔（我）」', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: MemberManagementSection(
+                ledgerExternalId: null,
+                ledgerName: '测试账本',
+                ledgerId: 'ledger-1',
+                aaEnabled: false,
+                onAaChanged: (_) {},
+                isReadOnly: false,
+                pendingVirtualUsers: const [],
+                onPendingVirtualUsersChanged: (_) {},
+                showInviteEntry: false,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('单机芝麻仔', findRichText: true),
+      findsOneWidget,
+      reason: '本地账本本人恒显固定本地身份(§6.4),不得显示「未知」',
+    );
+    expect(find.text('未知'), findsNothing);
+    await tester.pump(const Duration(seconds: 3));
   });
 }
 

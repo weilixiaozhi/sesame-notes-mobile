@@ -531,8 +531,11 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
           // 成员管理模块自带标题行（色条 + "成员管理"），AA 开启时
           // 标题右侧显示"添加虚拟用户"文字链，无需外部再渲染标题。
           MemberManagementSection(
-            // 新 schema 无 syncId：成员协作数据源标识置空（本地账本语义）。
-            ledgerExternalId: null,
+            // 云账本按账本 UUID 走成员镜像表(含进入页面的目录刷新);
+            // 本地账本/新建态置空,展示固定「所有者(我)」行(§6.4)。
+            ledgerExternalId: ledger?.storageMode == 'cloud'
+                ? ledger?.id
+                : null,
             ledgerName: ledgerName,
             ledgerId: ledger?.id,
             aaEnabled: _aaEnabled,

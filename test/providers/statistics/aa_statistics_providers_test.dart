@@ -186,4 +186,47 @@ void main() {
     // logger.error 触发落盘定时器，清空取消避免残留 pending timer。
     await logger.clear();
   });
+
+  testWidgets('authorMemberIdForLedger:成员行创建失败仍返回派生成员 id,不裸写设备 id', (tester) async {
+    final mock = _MockRepo();
+    when(() => mock.getLedgerById('ledger-1')).thenAnswer(
+      (_) async => Ledger(
+        id: 'ledger-1',
+        name: '账本',
+        currency: 'CNY',
+        monthStartDay: 1,
+        aaEnabled: false,
+        role: 'owner',
+        memberCount: 1,
+        storageMode: 'local',
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+      ),
+    );
+    when(
+      () => mock.ensureLocalSelfMember(
+        ledgerId: any(named: 'ledgerId'),
+        localSelfId: any(named: 'localSelfId'),
+        displayName: any(named: 'displayName'),
+      ),
+    ).thenThrow(StateError('boom'));
+    final c2 = ProviderContainer(
+      overrides: [
+        repositoryProvider.overrideWithValue(mock),
+        localSelfIdProvider.overrideWith((ref) async => 'local-self'),
+      ],
+    );
+    addTearDown(c2.dispose);
+    final ref2 = await captureRef(tester, c2);
+
+    final result = await authorMemberIdForLedger(ref2, 'ledger-1');
+
+    expect(
+      result,
+      localSelfMemberId('ledger-1', 'local-self'),
+      reason: '成员行创建失败降级时也必须返回确定性派生成员 id,不得裸写设备 id',
+    );
+    // logger.warning 触发落盘定时器，清空取消避免残留 pending timer。
+    await logger.clear();
+  });
 }

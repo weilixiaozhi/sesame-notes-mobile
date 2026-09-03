@@ -865,12 +865,6 @@ class _MemberTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    // 标题优先用昵称(账号注册即分配,恒非空);昵称为空的防御兜底用「未知」,
-    // 绝不回退展示 member id。
-    final hasDisplayName = member.displayName.isNotEmpty;
-    final displayName = hasDisplayName
-        ? member.displayName
-        : l10n.aaUnknownUser;
     final isOwner = member.role == 'owner';
     // 本人判定:本地账本 LOCAL 成员恒为本人;共享账本成员绑定当前账号
     // （linked_account_id == 当前登录 userId）即本人。
@@ -880,6 +874,23 @@ class _MemberTile extends ConsumerWidget {
         (member.linkedAccountId != null &&
             member.linkedAccountId!.isNotEmpty &&
             member.linkedAccountId == sessionUserId);
+    // 标题按身份口径解析(§6.2):本人优先当前云 Profile 昵称/固定本地身份,
+    // 即使成员行快照为空也不落「未知」;他人用成员目录昵称(注册即分配,
+    // 恒非空),空昵称的防御兜底才用「未知」。
+    final hasDisplayName = member.displayName.isNotEmpty;
+    String displayName;
+    if (isSelf && member.memberType == 'REGISTERED') {
+      // 云昵称优先(§6.2),资料缓存未就绪时回退成员行快照(正常恒非空)。
+      final cloudName =
+          ref.watch(accountStateProvider).profile?.displayName?.trim() ?? '';
+      displayName = cloudName.isNotEmpty
+          ? cloudName
+          : (hasDisplayName ? member.displayName : l10n.aaUnknownUser);
+    } else if (isSelf && member.memberType == 'LOCAL') {
+      displayName = l10n.mineLocalName;
+    } else {
+      displayName = hasDisplayName ? member.displayName : l10n.aaUnknownUser;
+    }
     return ListTile(
       dense: true,
       leading: _MemberAvatar(member: member),

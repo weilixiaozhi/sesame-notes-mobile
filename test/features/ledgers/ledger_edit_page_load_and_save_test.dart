@@ -117,6 +117,69 @@ void main() {
     expenseTotal: 0,
   );
 
+  testWidgets('云账本:成员管理展示成员镜像昵称而非仅所有者行', (tester) async {
+    // 云账本行 + 成员镜像表:成员管理必须按账本 UUID 查询并渲染成员昵称。
+    await db
+        .into(db.ledgers)
+        .insert(
+          LedgersCompanion.insert(
+            id: 'ledger-cloud',
+            name: '共享账本',
+            currency: const Value('CNY'),
+            storageMode: const Value('cloud'),
+            memberCount: const Value(2),
+            selfMemberId: const Value('member-me'),
+            updatedAt: DateTime.utc(2026, 1, 1),
+          ),
+        );
+    for (final m in [
+      (
+        id: 'member-me',
+        name: '我的昵称',
+        account: 'user-1',
+        role: 'owner',
+      ),
+      (
+        id: 'member-other',
+        name: '他人昵称',
+        account: 'user-2',
+        role: 'editor',
+      ),
+    ]) {
+      await db
+          .into(db.ledgerMembers)
+          .insert(
+            LedgerMembersCompanion.insert(
+              id: m.id,
+              ledgerId: 'ledger-cloud',
+              displayName: m.name,
+              memberType: 'REGISTERED',
+              linkedAccountId: Value(m.account),
+              role: Value(m.role),
+              updatedAt: DateTime.utc(2026, 1, 1),
+            ),
+          );
+    }
+    await pump(
+      tester,
+      ledger: LedgerDisplayItem.fromLocal(
+        id: 'ledger-cloud',
+        name: '共享账本',
+        currency: 'CNY',
+        createdAt: DateTime(2026, 1, 1),
+        transactionCount: 0,
+        expenseTotal: 0,
+        storageMode: 'cloud',
+        memberCount: 2,
+        selfMemberId: 'member-me',
+      ),
+    );
+
+    // 云账本成员管理必须展示成员镜像昵称,而非退化为「所有者(我)」单行。
+    expect(find.text('我的昵称'), findsOneWidget);
+    expect(find.text('他人昵称'), findsOneWidget);
+  });
+
   testWidgets('编辑模式：账本不存在 → 错误态 → 补建后重试成功', (tester) async {
     final l10n = await pump(tester, ledger: item('ledger-999', '不存在'));
 

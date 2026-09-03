@@ -18,6 +18,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
+import 'package:sesame_notes/utils/member_id.dart';
 import 'package:sesame_notes/shared/aa/aa_fields_utils.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/db.dart' show Ledger, LedgerMember;
@@ -72,7 +73,9 @@ Future<String> authorMemberIdForLedger(WidgetRef ref, String ledgerId) async {
       // 普通记账已落库时，作者补记失败不能把整个保存流程变成失败。
       logger.warning('AaStatistics', 'self 成员创建失败，降级设备身份', '$e\n$st');
     }
-    return localSelfId;
+    // 成员行创建失败时仍返回确定性派生成员 id(uuidV5),展示层可解析为
+    // 本人固定身份,绝不裸写设备 localSelfId(否则展示为「未知」)。
+    return localSelfMemberId(ledgerId, localSelfId);
   }
   // 非导入记账路径保留既有兜底；导入会在写入前单独校验成员身份。
   return localSelfId;
