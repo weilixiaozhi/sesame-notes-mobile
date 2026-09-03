@@ -1,6 +1,6 @@
 /// 账本卡片组件
 ///
-/// 展示账本基本信息，同步状态通过 syncStatusProvider 单独获取
+/// 展示账本基本信息，同步状态通过 ledgerSyncStatusProvider 单独获取
 library;
 
 import 'package:flutter/material.dart';
@@ -10,6 +10,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/data/models.dart';
 import 'package:sesame_notes/shared/presentation/format_utils.dart';
+import 'package:sesame_notes/shared/providers/sync_providers.dart';
+import 'package:sesame_notes/sync/ledger_sync_status.dart';
 import 'currency_flag.dart';
 import 'format_money.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
@@ -41,9 +43,13 @@ class LedgerCard extends ConsumerWidget {
     final primaryColor = Theme.of(context).colorScheme.primary;
     final l10n = AppLocalizations.of(context);
 
-    // 同步状态/上传中信号：随新同步层接入后恢复；当前统一视为未同步。
-    final isUploading = false;
-    final isSynced = false;
+    // 同步状态：由「会话 + 绑定 + 待推 + 冲突」投影；绿云语义 = 能连上
+    // 服务器（已同步 / 待推送），未登录 / 绑定失效 / 冲突为离线灰。
+    // 上传中 = 有待推送变更且同步编排正在执行（busy）。
+    final statusAsync = ref.watch(ledgerSyncStatusProvider(ledger.id));
+    final status = statusAsync.value;
+    final busy = ref.watch(syncBusyProvider);
+    final isUploading = busy && status == LedgerSyncStatus.pendingPush;
 
     return GestureDetector(
       onTap: onTap,
@@ -143,7 +149,7 @@ class LedgerCard extends ConsumerWidget {
                         const SizedBox(width: AppDimens.p8),
 
                         // 状态图标
-                        _buildStatusIcon(context, ref, isSynced, isUploading),
+                        _buildStatusIcon(context, isUploading, status),
                       ],
                     ),
 
@@ -224,10 +230,10 @@ class LedgerCard extends ConsumerWidget {
 
   /// 状态图标
   ///
-  /// 图标策略(UI 不判断具体后端实现,只认两个输入):
+  /// 图标策略(UI 不判断具体后端实现,只认同步状态投影):
   /// 1. 账本归属 storage_mode → 是否画"云"图标;
-  /// 2. 激活后端枚举 → 画哪种云:Sesame Notes Cloud=cloudy,其它云后端=database。
-  /// 颜色语义:绿=已同步,红=未同步/有备份但当前未配置云,灰=纯本地。
+  /// 2. 颜色语义:绿 = 能连上服务器(已同步 / 待推送),
+  ///    灰 = 未登录 / 绑定失效 / 存在冲突待解决;纯本地账本画本地图标。
   ///
   /// 为什么用 storage_mode 判断云图标:归属模型下用户可以把云端账本移回本地,
   /// 此时 syncId 已清空;反过来也存在"标了 cloud 但 syncId 还没补上"的中间态。
@@ -235,11 +241,10 @@ class LedgerCard extends ConsumerWidget {
   /// 否则用户看到云图标却发现根本不同步。
   Widget _buildStatusIcon(
     BuildContext context,
-    WidgetRef ref,
-    bool isSynced,
     bool isUploading,
+    LedgerSyncStatus? status,
   ) {
-    // 优先显示上传中状态
+    // 优先显示上传中状态(有待推送变更且同步正在执行)。
     if (isUploading) {
       return const SizedBox(
         width: 20,
@@ -248,16 +253,16 @@ class LedgerCard extends ConsumerWidget {
       );
     }
 
-    // 云端账本:恒为云形图标（快照备份型后端的状态显示随备份功能重建）。
+    // 云端账本:恒为云形图标,颜色由同步状态投影决定。
     if (ledger.isCloudLedger) {
-      // 已同步：在线绿；其余（未同步 / 有备份但云状态脱钩）统一离线灰。
-      final color = isSynced
+      final isConnected = status?.isConnected ?? false;
+      final color = isConnected
           ? AppTokens.statusOnline(context)
           : AppTokens.statusOffline(context);
       return Icon(AppIcons.cloudQueue, color: color, size: AppDimens.icon20);
     }
 
-    // 纯本地账本(storage_mode='local'):默认灰色硬盘图标表达"纯本地无备份"。
+    // 纯本地账本(storage_mode='local'):灰色硬盘图标表达"纯本地"。
     return const Icon(
       AppIcons.localStorage,
       color: AppTokens.brandLocal,

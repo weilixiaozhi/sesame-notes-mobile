@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:sesame_api_client/sesame_api_client.dart';
 import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
+import 'package:sesame_notes/sync/ledger_sync_status.dart';
 import 'package:sesame_notes/sync/reconnect_service.dart';
 import 'package:sesame_notes/sync/sync_service.dart';
 // 只取展示模型：本文件已 import 生成 API 的 Ledger，全量 barrel 会撞名。
@@ -11,6 +12,7 @@ import 'package:sesame_notes/data/repositories/local/local_ledger_repository.dar
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/shared/providers/refresh_ticks.dart';
+import 'package:sesame_notes/shared/providers/simple_state_notifier.dart';
 import 'package:sesame_notes/shared/providers/sync_state_providers.dart';
 
 /// 当前账本的 OPEN 冲突列表（冲突 UI 数据源）。
@@ -126,13 +128,23 @@ class SyncCoordinator {
   }
 
   /// 执行当前轮及被合并的尾随轮；同一时刻只允许一个网络同步链路运行。
+  ///
+  /// 整轮（含尾随补跑）期间置起 busy 信号供账本卡片显示上传转圈；
+  /// 结束后 bump 同步 tick —— push 标记 pushedAt 不发射业务数据信号，
+  /// 卡片状态等派生方依赖该 tick 重算「待推送 → 已同步」。
   Future<SyncRunResult> _runSerially() async {
-    var result = await _runOnce();
-    while (_rerunRequested) {
-      _rerunRequested = false;
-      result = await _runOnce();
+    ref.read(syncBusyProvider.notifier).start();
+    try {
+      var result = await _runOnce();
+      while (_rerunRequested) {
+        _rerunRequested = false;
+        result = await _runOnce();
+      }
+      return result;
+    } finally {
+      ref.read(syncBusyProvider.notifier).stop();
+      ref.read(syncRunTickProvider.notifier).tick();
     }
-    return result;
   }
 
   /// 执行单轮 push → pull，并把技术异常转换为可展示的失败结果。
@@ -222,3 +234,73 @@ class SyncCoordinator {
     }
   }
 }
+
+/// 同步轮结束 tick：同步服务直写 sync_changes（标记 pushedAt）不发射
+/// 业务数据信号，账本卡片同步状态等派生方依赖它触发重算。
+final syncRunTickProvider = NotifierProvider<TickStateNotifier, int>(
+  () => TickStateNotifier((ref) => 0),
+);
+
+/// 同步执行中信号：整轮（push → pull，含尾随补跑）期间为 true。
+final syncBusyProvider = NotifierProvider<SyncBusyNotifier, bool>(
+  SyncBusyNotifier.new,
+);
+
+/// 同步执行中闸门状态：默认空闲（false）。
+class SyncBusyNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  /// 标记一轮同步开始。
+  void start() => state = true;
+
+  /// 标记一轮同步结束。
+  void stop() => state = false;
+}
+
+/// 指定账本的卡片同步状态。
+///
+/// 数据源：账本持久字段（storage_mode / binding_status）+ 会话 + 该账本
+/// 待推 mutation 数与 OPEN 冲突数，经 [ledgerSyncStatusOf] 纯函数投影。
+/// 重算时机：同步轮结束 tick、业务数据变更信号、会话切换。
+final ledgerSyncStatusProvider = FutureProvider.autoDispose
+    .family<LedgerSyncStatus, String>((ref, ledgerId) async {
+      // 先同步订阅全部运行态信号，再进入异步查询（Riverpod 依赖图完整性）。
+      ref.watch(syncRunTickProvider);
+      ref.watch(dataChangeSignalProvider);
+      final session = ref.watch(authSessionProvider);
+      final db = ref.watch(databaseProvider);
+
+      final ledger = await (db.select(
+        db.ledgers,
+      )..where((l) => l.id.equals(ledgerId))).getSingleOrNull();
+      // 账本不存在或非云端归属：不画云。
+      if (ledger == null || ledger.storageMode != 'cloud') {
+        return LedgerSyncStatus.local;
+      }
+      // 未登录：连不上服务器，不再查询待推/冲突。
+      if (session == null) return LedgerSyncStatus.notLoggedIn;
+
+      // 待推 mutation：只统计当前账号域（与 push 的账号过滤一致）。
+      final pending =
+          await (db.select(db.syncChanges)..where(
+                (c) =>
+                    c.ledgerId.equals(ledgerId) &
+                    c.pushedAt.isNull() &
+                    c.accountId.equals(session.userId),
+              ))
+              .get();
+      final conflicts =
+          await (db.select(db.syncConflicts)..where(
+                (x) => x.ledgerId.equals(ledgerId) & x.status.equals('OPEN'),
+              ))
+              .get();
+
+      return ledgerSyncStatusOf(
+        storageMode: ledger.storageMode,
+        bindingStatus: ledger.bindingStatus,
+        hasSession: true,
+        pendingCount: pending.length,
+        conflictCount: conflicts.length,
+      );
+    });
