@@ -581,7 +581,7 @@ class DataImportService {
 
     for (final tx in validTransactions) {
       // 按 UUID 幂等去重：本地已存在、或本批次内重复出现的 UUID 一律跳过，
-      // 避免恢复把快照重复插入本地（修复下拉刷新数据翻倍 bug）。
+      // 避免恢复把快照重复插入本地。
       // 跳过的记录计入 processed 以保证进度回调准确，但不计入 inserted/failed。
       final sid = tx.syncId;
       if (sid != null && sid.isNotEmpty) {

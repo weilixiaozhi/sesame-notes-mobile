@@ -276,7 +276,7 @@ class _CloudServicePageState extends ConsumerState<CloudServicePage> {
       message: l10n.cloudSwitchConfirmMessage,
     );
     if (confirmed != true || !mounted) return;
-    // 用户已确认，直接激活（不再二次确认）。
+    // 用户已确认，直接激活。
     await _activateBackend(backend);
   }
 
@@ -354,7 +354,7 @@ class _CloudServicePageState extends ConsumerState<CloudServicePage> {
       // 保存成功后统一引导用户是否立即切换（新建与编辑均弹出）。
       final wantSwitch = await _confirmSaveSwitch();
       if (wantSwitch && mounted) {
-        // 用户已在引导弹窗确认，直接激活（不再二次确认）。
+        // 用户已在引导弹窗确认，直接激活。
         await _activateBackend(backend);
       }
     } catch (e, st) {

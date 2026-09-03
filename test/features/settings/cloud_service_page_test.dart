@@ -157,7 +157,7 @@ void main() {
     await tester.tap(find.text('保存').last);
     await tester.pumpAndSettle();
 
-    // 保存成功后引导「立即切换」；确认后直接激活（不再二次确认）。
+    // 保存成功后引导「立即切换」；确认后直接激活（不二次确认）。
     expect(find.text('配置已保存'), findsOneWidget);
     await tester.tap(find.text('立即切换'));
     await tester.pumpAndSettle();

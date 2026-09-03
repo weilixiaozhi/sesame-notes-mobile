@@ -3,7 +3,7 @@
 /// 需求锚点：
 /// - 本机备份页「从文件恢复」与云端「从云端恢复」会把外部 .snbak 文件
 ///   传入恢复流程：loadBackups(externalPath:) 将外部文件插入列表头部并预选；
-/// - 不传 externalPath 时行为与原来完全一致。
+/// - 不传 externalPath 时行为与传 externalPath 时一致。
 library;
 
 import 'dart:io';

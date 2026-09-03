@@ -190,7 +190,7 @@ class _DetailExportPageState extends ConsumerState<DetailExportPage> {
       builder: (context, snapshot) {
         final ledgers = snapshot.data ?? const <LedgerDisplayItem>[];
         // 空账本:不渲染 DropdownButton(其 value 不在 items 会断言崩溃),
-        // 改为空态提示,导出按钮同步禁用。
+        // 渲染空态提示,导出按钮同步禁用。
         if (snapshot.connectionState == ConnectionState.done &&
             ledgers.isEmpty) {
           return Padding(

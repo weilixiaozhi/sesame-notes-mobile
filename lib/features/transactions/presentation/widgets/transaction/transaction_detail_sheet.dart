@@ -383,7 +383,7 @@ class _TransactionDetailBody extends ConsumerWidget {
               const <LedgerMemberDisplay>[])
         v.id: v.displayName,
     };
-    // 统一展示名解析器:修复 id/账号/昵称混用,统一走 memberDisplayMap→
+    // 统一展示名解析器:统一走 memberDisplayMap→
     // localSelfId→虚拟用户→兜底。
     final resolver = _buildResolver(ref, l10n, virtualNames);
 

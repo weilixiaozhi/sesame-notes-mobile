@@ -11,7 +11,7 @@
 /// _ledgersProvider 经 repositoryProvider 查询内存库，测试注入真实内存库
 /// （databaseProvider → SesameDatabase.forTesting）并预先 seed 账本，既保证
 /// 数据确定，又让 dataChangeSignalProvider 监听同一实例；已删除的
-/// localLedgersProvider / activeCloudConfigProvider 不再 override。
+/// localLedgersProvider / activeCloudConfigProvider 不 override。
 library;
 
 import 'package:drift/drift.dart';
@@ -295,7 +295,7 @@ void main() {
     // 云端分区为空时给「暂无云端账本」而非登录引导。
     expect(find.text('暂无云端账本，云端账本会在各设备间同步'), findsOneWidget);
 
-    // 头部不再残留 link 图标入口（已回迁到云端分区全宽按钮）。
+    // 头部无 link 图标入口（该入口在云端分区全宽按钮）。
     expect(find.widgetWithIcon(IconButton, AppIcons.link), findsNothing);
   });
 

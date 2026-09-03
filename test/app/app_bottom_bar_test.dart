@@ -63,7 +63,7 @@ void main() {
     // FAB 视觉矩形（+ 号图标即 FAB 内容，56×56）
     final fabRect = tester.getRect(find.byIcon(AppIcons.add));
     // 点击 FAB 顶部往下 5dp —— 位于凸出胶囊的 25dp 区域内，
-    // 修复前该点超出 Stack bounds，命中 100% 丢失。
+    // 该点必须落在 Stack bounds 内，否则命中丢失。
     await tester.tapAt(Offset(fabRect.center.dx, fabRect.top + 5));
     expect(centerTaps, 1, reason: 'FAB 凸出胶囊的上半区必须可点击');
   });
@@ -75,7 +75,7 @@ void main() {
     );
 
     final fabRect = tester.getRect(find.byIcon(AppIcons.add));
-    // FAB 底部往上 5dp —— 与胶囊重叠区域，修复前后都应可点。
+    // FAB 底部往上 5dp —— 与胶囊重叠区域，应可点。
     await tester.tapAt(Offset(fabRect.center.dx, fabRect.bottom - 5));
     expect(centerTaps, 1);
   });

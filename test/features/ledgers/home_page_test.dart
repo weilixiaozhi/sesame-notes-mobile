@@ -3,7 +3,7 @@
 /// 测试框架：flutter_test + flutter_riverpod + mocktail
 ///
 /// 重点验证：左右滑切月的「日期错乱」bug 修复。
-/// 修复前 _onPageScrollSettled 未防重入，jumpToPage 派发的 ScrollEndNotification
+/// _onPageScrollSettled 防重入：jumpToPage 派发的 ScrollEndNotification
 /// 会在 page 仍为 0/2 的瞬间重复触发切月，导致 selectedMonth 被连续偏移成
 /// 离谱年份（1723 / -3127）。本测试通过模拟 fling + 多帧 pump，断言切月只发生一次。
 ///
@@ -212,7 +212,7 @@ void main() {
 
     final after = containerOf(tester).read(selectedMonthProvider);
     // 核心断言：只切一个月到 2026-08，而不是被连续偏移到离谱年份。
-    expect(after, DateTime(2026, 8, 1), reason: '滑动一次应仅切一个月，修复前会因重入循环偏移到离谱年份');
+    expect(after, DateTime(2026, 8, 1), reason: '滑动一次应仅切一个月，不因重入循环偏移到离谱年份');
   });
 
   testWidgets('手指向右滑切上月：selectedMonth 减 1', (tester) async {
@@ -646,7 +646,7 @@ void main() {
     );
 
     // 再发一个「不同」账本对象（字段变化确保 AsyncValue 变化、_MonthPage 真正 rebuild）。
-    // 修复前：rebuild 会重新执行 widget.getStream() → 交易流被再次创建；
+    // rebuild 不重新执行 widget.getStream() → 交易流不被再次创建；
     // 修复后：_txStream 缓存引用不变 → 不重建。
     ledgerCtrl.add(testLedger.copyWith(memberCount: 9));
     await tester.pump(const Duration(milliseconds: 50));
@@ -659,7 +659,7 @@ void main() {
       reason:
           'currentLedgerProvider 变化触发 _MonthPage rebuild 时不应重建交易流'
           '（getStream 只在 initState / 切月切账本时调用一次）。'
-          '修复前每次 build 都新建流，StreamBuilder 重新订阅会短暂返回 null，'
+          '每次 build 都新建流会让 StreamBuilder 重新订阅并短暂返回 null，'
           '首页渲染出灰色骨架屏。',
     );
 
@@ -707,7 +707,7 @@ void main() {
 
   // ==================== 共享账本展示名接线回归 ====================
   testWidgets('共享账本:交易详情显示成员昵称而非裸 member id(成员映射接线回归)', (tester) async {
-    // 复现场景:共享账本(memberCount>1)+ 真实成员列表。此前首页恒传 const {} 成员映射,
+    // 复现场景:共享账本(memberCount>1)+ 真实成员列表。首页传空成员映射时,
     // 详情 sheet 解析不到成员 → 裸显 member id(UUID 乱码)。
     testLedger = Ledger(
       id: 'ledger-1',
@@ -754,7 +754,7 @@ void main() {
         updatedAt: DateTime(2024, 1, 2),
       ),
     ]);
-    // 他人创建/编辑的交易:修复前创建者/编辑者会裸显 other-member-1。
+    // 他人创建/编辑的交易:创建者/编辑者裸显 member id 即回归。
     registerTxsStream(
       () => Stream<List<_TxItem>>.value([
         (

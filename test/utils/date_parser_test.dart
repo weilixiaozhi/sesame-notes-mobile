@@ -116,7 +116,7 @@ void main() {
       expect(single.month, 6);
       expect(single.day, 25);
       expect(single.hour, 0);
-      // 关键:两种写法必须解析成同一时刻(修复前差整 8 小时 = 480 分钟)
+      // 关键:两种写法必须解析成同一时刻(8 小时时区差即回归)
       expect(single.difference(padded), Duration.zero);
     });
 

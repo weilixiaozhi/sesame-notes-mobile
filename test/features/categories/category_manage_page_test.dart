@@ -167,7 +167,7 @@ void main() {
       await tester.pumpWidget(buildApp());
       await prime(tester);
 
-      // 2026-07-24 改版：右上角入口从文字按钮改为圆圈加号 IconButton
+      // 右上角入口为圆圈加号 IconButton
       // （与周期账单新增入口统一风格），"添加分类"文案收敛到 tooltip。
       final buttonFinder = find.widgetWithIcon(IconButton, AppIcons.addCircle);
       expect(buttonFinder, findsOneWidget, reason: '应有"添加分类"图标按钮');
@@ -635,7 +635,7 @@ void main() {
 
     /// 验证模板入口为独立按钮：文字字号 ≥ 13 且按钮高度 ≥ 36（足够点击热区）。
     ///
-    /// 2026-07-24 改版：模板入口从头部文字链改为标题下的独立 OutlinedButton，
+    /// 模板入口为标题下的独立 OutlinedButton，
     /// 文字经按钮 textStyle 注入（DefaultTextStyle 下发），
     /// 按钮自带 Material 触摸目标，天然满足热区要求。
     void expectTemplateEntryButton(WidgetTester tester, String label) {

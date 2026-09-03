@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -125,8 +125,8 @@ class TransactionAaEditUtils {
     // 支出人(paidByUserId)属全局交易语义(非 AA 专属):未手选回传 null 不更新
     // 保持原值,手选后恒写手选值,不受分摊方式切换影响。
     final actions = ref.read(transactionActionsProvider);
-    // 成员列表与操作者成员 id（self member）并行解析；操作者必须在写库前
-    // 拿到，作者字段随交易同一事务落定，不再写完再回填。
+    // 成员列表与操作者成员 id（self member）并行解析；作者字段随交易
+    // 同一事务落定。
     final membersFuture = actions.getMembers(ledgerId);
     final operatorMemberId = await authorMemberIdForLedger(ref, ledgerId);
     final newVersion = await actions.update(

@@ -278,7 +278,7 @@ final ledgerSyncStatusProvider = FutureProvider.autoDispose
       if (ledger == null || ledger.storageMode != 'cloud') {
         return LedgerSyncStatus.local;
       }
-      // 未登录：连不上服务器，不再查询待推/冲突。
+      // 未登录：连不上服务器，不查询待推/冲突。
       if (session == null) return LedgerSyncStatus.notLoggedIn;
 
       // 待推 mutation：只统计当前账号域（与 push 的账号过滤一致）。

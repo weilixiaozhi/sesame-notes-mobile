@@ -7,7 +7,7 @@
 //
 // 说明：exportConfigToYaml / importConfigFromYaml 门面直接把 repository 传给
 // ConfigExportService 完成导入导出，完整链路已在 services/export/config_export_service_test
-// 中覆盖，此处仅测门面自身的语义，不再触碰完整链路。
+// 中覆盖，此处仅测门面自身的语义，不触碰完整链路。
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

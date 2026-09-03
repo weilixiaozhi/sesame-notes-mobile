@@ -283,7 +283,7 @@ void main() {
         nativeAmount: '12.00',
         payerMemberId: null,
         aaMode: null,
-        // 操作者在写库前解析，与交易同一事务落定，不再二次回填。
+        // 操作者与交易同一事务落定，无二次回填。
         operatorMemberId: 'device-1',
       ),
     ).called(1);

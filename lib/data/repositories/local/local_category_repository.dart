@@ -717,7 +717,7 @@ class LocalCategoryRepository {
       return (totalCount: 0, totalAmount: 0.0, averageAmount: 0.0);
     }
     // 金额列是 TEXT decimal 字符串,SQL 的 SUM/AVG 对文本不生效,
-    // 改为 Dart 层拉行后 Decimal 累加(与统计仓储口径一致)。
+    // Dart 层拉行后 Decimal 累加(与统计仓储口径一致)。
     final rows =
         await (db.select(db.transactions)..where(
               (t) =>

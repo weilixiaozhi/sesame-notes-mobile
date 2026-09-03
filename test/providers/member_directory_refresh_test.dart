@@ -99,7 +99,7 @@ void main() {
     expect(row.displayName, '新昵称');
     expect(row.avatarVersion, 2);
     expect(row.memberType, 'REGISTERED');
-    // 防抖:30 秒内重复触发不再请求。
+    // 防抖:30 秒内重复触发不请求。
     await refreshLedgerMemberDirectory(container, ledgerId);
     verifyNoMoreInteractions(service);
   });

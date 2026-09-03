@@ -1,11 +1,11 @@
 // LocalCategoryRepository 补充测试。
 //
-// 覆盖此前未触达的分支：作用域判重（parentId 分支）、更新/排序/全名、
+// 覆盖分支：作用域判重（parentId 分支）、更新/排序/全名、
 // 计数与汇总（含排除统计/多币种快照）、迁移守卫、批量插入、picker 过滤。
 //
 // 锚点：分类树契约「同一父级作用域内 (name, kind) 唯一、跨父级/跨层级允许
 // 同名」；v1 下所有分类 id 均为 UUID，共享账本 Editor 视角的镜像分类
-// categoryId 与主表共用同一 id 空间（不再有负数 synthetic id）。
+// categoryId 与主表共用同一 id 空间。
 library;
 
 import 'package:drift/drift.dart' as d;

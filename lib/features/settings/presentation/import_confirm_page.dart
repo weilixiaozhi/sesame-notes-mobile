@@ -818,7 +818,7 @@ class _ImportConfirmPageState extends ConsumerState<ImportConfirmPage> {
                   );
             },
             onProgress: (processed, progressTotal) {
-              // 批次间隙检查取消:抛异常中止导入服务,未处理批次不再写入。
+              // 批次间隙检查取消:抛异常中止导入服务,未处理批次不写入。
               if (_cancelled) {
                 throw const ImportCancelledException();
               }
@@ -851,7 +851,7 @@ class _ImportConfirmPageState extends ConsumerState<ImportConfirmPage> {
       // 还没就位时,UI 显式触发也能把刚导入的数据推上云端。
       // fire-and-forget:不阻塞导入完成动画。
     } on ImportCancelledException {
-      // 用户取消:已落库的批次保留,未处理批次不再写入;清空全局进度
+      // 用户取消:已落库的批次保留,未处理批次不写入;清空全局进度
       // 并提示,不展示完成弹窗、不跳转。
       try {
         container
@@ -912,7 +912,7 @@ class _ImportConfirmPageState extends ConsumerState<ImportConfirmPage> {
       });
     }
 
-    // Check if context is still mounted for UI operations
+    // 校验 context 仍挂载,保证 UI 操作安全
     if (!currentContext.mounted) {
       return;
     }
@@ -971,7 +971,7 @@ class _ImportConfirmPageState extends ConsumerState<ImportConfirmPage> {
       }
     }
 
-    // Handle UI operations before cloud upload
+    // 上传云端前完成 UI 操作
     if (dialogOpen) {
       Navigator.of(currentContext).pop();
     }

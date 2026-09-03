@@ -206,7 +206,7 @@ void main() {
   testWidgets('金额统一默认2位小数：72.56 显示 ¥ 72.56，72.00 显示 ¥ 72（与首页口径一致）', (
     tester,
   ) async {
-    // 有分的金额必须保留两位小数（修复前 decimals:0 会四舍五入为 ¥ 73）
+    // 有分的金额必须保留两位小数（不四舍五入为 ¥ 73）
     await tester.pumpWidget(
       _buildHost(
         CategoryRankRow(

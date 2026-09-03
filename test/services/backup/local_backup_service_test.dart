@@ -247,7 +247,7 @@ void main() {
       'sesame_notes_20260702_090000.snbak',
       'sesame_notes_emergency_20260704_090000.snbak',
       'sesame_notes_20260705_090000.snbak.tmp',
-      // 旧格式 .sqlite 不再进入恢复列表（新格式 .snbak 专属）
+      // 旧格式 .sqlite 不进恢复列表（.snbak 专属）
       'sesame_notes_20260706_090000.sqlite',
     ]) {
       await File(p.join(backupDir.path, name)).writeAsBytes([0]);

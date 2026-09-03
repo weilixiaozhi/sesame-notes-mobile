@@ -163,7 +163,7 @@ void main() {
       await tester.pumpWidget(buildApp());
       await prime(tester);
 
-      // SwitchListTile（二级分类开关）已移除，改为"所属分类"行
+      // 二级分类编辑承载于"所属分类"行
       expect(find.byType(SwitchListTile), findsNothing, reason: '不应有二级分类开关');
     });
   });

@@ -19,8 +19,8 @@ import 'package:sesame_notes/theme/typography.dart';
 /// - 未登录：默认头像 + 单机芝麻仔（我）+ 本地使用·未登录 + 登录/注册主操作；
 ///   头像与昵称不可点击编辑，点击头像不进入预览；
 /// - 已登录：云头像或默认头像 + 云昵称 + 芝麻号 + 进入箭头；点击整个头部
-///   （含头像）进入个人资料，不再有独立的「点击头像放大预览」逻辑；
-/// - 本地资料不是一个可配置 Profile：旧的本地昵称问候语与可编辑头像逻辑退役。
+///   （含头像）进入个人资料，不提供独立的头像放大预览；
+/// - 本地资料不可配置：本地身份固定展示默认头像与「单机芝麻仔」文案。
 class MinePageHeader extends ConsumerWidget {
   const MinePageHeader({super.key});
 

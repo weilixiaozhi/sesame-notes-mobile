@@ -76,7 +76,7 @@ void main() {
       list = await recurring.getRecurringTransactionsByLedger(lid);
       expect(list.first.lastGeneratedDate, DateTime(2026, 6, 15));
 
-      // 停用后 getEnabled 不再返回
+      // 停用后 getEnabled 不返回该模板
       await recurring.toggleRecurringTransaction(id, false);
       final enabled = await recurring.getEnabledRecurringTransactions(lid);
       expect(enabled, isEmpty);

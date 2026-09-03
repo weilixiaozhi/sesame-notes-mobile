@@ -927,7 +927,7 @@ void main() {
       expect(names, contains('idx_categories_scope_parent'));
       expect(names, contains('idx_rate_overrides_local_pair'));
       expect(names, contains('idx_rate_overrides_account_pair'));
-      // 旧版全局唯一汇率索引（base+quote 全库唯一）与账号域隔离冲突，必须不存在
+      // 全局唯一汇率索引（base+quote 全库唯一）与账号域隔离冲突，必须不存在
       expect(names, isNot(contains('idx_rate_override_pair')));
     });
 

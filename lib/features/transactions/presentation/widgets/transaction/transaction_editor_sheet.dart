@@ -348,8 +348,7 @@ class _TransactionEditorSheetState
       // 分类 UUID 直连（本地与云端同一 id），无需 synthetic override。
       final categoryIdForWrite = c.id;
 
-      // 作者必须在写库前解析：随交易同一事务落定，不再写完再回填
-      // （回填会让云端账本产生第二条同步 mutation）。
+      // 作者随交易同一事务落定；回填会让云端账本产生第二条同步 mutation。
       final operatorMemberId = await authorIdFuture;
 
       String transactionId;
@@ -801,7 +800,7 @@ class _TxAuthorAvatars extends ConsumerWidget {
 
             // 复用共享头像组：创建人==编辑人!=自己 → 1个头像；
             // 创建人!=编辑人 → 2个重叠头像。两者规则与首页列表一致，
-            // 且图片加载失败时回退首字母（修复"只有圆形占位、没有首字母"）。
+            // 且图片加载失败时回退首字母。
             return CollaboratorAvatarGroup(
               creator: creator,
               editor: editor,

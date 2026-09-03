@@ -448,7 +448,7 @@ void main() {
     expect(forked.originType, 'CLOUD_BACKUP');
     expect(forked.originSyncId, 'sync-s1');
     expect(forked.originAccountId, 'acc-1');
-    // Manifest 不再携带 last_server_revision，origin_last_revision 不写入
+    // Manifest 不携带 last_server_revision，origin_last_revision 不写入
     // 交易复制 + server_revision 清空
     final forkedTxs = await (liveDb.select(
       liveDb.transactions,

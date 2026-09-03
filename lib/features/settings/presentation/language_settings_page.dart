@@ -61,7 +61,7 @@ class LanguageSettingsPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppDimens.p8),
 
-                // English
+                // 英语
                 _LanguageOption(
                   title: l10n.languageEnglish,
                   locale: const Locale('en'),

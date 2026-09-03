@@ -122,8 +122,7 @@ class _PressKeyState extends State<PressKey> {
       // 依赖 TapGestureRecognizer.onTapDown：在 BottomSheet 里按键会和
       // sheet 自带的竖向拖拽识别器竞争手势竞技场，onTapDown 会被推迟到
       // 100ms 超时或抬手才触发，快速点击时按压态一帧都渲染不出来。
-      // 回调（onDown/onUp/onCancel/onLongPress）仍由 GestureDetector 负责，
-      // 语义与之前完全一致。
+      // 回调（onDown/onUp/onCancel/onLongPress）仍由 GestureDetector 负责。
       child: Listener(
         behavior: HitTestBehavior.deferToChild,
         onPointerDown: widget.enabled ? (_) => _setPressed(true) : null,

@@ -3,7 +3,7 @@
 // 锚点：AA 指定分摊落 transaction_splits 关系表（与后端字段一致），
 // 共享账本 Editor 记的交易通过 categoryId（Owner 分类 UUID）反查
 // SharedLedgerCategories 镜像转 Category（与 picker/统计口径一致）。
-// 覆盖此前未触达的分支：AA JSON 错误路径、缺失实体报错、共享 hydration、
+// 覆盖分支：AA JSON 错误路径、缺失实体报错、共享 hydration、
 // 批量 UUID 更新的快照覆盖语义。
 library;
 

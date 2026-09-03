@@ -1,7 +1,7 @@
 // currentLedgerPersistProvider 回退逻辑单元测试。
 //
 // 验证「启动时恢复 current_ledger_id 并校验本地存在性，失效/缺失则回退本地第一个
-// 账本」的四种场景。覆盖此前未测试的兜底分支。
+// 账本」的四种场景。覆盖兜底分支。
 //
 // 防串扰设计：每个用例都显式用 resetGlobalTestState() 复位 SharedPreferences（setUp
 // 与 tearDown 双保险），插入单一账本并捕获其 UUID 隔离其它用例残留。

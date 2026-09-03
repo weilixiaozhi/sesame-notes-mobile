@@ -1006,7 +1006,7 @@ void main() {
       greaterThan(0),
       reason:
           '数据范围扩张后当前月应被滚动到可视区，横向滚动 offset 须 > 0'
-          '（修复前此处为 0：内容是最新月、但 tab 停在开头）',
+          '（内容是最新月时 tab 应停在对应位置）',
     );
   });
 
@@ -1069,7 +1069,7 @@ void main() {
     await prime(tester);
     await tester.pump(const Duration(milliseconds: 100));
 
-    // 修复前总支出/日均支出硬编码 decimals:0，72.56 会被四舍五入为 ¥ 73
+    // 总支出/日均支出保留两位小数，72.56 不四舍五入为 ¥ 73
     expect(
       find.text('¥ 72.56'),
       findsWidgets,

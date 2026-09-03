@@ -973,9 +973,8 @@ class LocalTransactionRepository {
 
   /// 跨账本移动交易（保留原 UUID）。
   ///
-  /// 已知缺陷（TODO）：服务端禁止同一 UUID 跨账本 upsert（ENTITY_SCOPE_CONFLICT），
-  /// 云账本上此移动会被 push 拒绝且 pull 回放还原；当前无 UI 调用方，
-  /// 待「移动交易」功能实现时改为「旧 UUID delete + 新 UUID upsert」模式。
+  /// 限制：服务端禁止同一 UUID 跨账本 upsert（ENTITY_SCOPE_CONFLICT），
+  /// 云账本上此移动会被 push 拒绝且 pull 回放还原；当前无 UI 调用方。
   Future<void> updateTransactionLedger({
     required String id,
     required String ledgerId,
@@ -1021,7 +1020,7 @@ class LocalTransactionRepository {
   // ==================== 日历功能相关 ====================
 
   /// 日历「单日合计」:金额已存为规范化 decimal 字符串,SQL 无法 SUM TEXT 列,
-  /// 改为读取当月交易后 Dart 层 Decimal 累加(与统计路径同一精度策略)。
+  /// 读取当月交易后 Dart 层 Decimal 累加(与统计路径同一精度策略)。
   Future<Map<String, double>> getDailyTotalsByMonth({
     required String ledgerId,
     required DateTime month,

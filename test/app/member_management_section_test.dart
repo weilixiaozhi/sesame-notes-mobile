@@ -372,7 +372,7 @@ void main() {
   });
 
   testWidgets('云账本镜像模式:只渲染 REGISTERED 成员,遗留 LOCAL/占位行不出现', (tester) async {
-    // 云账本成员镜像若混入旧版登录绑定残留的 LOCAL 行或 PLACEHOLDER 行,
+    // 云账本成员镜像若混入 LOCAL 行或 PLACEHOLDER 行,
     // 真实成员区只渲染 REGISTERED,虚拟用户由专用区块渲染,本人不会
     // 同时出现「单机芝麻仔」与云昵称两行。
     final legacyLocal = LedgerMember(

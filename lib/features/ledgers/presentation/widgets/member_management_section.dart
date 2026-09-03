@@ -583,7 +583,7 @@ class _MemberManagementSectionState
 
     // 有成员镜像模式:从本地 LedgerMembers 镜像表拉取成员列表。
     // 真实成员行只渲染 REGISTERED:PLACEHOLDER 由虚拟用户区块渲染;
-    // 遗留的 LOCAL 行(旧版登录绑定残留)不进入云账本成员列表,
+    // 云账本成员列表只含 REGISTERED,不渲染 LOCAL 行,
     // 避免本人同时出现「单机芝麻仔」与云昵称两行。
     final membersAsync = ref.watch(
       ledgerMemberDisplaysProvider(widget.ledgerExternalId!),
@@ -974,7 +974,7 @@ class _MemberAvatar extends ConsumerWidget {
             member.linkedAccountId!.isNotEmpty &&
             member.linkedAccountId == sessionUserId);
     // 本人头像：云已登录且有云头像走成员缓存（上传后即时生效、离线可用）；
-    // 本地本人/云无头像统一回退正式默认头像，不再读旧的本地头像文件。
+    // 本地本人/云无头像统一回退正式默认头像。
     if (isSelf) {
       final account = ref.read(accountStateProvider);
       final profile = account.profile;

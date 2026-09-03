@@ -1,4 +1,4 @@
-﻿// 分类默认图标/名称重构测试
+// 分类默认图标/名称重构测试
 //
 // 验证内容：
 //   1. getDefaultIcon 返回的重构后图标名（11 处改动）正确无遗漏
@@ -43,7 +43,7 @@ void main() {
     });
 
     test('lollipop 图标已登记到 lucideIconLibrary', () {
-      // lollipop 是本次新增登记的图标，snacks 一级分类默认图标依赖它。
+      // lollipop 已登记的图标，snacks 一级分类默认图标依赖它。
       // 未登记会导致运行时回退到 helpCircle 兜底图标。
       expect(
         lucideIconLibrary.containsKey('lollipop'),

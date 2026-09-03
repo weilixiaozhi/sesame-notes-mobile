@@ -3,7 +3,7 @@
 /// - runOnLaunch 走完整链路：本地 .snbak 快照 → 配置密码后上传版本化路径 →
 ///   backup_state 记录 lastSuccessAt + currentProvider；
 /// - 未配置备份密码：不上传云端（设备密钥不得作为云端唯一保护）；
-/// - 上传路径时间戳版本化（不再固定路径覆盖），云端保留最近 5 份；
+/// - 上传路径时间戳版本化（不固定路径覆盖），云端保留最近 5 份；
 /// - 当天已成功 → skipped；未配置第三方 → 只做本地快照。
 library;
 
@@ -188,7 +188,7 @@ void main() {
       matches(
         RegExp(r'^sesame_notes_backups/sesame_notes_\d{8}_\d{6}\.snbak$'),
       ),
-      reason: '上传路径必须时间戳版本化，不再固定路径覆盖',
+      reason: '上传路径必须时间戳版本化，不固定路径覆盖',
     );
     final state = await (db.select(
       db.backupState,

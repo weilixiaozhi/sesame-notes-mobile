@@ -1068,7 +1068,7 @@ class LocalLedgerRepository {
 
   /// 退出登录 purge：整本清除全部云端账本及其关联数据。
   ///
-  /// 设计意图：退出登录 = 这台设备不再持有云账号数据，storage_mode='cloud'
+  /// 设计意图：退出登录后这台设备不持有云账号数据，storage_mode='cloud'
   /// 的账本（含交易、编辑历史、待推送变更、成员/共享分类镜像等）全部清除，
   /// 重登后由全量同步拉回；storage_mode='local' 的账本一行不动——那是这台
   /// 设备自己的数据。选区只看 storage_mode，不依赖 member_count 派生（本地

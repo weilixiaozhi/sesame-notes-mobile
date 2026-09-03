@@ -1,4 +1,4 @@
-﻿import 'package:file_picker/file_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -343,7 +343,7 @@ class _DetailImportExportPageState
       if (!mounted) return;
       if (csvText.isEmpty) return; // 可能读取被取消
 
-      // 目标账本随 CSV 一并传入，确认页不再依赖可变化的全局当前账本。
+      // 目标账本随 CSV 一并传入，确认页使用传入值而非全局当前账本。
       await context.pushNamed(
         Routes.importConfirm,
         extra: (csvText, true, targetLedgerId),

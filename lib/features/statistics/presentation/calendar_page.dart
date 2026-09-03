@@ -139,7 +139,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       backgroundColor: AppTokens.scaffoldBackground(context),
       body: Column(
         children: [
-          // Header
+          // 头部
           PrimaryHeader(
             title: l10n.calendarTitle,
             actions: [
@@ -241,7 +241,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       rowHeight: 68,
       daysOfWeekHeight: 30,
 
-      // Header 样式
+      // 头部 样式
       headerStyle: HeaderStyle(
         formatButtonVisible: false,
         titleCentered: true,

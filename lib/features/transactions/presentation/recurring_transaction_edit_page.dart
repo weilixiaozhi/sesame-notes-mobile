@@ -134,11 +134,11 @@ class _RecurringTransactionEditPageState
                   // 全局仅支出模式，交易类型恒为支出（_type 固定为 'expense'）
                   const SizedBox(height: AppDimens.p16),
 
-                  // Ledger selection
+                  // 账本选择
                   _buildLedgerSelector(l10n),
                   const SizedBox(height: AppDimens.p16),
 
-                  // Amount
+                  // 金额
                   TextFormField(
                     controller: _amountController,
                     decoration: InputDecoration(
@@ -160,27 +160,27 @@ class _RecurringTransactionEditPageState
                   ),
                   const SizedBox(height: AppDimens.p16),
 
-                  // Category selection
+                  // 分类选择
                   _buildCategorySelector(l10n),
                   const SizedBox(height: AppDimens.p16),
 
-                  // Frequency
+                  // 频率
                   _buildFrequencySelector(l10n),
                   const SizedBox(height: AppDimens.p16),
 
-                  // Interval
+                  // 间隔
                   if (_frequency != RecurringFrequency.daily)
                     _buildIntervalSelector(l10n),
                   if (_frequency != RecurringFrequency.daily)
                     const SizedBox(height: AppDimens.p16),
 
-                  // Day of month (for monthly)
+                  // 每月几号(月频)
                   if (_frequency == RecurringFrequency.monthly)
                     _buildDayOfMonthSelector(l10n),
                   if (_frequency == RecurringFrequency.monthly)
                     const SizedBox(height: AppDimens.p16),
 
-                  // Start date
+                  // 开始日期
                   _buildDateField(
                     label: l10n.recurringTransactionStartDate,
                     date: _startDate,
@@ -188,7 +188,7 @@ class _RecurringTransactionEditPageState
                   ),
                   const SizedBox(height: AppDimens.p16),
 
-                  // End date
+                  // 结束日期
                   _buildDateField(
                     label: l10n.recurringTransactionEndDate,
                     date: _endDate,
@@ -198,7 +198,7 @@ class _RecurringTransactionEditPageState
                   ),
                   const SizedBox(height: AppDimens.p16),
 
-                  // Note
+                  // 备注
                   TextFormField(
                     controller: _noteController,
                     decoration: InputDecoration(labelText: l10n.commonNoteHint),

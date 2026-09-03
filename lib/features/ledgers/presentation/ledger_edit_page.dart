@@ -383,7 +383,7 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
           const SizedBox(height: AppDimens.p16),
 
           // ── 1.5 存储位置（仅新建：归属在创建时决定，之后不可改）──
-          // 标题内嵌在卡片里（与上游一致），此处不再重复渲染分区标题。
+          // 标题内嵌在卡片里，此处不重复渲染分区标题。
           if (_isCreating) ...[
             _buildStorageModeSelector(context, l10n),
             const SizedBox(height: AppDimens.p16),

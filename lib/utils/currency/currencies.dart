@@ -25,7 +25,7 @@ class _Cur {
 /// 注意:仅收录有单一主权国家归属的币种——多国/地区共用货币(XAF/XOF/XCD/XPF)
 /// 与无单一归属的货币(ANG)不在支持列表中,新增时遵循同一规则。
 const List<_Cur> _kCurrencyDefs = [
-  // eastAsia
+  // 东亚
   _Cur('CNY', '¥', 'Chinese Yuan'),
   // JPY 与 CNY 的 ISO 符号同为 ¥,为消除歧义（禁止统一渲染为单一 ¥）,
   // 采用 JP¥ 前缀消歧,与同表 HK$/S$/NT$ 的前缀模式保持一致。
@@ -36,7 +36,7 @@ const List<_Cur> _kCurrencyDefs = [
   _Cur('MOP', 'MOP\$', 'Macau Pataca'),
   _Cur('MNT', '₮', 'Mongolian Tughrik'),
   _Cur('KPW', 'KPW', 'North Korean Won'),
-  // southeastAsia
+  // 东南亚
   _Cur('SGD', 'S\$', 'Singapore Dollar'),
   _Cur('MYR', 'RM', 'Malaysian Ringgit'),
   _Cur('THB', '฿', 'Thai Baht'),
@@ -47,7 +47,7 @@ const List<_Cur> _kCurrencyDefs = [
   _Cur('KHR', '៛', 'Cambodian Riel'),
   _Cur('LAK', '₭', 'Lao Kip'),
   _Cur('BND', 'BND', 'Bruneian Dollar'),
-  // southAsia
+  // 南亚
   _Cur('INR', '₹', 'Indian Rupee'),
   _Cur('PKR', '₨', 'Pakistani Rupee'),
   _Cur('BDT', '৳', 'Bangladeshi Taka'),
@@ -56,13 +56,13 @@ const List<_Cur> _kCurrencyDefs = [
   _Cur('BTN', 'BTN', 'Bhutanese Ngultrum'),
   _Cur('MVR', 'MVR', 'Maldivian Rufiyaa'),
   _Cur('AFN', 'AFN', 'Afghan Afghani'),
-  // centralAsia
+  // 中亚
   _Cur('KZT', '₸', 'Kazakhstani Tenge'),
   _Cur('UZS', 'UZS', 'Uzbekistani Som'),
   _Cur('TJS', 'TJS', 'Tajikistani Somoni'),
   _Cur('TMT', 'TMT', 'Turkmenistani Manat'),
   _Cur('KGS', 'KGS', 'Kyrgyzstani Som'),
-  // middleEast
+  // 中东
   _Cur('AED', 'د.إ', 'Emirati Dirham'),
   _Cur('SAR', '﷼', 'Saudi Arabian Riyal'),
   _Cur('ILS', '₪', 'Israeli Shekel'),
@@ -80,7 +80,7 @@ const List<_Cur> _kCurrencyDefs = [
   _Cur('GEL', '₾', 'Georgian Lari'),
   _Cur('AMD', '֏', 'Armenian Dram'),
   _Cur('AZN', '₼', 'Azerbaijan Manat'),
-  // europe
+  // 欧洲
   _Cur('EUR', '€', 'Euro'),
   _Cur('GBP', '£', 'British Pound'),
   _Cur('CHF', 'CHF', 'Swiss Franc'),
@@ -102,11 +102,11 @@ const List<_Cur> _kCurrencyDefs = [
   _Cur('MKD', 'MKD', 'Macedonian Denar'),
   _Cur('BAM', 'BAM', 'Bosnian Convertible Mark'),
   _Cur('GIP', 'GIP', 'Gibraltar Pound'),
-  // northAmerica
+  // 北美
   _Cur('USD', '\$', 'US Dollar'),
   _Cur('CAD', 'C\$', 'Canadian Dollar'),
   _Cur('MXN', 'MX\$', 'Mexican Peso'),
-  // centralAmericaCaribbean
+  // 中美洲与加勒比
   _Cur('GTQ', 'GTQ', 'Guatemalan Quetzal'),
   _Cur('HNL', 'HNL', 'Honduran Lempira'),
   _Cur('NIO', 'NIO', 'Nicaraguan Cordoba'),
@@ -123,7 +123,7 @@ const List<_Cur> _kCurrencyDefs = [
   _Cur('KYD', 'KYD', 'Caymanian Dollar'),
   _Cur('AWG', 'AWG', 'Aruban or Dutch Guilder'),
   _Cur('BMD', 'BMD', 'Bermudian Dollar'),
-  // southAmerica
+  // 南美
   _Cur('BRL', 'R\$', 'Brazilian Real'),
   _Cur('ARS', '\$', 'Argentine Peso'),
   _Cur('CLP', '\$', 'Chilean Peso'),
@@ -135,7 +135,7 @@ const List<_Cur> _kCurrencyDefs = [
   _Cur('VES', 'VES', 'Venezuelan Bolívar'),
   _Cur('GYD', 'GYD', 'Guyanese Dollar'),
   _Cur('SRD', 'SRD', 'Surinamese Dollar'),
-  // oceania
+  // 大洋洲
   _Cur('AUD', 'A\$', 'Australian Dollar'),
   _Cur('NZD', 'NZ\$', 'New Zealand Dollar'),
   _Cur('FJD', 'FJ\$', 'Fijian Dollar'),
@@ -144,7 +144,7 @@ const List<_Cur> _kCurrencyDefs = [
   _Cur('TOP', 'TOP', 'Tongan Pa\'anga'),
   _Cur('VUV', 'VUV', 'Ni-Vanuatu Vatu'),
   _Cur('WST', 'WST', 'Samoan Tala'),
-  // africa
+  // 非洲
   _Cur('ZAR', 'R', 'South African Rand'),
   _Cur('EGP', 'E£', 'Egyptian Pound'),
   _Cur('NGN', '₦', 'Nigerian Naira'),

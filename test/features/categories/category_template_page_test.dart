@@ -1,4 +1,4 @@
-﻿// 分类模板库页面测试（flat / hierarchical 模板页 + 管理页入口）
+// 分类模板库页面测试（flat / hierarchical 模板页 + 管理页入口）
 //
 // 验证内容：
 //   1. 管理页：正常模式在标题下显示"一级模板/二级模板"两个独立按钮（非文字链），
@@ -411,7 +411,7 @@ void main() {
       expect(
         find.text('本次已勾选 1 项'),
         findsOneWidget,
-        reason: '子类应支持单独选中，不再连带勾选父类',
+        reason: '子类应支持单独选中，不连带勾选父类',
       );
     });
 
@@ -517,7 +517,7 @@ void main() {
 
       // 父复选框已置灰：onTap 为 null，不可勾选
       // （注意：不可直接 tap 该复选框——onTap 为 null 时点击会穿透到
-      // 父行 InkWell 触发展开/收起，改为直接断言回调为空）
+      // 父行 InkWell 触发展开/收起，直接断言回调为空）
       final parentCheckbox = tester.widget<GestureDetector>(
         find.byKey(const ValueKey('templateParentCheckbox_dining')),
       );

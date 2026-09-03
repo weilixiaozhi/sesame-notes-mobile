@@ -36,7 +36,7 @@ class AaParticipantAvatar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 本人头像：云已登录且有云头像走成员缓存（上传后即时生效、离线可用），
-    // 本地本人/云无头像统一回退正式默认头像，不再读旧的本地头像文件。
+    // 本地本人/云无头像统一回退正式默认头像。
     if (isSelf) {
       final account = ref.read(accountStateProvider);
       final profile = account.profile;

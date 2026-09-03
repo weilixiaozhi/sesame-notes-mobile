@@ -12,8 +12,8 @@ import 'package:sesame_notes/core/logging/logger_service.dart';
 /// 成员头像本地磁盘缓存（按 userId + 服务端版本号键控）。
 ///
 /// 设计意图：
-/// - 成员头像之前直接走 `Image.network`，断网/重启后会反复重拉；本类把头像
-///   落盘到 `Documents/avatars/members/`，与本人头像缓存共用目录体系；
+/// - 头像落盘到 `Documents/avatars/members/`，避免断网/重启后反复重拉网络图片，
+///   与本人头像缓存共用目录体系；
 /// - 键 = sha1(userId) + version：版本变化即视为新头像，下一次读取自动重下
 ///   覆盖，无需额外的失效事件；
 /// - 读取失败返回 null（UI 显示占位），写入失败记日志后 rethrow 交由上层

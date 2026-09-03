@@ -70,7 +70,7 @@ List<GoRoute> buildAppRoutes({Map<String, WidgetBuilder> stubs = const {}}) {
   }
 
   // 统一页面包装：所有命名路由经 AppRouterPage 创建，保持全局 200ms
-  // 转场与 opaque 语义（覆盖后下层页面转场完成即 offstage，与迁移前一致）。
+  // 转场与 opaque 语义（覆盖后下层页面转场完成即 offstage）。
   Page<dynamic> pageFor(
     BuildContext context,
     String path,

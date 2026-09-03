@@ -35,7 +35,7 @@ void main() {
     container = ProviderContainer(
       overrides: [
         databaseProvider.overrideWithValue(db),
-        // 默认值已改为哨兵 ''（表示「未选中」），此处显式指定 'led-1' 以匹配插入的账本 id。
+        // 默认值为哨兵 ''（表示「未选中」），此处显式指定 'led-1' 以匹配插入的账本 id。
         currentLedgerIdProvider.overrideWithBuild((ref, notifier) => 'led-1'),
       ],
     );
@@ -178,7 +178,7 @@ void main() {
       categoryPickerTreeProvider('expense').future,
     );
 
-    // 树节点 id 直接用 Owner 分类 UUID（categoryId），不再有 synthetic id。
+    // 树节点 id 直接用 Owner 分类 UUID（categoryId）。
     expect(tree.topLevel.map((c) => c.id), ['c1']);
     expect(tree.topLevel.single.name, '共享餐饮');
     expect(tree.children['c1']!.single.id, 'c2');

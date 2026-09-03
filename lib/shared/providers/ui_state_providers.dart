@@ -22,7 +22,7 @@ final homeScrollToTopProvider = NotifierProvider<TickStateNotifier, int>(
   () => TickStateNotifier((ref) => 0),
 );
 
-// Currently selected month (first day), default to now
+// 当前选中月份(每月第一天),默认当月
 final selectedMonthProvider =
     NotifierProvider<SimpleStateNotifier<DateTime>, DateTime>(() {
       return SimpleStateNotifier((ref) {

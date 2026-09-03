@@ -689,7 +689,7 @@ class SesameDatabase extends _$SesameDatabase {
       // 否则 REFERENCES/ON DELETE 约束不会生效。
       await customStatement('PRAGMA foreign_keys = ON');
       // 索引收敛对所有存量库幂等生效（IF NOT EXISTS / DROP IF EXISTS）：
-      // 旧版全局唯一汇率索引与账号域隔离冲突，必须替换为分域 partial unique。
+      // 汇率唯一索引必须为分域 partial unique，全局唯一与账号域隔离冲突。
       await _ensureIndexes();
     },
     onCreate: (m) async {
@@ -700,7 +700,7 @@ class SesameDatabase extends _$SesameDatabase {
 
   /// 高频查询索引（与表定义配套，建库即就绪；beforeOpen 对存量库幂等补齐）。
   ///
-  /// 账号域索引（10.5）：
+  /// 账号域索引：
   /// - ledgers(scope_account_id, storage_mode, deleted_at)：列表按账号域+归属+删除过滤；
   /// - sync_changes(account_id, pushed_at, id)：push 队列按账号+未推送+顺序扫描；
   /// - categories(scope_account_id, parent_id)：分类父子树按账号域查询；
@@ -723,8 +723,8 @@ class SesameDatabase extends _$SesameDatabase {
       'CREATE INDEX IF NOT EXISTS idx_recurring_transactions_ledger_id '
       'ON recurring_transactions (ledger_id);',
     );
-    // 旧版全局唯一汇率索引（base+quote 全库唯一）与「每账号域各一份」冲突：
-    // 不同账号的同币对覆盖会被它误拒，先删后建分域 partial unique。
+    // 全局唯一汇率索引（base+quote 全库唯一）与「每账号域各一份」冲突：
+    // 不同账号的同币对覆盖会被误拒，统一使用分域 partial unique。
     await customStatement('DROP INDEX IF EXISTS idx_rate_override_pair;');
     await customStatement(
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_rate_overrides_local_pair '

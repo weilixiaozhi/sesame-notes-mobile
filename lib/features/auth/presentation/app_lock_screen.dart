@@ -144,7 +144,7 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
         child: Column(
           children: [
             const Spacer(flex: 2),
-            // Logo
+            // 品牌图标
             AppLogo(size: 64.0),
             SizedBox(height: AppDimens.p20),
             // 标题

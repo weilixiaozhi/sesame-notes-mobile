@@ -381,7 +381,7 @@ void main() {
   }
 
   test('历史开始日期(30天前)+ 从未生成 → 只产出今天一笔,不回溯补历史(#135 + 含今天)', () async {
-    // 修复前(老 bug):base 锁今天、daily 首笔=明天 → isAfter(now) → 一笔都不生成,
+    // base 锁今天、daily 首笔=明天 → isAfter(now) → 一笔都不生成,即回归,
     // 且 lastGeneratedDate 永远为 null → 永久卡死("每天周期不生效")。
     // 修复后:首笔=基准日(今天),生成且仅生成"今天"这一笔,不补 30 天历史。
     await repo.addRecurringTransaction(

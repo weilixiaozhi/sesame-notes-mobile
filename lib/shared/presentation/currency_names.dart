@@ -1,9 +1,8 @@
 /// 币种显示名的本地化出口（唯一需要 l10n 上下文的币种格式化）。
 ///
 /// 设计意图：[utils/currency/currencies.dart] 只保留 code / 英文名 / 符号等
-/// 纯数值与 key 转换；本地化名覆盖依赖 [AppLocalizations]，属展示层职责，
-/// 因此搬到这里——utils 由此保持纯 Dart 叶子，纯逻辑复用与单测不再需要
-/// Flutter / l10n 上下文。
+/// 纯数值与 key 转换；本地化名依赖 [AppLocalizations]，属展示层职责，
+/// 故收敛于此，utils 保持纯 Dart 叶子，复用与单测不需要 Flutter / l10n 上下文。
 library;
 
 import 'package:flutter/material.dart';
