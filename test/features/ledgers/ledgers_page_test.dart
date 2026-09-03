@@ -23,6 +23,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:sesame_notes/core/api/api_client_provider.dart';
+import 'package:sesame_notes/core/api/auth_session.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/router/app_router.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
@@ -178,8 +180,9 @@ void main() {
 
     expect(find.text('本地账本'), findsOneWidget);
     expect(find.text('Sesame Notes Cloud 账本'), findsOneWidget);
-    // 云端分区为空时显示「暂无云端账本」空提示（新 schema 无登录引导概念）。
-    expect(find.text('暂无云端账本，云端账本会在各设备间同步'), findsOneWidget);
+    // 未登录时云端分区空提示给「去登录」引导，而非「暂无」。
+    expect(find.text('登录 Sesame Notes Cloud 后即可使用云端账本'), findsOneWidget);
+    expect(find.text('暂无云端账本，云端账本会在各设备间同步'), findsNothing);
   });
 
   testWidgets('下拉刷新触发 ledgerListRefreshProvider 自增', (tester) async {
@@ -256,6 +259,57 @@ void main() {
       findsNothing,
       reason: '头部不应残留普通加号(AppIcons.add)',
     );
+  });
+
+  // ==================== 「加入共享账本」入口：位置/门控 ====================
+
+  /// 登录测试账号，模拟云端会话存在。
+  void signIn(ProviderContainer container) {
+    container
+        .read(authSessionProvider.notifier)
+        .signIn(
+          const AuthSession(accessToken: 't', userId: 'u', deviceId: 'd'),
+        );
+  }
+
+  testWidgets('已登录：云端分区标题下显示全宽「加入共享账本」按钮，头部无 link 图标', (tester) async {
+    final db = SesameDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(() => db.close());
+    await _seedLedger(db, id: 'ledger-local', name: '旅行账本');
+    final container = _makeContainer(db);
+    addTearDown(container.dispose);
+    signIn(container);
+    await _pumpLedgersPage(tester, container);
+
+    // 全宽按钮：personAdd 图标 + 「加入共享账本」文案。
+    expect(find.byIcon(AppIcons.personAdd), findsOneWidget);
+    expect(find.text('加入共享账本'), findsOneWidget);
+    final button = tester.widget<OutlinedButton>(
+      find.ancestor(
+        of: find.text('加入共享账本'),
+        matching: find.byType(OutlinedButton),
+      ),
+    );
+    expect(button.onPressed != null, isTrue, reason: '已登录时入口必须可点');
+
+    // 云端分区为空时给「暂无云端账本」而非登录引导。
+    expect(find.text('暂无云端账本，云端账本会在各设备间同步'), findsOneWidget);
+
+    // 头部不再残留 link 图标入口（已回迁到云端分区全宽按钮）。
+    expect(find.widgetWithIcon(IconButton, AppIcons.link), findsNothing);
+  });
+
+  testWidgets('未登录：无「加入共享账本」按钮，云端分区空态给登录引导', (tester) async {
+    final db = SesameDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(() => db.close());
+    await _seedLedger(db, id: 'ledger-local', name: '旅行账本');
+    final container = _makeContainer(db);
+    addTearDown(container.dispose);
+    await _pumpLedgersPage(tester, container);
+
+    expect(find.byIcon(AppIcons.personAdd), findsNothing);
+    expect(find.text('加入共享账本'), findsNothing);
+    expect(find.text('登录 Sesame Notes Cloud 后即可使用云端账本'), findsOneWidget);
   });
 
   testWidgets('头部「添加账本」位于右上角 actions（标题右侧、贴近屏幕右缘）', (tester) async {

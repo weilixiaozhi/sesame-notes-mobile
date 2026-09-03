@@ -1,4 +1,4 @@
-﻿/// 账本列表页面。
+/// 账本列表页面。
 ///
 /// 账本归属模型:每本账都明确属于「本地」或「云端」,由账本自身的
 /// storage_mode 决定,而不是"当前有没有登录"。因此列表常驻两个分区标题
@@ -57,12 +57,6 @@ class _LedgersPageState extends ConsumerState<LedgersPage> {
                 icon: AppIcons.addCircle, // 与分类页「添加分类」同源：圆圈加号
                 tooltip: AppLocalizations.of(context).ledgersCreate,
                 onPressed: () => _showCreateLedgerDialog(context),
-              ),
-              // 加入共享账本：邀请码 → 预览 → 接受。
-              HeaderIconAction(
-                icon: AppIcons.link,
-                tooltip: AppLocalizations.of(context).joinSharedTitle,
-                onPressed: () => context.pushNamed(Routes.joinSharedLedger),
               ),
             ],
           ),
@@ -151,6 +145,9 @@ class _LedgersPageState extends ConsumerState<LedgersPage> {
     // 归属分区的唯一依据是 storage_mode（含 isShared 兜底），与登录状态无关。
     final localOnly = ledgers.where((l) => !l.isCloudLedger).toList();
     final cloudOnly = ledgers.where((l) => l.isCloudLedger).toList();
+    // 加入共享账本需要云端会话：新架构无「后端类型」概念，登录即视为
+    // 云服务可用（与编辑页迁云入口的门控口径一致）。
+    final loggedIn = ref.watch(currentLedgerAccountIdProvider) != null;
 
     Widget card(LedgerDisplayItem ledger) => LedgerCard(
       ledger: ledger,
@@ -193,12 +190,41 @@ class _LedgersPageState extends ConsumerState<LedgersPage> {
           icon: AppIcons.cloudQueue,
           title: l10n.ledgersSectionCloud,
         ),
+        // 共享账本入口 — 与上游 LedgersSection 一致：归属模型下它属于云端
+        // 范畴，因此收进云端分区标题下方；登录后即展示（新架构无后端类型
+        // 概念，「登录」就是云服务可用性的门控）。
+        if (loggedIn)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppDimens.p16,
+              AppDimens.p4,
+              AppDimens.p16,
+              AppDimens.p8,
+            ),
+            child: OutlinedButton.icon(
+              icon: const Icon(AppIcons.personAdd, size: AppDimens.icon16),
+              label: Text(l10n.joinSharedTitle),
+              onPressed: () => context.pushNamed(Routes.joinSharedLedger),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 40.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimens.radius8),
+                ),
+              ),
+            ),
+          ),
         // 云端账本始终渲染:退出登录只是"暂时连不上",
         // 若因此把云端账本从列表里藏掉，用户会以为数据丢了。
         if (cloudOnly.isNotEmpty)
           ...cloudOnly.map(card)
         else
-          _buildSectionEmptyHint(context, text: l10n.ledgersSectionCloudEmpty),
+          _buildSectionEmptyHint(
+            context,
+            // 未登录时给的是"去登录"引导而非"暂无"，避免用户以为云端真的空了。
+            text: loggedIn
+                ? l10n.ledgersSectionCloudEmpty
+                : l10n.ledgersSectionCloudSignInHint,
+          ),
         const SizedBox(height: 60.0),
       ],
     );
