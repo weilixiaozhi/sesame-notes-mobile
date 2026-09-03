@@ -8,9 +8,16 @@ library;
 
 export 'package:sesame_cloud_backup/sesame_cloud_backup.dart'
     show
+        CloudAuthService,
         CloudBackend,
         CloudConfigField,
         CloudConfigFieldKind,
+        CloudFile,
+        CloudProvider,
         CloudProviderRegistry,
         CloudServiceStore,
-        CloudServiceConfig;
+        CloudServiceConfig,
+        CloudServices,
+        CloudStorageService,
+        CloudUser,
+        createCloudServices;

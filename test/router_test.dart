@@ -1,4 +1,4 @@
-﻿/// 全局路由层（app_router.dart）单元测试。
+/// 全局路由层（app_router.dart）单元测试。
 ///
 /// 需求锚点：go_router 接管命名路由后——
 /// 1. [Routes.all] 中每一条路由都在 GoRoute 表中注册，且 name == path
@@ -46,7 +46,7 @@ void main() {
         Routes.importConfirm,
         Routes.recurringTransactionEdit,
         Routes.pinSetup,
-        Routes.cloudBackupConfig,
+        Routes.backupRestore,
       ]) {
         expect(paths, contains(p), reason: '参数型路由 $p 必须存在');
       }

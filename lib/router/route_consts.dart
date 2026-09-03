@@ -104,10 +104,10 @@ class Routes {
   /// = (csvText, hasHeader, targetLedgerId)）
   static const String importConfirm = '/import/confirm';
 
-  /// 第三方备份配置页（参数经 extra 传云备份后端展示模型）
-  static const String cloudBackupConfig = '/cloud/backup-config';
+  /// 本机备份页（自动备份开关 / 立即备份 / 快照列表 / 恢复流程入口）
+  static const String localBackup = '/backup/local';
 
-  /// 备份恢复页（4 步流程：选择备份 → 查看内容 → 选择策略 → 确认应用）
+  /// 备份恢复页（4 步流程：参数经 extra 传外部 .snbak 路径，可空）
   static const String backupRestore = '/backup/restore';
 
   /// 全量路由名清单：路由表测试据此双向校验 GoRoute 注册无遗漏/无漂移。
@@ -144,7 +144,7 @@ class Routes {
     configImportExport,
     detailExport,
     importConfirm,
-    cloudBackupConfig,
+    localBackup,
     backupRestore,
   ];
 }

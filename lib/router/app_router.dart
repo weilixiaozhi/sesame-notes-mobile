@@ -30,9 +30,8 @@ import 'package:sesame_notes/features/ledgers/presentation/ledger_edit_page.dart
 import 'package:sesame_notes/features/ledgers/presentation/ledgers_page.dart';
 import 'package:sesame_notes/features/settings/presentation/app_lock_settings_page.dart';
 import 'package:sesame_notes/features/settings/presentation/appearance_settings_page.dart';
-import 'package:sesame_notes/features/settings/presentation/cloud_backup_config_page.dart';
-import 'package:sesame_notes/features/settings/application/cloud_backup_actions.dart';
 import 'package:sesame_notes/features/settings/presentation/cloud_service_page.dart';
+import 'package:sesame_notes/features/settings/presentation/local_backup_page.dart';
 import 'package:sesame_notes/features/settings/presentation/config_import_export_page.dart';
 import 'package:sesame_notes/features/settings/presentation/detail_export_page.dart';
 import 'package:sesame_notes/features/settings/presentation/detail_import_export_page.dart';
@@ -214,14 +213,14 @@ List<GoRoute> buildAppRoutes({Map<String, WidgetBuilder> stubs = const {}}) {
         targetLedgerId: args.$3,
       );
     }),
-    plain(Routes.backupRestore, (_) => const RestoreBackupPage()),
-    // 参数经 extra 传纯展示模型；非法参数属于调用方编程错误，直接快速失败。
+    // 参数经 extra 传外部 .snbak 路径（本机备份页/云端恢复传入），可空。
     extraRoute(
-      Routes.cloudBackupConfig,
-      (state) => CloudBackupConfigPage(
-        backend: state.extra! as CloudBackupBackendDisplay,
+      Routes.backupRestore,
+      (state) => RestoreBackupPage(
+        initialBackupPath: state.extra is String ? state.extra as String : null,
       ),
     ),
+    plain(Routes.localBackup, (_) => const LocalBackupPage()),
   ];
 }
 

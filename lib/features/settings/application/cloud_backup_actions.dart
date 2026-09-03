@@ -1,4 +1,8 @@
-/// 第三方云备份页面的展示模型与用例编排。
+/// 云服务页（备份与云同步配置）的展示模型与用例编排。
+///
+/// 设计意图：页面/入口 tile/备份同步区块共用同一批 provider，各自只做渲染；
+/// 所有对 CloudServiceStore 的读写收敛到 [CloudBackupActions]，UI 不直接持有
+/// 存储句柄（便于测试 override）。
 library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,12 +22,14 @@ class CloudBackupFieldDisplay {
     required this.labelKey,
     required this.type,
     required this.defaultValue,
+    required this.isRequired,
   });
 
   final String key;
   final String labelKey;
   final CloudBackupFieldType type;
   final Object? defaultValue;
+  final bool isRequired;
 
   /// 是否需要以密码输入框展示。
   bool get isSecret => type == CloudBackupFieldType.secret;
@@ -38,6 +44,7 @@ class CloudBackupBackendDisplay {
     required this.isConfigured,
     required this.isActive,
     required this.lastSuccessAt,
+    this.settings = const {},
   });
 
   final String id;
@@ -46,6 +53,73 @@ class CloudBackupBackendDisplay {
   final bool isConfigured;
   final bool isActive;
   final DateTime? lastSuccessAt;
+
+  /// 已保存设置（未配置时为空表）；卡片副标题脱敏展示端点用。
+  final Map<String, dynamic> settings;
+}
+
+/// 备份状态总览：入口 tile 与备份同步区块共用的数据源。
+class CloudBackupOverview {
+  const CloudBackupOverview({
+    required this.active,
+    required this.backends,
+    this.lastSuccessAt,
+    this.lastSuccessProvider,
+    this.dirtySince,
+  });
+
+  /// 当前激活配置（未配置第三方时为 local）。
+  final CloudServiceConfig active;
+
+  /// 注册表内全部第三方后端（含配置/激活/最近成功状态）。
+  final List<CloudBackupBackendDisplay> backends;
+
+  /// 最近一次成功备份时间。
+  final DateTime? lastSuccessAt;
+
+  /// 最近一次成功备份所属后端（云端上传成功时记录）。
+  final String? lastSuccessProvider;
+
+  /// 最近一次失败时间（自动重试标记）。
+  final DateTime? dirtySince;
+
+  /// 备份是否处于失败待重试状态。
+  bool get isDirty =>
+      dirtySince != null &&
+      (lastSuccessAt == null || dirtySince!.isAfter(lastSuccessAt!));
+
+  /// 是否只有本地备份（未配置任何第三方后端且未激活第三方）。
+  bool get isLocalOnly =>
+      active.isLocal && backends.every((b) => !b.isConfigured);
+}
+
+/// 备份健康状态（入口 tile / 云服务页 / 备份同步区块共用分支依据）。
+enum CloudBackupStatusKind {
+  /// 仅本地备份：未配置任何第三方后端。
+  localOnly,
+
+  /// 已配置第三方后端但当前未启用。
+  configuredInactive,
+
+  /// 已启用第三方后端，尚无成功备份。
+  activeNoSuccess,
+
+  /// 已启用且最近一次备份成功。
+  success,
+
+  /// 上次备份失败，等待自动重试。
+  failed,
+}
+
+/// 把备份总览映射为健康状态（纯函数，测试锚点）。
+///
+/// 优先级：失败待重试 > 未配置第三方 > 配置未启用 > 无成功记录 > 成功。
+CloudBackupStatusKind cloudBackupStatusOf(CloudBackupOverview overview) {
+  if (overview.isDirty) return CloudBackupStatusKind.failed;
+  if (overview.isLocalOnly) return CloudBackupStatusKind.localOnly;
+  if (overview.active.isLocal) return CloudBackupStatusKind.configuredInactive;
+  if (overview.lastSuccessAt != null) return CloudBackupStatusKind.success;
+  return CloudBackupStatusKind.activeNoSuccess;
 }
 
 /// 云备份配置与连接测试用例。
@@ -93,17 +167,34 @@ class CloudBackupActions {
     }
   }
 
-  /// 保存并激活指定云备份设置。
-  Future<void> saveAndActivate(
-    String backendId,
-    Map<String, dynamic> settings,
-  ) async {
+  /// 仅保存配置（不激活；「保存 ≠ 生效」）。
+  Future<void> saveOnly(String backendId, Map<String, dynamic> settings) async {
     try {
-      await CloudServiceStore().saveAndActivate(
+      await CloudServiceStore().saveOnly(
         CloudServiceConfig(backendId: backendId, settings: settings),
       );
     } catch (error, stackTrace) {
       logger.error('CloudBackupActions', '保存云备份配置失败', error, stackTrace);
+      rethrow;
+    }
+  }
+
+  /// 激活指定后端（配置缺失/无效时返回 false）。
+  Future<bool> activate(String backendId) async {
+    try {
+      return await CloudServiceStore().activate(backendId);
+    } catch (error, stackTrace) {
+      logger.error('CloudBackupActions', '激活云备份失败', error, stackTrace);
+      rethrow;
+    }
+  }
+
+  /// 清除指定后端的配置（回到未配置状态；云端数据不删除）。
+  Future<void> clearConfig(String backendId) async {
+    try {
+      await CloudServiceStore().clearConfig(backendId);
+    } catch (error, stackTrace) {
+      logger.error('CloudBackupActions', '清除云备份配置失败', error, stackTrace);
       rethrow;
     }
   }
@@ -128,6 +219,7 @@ final cloudBackupBackendsProvider =
         return Future.wait(
           CloudProviderRegistry.backends.map((backend) async {
             final isActive = !active.isLocal && active.backendId == backend.id;
+            final saved = await store.load(backend.id);
             return CloudBackupBackendDisplay(
               id: backend.id,
               displayName: backend.displayName,
@@ -146,11 +238,13 @@ final cloudBackupBackendsProvider =
                           CloudBackupFieldType.boolean,
                       },
                       defaultValue: field.defaultValue,
+                      isRequired: field.isRequired,
                     ),
                   )
                   .toList(growable: false),
-              isConfigured: await store.load(backend.id) != null,
+              isConfigured: saved != null,
               isActive: isActive,
+              settings: saved?.settings ?? const {},
               lastSuccessAt:
                   isActive && backupState?.currentProvider == backend.id
                   ? backupState?.lastSuccessAt
@@ -163,3 +257,29 @@ final cloudBackupBackendsProvider =
         rethrow;
       }
     });
+
+/// 备份状态总览（入口 tile / 云服务页头部 / 备份同步区块共用）。
+final cloudBackupOverviewProvider = FutureProvider<CloudBackupOverview>((
+  ref,
+) async {
+  try {
+    final store = CloudServiceStore();
+    final active = await store.loadActive();
+    final backends = await ref.watch(cloudBackupBackendsProvider.future);
+    final db = ref.read(databaseProvider);
+    final backupState = await (db.select(
+      db.backupState,
+    )..where((row) => row.id.equals(0))).getSingleOrNull();
+
+    return CloudBackupOverview(
+      active: active,
+      backends: backends,
+      lastSuccessAt: backupState?.lastSuccessAt,
+      lastSuccessProvider: backupState?.currentProvider,
+      dirtySince: backupState?.dirtySince,
+    );
+  } catch (error, stackTrace) {
+    logger.error('CloudBackupActions', '加载备份状态总览失败', error, stackTrace);
+    rethrow;
+  }
+});
