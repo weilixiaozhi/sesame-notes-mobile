@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:go_router/go_router.dart';
@@ -28,6 +29,8 @@ import 'package:sesame_notes/shared/presentation/category_utils.dart';
 import 'package:sesame_notes/router/route_consts.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/features/ledgers/presentation/sync_status_banner.dart';
+import 'package:sesame_notes/features/ledgers/presentation/widgets/acceptance_seed_dialog.dart';
+import 'package:sesame_notes/shared/providers/acceptance_data_providers.dart';
 
 /// 首页内容区统一水平内边距（8）：头部汇总卡与下方交易列表共用，保证两者左右边缘对齐。
 
@@ -168,6 +171,43 @@ class _HomePageState extends ConsumerState<HomePage>
     });
     if (_monthPager.hasClients) {
       _monthPager.jumpToPage(_centerPageIndex);
+    }
+  }
+
+  /// debug 包专用：弹窗选择验收数据项，一键生成便于验收的账单/账本/成员数据。
+  /// 所有动作经 providers 门面执行，失败统一 toast 友好提示（debug 场景）。
+  Future<void> _onTapAcceptanceSeed() async {
+    final option = await showAcceptanceSeedDialog(context);
+    if (option == null || !mounted) return;
+    try {
+      final message = await _runAcceptanceSeed(option);
+      if (!mounted) return;
+      showToast(context, message);
+    } catch (e, st) {
+      logger.error('HomePage', '生成验收数据失败: $option', e, st);
+      if (!mounted) return;
+      showToast(context, '生成验收数据失败: $e');
+    }
+  }
+
+  /// 执行验收数据动作并组装 toast 文案。
+  Future<String> _runAcceptanceSeed(AcceptanceSeedOption option) async {
+    switch (option) {
+      case AcceptanceSeedOption.fillBills:
+        final count = await seedAcceptanceBills(ref);
+        return '已填充 $count 笔账单（近 12 个月）';
+      case AcceptanceSeedOption.createLocalLedger:
+        final name = await seedAcceptanceLocalLedger(ref);
+        return '已创建本地账本：$name';
+      case AcceptanceSeedOption.createCloudLedger:
+        final name = await seedAcceptanceCloudLedger(ref);
+        return name == null ? '未登录，已跳过云账本创建' : '已创建云账本：$name（待同步推送）';
+      case AcceptanceSeedOption.createAaBills:
+        final count = await seedAcceptanceAaBills(ref);
+        return '已创建 $count 笔 AA 分摊账单';
+      case AcceptanceSeedOption.createVirtualUsers:
+        final count = await seedAcceptanceVirtualUsers(ref);
+        return '已创建 $count 个虚拟用户';
     }
   }
 
@@ -389,6 +429,13 @@ class _HomePageState extends ConsumerState<HomePage>
                       HeaderTextAction(
                         label: l10n.homeBackToCurrentMonth,
                         onPressed: _backToCurrentMonth,
+                      ),
+                    // debug 包：一键生成验收数据入口
+                    if (kDebugMode)
+                      HeaderIconAction(
+                        icon: AppIcons.autoAwesome,
+                        tooltip: '验收数据',
+                        onPressed: _onTapAcceptanceSeed,
                       ),
                   ],
                 ),
