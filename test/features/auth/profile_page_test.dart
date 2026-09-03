@@ -76,9 +76,9 @@ void main() {
     expect(find.text('点击更换头像'), findsNothing);
     expect(find.text('头像'), findsNothing);
     expect(find.text('基本资料'), findsOneWidget);
-    expect(find.text('账号与安全'), findsOneWidget);
+    expect(find.text('账号信息'), findsOneWidget);
     expect(find.text('安全'), findsNothing);
-    expect(find.text('登录密码'), findsOneWidget);
+    expect(find.text('修改密码'), findsOneWidget);
     expect(find.byType(SectionCard), findsNWidgets(2));
 
     // 分组标题与内容区统一 12px：分组标题（基本资料）与行标题（昵称）同字号

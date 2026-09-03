@@ -1,4 +1,4 @@
-﻿/// TransactionEditorSheet 提交/编辑/AA/日期/作者头像流程测试。
+/// TransactionEditorSheet 提交/编辑/AA/日期/作者头像流程测试。
 ///
 /// 需求锚点：
 /// - 新建提交：选分类 → 输入金额 → 完成，落库参数正确（Decimal 字符串、
@@ -842,6 +842,7 @@ void main() {
   );
 
   testWidgets('编辑共享账本交易：渲染作者头像组', (tester) async {
+    _stubGetByLedger(repo);
     when(
       () => repo.getCategoryById('cat-5'),
     ).thenAnswer((_) async => _category('cat-5', '旧分类'));
@@ -878,6 +879,7 @@ void main() {
   });
 
   testWidgets('AA 开启 + 编辑共享账本：头部同时渲染分摊按钮与作者头像', (tester) async {
+    _stubGetByLedger(repo);
     when(
       () => repo.getCategoryById('cat-5'),
     ).thenAnswer((_) async => _category('cat-5', '旧分类'));

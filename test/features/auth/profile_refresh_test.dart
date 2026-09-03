@@ -11,6 +11,9 @@ import 'package:sesame_notes/features/auth/application/auth_actions.dart';
 class _MockProfileService extends Mock implements ProfileService {}
 
 void main() {
+  // LoggerService 单例构造时注册原生日志桥,必须存在平台消息通道
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('读取服务端本人资料后同步内存状态与离线缓存', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();

@@ -1,4 +1,4 @@
-﻿/// HomePage 行为流测试（第二弹）：头部交互、下拉刷新失败/补折算、
+/// HomePage 行为流测试（第二弹）：头部交互、下拉刷新失败/补折算、
 /// 账本空态与错误态、AA 入口、交易明细接线与删除流程。
 ///
 /// 第一弹（home_page_test.dart）已覆盖左右切月与下拉刷新成功/降级文案；
@@ -74,6 +74,10 @@ void main() {
       ),
     ).thenAnswer((_) => txsStreamFactory());
     when(() => repo.getAllLedgers()).thenAnswer((_) async => <Ledger>[]);
+    // 成员展示映射（作者头像位）：默认空成员表，避免未 stub 触发 provider 错误日志。
+    when(() => repo.getMembersByLedger(any())).thenAnswer(
+      (_) async => <LedgerMember>[],
+    );
     // 作者身份按账本归属解析需要账本行；默认本地账本。
     when(() => repo.getLedgerById(any())).thenAnswer((_) async => testLedger);
     when(
