@@ -22,7 +22,11 @@ import 'package:sesame_notes/features/settings/domain/backup_manifest.dart';
 
 /// 恢复流程页面入口（4 步）。
 class RestoreBackupPage extends ConsumerStatefulWidget {
-  const RestoreBackupPage({super.key});
+  const RestoreBackupPage({super.key, this.initialBackupPath});
+
+  /// 外部 .snbak 文件路径（本机备份页「从文件恢复」/ 云端「从云端恢复」传入）：
+  /// 存在时插入列表头部并预选，用户只需输入密码即可打开。
+  final String? initialBackupPath;
 
   @override
   ConsumerState<RestoreBackupPage> createState() => _RestoreBackupPageState();
@@ -34,9 +38,11 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
   @override
   void initState() {
     super.initState();
-    // 进入页面即加载备份列表（只读）
+    // 进入页面即加载备份列表（只读）；外部文件预选由流程状态承载。
     Future.microtask(
-      () => ref.read(backupRestoreFlowProvider.notifier).loadBackups(),
+      () => ref
+          .read(backupRestoreFlowProvider.notifier)
+          .loadBackups(externalPath: widget.initialBackupPath),
     );
   }
 

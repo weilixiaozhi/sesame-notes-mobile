@@ -5,6 +5,8 @@
 /// 生产由默认装配）。Step 1–3 零写入，Step 4 单事务应用。
 library;
 
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/core/logging/logger_service.dart';
@@ -39,6 +41,15 @@ class RestoreBackupFile {
     required this.sizeLabel,
     required this.pathKey,
   });
+
+  /// 外部 .snbak 文件（「从文件恢复」/「从云端恢复」兜底通道）构造入口。
+  factory RestoreBackupFile.external(LocalBackupFile file) =>
+      RestoreBackupFile._(
+        source: file,
+        createdAt: file.createdAt,
+        sizeLabel: file.sizeLabel,
+        pathKey: file.file.path,
+      );
 
   final LocalBackupFile _source;
   final DateTime createdAt;
@@ -180,7 +191,10 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
   BackupRestoreFlowState build() => const BackupRestoreFlowState();
 
   /// Step 1：加载本地备份列表（只读）。
-  Future<void> loadBackups() async {
+  ///
+  /// [externalPath] 为备份目录之外的外部 .snbak 文件（「从文件恢复」选择的文件、
+  /// 云端下载的最新备份），存在时插入列表头部并预选——用户只需输入密码即可打开。
+  Future<void> loadBackups({String? externalPath}) async {
     state = state.copyWith(loading: true, error: RestoreFlowError.none);
     try {
       final backups = (await _backup.listBackups())
@@ -192,8 +206,27 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
               pathKey: file.file.path,
             ),
           )
-          .toList(growable: false);
-      state = state.copyWith(loading: false, backups: backups);
+          .toList();
+      RestoreBackupFile? preselected;
+      if (externalPath != null) {
+        final external = File(externalPath);
+        if (await external.exists()) {
+          final item = RestoreBackupFile.external(
+            LocalBackupFile(
+              file: external,
+              createdAt: await external.lastModified(),
+              sizeBytes: await external.length(),
+            ),
+          );
+          backups.insert(0, item);
+          preselected = item;
+        }
+      }
+      state = state.copyWith(
+        loading: false,
+        backups: backups,
+        selected: preselected,
+      );
     } catch (e, st) {
       logger.error('RestoreFlow', '读取备份列表失败', e, st);
       state = state.copyWith(

@@ -28,6 +28,7 @@ enum AutoBackupOutcome {
 
 /// 自动备份编排实例（依赖注入式，便于测试）。
 class AutoBackupService {
+  final Future<bool> Function() loadEnabled;
   final Future<DateTime?> Function() loadLastSuccess;
   final Future<void> Function(DateTime successAt) markSuccess;
   final Future<void> Function() markDirty;
@@ -36,18 +37,27 @@ class AutoBackupService {
   final DateTime Function() now;
 
   AutoBackupService({
+    Future<bool> Function()? loadEnabled,
     required this.loadLastSuccess,
     required this.markSuccess,
     required this.markDirty,
     required this.createLocalBackup,
     required this.uploadToCloud,
     DateTime Function()? now,
-  }) : now = now ?? DateTime.now;
+  }) : loadEnabled = loadEnabled ?? _alwaysEnabled,
+       now = now ?? DateTime.now;
 
-  /// 执行一次自动备份；按天去重，失败降级不打扰用户。
+  /// 开关默认值：未注入时恒启用（历史调用方不受影响）。
+  static Future<bool> _alwaysEnabled() async => true;
+
+  /// 执行一次自动备份；开关关闭直接跳过，开关打开后按天去重，失败降级不打扰用户。
   Future<AutoBackupOutcome> runOnLaunch() async {
     final today = now();
     try {
+      // 用户可在本机备份页关闭自动备份：关闭时完全不执行备份动作。
+      if (!await loadEnabled()) {
+        return AutoBackupOutcome.skipped;
+      }
       final last = await loadLastSuccess();
       if (last != null && _sameDay(last, today)) {
         return AutoBackupOutcome.skipped;

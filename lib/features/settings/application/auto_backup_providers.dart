@@ -13,8 +13,11 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:sesame_cloud_backup/sesame_cloud_backup.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
@@ -32,12 +35,22 @@ const String cloudBackupDirectory = 'sesame_notes_backups';
 /// 云端保留份数（冻结默认：最近 5 份）。
 const int cloudRetentionCount = 5;
 
+/// 本机备份服务实例（默认构造 = 生产路径；测试可 override 注入临时目录）。
+final localBackupServiceProvider = Provider<LocalBackupService>((ref) {
+  return LocalBackupService();
+});
+
 /// 自动备份编排 provider（app 生命周期 observer 调用 runOnLaunch）。
 final autoBackupCoordinatorProvider = Provider<AutoBackupService>((ref) {
   final db = ref.watch(databaseProvider);
-  final backupService = LocalBackupService();
+  final backupService = ref.watch(localBackupServiceProvider);
   final identity = ref.watch(deviceIdentityProvider);
   return AutoBackupService(
+    // 自动备份开关（本机备份页控制）：默认 true，零干预兜底。
+    loadEnabled: () async {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool(LocalBackupService.prefsKeyAutoBackup) ?? true;
+    },
     loadLastSuccess: () async {
       final row = await (db.select(
         db.backupState,
@@ -84,7 +97,7 @@ final autoBackupCoordinatorProvider = Provider<AutoBackupService>((ref) {
         currentAccountId: ref.read(authSessionProvider)?.userId,
       );
     },
-    uploadToCloud: uploadBackupFile,
+    uploadToCloud: uploadBackupFileIfAutoSyncEnabled,
   );
 });
 
@@ -170,3 +183,166 @@ Future<String?> loadActiveCloudBackupProviderName() async {
     rethrow;
   }
 }
+
+/// 受「自动备份到云端」开关控制的云端上传：开关关闭时 no-op。
+///
+/// 手动「立即上传」不经过本函数（用户显式动作应绕过开关）。
+Future<void> uploadBackupFileIfAutoSyncEnabled(File file) async {
+  final prefs = await SharedPreferences.getInstance();
+  final enabled = prefs.getBool(LocalBackupService.prefsKeyAutoSync) ?? true;
+  if (!enabled) return;
+  await uploadBackupFile(file);
+}
+
+/// 读取器签名：Ref.read 与 WidgetRef.read 的 tear-off 都满足，供页面与服务共用。
+typedef CloudReadFn = T Function<T>(ProviderListenable<T> listenable);
+
+/// 与自动备份一致的本地快照创建（手动「立即备份」与自动路径共用装配）。
+///
+/// 加密输入（Multi-Key-Slot）：配置了备份密码时用恢复词写 RECOVERY slot
+/// （云端可凭恢复词恢复），设备密钥写 DEVICE_LOCAL slot（本机兜底）。
+Future<File> createLocalBackupNow({required CloudReadFn read}) async {
+  final db = read(databaseProvider);
+  final backupService = read(localBackupServiceProvider);
+  final securityStore = BackupSecurityStore();
+  final localSelfId = await LocalSelfId.getOrCreate();
+  final deviceId = await read(deviceIdentityProvider).load();
+  return backupService.createBackup(
+    db: db,
+    secrets: BackupSecrets(
+      recoveryKey: await securityStore.loadRecoveryKey(),
+      deviceKey: BackupCrypto.deviceKeyFromLocalSelfId(localSelfId),
+    ),
+    deviceId: deviceId,
+    // 备份只含本地域与当前账号域：其他账号数据不进入 .snbak
+    currentAccountId: read(authSessionProvider)?.userId,
+  );
+}
+
+/// 记录成功：写入 backup_state 单例行 + 当天去重标记。
+Future<void> markBackupSuccess({required CloudReadFn read, required DateTime at}) async {
+  final providerName = await loadActiveCloudBackupProviderName();
+  final db = read(databaseProvider);
+  await db
+      .into(db.backupState)
+      .insertOnConflictUpdate(
+        BackupStateCompanion.insert(
+          id: d.Value(0),
+          lastSuccessAt: d.Value(at),
+          currentProvider: d.Value(providerName),
+        ),
+      );
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString(
+    LocalBackupService.prefsKeyLastBackupDate,
+    LocalBackupService.todayString(),
+  );
+}
+
+/// 记录失败：写入 dirtySince（下次触发自动重试）。
+Future<void> markBackupDirty({required CloudReadFn read}) async {
+  final db = read(databaseProvider);
+  await db
+      .into(db.backupState)
+      .insertOnConflictUpdate(
+        BackupStateCompanion.insert(
+          id: d.Value(0),
+          dirtySince: d.Value(DateTime.now()),
+        ),
+      );
+}
+
+/// 手动立即备份（本机备份页头部按钮 / 备份同步区块「立即上传」共用）：
+/// 本地快照 + 云端上传 + 成功记录，任何失败向上抛（由 UI 提示）。
+///
+/// 手动动作不受按天去重与 auto_sync 开关限制。
+Future<void> performManualBackup({required CloudReadFn read}) async {
+  final file = await createLocalBackupNow(read: read);
+  await uploadBackupFile(file);
+  await markBackupSuccess(read: read, at: DateTime.now());
+}
+
+/// 从已配置的第三方云端下载最新 .snbak 备份到本地临时文件。
+///
+/// 未配置第三方或云端无备份时返回 null；下载内容按 base64 解码还原原始
+/// Envelope 字节。返回的文件供恢复页（RestoreBackupPage）作为外部备份打开。
+Future<File?> downloadLatestCloudBackup({required CloudReadFn read}) async {
+  final cfg = await CloudServiceStore().loadActive();
+  if (cfg.isLocal) return null;
+  final services = await createCloudServices(cfg);
+  final provider = services.provider;
+  if (provider == null) return null;
+  try {
+    final storage = provider.storage;
+    final files = await storage.list(path: '$cloudBackupDirectory/');
+    final backups =
+        files
+            .where(
+              (f) => p
+                  .basename(f.path)
+                  .endsWith(LocalBackupService.backupExtension),
+            )
+            .toList()
+          ..sort((a, b) => p.basename(b.path).compareTo(p.basename(a.path)));
+    if (backups.isEmpty) return null;
+    final data = await storage.download(path: backups.first.path);
+    if (data == null || data.isEmpty) return null;
+    // base64 仅作传输编码：解码还原 Envelope 原始字节。
+    final bytes = base64Decode(data);
+    final dir = await getTemporaryDirectory();
+    final target = File(p.join(dir.path, p.basename(backups.first.path)));
+    await target.writeAsBytes(bytes, flush: true);
+    logger.info('AutoBackup', '云端备份下载完成: ${target.path}');
+    return target;
+  } finally {
+    await provider.dispose();
+  }
+}
+
+/// 自动本地备份开关值（默认 true：零干预兜底）。
+final autoBackupValueProvider = FutureProvider.autoDispose<bool>((ref) async {
+  final prefs = await SharedPreferences.getInstance();
+  final link = ref.keepAlive();
+  ref.onDispose(() => link.close());
+  return prefs.getBool(LocalBackupService.prefsKeyAutoBackup) ?? true;
+});
+
+/// 自动本地备份开关写入器：写 SharedPreferences 后 invalidate 值缓存。
+class AutoBackupSetter {
+  AutoBackupSetter(this._ref);
+  final Ref _ref;
+  Future<void> set(bool v) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(LocalBackupService.prefsKeyAutoBackup, v);
+    _ref.invalidate(autoBackupValueProvider);
+  }
+}
+
+/// 自动本地备份开关写入器 provider。
+final autoBackupSetterProvider = Provider<AutoBackupSetter>((ref) {
+  return AutoBackupSetter(ref);
+});
+
+/// 「自动备份到云端」开关值（默认 true：已配置第三方时随自动备份上传）。
+final autoSyncValueProvider = FutureProvider.autoDispose<bool>((ref) async {
+  final prefs = await SharedPreferences.getInstance();
+  final link = ref.keepAlive();
+  ref.onDispose(() => link.close());
+  return prefs.getBool(LocalBackupService.prefsKeyAutoSync) ?? true;
+});
+
+/// 「自动备份到云端」开关写入器。
+class AutoSyncSetter {
+  AutoSyncSetter(this._ref);
+  final Ref _ref;
+  Future<void> set(bool v) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(LocalBackupService.prefsKeyAutoSync, v);
+    _ref.invalidate(autoSyncValueProvider);
+  }
+}
+
+/// 「自动备份到云端」开关写入器 provider。
+final autoSyncSetterProvider = Provider<AutoSyncSetter>((ref) {
+  return AutoSyncSetter(ref);
+});

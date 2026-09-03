@@ -80,6 +80,24 @@ void main() {
     expect(events, isNot(contains('markSuccess')));
   });
 
+  test('自动备份开关关闭：直接跳过，不备份不上传', () async {
+    final service = AutoBackupService(
+      loadEnabled: () async => false,
+      loadLastSuccess: () async => null,
+      markSuccess: (_) async => events.add('markSuccess'),
+      markDirty: () async => events.add('markDirty'),
+      createLocalBackup: () async {
+        events.add('localBackup');
+        return File('fake.sqlite');
+      },
+      uploadToCloud: (_) async => events.add('upload'),
+      now: () => DateTime(2026, 8, 1, 10, 0),
+    );
+    final outcome = await service.runOnLaunch();
+    expect(outcome, AutoBackupOutcome.skipped);
+    expect(events, isEmpty, reason: '开关关闭时不得执行任何备份动作');
+  });
+
   test('本地备份失败：同样降级为 failed 并记 dirty', () async {
     final service = AutoBackupService(
       loadLastSuccess: () async => null,

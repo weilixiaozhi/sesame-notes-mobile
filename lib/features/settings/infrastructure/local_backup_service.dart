@@ -121,6 +121,9 @@ class LocalBackupService {
   /// SharedPreferences key：自动备份开关（默认 true，零干预兜底）
   static const String prefsKeyAutoBackup = 'auto_backup';
 
+  /// SharedPreferences key：自动备份时同步上传到第三方云端（默认 true）
+  static const String prefsKeyAutoSync = 'auto_sync';
+
   /// SharedPreferences key：上次备份日期（本地时区 YYYY-MM-DD，按天去重）
   static const String prefsKeyLastBackupDate = 'last_backup_date';
 
