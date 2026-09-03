@@ -14,7 +14,6 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/widgets/app_list_tile.dart';
 import 'package:sesame_notes/shared/widgets/primary_header.dart';
 import 'package:sesame_notes/shared/widgets/section_card.dart';
-import 'package:sesame_notes/shared/widgets/toast.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/features/settings/application/backup_restore_providers.dart';
@@ -77,6 +76,7 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
   Widget _buildStep1(BuildContext context, BackupRestoreFlowState flow) {
     final l10n = AppLocalizations.of(context);
     final errorText = _errorText(context, flow.error);
+    final selected = flow.selected;
     return ListView(
       padding: const EdgeInsets.all(AppDimens.p16),
       children: [
@@ -92,9 +92,53 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
               style: TextStyle(color: AppTokens.error(context)),
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: AppDimens.p12),
-          child: TextField(
+        if (flow.backups.isEmpty && !flow.loading)
+          Padding(
+            padding: const EdgeInsets.all(AppDimens.p32),
+            child: Center(child: Text(l10n.restoreNoBackups)),
+          ),
+        // 点选提示：列表只做选择，打开由下方按钮显式触发。
+        if (flow.backups.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppDimens.p8),
+            child: Text(
+              l10n.restoreSelectHint,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTokens.textSecondary(context),
+              ),
+            ),
+          ),
+        for (final backup in flow.backups)
+          AppListTile(
+            leading: Icons.backup_outlined,
+            title: _formatBackupTime(backup.createdAt),
+            subtitle: backup.sizeLabel,
+            // 勾选 = 已选中；右箭头 = 可点选。
+            trailing: Icon(
+              selected?.pathKey == backup.pathKey
+                  ? Icons.check_circle
+                  : Icons.chevron_right,
+              color: selected?.pathKey == backup.pathKey
+                  ? AppTokens.primary(context)
+                  : AppTokens.iconTertiary(context),
+            ),
+            onTap: () => ref
+                .read(backupRestoreFlowProvider.notifier)
+                .selectBackup(backup),
+          ),
+        if (flow.loading) const LinearProgressIndicator(),
+        if (flow.backups.isNotEmpty) ...[
+          const SizedBox(height: AppDimens.p16),
+          // 密码/恢复词仅对「其他设备或云端下载」的备份必需，
+          // 本机自动备份凭设备密钥自动打开。
+          Text(
+            l10n.restoreDeviceKeyHint,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppTokens.textTertiary(context),
+            ),
+          ),
+          const SizedBox(height: AppDimens.p8),
+          TextField(
             controller: _secretController,
             obscureText: true,
             decoration: InputDecoration(
@@ -102,37 +146,24 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
               border: const OutlineInputBorder(),
             ),
           ),
-        ),
-        if (flow.backups.isEmpty && !flow.loading)
-          Padding(
-            padding: const EdgeInsets.all(AppDimens.p32),
-            child: Center(child: Text(l10n.restoreNoBackups)),
+          const SizedBox(height: AppDimens.p12),
+          FilledButton(
+            onPressed: selected == null
+                ? null
+                : () => _openSelected(context, selected),
+            child: Text(l10n.restoreOpenButton),
           ),
-        for (final backup in flow.backups)
-          AppListTile(
-            leading: Icons.backup_outlined,
-            title: _formatBackupTime(backup.createdAt),
-            subtitle: backup.sizeLabel,
-            trailing: flow.selected?.pathKey == backup.pathKey
-                ? Icon(Icons.check_circle, color: AppTokens.primary(context))
-                : null,
-            onTap: () => _openBackup(context, backup),
-          ),
-        if (flow.loading) const LinearProgressIndicator(),
+        ],
       ],
     );
   }
 
-  Future<void> _openBackup(
+  /// 打开当前选中的备份：密码/恢复词可留空（本机备份设备密钥兜底）。
+  Future<void> _openSelected(
     BuildContext context,
     RestoreBackupFile backup,
   ) async {
-    final l10n = AppLocalizations.of(context);
     final secret = _secretController.text.trim();
-    if (secret.isEmpty) {
-      showToast(context, l10n.restorePasswordHint);
-      return;
-    }
     await ref
         .read(backupRestoreFlowProvider.notifier)
         .openBackup(file: backup, secret: secret);

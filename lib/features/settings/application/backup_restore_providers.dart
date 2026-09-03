@@ -13,6 +13,7 @@ import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
+import 'package:sesame_notes/features/settings/domain/backup_crypto.dart';
 import 'package:sesame_notes/features/settings/domain/backup_envelope.dart';
 import 'package:sesame_notes/features/settings/infrastructure/backup_import_service.dart';
 import 'package:sesame_notes/features/settings/domain/backup_manifest.dart';
@@ -236,6 +237,11 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
     }
   }
 
+  /// Step 1：点选备份（仅选中，不打开；打开由页面「打开所选备份」按钮触发）。
+  void selectBackup(RestoreBackupFile file) {
+    state = state.copyWith(selected: file, error: RestoreFlowError.none);
+  }
+
   /// Step 1→2：打开备份（解析 Envelope + 解密 Manifest + 预览），零写入。
   Future<void> openBackup({
     required RestoreBackupFile file,
@@ -244,11 +250,16 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
     state = state.copyWith(loading: true, error: RestoreFlowError.none);
     try {
       final db = ref.read(databaseProvider);
-      // 输入框内容可能是密码或恢复词：两种形态都尝试（Multi-Key-Slot）
+      // 输入框内容可能是密码或恢复词：两种形态都尝试（Multi-Key-Slot）。
+      // 本机自动备份可能只有设备密钥 slot（未设置备份密码时）：自动附带
+      // 设备密钥兜底，本机备份即使不输入任何内容也能直接打开。
+      final localSelfId = await ref.read(localSelfIdProvider.future);
+      final deviceKey = BackupCrypto.deviceKeyFromLocalSelfId(localSelfId);
       final session = await _import.openBackup(
         backupFile: file._source.file,
-        password: secret,
-        recoveryKey: secret,
+        password: secret.isEmpty ? null : secret,
+        recoveryKey: secret.isEmpty ? null : secret,
+        deviceKey: deviceKey,
         currentSchemaVersion: db.schemaVersion,
       );
       final items = (await _import.listRecoveryItems(session))

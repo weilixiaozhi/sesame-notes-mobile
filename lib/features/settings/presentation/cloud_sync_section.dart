@@ -194,7 +194,8 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
           ? l10n.cloudBackupEntryLocalOnly
           : l10n.cloudBackupConfiguredInactive;
     }
-    if (overview.lastSuccessAt != null) {
+    if (overview.lastSuccessAt != null &&
+        overview.lastSuccessProvider != null) {
       return l10n.cloudBackupActiveLastSuccess(
         DateFormat(
           'yyyy-MM-dd HH:mm',
@@ -240,9 +241,18 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
     final l10n = AppLocalizations.of(context);
     setState(() => _uploadBusy = true);
     try {
-      // 云端备份必须受密码派生密钥保护：未配置备份密码时给前置引导。
+      // 云端备份必须受密码派生密钥保护：未配置备份密码时引导去本机备份页设置。
       if (!await BackupSecurityStore().hasPassword()) {
-        if (mounted) showToast(context, l10n.cloudBackupNeedPassword);
+        if (!mounted) return;
+        final goSet = await AppDialog.confirm<bool>(
+          context,
+          title: l10n.cloudBackupUploadNow,
+          message: l10n.cloudBackupNeedPassword,
+          okLabel: l10n.cloudBackupNeedPasswordGo,
+          cancelLabel: l10n.commonCancel,
+        );
+        if (goSet != true || !mounted) return;
+        await context.pushNamed(Routes.localBackup);
         return;
       }
       await performManualBackup(read: ref.read);
@@ -362,6 +372,8 @@ class _SupabaseAuthTileState extends ConsumerState<_SupabaseAuthTile> {
             title: user == null
                 ? l10n.cloudBackupLogin
                 : user.account ?? l10n.cloudBackupLoginSuccess,
+            // Supabase 存储要求登录账号（WebDAV/S3 用配置内凭据，无需登录）。
+            subtitle: user == null ? l10n.cloudBackupSupabaseAuthHint : null,
             onTap: () async {
               if (auth == null) return;
               if (user == null) {

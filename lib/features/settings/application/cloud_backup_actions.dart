@@ -118,7 +118,11 @@ CloudBackupStatusKind cloudBackupStatusOf(CloudBackupOverview overview) {
   if (overview.isDirty) return CloudBackupStatusKind.failed;
   if (overview.isLocalOnly) return CloudBackupStatusKind.localOnly;
   if (overview.active.isLocal) return CloudBackupStatusKind.configuredInactive;
-  if (overview.lastSuccessAt != null) return CloudBackupStatusKind.success;
+  // 成功态要求「云端上传成功」（提供方非空）：仅本地快照成功
+  // （未配置备份密码时云端上传被跳过）不算云端成功。
+  if (overview.lastSuccessAt != null && overview.lastSuccessProvider != null) {
+    return CloudBackupStatusKind.success;
+  }
   return CloudBackupStatusKind.activeNoSuccess;
 }
 

@@ -109,6 +109,48 @@ void main() {
     );
   });
 
+  testWidgets('备份密码未设置时可设置并展示恢复词', (tester) async {
+    final db = SesameDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    await pumpPage(tester, db);
+
+    await tester.tap(find.text('备份密码'));
+    await tester.pumpAndSettle();
+    // 设置弹层：新密码 + 确认密码。
+    await tester.enterText(
+      find.widgetWithText(TextField, '新密码'),
+      'pw-12345678',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, '确认新密码'),
+      'pw-12345678',
+    );
+    await tester.tap(find.text('确定').last);
+    // 密码哈希（Argon2id）是真实异步，runAsync 驱动完成。
+    await tester.runAsync(() async {
+      await Future.delayed(const Duration(seconds: 2));
+    });
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // 恢复词一次性展示弹窗。
+    expect(find.text('请妥善保存恢复词'), findsOneWidget);
+    await tester.tap(find.text('确定').last);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('备份密码已设置'), findsOneWidget);
+    final prefs = await SharedPreferences.getInstance();
+    expect(
+      prefs.getString('backup_password_verifier'),
+      isNotNull,
+      reason: '密码校验哈希已落库',
+    );
+    // 让 toast 自动消失的定时器走完，避免测试结束时有 pending timer。
+    await tester.pump(const Duration(seconds: 3));
+  });
+
   testWidgets('快照列表展示文件名与大小，点击进入恢复页（路由桩）', (tester) async {
     final db = SesameDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);

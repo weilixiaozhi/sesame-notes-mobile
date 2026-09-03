@@ -72,7 +72,7 @@ void main() {
       );
     });
 
-    test('已启用且最近成功', () {
+    test('已启用且最近云端上传成功', () {
       final overview = CloudBackupOverview(
         active: const CloudServiceConfig(backendId: 's3', settings: {}),
         backends: const [],
@@ -80,6 +80,20 @@ void main() {
         lastSuccessProvider: 's3',
       );
       expect(cloudBackupStatusOf(overview), CloudBackupStatusKind.success);
+    });
+
+    test('仅有本地快照成功（未上传云端）不算云端成功', () {
+      // 未配置备份密码时云端上传被跳过：lastSuccessAt 有值但提供方为 null。
+      final overview = CloudBackupOverview(
+        active: const CloudServiceConfig(backendId: 's3', settings: {}),
+        backends: const [],
+        lastSuccessAt: DateTime(2026, 9, 1, 8, 30),
+        lastSuccessProvider: null,
+      );
+      expect(
+        cloudBackupStatusOf(overview),
+        CloudBackupStatusKind.activeNoSuccess,
+      );
     });
 
     test('上次失败待重试优先于其他状态', () {

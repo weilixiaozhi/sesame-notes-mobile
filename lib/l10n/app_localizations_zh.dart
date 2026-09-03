@@ -1956,6 +1956,77 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cloudTabBackupSubtitle => '点击卡片切换备份方式，首次需要配置信息';
 
   @override
+  String get backupPasswordTitle => '备份密码';
+
+  @override
+  String get backupPasswordNotSet => '未设置';
+
+  @override
+  String get backupPasswordSet => '已设置';
+
+  @override
+  String get backupPasswordSubtitle => '设置后自动备份会加密上传到云端；云端恢复需密码或恢复词';
+
+  @override
+  String get backupPasswordSetAction => '设置';
+
+  @override
+  String get backupPasswordChange => '修改密码';
+
+  @override
+  String get backupPasswordClear => '清除备份密码';
+
+  @override
+  String get backupPasswordClearConfirm =>
+      '确定要清除备份密码吗？清除后自动备份将不再上传到云端，历史云端备份仍可用恢复词打开。';
+
+  @override
+  String get backupPasswordOldLabel => '当前密码';
+
+  @override
+  String get backupPasswordNewLabel => '新密码';
+
+  @override
+  String get backupPasswordConfirmLabel => '确认新密码';
+
+  @override
+  String get backupPasswordMismatch => '两次输入的密码不一致';
+
+  @override
+  String get backupPasswordTooShort => '密码至少 8 位';
+
+  @override
+  String get backupPasswordWrong => '当前密码不正确';
+
+  @override
+  String get backupPasswordSetSuccess => '备份密码已设置';
+
+  @override
+  String get backupPasswordCleared => '备份密码已清除';
+
+  @override
+  String get backupPasswordRecoveryTitle => '请妥善保存恢复词';
+
+  @override
+  String get backupPasswordRecoveryBody =>
+      '恢复词用于在其他设备恢复备份或重置密码。请抄写并妥善保存，本提示仅展示一次。';
+
+  @override
+  String get restoreOpenButton => '打开所选备份';
+
+  @override
+  String get restoreSelectHint => '点击列表选择要恢复的备份';
+
+  @override
+  String get restoreDeviceKeyHint => '本机自动备份可直接打开；其他设备或云端下载的备份需输入创建时的密码或恢复词';
+
+  @override
+  String get cloudBackupSupabaseAuthHint => 'Supabase 需要登录账号后使用';
+
+  @override
+  String get cloudBackupNeedPasswordGo => '去设置';
+
+  @override
   String get cloudBackupEntryLocalOnly => '仅本地备份';
 
   @override
@@ -3798,7 +3869,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restoreStep1Title => '选择备份';
 
   @override
-  String get restoreStep1Subtitle => '从时间戳备份恢复，先输入备份密码或恢复词';
+  String get restoreStep1Subtitle => '选择要恢复的备份';
 
   @override
   String get restorePasswordHint => '备份密码或恢复词';
@@ -6096,6 +6167,77 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get cloudTabBackupSubtitle => '點擊卡片切換備份方式，首次需要配置資訊';
 
   @override
+  String get backupPasswordTitle => '備份密碼';
+
+  @override
+  String get backupPasswordNotSet => '未設定';
+
+  @override
+  String get backupPasswordSet => '已設定';
+
+  @override
+  String get backupPasswordSubtitle => '設定後自動備份會加密上傳到雲端；雲端恢復需密碼或恢復詞';
+
+  @override
+  String get backupPasswordSetAction => '設定';
+
+  @override
+  String get backupPasswordChange => '修改密碼';
+
+  @override
+  String get backupPasswordClear => '清除備份密碼';
+
+  @override
+  String get backupPasswordClearConfirm =>
+      '確定要清除備份密碼嗎？清除後自動備份將不再上傳到雲端，歷史雲端備份仍可用恢復詞開啟。';
+
+  @override
+  String get backupPasswordOldLabel => '目前密碼';
+
+  @override
+  String get backupPasswordNewLabel => '新密碼';
+
+  @override
+  String get backupPasswordConfirmLabel => '確認新密碼';
+
+  @override
+  String get backupPasswordMismatch => '兩次輸入的密碼不一致';
+
+  @override
+  String get backupPasswordTooShort => '密碼至少 8 位';
+
+  @override
+  String get backupPasswordWrong => '目前密碼不正確';
+
+  @override
+  String get backupPasswordSetSuccess => '備份密碼已設定';
+
+  @override
+  String get backupPasswordCleared => '備份密碼已清除';
+
+  @override
+  String get backupPasswordRecoveryTitle => '請妥善保存恢復詞';
+
+  @override
+  String get backupPasswordRecoveryBody =>
+      '恢復詞用於在其他裝置恢復備份或重設密碼。請抄寫並妥善保存，本提示僅展示一次。';
+
+  @override
+  String get restoreOpenButton => '開啟所選備份';
+
+  @override
+  String get restoreSelectHint => '點擊列表選擇要恢復的備份';
+
+  @override
+  String get restoreDeviceKeyHint => '本機自動備份可直接開啟；其他裝置或雲端下載的備份需輸入建立時的密碼或恢復詞';
+
+  @override
+  String get cloudBackupSupabaseAuthHint => 'Supabase 需要登入帳號後使用';
+
+  @override
+  String get cloudBackupNeedPasswordGo => '去設定';
+
+  @override
   String get cloudBackupEntryLocalOnly => '僅本機備份';
 
   @override
@@ -7938,7 +8080,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get restoreStep1Title => '選擇備份';
 
   @override
-  String get restoreStep1Subtitle => '從時間戳備份還原，請先輸入備份密碼或復原金鑰';
+  String get restoreStep1Subtitle => '選擇要恢復的備份';
 
   @override
   String get restorePasswordHint => '備份密碼或復原金鑰';

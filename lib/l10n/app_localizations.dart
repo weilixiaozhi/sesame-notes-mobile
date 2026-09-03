@@ -3693,6 +3693,144 @@ abstract class AppLocalizations {
   /// **'Tap a card to switch backup methods. The first setup requires configuration.'**
   String get cloudTabBackupSubtitle;
 
+  /// No description provided for @backupPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup Password'**
+  String get backupPasswordTitle;
+
+  /// No description provided for @backupPasswordNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get backupPasswordNotSet;
+
+  /// No description provided for @backupPasswordSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Set'**
+  String get backupPasswordSet;
+
+  /// No description provided for @backupPasswordSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto backups are encrypted and uploaded to the cloud after setting; cloud restore requires the password or recovery words'**
+  String get backupPasswordSubtitle;
+
+  /// No description provided for @backupPasswordSetAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Set'**
+  String get backupPasswordSetAction;
+
+  /// No description provided for @backupPasswordChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Password'**
+  String get backupPasswordChange;
+
+  /// No description provided for @backupPasswordClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Backup Password'**
+  String get backupPasswordClear;
+
+  /// No description provided for @backupPasswordClearConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the backup password? Auto backups will no longer upload to the cloud. Existing cloud backups can still be opened with recovery words.'**
+  String get backupPasswordClearConfirm;
+
+  /// No description provided for @backupPasswordOldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get backupPasswordOldLabel;
+
+  /// No description provided for @backupPasswordNewLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get backupPasswordNewLabel;
+
+  /// No description provided for @backupPasswordConfirmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm new password'**
+  String get backupPasswordConfirmLabel;
+
+  /// No description provided for @backupPasswordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get backupPasswordMismatch;
+
+  /// No description provided for @backupPasswordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get backupPasswordTooShort;
+
+  /// No description provided for @backupPasswordWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password is incorrect'**
+  String get backupPasswordWrong;
+
+  /// No description provided for @backupPasswordSetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup password set'**
+  String get backupPasswordSetSuccess;
+
+  /// No description provided for @backupPasswordCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup password cleared'**
+  String get backupPasswordCleared;
+
+  /// No description provided for @backupPasswordRecoveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your recovery words'**
+  String get backupPasswordRecoveryTitle;
+
+  /// No description provided for @backupPasswordRecoveryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery words restore backups on other devices or reset the password. Write them down and keep them safe — shown only once.'**
+  String get backupPasswordRecoveryBody;
+
+  /// No description provided for @restoreOpenButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Selected Backup'**
+  String get restoreOpenButton;
+
+  /// No description provided for @restoreSelectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a backup to select it'**
+  String get restoreSelectHint;
+
+  /// No description provided for @restoreDeviceKeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Backups made on this device open directly; backups from other devices or the cloud need the password or recovery words used at creation'**
+  String get restoreDeviceKeyHint;
+
+  /// No description provided for @cloudBackupSupabaseAuthHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Supabase requires a signed-in account'**
+  String get cloudBackupSupabaseAuthHint;
+
+  /// No description provided for @cloudBackupNeedPasswordGo.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Now'**
+  String get cloudBackupNeedPasswordGo;
+
   /// No description provided for @cloudBackupEntryLocalOnly.
   ///
   /// In en, this message translates to:
@@ -7128,7 +7266,7 @@ abstract class AppLocalizations {
   /// No description provided for @restoreStep1Subtitle.
   ///
   /// In en, this message translates to:
-  /// **'Enter the backup password or recovery key to open a timestamped backup'**
+  /// **'Select a backup to restore'**
   String get restoreStep1Subtitle;
 
   /// No description provided for @restorePasswordHint.

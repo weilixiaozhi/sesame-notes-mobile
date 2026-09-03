@@ -323,6 +323,17 @@ final autoBackupSetterProvider = Provider<AutoBackupSetter>((ref) {
   return AutoBackupSetter(ref);
 });
 
+/// 是否已设置备份密码（本机备份页密码卡片数据源）。
+///
+/// 未设置时自动备份只做本机快照、云端上传跳过；设置后快照加密并上传。
+final backupPasswordConfiguredProvider = FutureProvider.autoDispose<bool>((
+  ref,
+) async {
+  final link = ref.keepAlive();
+  ref.onDispose(() => link.close());
+  return BackupSecurityStore().hasPassword();
+});
+
 /// 「自动备份到云端」开关值（默认 true：已配置第三方时随自动备份上传）。
 final autoSyncValueProvider = FutureProvider.autoDispose<bool>((ref) async {
   final prefs = await SharedPreferences.getInstance();
