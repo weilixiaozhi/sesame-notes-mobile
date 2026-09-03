@@ -1,9 +1,7 @@
 /// 自动备份编排 provider 装配（本地 .snbak 快照 + 第三方云端版本化上传）。
 ///
-/// - 本地快照 = LocalBackupService 的 .snbak Envelope（配置了备份密码时用
-///   autoKey 加密，否则设备密钥——本机自动备份场景）；
-/// - 云端上传：**仅当已配置备份密码**（autoKey 存在）时上传——云端备份必须受
-///   密码派生密钥保护，设备密钥不是唯一保护；未配置则跳过上传（本地备份仍成功）；
+/// - 本地快照 = LocalBackupService 的 .snbak Envelope（设备密钥加密）；
+/// - 云端上传：已配置第三方后端即上传；未配置则跳过（本地快照仍成功）；
 /// - 上传路径版本化（时间戳命名）；base64 仅作传输编码，内容已是密文；
 /// - 云端保留最近 5 份（冻结默认），超限按时间戳清理。
 library;
@@ -26,7 +24,6 @@ import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/settings/infrastructure/auto_backup_service.dart';
 import 'package:sesame_notes/features/settings/domain/backup_crypto.dart';
-import 'package:sesame_notes/features/settings/infrastructure/backup_security_store.dart';
 import 'package:sesame_notes/features/settings/infrastructure/local_backup_service.dart';
 
 /// 云端备份目录（版本化 .snbak 存放处）。
@@ -80,16 +77,12 @@ final autoBackupCoordinatorProvider = Provider<AutoBackupService>((ref) {
           );
     },
     createLocalBackup: () async {
-      // 自动备份的加密输入（Multi-Key-Slot）：配置了备份密码时用
-      // 钥匙串恢复词写 RECOVERY slot（云端可凭恢复词恢复），设备密钥写
-      // DEVICE_LOCAL slot（本机兜底，非唯一保护）。
-      final securityStore = BackupSecurityStore();
+      // 加密输入：设备密钥（localSelfId 派生，DEVICE_LOCAL slot）。
       final localSelfId = await LocalSelfId.getOrCreate();
       final deviceId = await identity.load();
       return backupService.createBackup(
         db: db,
         secrets: BackupSecrets(
-          recoveryKey: await securityStore.loadRecoveryKey(),
           deviceKey: BackupCrypto.deviceKeyFromLocalSelfId(localSelfId),
         ),
         deviceId: deviceId,
@@ -103,7 +96,7 @@ final autoBackupCoordinatorProvider = Provider<AutoBackupService>((ref) {
 
 /// 把最新 .snbak 快照上传到已配置的第三方云端（版本化路径 + 保留清理）。
 ///
-/// 未配置第三方后端或未配置备份密码时 no-op（本地快照仍成功）；上传失败向上抛
+/// 未配置第三方后端时 no-op（本地快照仍成功）；上传失败向上抛
 /// （由 AutoBackupService 统一降级为 failed + dirty 标记）。
 Future<void> uploadBackupFile(File file) async {
   if (!file.path.endsWith(LocalBackupService.backupExtension)) {
@@ -111,12 +104,6 @@ Future<void> uploadBackupFile(File file) async {
   }
   final cfg = await CloudServiceStore().loadActive();
   if (cfg.isLocal) return; // 未配置第三方，仅本地快照
-
-  // 云端备份必须受密码派生密钥保护：未配置备份密码时不上传（防设备密钥唯一保护）。
-  if (!await BackupSecurityStore().hasPassword()) {
-    logger.warning('AutoBackup', '未配置备份密码，跳过云端上传（本地快照已生成）');
-    return;
-  }
 
   final services = await createCloudServices(cfg);
   final provider = services.provider;
@@ -171,12 +158,12 @@ Future<void> _pruneCloudBackups(CloudStorageService storage) async {
 
 /// 读取当前可完成云端上传的第三方后端名。
 ///
-/// 未配置第三方后端或备份密码时，本次只会生成本地快照，
-/// 因此返回 null，避免把本地成功误记为云端成功。
+/// 未配置第三方后端时本次只会生成本地快照，因此返回 null，
+/// 避免把本地成功误记为云端成功。
 Future<String?> loadActiveCloudBackupProviderName() async {
   try {
     final cfg = await CloudServiceStore().loadActive();
-    if (cfg.isLocal || !await BackupSecurityStore().hasPassword()) return null;
+    if (cfg.isLocal) return null;
     return cfg.backendId;
   } catch (e, st) {
     logger.error('AutoBackup', '读取当前云端备份服务失败', e, st);
@@ -199,18 +186,15 @@ typedef CloudReadFn = T Function<T>(ProviderListenable<T> listenable);
 
 /// 与自动备份一致的本地快照创建（手动「立即备份」与自动路径共用装配）。
 ///
-/// 加密输入（Multi-Key-Slot）：配置了备份密码时用恢复词写 RECOVERY slot
-/// （云端可凭恢复词恢复），设备密钥写 DEVICE_LOCAL slot（本机兜底）。
+/// 加密输入：设备密钥（localSelfId 派生，DEVICE_LOCAL slot）。
 Future<File> createLocalBackupNow({required CloudReadFn read}) async {
   final db = read(databaseProvider);
   final backupService = read(localBackupServiceProvider);
-  final securityStore = BackupSecurityStore();
   final localSelfId = await LocalSelfId.getOrCreate();
   final deviceId = await read(deviceIdentityProvider).load();
   return backupService.createBackup(
     db: db,
     secrets: BackupSecrets(
-      recoveryKey: await securityStore.loadRecoveryKey(),
       deviceKey: BackupCrypto.deviceKeyFromLocalSelfId(localSelfId),
     ),
     deviceId: deviceId,
@@ -321,17 +305,6 @@ class AutoBackupSetter {
 /// 自动本地备份开关写入器 provider。
 final autoBackupSetterProvider = Provider<AutoBackupSetter>((ref) {
   return AutoBackupSetter(ref);
-});
-
-/// 是否已设置备份密码（本机备份页密码卡片数据源）。
-///
-/// 未设置时自动备份只做本机快照、云端上传跳过；设置后快照加密并上传。
-final backupPasswordConfiguredProvider = FutureProvider.autoDispose<bool>((
-  ref,
-) async {
-  final link = ref.keepAlive();
-  ref.onDispose(() => link.close());
-  return BackupSecurityStore().hasPassword();
 });
 
 /// 「自动备份到云端」开关值（默认 true：已配置第三方时随自动备份上传）。

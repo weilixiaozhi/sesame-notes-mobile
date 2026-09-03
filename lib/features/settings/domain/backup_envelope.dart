@@ -6,7 +6,7 @@
 /// key_slots[]（每 slot 61B：type(1) + nonce(12) + ciphertext(32) + tag(16)）
 /// + encrypted_payload。
 ///
-/// - Multi-Key-Slot：同一 DEK 被密码/恢复词/设备密钥分别包裹；
+/// - 单一 DEVICE_LOCAL key slot：DEK 由设备密钥包裹；
 /// - KDF 参数随文件携带，派生 KEK 时读取文件内参数；
 /// - 头部固定前缀（magic..salt）作为 payload 与 DEK 包裹 AEAD 的 AAD。
 library;
@@ -27,8 +27,8 @@ enum BackupOpenError {
   /// Manifest 校验失败（字段缺失/类型错误）
   invalidManifest,
 
-  /// 提供的凭据均无法解开任何 key slot（密码错误/恢复词错误/文件损坏）
-  wrongPasswordOrCorrupted,
+  /// 设备密钥无法解开任何 key slot（密钥不匹配/文件损坏）
+  wrongKeyOrCorrupted,
 
   /// 备份 schema 旧于当前应用
   schemaTooOld,
@@ -76,21 +76,11 @@ class BackupEnvelopeConstants {
   /// KDF 方案：0x01 = Argon2id。
   static const int kdfSchemeArgon2id = 0x01;
 
-  /// key slot 类型（Multi-Key-Slot）。
-  static const int slotTypePassword = 0x01;
-
-  /// 恢复词 slot。
-  static const int slotTypeRecovery = 0x02;
-
-  /// 设备密钥 slot（本机自动备份无密码时兜底，可省略）。
+  /// key slot 类型：设备密钥 slot（唯一支持的 slot）。
   static const int slotTypeDeviceLocal = 0x03;
 
   /// 支持的全部 slot 类型（编解码校验用）。
-  static const Set<int> supportedSlotTypes = {
-    slotTypePassword,
-    slotTypeRecovery,
-    slotTypeDeviceLocal,
-  };
+  static const Set<int> supportedSlotTypes = {slotTypeDeviceLocal};
 
   /// KDF 盐长度（Argon2id）。
   static const int saltLength = 16;
@@ -142,7 +132,7 @@ class BackupKdfParams {
   );
 }
 
-/// 单个 key slot：一种凭据（密码/恢复词/设备密钥）包裹的 DEK。
+/// 单个 key slot：设备密钥包裹的 DEK。
 class BackupKeySlot {
   const BackupKeySlot({
     required this.type,
@@ -151,7 +141,7 @@ class BackupKeySlot {
     required this.tag,
   });
 
-  /// slot 类型（0x01 PASSWORD / 0x02 RECOVERY / 0x03 DEVICE_LOCAL）。
+  /// slot 类型（0x03 DEVICE_LOCAL）。
   final int type;
 
   /// 包裹 DEK 的 AEAD nonce（12B，独立随机）。

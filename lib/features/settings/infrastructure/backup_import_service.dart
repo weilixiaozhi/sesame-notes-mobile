@@ -175,24 +175,20 @@ class BackupImportService {
   /// 打开备份：解析并解密 Envelope，校验 Manifest 与当前 schema，
   /// 再把 SQLite 提取到临时隔离区构建只读 RecoverySession。
   ///
-  /// [password]/[recoveryKey]/[deviceKey] 至少提供一个（Multi-Key-Slot）；
-  /// [currentSchemaVersion] 为当前应用 db schema 版本。
+  /// [deviceKey] 为设备密钥（localSelfId 派生）；[currentSchemaVersion] 为
+  /// 当前应用 db schema 版本。
   Future<RecoverySession> openBackup({
     required File backupFile,
-    String? password,
-    String? recoveryKey,
-    String? deviceKey,
+    required String deviceKey,
     required int currentSchemaVersion,
   }) async {
     try {
       final bytes = await backupFile.readAsBytes();
       // 1) Envelope 头部（明文）校验：magic/版本范围/加密方案/KDF 参数/slots
       final envelope = BackupEnvelopeCodec.decode(bytes);
-      // 2) 解密 payload（密码/恢复词/设备密钥分别尝试对应 slot）
+      // 2) 用设备密钥解密 payload（DEVICE_LOCAL slot）
       final payload = await BackupCrypto.decryptEnvelopePayload(
         envelope: envelope,
-        password: password,
-        recoveryKey: recoveryKey,
         deviceKey: deviceKey,
       );
       // 3) 分帧还原 Manifest + SQLite 体

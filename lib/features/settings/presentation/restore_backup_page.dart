@@ -32,8 +32,6 @@ class RestoreBackupPage extends ConsumerStatefulWidget {
 }
 
 class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
-  final TextEditingController _secretController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
@@ -43,12 +41,6 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
           .read(backupRestoreFlowProvider.notifier)
           .loadBackups(externalPath: widget.initialBackupPath),
     );
-  }
-
-  @override
-  void dispose() {
-    _secretController.dispose();
-    super.dispose();
   }
 
   @override
@@ -129,21 +121,11 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
         if (flow.loading) const LinearProgressIndicator(),
         if (flow.backups.isNotEmpty) ...[
           const SizedBox(height: AppDimens.p16),
-          // 密码/恢复词仅对「其他设备或云端下载」的备份必需，
-          // 本机自动备份凭设备密钥自动打开。
+          // 备份统一用本机设备密钥加密，可直接打开。
           Text(
             l10n.restoreDeviceKeyHint,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppTokens.textTertiary(context),
-            ),
-          ),
-          const SizedBox(height: AppDimens.p8),
-          TextField(
-            controller: _secretController,
-            obscureText: true,
-            decoration: InputDecoration(
-              hintText: l10n.restorePasswordHint,
-              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: AppDimens.p12),
@@ -158,15 +140,14 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
     );
   }
 
-  /// 打开当前选中的备份：密码/恢复词可留空（本机备份设备密钥兜底）。
+  /// 打开当前选中的备份（设备密钥解密，零写入）。
   Future<void> _openSelected(
     BuildContext context,
     RestoreBackupFile backup,
   ) async {
-    final secret = _secretController.text.trim();
     await ref
         .read(backupRestoreFlowProvider.notifier)
-        .openBackup(file: backup, secret: secret);
+        .openBackup(file: backup);
   }
 
   // ---------------------------------------------------------------

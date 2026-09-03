@@ -1,9 +1,9 @@
-/// 恢复流程设备密钥兜底测试。
+/// 恢复流程设备密钥测试。
 ///
 /// 需求锚点：
-/// - 本机自动备份未设置备份密码时用设备密钥加密（DEVICE_LOCAL slot）；
-/// - 恢复页打开这类备份时自动尝试设备密钥，无需输入密码/恢复词；
-/// - 外部（其他设备/云端）备份仍需输入创建时的密码或恢复词。
+/// - 本机备份统一用设备密钥（localSelfId 派生）加密（DEVICE_LOCAL slot）；
+/// - 恢复页打开备份时自动用本机设备密钥解密；
+/// - 设备密钥不匹配（其他设备）→ 打开失败。
 library;
 
 import 'dart:io';
@@ -32,7 +32,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  test('设备密钥加密的本机备份：空密码直接打开', () async {
+  test('设备密钥加密的本机备份：自动用本机设备密钥打开', () async {
     final tmp = await Directory.systemTemp.createTemp('device_key_restore_');
     addTearDown(() => tmp.delete(recursive: true));
     final srcFile = File(p.join(tmp.path, 'src.sqlite'));
@@ -76,8 +76,8 @@ void main() {
     await notifier.loadBackups();
     final item = notifier.state.backups.single;
 
-    // 空密码：设备密钥自动兜底，应成功进入 step 2。
-    await notifier.openBackup(file: item, secret: '');
+    // 设备密钥由 localSelfId 派生，打开时自动解密，应成功进入 step 2。
+    await notifier.openBackup(file: item);
     expect(notifier.state.step, 2);
     expect(notifier.state.error, RestoreFlowError.none);
     // 关闭会话释放提取的临时文件，tearDown 才能删除临时目录。

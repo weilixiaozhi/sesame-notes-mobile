@@ -3,7 +3,7 @@
 /// - 备份文件 = BackupEnvelope（.snbak），内容为 Manifest + SQLite 体（同密）；
 /// - 命名 sesame_notes_ 加时间戳加 .snbak，时间戳字典序即时间序；
 /// - 保留最近 N 份（默认 7，可配置）+ 紧急备份 3 份；
-/// - 无备份密码时用设备密钥（localSelfId 派生）加密——本机自动备份场景；
+/// - 备份统一用设备密钥（localSelfId 派生）加密（DEVICE_LOCAL slot）；
 /// - Manifest 统计字段（pending/open conflict/last revision）来自实时数据库；
 /// - 损坏文件恢复拒绝，live DB 0 mutation。
 library;
@@ -49,15 +49,15 @@ void main() {
     if (await tmp.exists()) await tmp.delete(recursive: true);
   });
 
-  /// 用密码打开 .snbak，返回 (manifest, sqlite 字节)。
+  /// 用设备密钥打开 .snbak，返回 (manifest, sqlite 字节)。
   Future<(BackupManifest, List<int>)> openBackup(
     File file,
-    String password,
+    String deviceKey,
   ) async {
     final envelope = BackupEnvelopeCodec.decode(await file.readAsBytes());
     final payload = await BackupCrypto.decryptEnvelopePayload(
       envelope: envelope,
-      password: password,
+      deviceKey: deviceKey,
     );
     final framed = BackupPayloadCodec.decode(payload);
     final manifest = BackupManifestCodec.decodeJson(framed.manifestJson);
@@ -78,7 +78,7 @@ void main() {
 
     final backup = await service.createBackup(
       db: db,
-      secrets: BackupSecrets(password: 'test-password'),
+      secrets: BackupSecrets(deviceKey: 'test-device-key'),
       deviceId: 'dev-1',
       appVersion: '1.0.0+1',
     );
@@ -89,7 +89,7 @@ void main() {
     );
     expect(await backup.exists(), isTrue);
 
-    final (manifest, sqliteBytes) = await openBackup(backup, 'test-password');
+    final (manifest, sqliteBytes) = await openBackup(backup, 'test-device-key');
     expect(manifest.formatVersion, 1);
     expect(manifest.dbSchemaVersion, db.schemaVersion);
     expect(manifest.deviceId, 'dev-1');
@@ -108,13 +108,13 @@ void main() {
     expect(rows.map((r) => r['name']), contains('私人账本'));
   });
 
-  test('无备份密码：设备密钥（localSelfId 派生）加密，同设备可解密', () async {
+  test('设备密钥（localSelfId 派生）加密，同设备可解密', () async {
     await db
         .into(db.ledgers)
         .insert(
           LedgersCompanion.insert(
             id: 'ledger-1',
-            name: '无密码账本',
+            name: '设备密钥账本',
             storageMode: const d.Value('local'),
             updatedAt: DateTime.utc(2026, 8, 1),
           ),
@@ -226,9 +226,9 @@ void main() {
 
       final backup = await service.createBackup(
         db: db,
-        secrets: BackupSecrets(password: 'pw'),
+        secrets: BackupSecrets(deviceKey: 'test-device-key'),
       );
-      final (manifest, _) = await openBackup(backup, 'pw');
+      final (manifest, _) = await openBackup(backup, 'test-device-key');
       final entry = manifest.ledgers.single;
       expect(entry.pendingMutationCount, 3, reason: '仅未推送变更计数');
       expect(entry.openConflictCount, 1);
@@ -360,10 +360,10 @@ void main() {
         );
     final backup = await service.createBackup(
       db: db,
-      secrets: BackupSecrets(password: 'pw'),
+      secrets: BackupSecrets(deviceKey: 'test-device-key'),
     );
     // 还原原语输入是解密后的原始 .sqlite（.snbak 解密由上层紧急通道负责）
-    final (_, sqliteBytes) = await openBackup(backup, 'pw');
+    final (_, sqliteBytes) = await openBackup(backup, 'test-device-key');
     final sqliteBackup = File(p.join(tmp.path, 'decrypted_backup.sqlite'));
     await sqliteBackup.writeAsBytes(sqliteBytes);
     // 备份后变更：增 ledger-2——恢复后应回滚
@@ -500,10 +500,10 @@ void main() {
 
       final backup = await service.createBackup(
         db: db,
-        secrets: BackupSecrets(password: 'test-password'),
+        secrets: BackupSecrets(deviceKey: 'test-device-key'),
         currentAccountId: 'user-mine',
       );
-      final (_, sqliteBytes) = await openBackup(backup, 'test-password');
+      final (_, sqliteBytes) = await openBackup(backup, 'test-device-key');
       final snapshotDb = sqlite3.openInMemory();
       snapshotDb.execute('PRAGMA foreign_keys = ON');
       try {

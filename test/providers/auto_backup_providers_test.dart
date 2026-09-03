@@ -1,8 +1,7 @@
 /// 自动备份编排集成测试（真实 DB + fake 云端后端）。
 ///
-/// - runOnLaunch 走完整链路：本地 .snbak 快照 → 配置密码后上传版本化路径 →
-///   backup_state 记录 lastSuccessAt + currentProvider；
-/// - 未配置备份密码：不上传云端（设备密钥不得作为云端唯一保护）；
+/// - runOnLaunch 走完整链路：本地 .snbak 快照 → 已配置第三方后端时上传
+///   版本化路径 → backup_state 记录 lastSuccessAt + currentProvider；
 /// - 上传路径时间戳版本化（不固定路径覆盖），云端保留最近 5 份；
 /// - 当天已成功 → skipped；未配置第三方 → 只做本地快照。
 library;
@@ -19,7 +18,6 @@ import 'package:sesame_cloud_backup/sesame_cloud_backup.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/features/settings/application/auto_backup_providers.dart';
 import 'package:sesame_notes/features/settings/infrastructure/auto_backup_service.dart';
-import 'package:sesame_notes/features/settings/infrastructure/backup_security_store.dart';
 import 'package:sesame_notes/features/settings/infrastructure/local_backup_service.dart';
 
 import '../helpers/test_isolation.dart';
@@ -170,10 +168,8 @@ void main() {
     settings: const {'url': 'https://cloud.example.com', 'password': 'p'},
   );
 
-  test('完整链路：本地快照 + 配置密码后上传版本化路径 + backup_state 记录', () async {
+  test('完整链路：本地快照 + 上传版本化路径 + backup_state 记录', () async {
     registerFakeCloud('webdav');
-    // 配置备份密码（云端上传的前置条件）
-    await BackupSecurityStore().setPassword(password: 'my-secret-password');
     // 激活 WebDAV 配置。
     final store = CloudServiceStore();
     await store.saveAndActivate(fakeCloudConfig('webdav'));
@@ -197,24 +193,8 @@ void main() {
     expect(state.currentProvider, 'webdav');
   });
 
-  test('未配置备份密码：不上传云端（设备密钥不得作为云端唯一保护）', () async {
-    registerFakeCloud('webdav');
-    final store = CloudServiceStore();
-    await store.saveAndActivate(fakeCloudConfig('webdav'));
-
-    final outcome = await buildCoordinator().runOnLaunch();
-
-    expect(outcome, AutoBackupOutcome.success, reason: '本地快照成功，不上传不算失败');
-    expect(fakeStorage.uploaded, isEmpty);
-    final state = await (db.select(
-      db.backupState,
-    )..where((b) => b.id.equals(0))).getSingle();
-    expect(state.currentProvider, isNull, reason: '未上传云端时，不能把本地快照误标为第三方服务备份成功');
-  });
-
   test('云端保留：超过 5 份按时间戳清理最旧', () async {
     registerFakeCloud('s3');
-    await BackupSecurityStore().setPassword(password: 'my-secret-password');
     final store = CloudServiceStore();
     await store.saveAndActivate(fakeCloudConfig('s3'));
     // 预置 6 份云端备份（旧到新）
@@ -250,7 +230,6 @@ void main() {
 
   test('当天已成功：跳过（不重复备份/上传）', () async {
     registerFakeCloud('s3');
-    await BackupSecurityStore().setPassword(password: 'my-secret-password');
     final store = CloudServiceStore();
     await store.saveAndActivate(fakeCloudConfig('s3'));
     final service = buildCoordinator();

@@ -1,7 +1,7 @@
 /// 本地备份服务：备份文件 = BackupEnvelope（.snbak）。
 ///
-/// - 备份文件为冻结格式 .snbak：Envelope 头部明文，Manifest + SQLite 体同密
-///   （无备份密码时用设备密钥加密，属"本机自动备份"场景，非唯一保护）；
+/// - 备份文件为冻结格式 .snbak：Envelope 头部明文，Manifest + SQLite 体
+///   由设备密钥加密；
 /// - 命名 sesame_notes_ 加时间戳加 .snbak，时间戳字典序即时间序；
 /// - 保留最近 N 份（默认 7，可配置）+ 紧急备份 3 份；
 /// - 一切写盘走"临时文件 + rename"原子落盘；
@@ -206,8 +206,7 @@ class LocalBackupService {
   /// 分帧加密成 Envelope → 原子落盘 .snbak → prune 超量旧备份。
   ///
   /// [filePrefix] 默认正式备份前缀；恢复流程传 [emergencyPrefix] 生成回滚点。
-  /// [secrets] 为凭据集合（Multi-Key-Slot）：密码/恢复词/设备密钥任一
-  /// 提供即可；自动备份路径由调用方装配（恢复词 + 设备密钥）。
+  /// [secrets] 提供设备密钥；自动备份路径由调用方装配。
   /// 返回生成的备份文件。并发调用时后到者抛 [StateError]。
   Future<File> createBackup({
     required SesameDatabase db,
@@ -227,7 +226,7 @@ class LocalBackupService {
     try {
       final creds = secrets ?? const BackupSecrets();
       if (!creds.hasAny) {
-        throw ArgumentError('需要至少一个备份凭据（密码/恢复词/设备密钥）');
+        throw ArgumentError('需要设备密钥');
       }
       final dbFile = await databaseFile();
       final dir = await backupDirectory();
@@ -257,11 +256,10 @@ class LocalBackupService {
         BackupManifestCodec.encodeJson(manifest),
         sqliteBytes,
       );
+      // creds.hasAny 已保证设备密钥存在（见上方校验）。
       final envelope = await BackupCrypto.createEnvelope(
         plaintextPayload: payload,
-        password: creds.password,
-        recoveryKey: creds.recoveryKey,
-        deviceKey: creds.deviceKey,
+        deviceKey: creds.deviceKey!,
       );
 
       final name =
@@ -552,7 +550,7 @@ class LocalBackupService {
   /// "未同步状态"：所有云端账本 sync_id 失效并标记
   /// STALE_BINDING，清除待推送队列/冲突/游标——绝不保留备份中的同步状态。
   ///
-  /// [secrets] 为凭据集合（密码/恢复词/设备密钥任一即可解对应 key slot）。
+  /// [secrets] 提供设备密钥（解 DEVICE_LOCAL slot）。
   /// 成功返回 [RestoreStatus.success] 后，调用方负责 invalidate(databaseProvider)。
   Future<RestoreResult> restoreWholeDatabaseForEmergency({
     required SesameDatabase db,
@@ -566,11 +564,12 @@ class LocalBackupService {
       final envelope = BackupEnvelopeCodec.decode(
         await backupFile.readAsBytes(),
       );
+      if (secrets.deviceKey == null) {
+        throw ArgumentError('紧急恢复需要设备密钥');
+      }
       final payload = await BackupCrypto.decryptEnvelopePayload(
         envelope: envelope,
-        password: secrets.password,
-        recoveryKey: secrets.recoveryKey,
-        deviceKey: secrets.deviceKey,
+        deviceKey: secrets.deviceKey!,
       );
       sqliteBytes = BackupPayloadCodec.decode(payload).sqliteBytes;
     } on BackupFormatException catch (e, st) {

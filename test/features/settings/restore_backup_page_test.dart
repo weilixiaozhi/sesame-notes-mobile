@@ -1,6 +1,6 @@
 /// 备份恢复页 4 步流程 widget 测试。
 ///
-/// - Step 1 选择备份 + 输入密码 → 打开（只读）；
+/// - Step 1 选择备份 + 设备密钥自动解密 → 打开（只读）；
 /// - Step 2 查看备份内容（本地/云端分域展示）；
 /// - Step 3 每账本选择恢复策略（显式三选一）；
 /// - Step 4 确认导入（明示不覆盖现有账本）→ 单事务应用；
@@ -21,6 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:sesame_notes/core/identity/local_user_identity.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/features/settings/application/backup_restore_providers.dart';
@@ -90,12 +91,15 @@ void main() {
                 updatedAt: now,
               ),
             );
+        final localSelfId = await LocalSelfId.getOrCreate();
         await LocalBackupService(
           backupDir: backupDir,
           databaseFile: srcFile,
         ).createBackup(
           db: srcDb,
-          secrets: BackupSecrets(password: 'pw-123456'),
+          secrets: BackupSecrets(
+            deviceKey: BackupCrypto.deviceKeyFromLocalSelfId(localSelfId),
+          ),
         );
       });
       addTearDown(() async {
@@ -153,7 +157,7 @@ void main() {
       final backups = container.read(backupRestoreFlowProvider).backups;
       expect(backups, hasLength(1));
       await tester.runAsync(
-        () => notifier.openBackup(file: backups.single, secret: 'pw-123456'),
+        () => notifier.openBackup(file: backups.single),
       );
       await tester.pumpAndSettle();
 

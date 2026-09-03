@@ -2,7 +2,7 @@
 ///
 /// - openBackup→validate→readManifest→listRecoveryItems 全程零写入
 ///   （Step 1–3 不触碰 live DB）；
-/// - 损坏/AEAD 失败/密码错误/schema 不匹配/双写不一致一律拒绝；
+/// - 损坏/AEAD 失败/设备密钥错误/schema 不匹配/双写不一致一律拒绝；
 /// - importLocalLedger：ID 冲突 → Fork 新 ID；无冲突 → 原 identity；
 /// - forkCloudLedgerToLocal：永远 Fork，origin 溯源，
 ///   同步状态不恢复；
@@ -205,17 +205,17 @@ void main() {
             localMutationId: 'm-1',
           ),
         );
-    // 用同一密码生成 .snbak（password 加密路径）
+    // 用设备密钥生成 .snbak（设备密钥加密路径）
     final backup = await srcBackupService.createBackup(
       db: srcDb,
-      secrets: BackupSecrets(password: 'test-password'),
+      secrets: BackupSecrets(deviceKey: 'test-device-key'),
       deviceId: 'dev-src',
       appVersion: '1.0.0',
     );
     return (srcDb, backup);
   }
 
-  test('openBackup：正确密码打开，Manifest 与统计字段完整，live DB 0 mutation', () async {
+  test('openBackup：正确设备密钥打开，Manifest 与统计字段完整，live DB 0 mutation', () async {
     final (srcDb, backup) = await seedBackupSource();
     addTearDown(srcDb.close);
     // live 库当前状态快照
@@ -223,7 +223,7 @@ void main() {
 
     final session = await importService.openBackup(
       backupFile: backup,
-      password: 'test-password',
+      deviceKey: 'test-device-key',
       currentSchemaVersion: liveDb.schemaVersion,
     );
     expect(session.manifest.formatVersion, 1);
@@ -257,20 +257,20 @@ void main() {
     await session.close();
   });
 
-  test('openBackup：密码错误 → wrongPasswordOrCorrupted', () async {
+  test('openBackup：设备密钥错误 → wrongKeyOrCorrupted', () async {
     final (srcDb, backup) = await seedBackupSource();
     addTearDown(srcDb.close);
     expect(
       () => importService.openBackup(
         backupFile: backup,
-        password: 'wrong-password',
+        deviceKey: 'wrong-device-key',
         currentSchemaVersion: liveDb.schemaVersion,
       ),
       throwsA(
         isA<BackupFormatException>().having(
           (e) => e.reason,
           'reason',
-          BackupOpenError.wrongPasswordOrCorrupted,
+          BackupOpenError.wrongKeyOrCorrupted,
         ),
       ),
     );
@@ -282,7 +282,7 @@ void main() {
     expect(
       () => importService.openBackup(
         backupFile: badFile,
-        password: 'x',
+        deviceKey: 'x',
         currentSchemaVersion: liveDb.schemaVersion,
       ),
       throwsA(
@@ -307,7 +307,7 @@ void main() {
       accounts: const [],
     );
     final envelope = await BackupCrypto.createEnvelope(
-      password: 'pw',
+      deviceKey: 'test-device-key',
       plaintextPayload: BackupPayloadCodec.encode(
         BackupManifestCodec.encodeJson(manifest),
         Uint8List.fromList([0]),
@@ -318,7 +318,7 @@ void main() {
     expect(
       () => importService.openBackup(
         backupFile: file,
-        password: 'pw',
+        deviceKey: 'test-device-key',
         currentSchemaVersion: 1,
       ),
       throwsA(
@@ -342,7 +342,7 @@ void main() {
       accounts: const [],
     );
     final envelope = await BackupCrypto.createEnvelope(
-      password: 'pw',
+      deviceKey: 'test-device-key',
       plaintextPayload: BackupPayloadCodec.encode(
         BackupManifestCodec.encodeJson(manifest),
         Uint8List.fromList([0]),
@@ -353,7 +353,7 @@ void main() {
     expect(
       () => importService.openBackup(
         backupFile: file,
-        password: 'pw',
+        deviceKey: 'test-device-key',
         currentSchemaVersion: 1,
       ),
       throwsA(
@@ -379,7 +379,7 @@ void main() {
         accounts: const [],
       );
       final envelope = await BackupCrypto.createEnvelope(
-        password: 'pw',
+        deviceKey: 'test-device-key',
         plaintextPayload: BackupPayloadCodec.encode(
           BackupManifestCodec.encodeJson(manifest),
           Uint8List.fromList([0]),
@@ -390,7 +390,7 @@ void main() {
       expect(
         () => importService.openBackup(
           backupFile: file,
-          password: 'pw',
+          deviceKey: 'test-device-key',
           currentSchemaVersion: 1,
         ),
         throwsA(
@@ -409,7 +409,7 @@ void main() {
     addTearDown(srcDb.close);
     final session = await importService.openBackup(
       backupFile: backup,
-      password: 'test-password',
+      deviceKey: 'test-device-key',
       currentSchemaVersion: liveDb.schemaVersion,
     );
     final items = await importService.listRecoveryItems(session);
@@ -482,7 +482,7 @@ void main() {
     addTearDown(srcDb.close);
     final session = await importService.openBackup(
       backupFile: backup,
-      password: 'test-password',
+      deviceKey: 'test-device-key',
       currentSchemaVersion: liveDb.schemaVersion,
     );
     // 打开后不设置任何决策（默认 skip）
@@ -517,7 +517,7 @@ void main() {
         );
     final session = await importService.openBackup(
       backupFile: backup,
-      password: 'test-password',
+      deviceKey: 'test-device-key',
       currentSchemaVersion: liveDb.schemaVersion,
     );
     final items = await importService.listRecoveryItems(session);
@@ -553,7 +553,7 @@ void main() {
     addTearDown(srcDb.close);
     final session = await importService.openBackup(
       backupFile: backup,
-      password: 'test-password',
+      deviceKey: 'test-device-key',
       currentSchemaVersion: liveDb.schemaVersion,
     );
     final items = await importService.listRecoveryItems(session);
@@ -635,7 +635,7 @@ void main() {
       final result = await backupService.restoreWholeDatabaseForEmergency(
         db: liveDb,
         backupFile: backup,
-        secrets: BackupSecrets(password: 'test-password'),
+        secrets: BackupSecrets(deviceKey: 'test-device-key'),
         localSelfId: 'self-live',
       );
       expect(result.status, RestoreStatus.success);

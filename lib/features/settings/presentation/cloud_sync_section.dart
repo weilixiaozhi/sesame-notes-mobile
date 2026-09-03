@@ -1,11 +1,11 @@
 /// 备份同步操作区块（嵌入在选中第三方后端卡片正下方）。
 ///
-/// 与 Spitout cloud_sync_section.dart 同职责：上传 / 下载 / 登录登出 /
-/// 自动同步开关 / 状态，但按本仓库的备份语义适配：
-/// - 本仓库第三方备份是「.snbak 整包快照」模型（非逐条增量同步）：
+/// 按本仓库的备份语义适配：
+/// - 第三方备份是「.snbak 整包快照」模型（非逐条增量同步）：
 ///   上传 = 生成本地快照并版本化上传；下载 = 拉取云端最新快照并进入
 ///   4 步恢复页（RestoreBackupPage）；
-/// - 登录登出仅 Supabase 需要（其余后端用配置内凭据认证）；
+/// - 各后端凭据随配置保存（Supabase 账号密码在配置内，创建服务时自动登录），
+///   区块不设独立登录入口；
 /// - 「自动同步」开关控制自动备份时是否随之上传云端。
 library;
 
@@ -14,37 +14,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import 'package:sesame_notes/core/api/cloud_backup_facade.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/features/settings/application/auto_backup_providers.dart';
 import 'package:sesame_notes/features/settings/application/cloud_backup_actions.dart';
-import 'package:sesame_notes/features/settings/infrastructure/backup_security_store.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/router/route_consts.dart';
 import 'package:sesame_notes/shared/widgets/app_dialog.dart';
 import 'package:sesame_notes/shared/widgets/app_list_tile.dart';
-import 'package:sesame_notes/shared/widgets/app_sheet.dart';
 import 'package:sesame_notes/shared/widgets/section_card.dart';
 import 'package:sesame_notes/shared/widgets/toast.dart';
 import 'package:sesame_notes/theme/colors.dart';
-import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
-/// Supabase 认证服务（仅 supabase 激活时非 null）。
-final cloudBackupAuthProvider = FutureProvider.autoDispose<CloudAuthService?>((
-  ref,
-) async {
-  final overview = await ref.watch(cloudBackupOverviewProvider.future);
-  if (overview.active.backendId != 'supabase') return null;
-  final services = await createCloudServices(overview.active);
-  // 区块卸载时释放 provider 资源（socket/缓存）。
-  ref.onDispose(() {
-    services.provider?.dispose();
-  });
-  return services.auth;
-});
-
-/// 备份同步操作区块（上传 / 下载 / 登录登出 / 自动同步开关 / 状态）。
+/// 备份同步操作区块（上传 / 下载 / 自动同步开关 / 状态）。
 ///
 /// 无 Scaffold / PrimaryHeader / RefreshIndicator 外壳，由 CloudServicePage
 /// 嵌入在当前选中的第三方后端卡片正下方（仅激活第三方后端时显示）。
@@ -142,14 +124,6 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
                     onTap:
                         _uploadBusy || _downloadBusy ? null : _downloadRestore,
                   ),
-                  // 登录/登出（仅 Supabase 需要，其他后端用配置内凭据认证）。
-                  if (!isLocal && overview.active.backendId == 'supabase')
-                    Column(
-                      children: [
-                        AppTokens.cardDivider(context),
-                        _SupabaseAuthTile(),
-                      ],
-                    ),
                   // 自动备份到云端开关（本地模式无云端概念，隐藏）。
                   if (!isLocal)
                     Consumer(
@@ -241,20 +215,6 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
     final l10n = AppLocalizations.of(context);
     setState(() => _uploadBusy = true);
     try {
-      // 云端备份必须受密码派生密钥保护：未配置备份密码时引导去本机备份页设置。
-      if (!await BackupSecurityStore().hasPassword()) {
-        if (!mounted) return;
-        final goSet = await AppDialog.confirm<bool>(
-          context,
-          title: l10n.cloudBackupUploadNow,
-          message: l10n.cloudBackupNeedPassword,
-          okLabel: l10n.cloudBackupNeedPasswordGo,
-          cancelLabel: l10n.commonCancel,
-        );
-        if (goSet != true || !mounted) return;
-        await context.pushNamed(Routes.localBackup);
-        return;
-      }
       await performManualBackup(read: ref.read);
       if (!mounted) return;
       showToast(context, l10n.cloudBackupUploadSuccess);
@@ -312,187 +272,5 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
       if (b.id == overview.active.backendId) return b.displayName;
     }
     return overview.active.backendId;
-  }
-}
-
-/// Supabase 登录/登出行（本区块专属，随激活后端显隐）。
-///
-/// 登录/登出会改变认证会话，动作完成后 setState 重读 currentUser，
-/// 使行文案立即切换（登录中/已登录）。
-class _SupabaseAuthTile extends ConsumerStatefulWidget {
-  @override
-  ConsumerState<_SupabaseAuthTile> createState() => _SupabaseAuthTileState();
-}
-
-class _SupabaseAuthTileState extends ConsumerState<_SupabaseAuthTile> {
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final authAsync = ref.watch(cloudBackupAuthProvider);
-
-    return authAsync.when(
-      loading: () => AppListTile(
-        leading: AppIcons.login,
-        title: l10n.cloudBackupLogin,
-        trailing: const SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-        enabled: false,
-      ),
-      error: (e, st) {
-        logger.error('CloudSyncSection', '加载 Supabase 认证失败', e, st);
-        return AppListTile(
-          leading: AppIcons.login,
-          title: l10n.cloudBackupLogin,
-          enabled: false,
-        );
-      },
-      data: (auth) => FutureBuilder<CloudUser?>(
-        future: auth?.currentUser,
-        builder: (ctx, snap) {
-          if (snap.connectionState != ConnectionState.done) {
-            return AppListTile(
-              leading: AppIcons.login,
-              title: l10n.cloudBackupLogin,
-              trailing: const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-              enabled: false,
-            );
-          }
-          final user = snap.data;
-          return AppListTile(
-            leading: user == null
-                ? AppIcons.login
-                : AppIcons.verifiedUser,
-            title: user == null
-                ? l10n.cloudBackupLogin
-                : user.account ?? l10n.cloudBackupLoginSuccess,
-            // Supabase 存储要求登录账号（WebDAV/S3 用配置内凭据，无需登录）。
-            subtitle: user == null ? l10n.cloudBackupSupabaseAuthHint : null,
-            onTap: () async {
-              if (auth == null) return;
-              if (user == null) {
-                await _showLoginSheet(context, auth);
-              } else {
-                await _confirmLogout(context, auth);
-              }
-              // 登录/登出后重读当前用户，刷新行文案。
-              if (mounted) setState(() {});
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  /// 登录弹窗：账号 + 密码（凭据仅用于本次登录，不落配置存储）。
-  Future<void> _showLoginSheet(BuildContext context, CloudAuthService auth) async {
-    final l10n = AppLocalizations.of(context);
-    final accountController = TextEditingController();
-    final passwordController = TextEditingController();
-    try {
-      final result = await showAppSheetTop<dynamic>(
-        context: context,
-        child: AppSheet(
-          title: l10n.cloudBackupLogin,
-          showGrabHandle: false,
-          // ignore: sort_child_properties_last
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppDimens.p16),
-                  child: TextField(
-                    controller: accountController,
-                    decoration: InputDecoration(
-                      labelText: l10n.cloudBackupAccountLabel,
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                ),
-                TextField(
-                  controller: passwordController,
-                  decoration: InputDecoration(
-                    labelText: l10n.cloudBackupPasswordLabel,
-                  ),
-                  obscureText: true,
-                  onSubmitted: (_) => Navigator.of(context).pop(true),
-                ),
-              ],
-            ),
-          ),
-          footer: Row(
-            children: [
-              Expanded(
-                child: TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(l10n.commonCancel),
-                ),
-              ),
-              const SizedBox(width: AppDimens.p12),
-              Expanded(
-                child: FilledButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text(l10n.cloudBackupLogin),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-      if (result != true || !context.mounted) return;
-      try {
-        await auth.signInWithAccount(
-          account: accountController.text.trim(),
-          password: passwordController.text,
-        );
-        if (context.mounted) showToast(context, l10n.cloudBackupLoginSuccess);
-      } catch (e, st) {
-        logger.warning('CloudSyncSection', 'Supabase 登录失败: $e', st);
-        if (context.mounted) {
-          await AppDialog.error(
-            context,
-            title: l10n.cloudBackupLoginFailed,
-            message: l10n.commonOperationFailed,
-          );
-        }
-      }
-    } finally {
-      accountController.dispose();
-      passwordController.dispose();
-    }
-  }
-
-  /// 退出登录：二次确认 → signOut → 刷新认证状态。
-  Future<void> _confirmLogout(BuildContext context, CloudAuthService auth) async {
-    final l10n = AppLocalizations.of(context);
-    final confirmed = await AppDialog.confirm<bool>(
-      context,
-      title: l10n.mineLogoutConfirmTitle,
-      message: l10n.mineLogoutConfirmMessage,
-      okLabel: l10n.mineLogoutButton,
-      cancelLabel: l10n.commonCancel,
-    );
-    if (confirmed != true || !context.mounted) return;
-    try {
-      await auth.signOut();
-      if (context.mounted) showToast(context, l10n.cloudClearConfigDone);
-    } catch (e, st) {
-      logger.error('CloudSyncSection', 'Supabase 登出失败', e, st);
-      if (context.mounted) {
-        await AppDialog.error(
-          context,
-          title: l10n.commonFailed,
-          message: l10n.commonOperationFailed,
-        );
-      }
-    }
   }
 }

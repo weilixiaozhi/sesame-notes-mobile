@@ -2039,63 +2039,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap a card to switch backup methods. The first setup requires configuration.';
 
   @override
-  String get backupPasswordTitle => 'Backup Password';
-
-  @override
-  String get backupPasswordNotSet => 'Not set';
-
-  @override
-  String get backupPasswordSet => 'Set';
-
-  @override
-  String get backupPasswordSubtitle =>
-      'Auto backups are encrypted and uploaded to the cloud after setting; cloud restore requires the password or recovery words';
-
-  @override
-  String get backupPasswordSetAction => 'Set';
-
-  @override
-  String get backupPasswordChange => 'Change Password';
-
-  @override
-  String get backupPasswordClear => 'Clear Backup Password';
-
-  @override
-  String get backupPasswordClearConfirm =>
-      'Clear the backup password? Auto backups will no longer upload to the cloud. Existing cloud backups can still be opened with recovery words.';
-
-  @override
-  String get backupPasswordOldLabel => 'Current password';
-
-  @override
-  String get backupPasswordNewLabel => 'New password';
-
-  @override
-  String get backupPasswordConfirmLabel => 'Confirm new password';
-
-  @override
-  String get backupPasswordMismatch => 'Passwords do not match';
-
-  @override
-  String get backupPasswordTooShort => 'Password must be at least 8 characters';
-
-  @override
-  String get backupPasswordWrong => 'Current password is incorrect';
-
-  @override
-  String get backupPasswordSetSuccess => 'Backup password set';
-
-  @override
-  String get backupPasswordCleared => 'Backup password cleared';
-
-  @override
-  String get backupPasswordRecoveryTitle => 'Save your recovery words';
-
-  @override
-  String get backupPasswordRecoveryBody =>
-      'Recovery words restore backups on other devices or reset the password. Write them down and keep them safe — shown only once.';
-
-  @override
   String get restoreOpenButton => 'Open Selected Backup';
 
   @override
@@ -2103,14 +2046,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restoreDeviceKeyHint =>
-      'Backups made on this device open directly; backups from other devices or the cloud need the password or recovery words used at creation';
-
-  @override
-  String get cloudBackupSupabaseAuthHint =>
-      'Supabase requires a signed-in account';
-
-  @override
-  String get cloudBackupNeedPasswordGo => 'Set Now';
+      'Backups are encrypted with this device\'s key and open directly';
 
   @override
   String get cloudBackupEntryLocalOnly => 'Local backup only';
@@ -2153,19 +2089,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cloudBackupAutoSyncSubtitle =>
       'Sync upload to cloud during each auto backup';
-
-  @override
-  String get cloudBackupNeedPassword =>
-      'Set a backup password first — cloud backups require password protection';
-
-  @override
-  String get cloudBackupLogin => 'Sign in';
-
-  @override
-  String get cloudBackupLoginSuccess => 'Sign-in successful';
-
-  @override
-  String get cloudBackupLoginFailed => 'Sign-in failed';
 
   @override
   String get localBackupRestoreHint => 'Tap a backup to open the restore flow';
@@ -4032,9 +3955,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restoreStep1Subtitle => 'Select a backup to restore';
 
   @override
-  String get restorePasswordHint => 'Backup password or recovery key';
-
-  @override
   String get restoreOpenBackup => 'Open Backup';
 
   @override
@@ -4080,7 +4000,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restoreOpenFailed =>
-      'Cannot open backup: wrong password or corrupted file';
+      'Cannot open backup: device key mismatch or corrupted file';
 
   @override
   String restoreMemberCount(int count) {

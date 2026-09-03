@@ -243,23 +243,16 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
   }
 
   /// Step 1→2：打开备份（解析 Envelope + 解密 Manifest + 预览），零写入。
-  Future<void> openBackup({
-    required RestoreBackupFile file,
-    required String secret,
-  }) async {
+  ///
+  /// 备份统一用设备密钥加密，本机可直接打开；打开失败即密钥不匹配或文件损坏。
+  Future<void> openBackup({required RestoreBackupFile file}) async {
     state = state.copyWith(loading: true, error: RestoreFlowError.none);
     try {
       final db = ref.read(databaseProvider);
-      // 输入框内容可能是密码或恢复词：两种形态都尝试（Multi-Key-Slot）。
-      // 本机自动备份可能只有设备密钥 slot（未设置备份密码时）：自动附带
-      // 设备密钥兜底，本机备份即使不输入任何内容也能直接打开。
       final localSelfId = await ref.read(localSelfIdProvider.future);
-      final deviceKey = BackupCrypto.deviceKeyFromLocalSelfId(localSelfId);
       final session = await _import.openBackup(
         backupFile: file._source.file,
-        password: secret.isEmpty ? null : secret,
-        recoveryKey: secret.isEmpty ? null : secret,
-        deviceKey: deviceKey,
+        deviceKey: BackupCrypto.deviceKeyFromLocalSelfId(localSelfId),
         currentSchemaVersion: db.schemaVersion,
       );
       final items = (await _import.listRecoveryItems(session))

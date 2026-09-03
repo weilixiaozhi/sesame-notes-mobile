@@ -1,7 +1,7 @@
 /// BackupEnvelope / BackupManifest 生成与解析测试。
 ///
 /// - Envelope 头部：magic / format_version / crypto_scheme / KDF 参数 /
-///   salt / payload nonce+tag / key_slots（Multi-Key-Slot，每 slot
+///   salt / payload nonce+tag / key_slots（DEVICE_LOCAL slot，每 slot
 ///   type+nonce+ciphertext+tag 共 61B）/ encrypted_payload，逐字节冻结布局；
 /// - AAD = 头部固定前缀（magic..salt，53B）；
 /// - format_version 与 db_schema_version 分离：Manifest 双写 format_version；
@@ -29,16 +29,10 @@ void main() {
       payloadTag: Uint8List.fromList(List.generate(16, (i) => 0x20 + i)),
       keySlots: [
         BackupKeySlot(
-          type: BackupEnvelopeConstants.slotTypePassword,
+          type: BackupEnvelopeConstants.slotTypeDeviceLocal,
           nonce: Uint8List.fromList(List.generate(12, (i) => 0x30 + i)),
           ciphertext: Uint8List.fromList(List.generate(32, (i) => 0x40 + i)),
           tag: Uint8List.fromList(List.generate(16, (i) => 0x50 + i)),
-        ),
-        BackupKeySlot(
-          type: BackupEnvelopeConstants.slotTypeRecovery,
-          nonce: Uint8List.fromList(List.generate(12, (i) => 0x60 + i)),
-          ciphertext: Uint8List.fromList(List.generate(32, (i) => 0x70 + i)),
-          tag: Uint8List.fromList(List.generate(16, (i) => 0x80 + i)),
         ),
       ],
       encryptedPayload: Uint8List.fromList([1, 2, 3, 4, 5]),
@@ -61,27 +55,23 @@ void main() {
       expect(decoded.salt, envelope.salt);
       expect(decoded.payloadNonce, envelope.payloadNonce);
       expect(decoded.payloadTag, envelope.payloadTag);
-      expect(decoded.keySlots, hasLength(2));
+      expect(decoded.keySlots, hasLength(1));
       expect(
         decoded.keySlots[0].type,
-        BackupEnvelopeConstants.slotTypePassword,
+        BackupEnvelopeConstants.slotTypeDeviceLocal,
       );
       expect(decoded.keySlots[0].ciphertext, envelope.keySlots[0].ciphertext);
       expect(decoded.keySlots[0].tag, envelope.keySlots[0].tag);
-      expect(
-        decoded.keySlots[1].type,
-        BackupEnvelopeConstants.slotTypeRecovery,
-      );
       expect(decoded.encryptedPayload, envelope.encryptedPayload);
       // AAD = 头部固定前缀
       expect(decoded.aad.length, BackupEnvelopeConstants.aadPrefixLength);
       expect(decoded.aad, envelope.aad);
     });
 
-    test('头部长度冻结：53 + 12 + 16 + 1 + 61×2 = 204，payload 追加其后', () {
+    test('头部长度冻结：53 + 12 + 16 + 1 + 61×1 = 143，payload 追加其后', () {
       final envelope = baseEnvelope();
       final bytes = BackupEnvelopeCodec.encode(envelope);
-      expect(bytes.length, 204 + envelope.encryptedPayload.length);
+      expect(bytes.length, 143 + envelope.encryptedPayload.length);
     });
 
     test('magic 不匹配（旧格式/非备份文件）→ corrupt', () {
