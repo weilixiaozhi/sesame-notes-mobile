@@ -85,8 +85,31 @@ Future<void> _openAaEdit(
 }) async {
   final repo = _MockRepo();
   // 身份按账本归属解析需要账本行；默认本地账本。
-  when(() => repo.getLedgerById(any())).thenAnswer(
-    (_) async => cloudLedger ? _cloudLedger() : _localLedger(),
+  when(
+    () => repo.getLedgerById(any()),
+  ).thenAnswer((_) async => cloudLedger ? _cloudLedger() : _localLedger());
+  // 操作者 self 成员解析：桩返回与名册一致的成员 id（= 传入的 localSelfId），
+  // 使「我」行锁定口径与生产一致——操作者 = ensureLocalSelfMember 返回的
+  // self 成员 id，再与参与人名册匹配；不在名册时放弃锁定。
+  when(
+    () => repo.ensureLocalSelfMember(
+      ledgerId: any(named: 'ledgerId'),
+      localSelfId: any(named: 'localSelfId'),
+      displayName: any(named: 'displayName'),
+    ),
+  ).thenAnswer(
+    (inv) async => db.LedgerMember(
+      id: inv.namedArguments[#localSelfId] as String,
+      ledgerId: inv.namedArguments[#ledgerId] as String,
+      displayName: '单机芝麻仔',
+      memberType: 'LOCAL',
+      role: 'owner',
+      avatarVersion: 0,
+      status: 'ACTIVE',
+      joinedAt: DateTime(2026, 1, 1),
+      createdAt: DateTime(2026, 1, 1),
+      updatedAt: DateTime(2026, 1, 1),
+    ),
   );
   await tester.pumpWidget(
     ProviderScope(
@@ -301,10 +324,7 @@ void main() {
 
     // 未手选支出人(默认 = 创建人 = 本人):本地账本恒显固定本地身份
     // 「单机芝麻仔 (我)」,非「未知」也非云昵称。
-    expect(
-      find.textContaining('单机芝麻仔', findRichText: true),
-      findsOneWidget,
-    );
+    expect(find.textContaining('单机芝麻仔', findRichText: true), findsOneWidget);
 
     // 直接确认:人均模式回传 null,参与人 null = 全部成员
     await tester.tap(find.text('完成'));
@@ -417,10 +437,7 @@ void main() {
     );
 
     // 顶部支出人展示固定本地身份「单机芝麻仔 (我)」,不反查名册。
-    expect(
-      find.textContaining('单机芝麻仔', findRichText: true),
-      findsOneWidget,
-    );
+    expect(find.textContaining('单机芝麻仔', findRichText: true), findsOneWidget);
     expect(find.text('未知'), findsNothing);
 
     // 未锁定任何参与人:「张三」行可正常取消勾选。

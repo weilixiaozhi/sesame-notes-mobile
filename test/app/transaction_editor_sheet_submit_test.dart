@@ -31,6 +31,7 @@ import 'package:sesame_notes/router/app_router.dart';
 import 'package:sesame_notes/shared/aa/aa_edit_models.dart' show AaEditResult;
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/utils/currency/rate_math.dart' show EffectiveRate;
+import 'package:sesame_notes/utils/member_id.dart' show localSelfMemberId;
 import 'package:sesame_notes/shared/widgets/amount_expression_bar.dart';
 import 'package:sesame_notes/shared/widgets/amount_keypad.dart';
 import 'package:sesame_notes/shared/widgets/collaborator_avatar.dart';
@@ -38,6 +39,9 @@ import 'package:sesame_notes/shared/widgets/press_key.dart';
 import 'package:sesame_notes/features/transactions/presentation/widgets/transaction/transaction_editor_sheet.dart';
 
 class _MockRepo extends Mock implements LocalRepository {}
+
+/// 操作者落库身份：本地账本 self 成员 id（uuidV5 确定性派生，绝不裸写设备 id）。
+final _operatorSelfId = localSelfMemberId('ledger-1', 'device-1');
 
 db.Category _category(String id, String name) => db.Category(
   id: id,
@@ -134,6 +138,28 @@ void main() {
     );
     // 默认本地账本；作者身份按账本归属解析需要读到账本行。
     when(() => repo.getLedgerById(any())).thenAnswer((_) async => _ledger());
+    // 操作者成员解析：本地账本确保 self 成员行存在，落库 operatorMemberId
+    // 即其确定性派生 id（与需求口径一致，绝不裸写设备 id）。
+    when(
+      () => repo.ensureLocalSelfMember(
+        ledgerId: any(named: 'ledgerId'),
+        localSelfId: any(named: 'localSelfId'),
+        displayName: any(named: 'displayName'),
+      ),
+    ).thenAnswer(
+      (inv) async => db.LedgerMember(
+        id: _operatorSelfId,
+        ledgerId: inv.namedArguments[#ledgerId] as String,
+        displayName: '单机芝麻仔',
+        memberType: 'LOCAL',
+        role: 'owner',
+        avatarVersion: 0,
+        status: 'ACTIVE',
+        joinedAt: DateTime.utc(2026, 1, 1),
+        createdAt: DateTime.utc(2026, 1, 1),
+        updatedAt: DateTime.utc(2026, 1, 1),
+      ),
+    );
   });
 
   /// 构建宿主：直接以 TransactionEditorSheet 为 home（无 bottom sheet 包装，
@@ -284,7 +310,7 @@ void main() {
         payerMemberId: null,
         aaMode: null,
         // 操作者与交易同一事务落定，无二次回填。
-        operatorMemberId: 'device-1',
+        operatorMemberId: _operatorSelfId,
       ),
     ).called(1);
     // sheet 提交后关闭。
@@ -416,14 +442,14 @@ void main() {
         nativeAmount: '10.00',
         payerMemberId: null,
         aaMode: null,
-        operatorMemberId: 'device-1',
+        operatorMemberId: _operatorSelfId,
       ),
     ).called(1);
     verify(
       () => repo.appendEditHistory(
         recordId: 'tx-9',
         version: 7,
-        operatorMemberId: 'device-1',
+        operatorMemberId: _operatorSelfId,
         summary: any(named: 'summary'),
       ),
     ).called(1);
@@ -497,7 +523,7 @@ void main() {
         payerMemberId: null,
         aaMode: 1,
         splits: const [],
-        operatorMemberId: 'device-1',
+        operatorMemberId: _operatorSelfId,
       ),
     ).called(1);
   });
@@ -632,7 +658,7 @@ void main() {
         payerMemberId: 'u1',
         aaMode: 0,
         splits: const [],
-        operatorMemberId: 'device-1',
+        operatorMemberId: _operatorSelfId,
       ),
     ).called(1);
   });
@@ -754,7 +780,7 @@ void main() {
         payerMemberId: null,
         aaMode: null,
         splits: null,
-        operatorMemberId: 'device-1',
+        operatorMemberId: _operatorSelfId,
       ),
     ).called(1);
   });
@@ -795,7 +821,7 @@ void main() {
         payerMemberId: null,
         aaMode: null,
         splits: null,
-        operatorMemberId: 'device-1',
+        operatorMemberId: _operatorSelfId,
       ),
     ).called(1);
   });
