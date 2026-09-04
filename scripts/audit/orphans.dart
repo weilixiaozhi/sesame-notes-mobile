@@ -3,18 +3,19 @@
 
 /// 孤儿/未接线扫描:找出「注册了但没有入口」的死代码候选。
 ///
-/// 四类扫描(启发式,结果是候选清单,需人工确认;误报来源见各类注释):
+/// 三类扫描(启发式,结果是候选清单,需人工确认;误报来源见各类注释):
 /// 1. 死路由:Routes 常量在路由文件之外零引用(注册了但没人跳转);
 /// 2. 孤儿页面:presentation 下的 *Page 类在自身文件之外零引用;
-/// 3. 死文案键:app_en.arb 的键在 lib(不含 l10n)零引用;
-/// 4. 未用 provider:lib 中声明的 Provider 在自身文件之外零引用。
+/// 3. 未用 provider:lib 中声明的 Provider 全库仅剩声明行。
 ///
-/// 用法:dart scripts/audit_orphans.dart
+/// 注意:l10n 未使用/多余键的检查与清理由 scripts/i18n/check_status.dart 负责,
+/// 本脚本不做文案扫描,避免重复。
+///
+/// 用法:dart scripts/audit/orphans.dart
 library;
 
 import 'dart:io';
 
-const repoRoot = '.';
 const libRoot = 'lib';
 
 /// 递归收集目录下所有文件路径(相对仓库根)。
@@ -90,28 +91,7 @@ void main() {
   }
   report('孤儿页面:presentation 下 *Page 类在自身文件之外零引用', orphanPages);
 
-  // ---- 3. 死文案键 ----
-  // app_en.arb 为模板;提取顶层消息键(排除 @ 元数据)。
-  final arbText = File('$libRoot/l10n/app_en.arb').readAsStringSync();
-  final keyRe = RegExp(r'^    "(?![@\\"])[^"]+":', multiLine: true);
-  final arbKeys = keyRe
-      .allMatches(arbText)
-      .map((m) => m.group(0)!.substring(5, m.group(0)!.length - 2))
-      .toList();
-  final codeFiles = allLib.where((f) => !f.startsWith('$libRoot/l10n/'));
-  final deadKeys = <String>[];
-  for (final k in arbKeys) {
-    var refs = 0;
-    for (final f in codeFiles) {
-      refs += RegExp(RegExp.escape(k)).allMatches(
-        File(f).readAsStringSync(),
-      ).length;
-    }
-    if (refs == 0) deadKeys.add(k);
-  }
-  report('死文案键:app_en.arb 键在 lib(不含 l10n)零引用', deadKeys);
-
-  // ---- 4. 未用 provider ----
+  // ---- 3. 未用 provider ----
   final providerRe = RegExp(
     r'final (\w+Provider) = (?:[A-Za-z0-9_<>.]+|FutureProvider[^;]+|Provider<[^>]+>\([^)]*\)|NotifierProvider[^;]+)',
   );
@@ -128,5 +108,5 @@ void main() {
   report('未用 provider:全 lib 仅剩声明行', unusedProviders);
 
   print('');
-  print('提示:以上均为候选,请人工确认。误报常见原因:动态路由拼接、字符串键、测试专用注入。');
+  print('提示:以上均为候选,请人工确认。误报常见原因:动态路由拼接、测试专用注入。');
 }

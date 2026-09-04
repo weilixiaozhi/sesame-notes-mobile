@@ -10,9 +10,12 @@ scripts/
 │   ├── generate_android_keystore.ps1   # Windows (PowerShell)
 │   ├── generate_android_keystore.sh    # macOS / Linux (Bash)
 │   └── README.md
+├── audit/              # 孤儿/未接线扫描
+│   ├── orphans.dart    # 死路由 / 孤儿页面 / 未用 provider
+│   └── README.md
 ├── i18n/               # 国际化翻译管理工具
 │   ├── align_arb.dart      # ARB 对齐（键序/元数据/缩进）
-│   ├── check_status.dart   # 检查与清理
+│   ├── check_status.dart   # 检查与清理（翻译完整性 / 多余 keys / 未使用 keys）
 │   └── README.md
 ├── launcher_icons/     # 启动图标生成工具
 │   ├── rasterize_svg.dart
@@ -37,6 +40,12 @@ scripts/
 - **generate_android_keystore.sh** — macOS / Linux 版（Bash），与 .ps1 等价
 
 详见 [android_keystore/README.md](android_keystore/README.md)。
+
+### 🔍 audit — 孤儿/未接线扫描
+
+- **orphans.dart** — 扫描死路由、孤儿页面、未用 provider（l10n 键检查在 i18n 工具中）
+
+详见 [audit/README.md](audit/README.md)。
 
 ### 📝 i18n — 国际化翻译管理
 
@@ -76,6 +85,9 @@ powershell -ExecutionPolicy Bypass -File scripts/android_keystore/generate_andro
 
 # 生成 Android 发布 keystore（macOS / Linux）
 bash scripts/android_keystore/generate_android_keystore.sh
+
+# 孤儿/未接线扫描（死路由 / 孤儿页面 / 未用 provider）
+dart scripts/audit/orphans.dart
 
 # i18n 检查与清理
 dart scripts/i18n/check_status.dart
