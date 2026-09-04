@@ -758,130 +758,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mineCloudServiceLoading => '加载中…';
 
   @override
-  String get mineSyncTitle => '同步';
-
-  @override
-  String get mineSyncNotLoggedIn => '未登录';
-
-  @override
-  String get mineSyncNotConfigured => '未配置云端';
-
-  @override
-  String get mineSyncLocalOnly => '本地账本，仅存本机';
-
-  @override
-  String get mineSyncNoRemote => '云端暂无数据';
-
-  @override
-  String mineSyncInSync(Object count) {
-    return '已同步 (本地$count条)';
-  }
-
-  @override
-  String mineSyncLocalNewer(Object count) {
-    return '本地有更新 (本地$count条, 建议上传)';
-  }
-
-  @override
-  String get mineSyncCloudNewer => '云端有更新 (建议下载同步)';
-
-  @override
-  String get mineSyncDifferent => '本地与云端有差异，建议下载对比';
-
-  @override
   String get mineSyncError => '状态获取失败';
-
-  @override
-  String get mineSyncDetailTitle => '同步状态详情';
-
-  @override
-  String mineSyncLocalRecords(Object count) {
-    return '本地记录数: $count';
-  }
-
-  @override
-  String mineSyncCloudRecords(Object count) {
-    return '云端记录数: $count';
-  }
-
-  @override
-  String mineSyncCloudLatest(Object time) {
-    return '云端最新记账时间: $time';
-  }
-
-  @override
-  String mineSyncLocalFingerprint(Object fingerprint) {
-    return '本地指纹: $fingerprint';
-  }
-
-  @override
-  String mineSyncCloudFingerprint(Object fingerprint) {
-    return '云端指纹: $fingerprint';
-  }
-
-  @override
-  String mineSyncMessage(Object message) {
-    return '说明: $message';
-  }
-
-  @override
-  String get mineUploadTitle => '上传';
-
-  @override
-  String get mineUploadNeedLogin => '需登录';
-
-  @override
-  String get mineUploadNeedCloudService => '仅限云服务模式可用';
-
-  @override
-  String get mineUploadInProgress => '正在上传中…';
-
-  @override
-  String get mineUploadRefreshing => '刷新中…';
-
-  @override
-  String get mineUploadSynced => '已同步';
-
-  @override
-  String get mineUploadSuccess => '已上传';
-
-  @override
-  String get mineUploadSuccessMessage => '当前账本已同步到云端';
-
-  @override
-  String get mineDownloadTitle => '下载同步';
-
-  @override
-  String get mineDownloadNeedCloudService => '仅限云服务模式可用';
-
-  @override
-  String get mineDownloadComplete => '同步完成';
-
-  @override
-  String mineDownloadResult(Object inserted) {
-    return '导入：$inserted 条';
-  }
-
-  @override
-  String get mineLogoutConfirmTitle => '退出登录';
-
-  @override
-  String get mineLogoutConfirmMessage => '确定要退出当前账号登录吗？\n退出后将无法使用云同步功能。';
-
-  @override
-  String get mineLogoutButton => '退出';
-
-  @override
-  String get mineLogoutPurgeFailed => '退出后清理云端账本失败，请手动处理';
-
-  @override
-  String get mineAutoSyncTitle => '自动同步账本';
-
-  @override
-  String get mineAutoSyncSubtitle => '记账后自动上传到云端';
-
-  @override
-  String get mineAutoSyncNeedLogin => '需登录后可开启';
 
   @override
   String get mineCategoryManagement => '分类管理';
@@ -2115,66 +1992,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonRemove => '移除';
 
   @override
-  String get sharedJoinPageTitle => '加入共享账本';
-
-  @override
-  String get sharedJoinPageSubtitle => '输入对方分享的邀请码';
-
-  @override
-  String get sharedJoinEnterCode => '输入邀请码';
-
-  @override
-  String get sharedJoinEnterCodeHint => '在芝麻记中输入 6 位大写字母数字邀请码。';
-
-  @override
-  String get sharedJoinPreviewButton => '验证邀请码';
-
-  @override
-  String get sharedJoinAcceptButton => '加入账本';
-
-  @override
-  String sharedJoinInvitedBy(String name) {
-    return '$name 邀请你加入';
-  }
-
-  @override
-  String sharedJoinRoleLine(String role) {
-    return '角色:$role';
-  }
-
-  @override
-  String sharedJoinExpiresInMinutes(int n) {
-    return '有效期还剩 $n 分钟';
-  }
-
-  @override
-  String sharedJoinExpiresInHours(int n) {
-    return '有效期还剩 $n 小时';
-  }
-
-  @override
-  String sharedJoinExpiresInDays(int n) {
-    return '有效期还剩 $n 天';
-  }
-
-  @override
-  String sharedJoinSuccess(String name) {
-    return '已加入「$name」';
-  }
-
-  @override
-  String get sharedJoinCodeFormatError => '邀请码格式不对,请输入 6 位字母数字';
-
-  @override
-  String get sharedJoinInvalidOrExpired => '邀请码无效或已过期,请向邀请人索取新码';
-
-  @override
-  String get sharedJoinAlreadyMember => '你已经是该账本成员';
-
-  @override
-  String get sharedJoinMemberLimit => '该账本成员已满,请联系账本所有者';
-
-  @override
   String get sharedInviteFormRole => '角色';
 
   @override
@@ -2213,9 +2030,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sharedInviteInstruction => '把邀请码发给对方。对方可在芝麻记的「我的 → 加入共享账本」中输入邀请码。';
-
-  @override
-  String get sharedInviteUnavailable => '邀请暂不可用，请重新生成';
 
   @override
   String sharedInviteShareText(String ledger, String code) {
@@ -2277,9 +2091,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sharedMembersSaveFirst => '请先保存账本';
 
   @override
-  String get sharedMembersInviteSyncFailed => '云端同步尚未完成，请稍后重试';
-
-  @override
   String get sharedMembersLoadingHint => '云端账本尚未就绪，正在同步…';
 
   @override
@@ -2302,9 +2113,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String sharedTxCreatedAndEditedBy(String name) {
     return '$name 创建并编辑';
   }
-
-  @override
-  String get sharedRequiresCloudSync => '请先启用云同步';
 
   @override
   String get sharedMembersStatsTitle => '成员支出';
@@ -4088,130 +3896,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get mineCloudServiceLoading => '載入中…';
 
   @override
-  String get mineSyncTitle => '同步';
-
-  @override
-  String get mineSyncNotLoggedIn => '未登入';
-
-  @override
-  String get mineSyncNotConfigured => '未設定雲端';
-
-  @override
-  String get mineSyncLocalOnly => '本地帳本，僅存本機';
-
-  @override
-  String get mineSyncNoRemote => '雲端暫無資料';
-
-  @override
-  String mineSyncInSync(Object count) {
-    return '已同步 (本地$count條)';
-  }
-
-  @override
-  String mineSyncLocalNewer(Object count) {
-    return '本機有更新 (本機$count條, 建議上傳)';
-  }
-
-  @override
-  String get mineSyncCloudNewer => '雲端有更新 (建議下載同步)';
-
-  @override
-  String get mineSyncDifferent => '本機與雲端有差異，建議下載對比';
-
-  @override
   String get mineSyncError => '狀態取得失敗';
-
-  @override
-  String get mineSyncDetailTitle => '同步狀態詳情';
-
-  @override
-  String mineSyncLocalRecords(Object count) {
-    return '本地記錄數: $count';
-  }
-
-  @override
-  String mineSyncCloudRecords(Object count) {
-    return '雲端記錄數: $count';
-  }
-
-  @override
-  String mineSyncCloudLatest(Object time) {
-    return '雲端最新記帳時間: $time';
-  }
-
-  @override
-  String mineSyncLocalFingerprint(Object fingerprint) {
-    return '本地指紋: $fingerprint';
-  }
-
-  @override
-  String mineSyncCloudFingerprint(Object fingerprint) {
-    return '雲端指紋: $fingerprint';
-  }
-
-  @override
-  String mineSyncMessage(Object message) {
-    return '說明: $message';
-  }
-
-  @override
-  String get mineUploadTitle => '上傳';
-
-  @override
-  String get mineUploadNeedLogin => '需登入';
-
-  @override
-  String get mineUploadNeedCloudService => '僅限雲端服務模式可用';
-
-  @override
-  String get mineUploadInProgress => '正在上傳中…';
-
-  @override
-  String get mineUploadRefreshing => '重新整理中…';
-
-  @override
-  String get mineUploadSynced => '已同步';
-
-  @override
-  String get mineUploadSuccess => '已上傳';
-
-  @override
-  String get mineUploadSuccessMessage => '當前帳本已同步到雲端';
-
-  @override
-  String get mineDownloadTitle => '下載同步';
-
-  @override
-  String get mineDownloadNeedCloudService => '僅限雲端服務模式可用';
-
-  @override
-  String get mineDownloadComplete => '同步完成';
-
-  @override
-  String mineDownloadResult(Object inserted) {
-    return '匯入：$inserted 條';
-  }
-
-  @override
-  String get mineLogoutConfirmTitle => '退出登入';
-
-  @override
-  String get mineLogoutConfirmMessage => '確定要退出當前帳號登入嗎？\n退出後將無法使用雲同步功能。';
-
-  @override
-  String get mineLogoutButton => '退出';
-
-  @override
-  String get mineLogoutPurgeFailed => '退出後清理雲端帳本失敗，請手動處理';
-
-  @override
-  String get mineAutoSyncTitle => '自動同步帳本';
-
-  @override
-  String get mineAutoSyncSubtitle => '記帳後自動上傳到雲端';
-
-  @override
-  String get mineAutoSyncNeedLogin => '需登入後可開啟';
 
   @override
   String get mineCategoryManagement => '分類管理';
@@ -5445,66 +5130,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get commonRemove => '移除';
 
   @override
-  String get sharedJoinPageTitle => '加入共享帳本';
-
-  @override
-  String get sharedJoinPageSubtitle => '輸入對方分享的邀請碼';
-
-  @override
-  String get sharedJoinEnterCode => '輸入邀請碼';
-
-  @override
-  String get sharedJoinEnterCodeHint => '在芝麻記中輸入 6 位大寫字母數字邀請碼。';
-
-  @override
-  String get sharedJoinPreviewButton => '驗證邀請碼';
-
-  @override
-  String get sharedJoinAcceptButton => '加入帳本';
-
-  @override
-  String sharedJoinInvitedBy(String name) {
-    return '$name 邀請你加入';
-  }
-
-  @override
-  String sharedJoinRoleLine(String role) {
-    return '角色:$role';
-  }
-
-  @override
-  String sharedJoinExpiresInMinutes(int n) {
-    return '有效期還剩 $n 分鐘';
-  }
-
-  @override
-  String sharedJoinExpiresInHours(int n) {
-    return '有效期還剩 $n 小時';
-  }
-
-  @override
-  String sharedJoinExpiresInDays(int n) {
-    return '有效期還剩 $n 天';
-  }
-
-  @override
-  String sharedJoinSuccess(String name) {
-    return '已加入「$name」';
-  }
-
-  @override
-  String get sharedJoinCodeFormatError => '邀請碼格式不對,請輸入 6 位字母數字';
-
-  @override
-  String get sharedJoinInvalidOrExpired => '邀請碼無效或已過期,請向邀請人索取新碼';
-
-  @override
-  String get sharedJoinAlreadyMember => '你已經是該帳本成員';
-
-  @override
-  String get sharedJoinMemberLimit => '該帳本成員已滿,請聯絡帳本所有者';
-
-  @override
   String get sharedInviteFormRole => '角色';
 
   @override
@@ -5543,9 +5168,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get sharedInviteInstruction => '把邀請碼發給對方。對方可在芝麻記的「我的 → 加入共享帳本」中輸入邀請碼。';
-
-  @override
-  String get sharedInviteUnavailable => '邀請暫不可用，請重新產生';
 
   @override
   String sharedInviteShareText(String ledger, String code) {
@@ -5607,9 +5229,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get sharedMembersSaveFirst => '請先保存帳本';
 
   @override
-  String get sharedMembersInviteSyncFailed => '雲端同步尚未完成，請稍後再試';
-
-  @override
   String get sharedMembersLoadingHint => '雲端帳本尚未就緒，正在同步…';
 
   @override
@@ -5632,9 +5251,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String sharedTxCreatedAndEditedBy(String name) {
     return '$name 建立並編輯';
   }
-
-  @override
-  String get sharedRequiresCloudSync => '請先啟用雲端同步';
 
   @override
   String get sharedMembersStatsTitle => '成員支出';

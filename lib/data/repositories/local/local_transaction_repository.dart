@@ -6,7 +6,6 @@ import 'package:decimal/decimal.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
-import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/support/change_recorder.dart';
 import 'package:sesame_notes/utils/date/month_range.dart';
@@ -19,50 +18,6 @@ class TransactionSplitInput {
   final String amount;
 
   const TransactionSplitInput({required this.memberId, required this.amount});
-}
-
-/// 批量按 UUID 更新交易时的单条 update payload。
-///
-/// 实体主键即同步标识（UUID）；字段名保留 `syncId` 仅为兼容既有调用方，
-/// 实际值就是 transactions.id。
-class TransactionUpdateBySyncIdData {
-  final String syncId;
-  final String type;
-  final String amount; // 规范化 decimal 字符串
-  final String? categoryId;
-  final DateTime happenedAt;
-  final String? note;
-  // 全字段快照契约:云端恢复/下载预览把远端交易完整落本地,
-  // 这些字段 null 表示"清空/未设置"，非 null 表示显式覆盖。
-  final String? currencyCode;
-  final String? nativeAmount; // 规范化 decimal 字符串
-  final bool? excludeFromStats;
-  final String? payerMemberId;
-  final int? aaMode;
-
-  /// 指定分摊行(关系表);null = 不更新,非 null = 整批替换(与后端整批替换语义一致)。
-  final List<TransactionSplitInput>? splits;
-
-  /// 是否按"云端快照全字段覆盖"语义写入。
-  /// true 时上述扩展字段 null = 清空、非 null = 覆盖；
-  /// false 时只更新 5 个基础字段。
-  final bool overwriteSnapshot;
-
-  const TransactionUpdateBySyncIdData({
-    required this.syncId,
-    required this.type,
-    required this.amount,
-    this.categoryId,
-    required this.happenedAt,
-    this.note,
-    this.currencyCode,
-    this.nativeAmount,
-    this.excludeFromStats,
-    this.payerMemberId,
-    this.aaMode,
-    this.splits,
-    this.overwriteSnapshot = false,
-  });
 }
 
 /// 统一删除交易及其编辑历史。
@@ -524,7 +479,7 @@ class LocalTransactionRepository {
   /// 更新一条交易（本地编辑路径）。
   ///
   /// version+1 + lastEditedAt/updatedAt 支撑编辑历史与列表项 HH:mm 展示。
-  /// 同步路径(updateTransactionBySyncId 等)不走此方法,不会误增版本号。
+  /// 同步回放不走此方法，不会误增版本号。
   /// 先读旧 version 再 +1:本地单用户/共享账本 LWW 场景并发风险低,先读后写可接受。
   ///
   /// [operatorMemberId] 为当前操作者成员 id，与本次更新在同一事务写入
@@ -1111,177 +1066,6 @@ class LocalTransactionRepository {
     }
     // 共享账本 category hydration(与 watch 路径同一实现,回填共享镜像分类)
     return _hydrateSharedOverrides(raw);
-  }
-
-  // ==================== UUID(同步标识)相关 ====================
-
-  /// 按 UUID 主键查交易。方法名保留兼容既有调用方,
-  /// 参数实际就是 transactions.id。
-  Future<Transaction?> getTransactionBySyncId(String syncId) async {
-    return await (db.select(
-      db.transactions,
-    )..where((t) => t.id.equals(syncId))).getSingleOrNull();
-  }
-
-  /// 同步路径的按 UUID 更新:直接写主键匹配行,不走本地编辑路径,
-  /// 因此不递增 version,也不碰 lastEditedAt。
-  Future<void> updateTransactionBySyncId({
-    required String syncId,
-    required String type,
-    required String amount,
-    String? categoryId,
-    required DateTime happenedAt,
-    String? note,
-  }) async {
-    await (db.update(db.transactions)..where((t) => t.id.equals(syncId))).write(
-      TransactionsCompanion(
-        txType: d.Value(type),
-        amount: d.Value(amount),
-        categoryId: d.Value(categoryId),
-        happenedAt: d.Value(happenedAt),
-        note: d.Value(note),
-      ),
-    );
-  }
-
-  Future<void> deleteTransactionBySyncId(String syncId) async {
-    // 先查找交易ID，以便删除关联数据
-    final tx = await getTransactionBySyncId(syncId);
-    if (tx != null) {
-      await deleteTransaction(tx.id);
-    }
-  }
-
-  /// 批量按 UUID 更新交易;v1 主键即同步标识,恒等映射直接返回,无需反查。
-  Future<Map<String, String>> updateTransactionsBatchBySyncId(
-    List<TransactionUpdateBySyncIdData> updates, {
-    bool recordChanges = true,
-  }) async {
-    if (updates.isEmpty) return const {};
-    final mutationUpdatedAt = recordChanges ? DateTime.now().toUtc() : null;
-    try {
-      return await db.transaction(() async {
-        var effectiveUpdates = updates;
-        if (recordChanges) {
-          final activeRows =
-              await (db.select(db.transactions)..where(
-                    (row) =>
-                        row.id.isIn(updates.map((update) => update.syncId)) &
-                        row.deletedAt.isNull(),
-                  ))
-                  .get();
-          final activeIds = activeRows.map((row) => row.id).toSet();
-          effectiveUpdates = updates
-              .where((update) => activeIds.contains(update.syncId))
-              .toList(growable: false);
-        }
-        await db.batch((b) {
-          for (final u in effectiveUpdates) {
-            // currency/native 成对约束:币种为空时折算快照一并跳过。
-            // v1 两列均必填,远端快照缺字段时保持本地原值,不做"清空"写入;
-            // 币种非空且云端缺 nativeAmount 时按 1:1 兜底,避免成对校验被破坏。
-            final effectiveCurrency = u.overwriteSnapshot
-                ? u.currencyCode
-                : null;
-            final effectiveNative = effectiveCurrency != null
-                ? (u.nativeAmount ?? u.amount)
-                : null;
-            b.update(
-              db.transactions,
-              TransactionsCompanion(
-                txType: d.Value(u.type),
-                amount: d.Value(u.amount),
-                categoryId: d.Value(u.categoryId),
-                happenedAt: d.Value(u.happenedAt),
-                note: d.Value(u.note),
-                currencyCode: u.overwriteSnapshot && effectiveCurrency != null
-                    ? d.Value(effectiveCurrency)
-                    : const d.Value.absent(),
-                nativeAmount: u.overwriteSnapshot && effectiveNative != null
-                    ? d.Value(effectiveNative)
-                    : const d.Value.absent(),
-                excludeFromStats: u.overwriteSnapshot
-                    ? d.Value(u.excludeFromStats ?? false)
-                    : const d.Value.absent(),
-                payerMemberId: u.overwriteSnapshot
-                    ? d.Value(u.payerMemberId)
-                    : const d.Value.absent(),
-                aaMode: u.overwriteSnapshot
-                    ? d.Value(u.aaMode)
-                    : const d.Value.absent(),
-                // 本地批量编辑必须推进 LWW 时间；远端回填关闭登记时保留
-                // 已有快照时间，避免把恢复动作伪装成一次本地新编辑。
-                updatedAt: mutationUpdatedAt != null
-                    ? d.Value(mutationUpdatedAt)
-                    : const d.Value.absent(),
-                // recordChanges=false 表示远端 upsert 快照回放：服务端活跃实体
-                // 必须显式清除本地旧 tombstone；业务编辑则不会命中 tombstone。
-                deletedAt: recordChanges
-                    ? const d.Value.absent()
-                    : const d.Value<DateTime?>(null),
-              ),
-              where: (t) => t.id.equals(u.syncId),
-            );
-          }
-        });
-        // 指定分摊整批替换(仅快照覆盖语义且显式传入 splits 时)。
-        for (final u in effectiveUpdates) {
-          if (u.overwriteSnapshot && u.splits != null) {
-            await replaceTransactionSplits(db, u.syncId, u.splits);
-          }
-        }
-        // 本地批量编辑必须把最终完整快照推云，且分摊替换要先完成，payload
-        // 才完整；远端恢复传 false 时仍发 Drift 信号，但不形成回声 mutation。
-        if (recordChanges) {
-          await recordBatchTxChanges(
-            effectiveUpdates.map((update) => update.syncId),
-          );
-        }
-        // v1 主键即同步标识:更新后 id 不变,直接返回恒等映射供调用方对齐。
-        return {for (final u in effectiveUpdates) u.syncId: u.syncId};
-      });
-    } catch (error, stackTrace) {
-      logger.error('LocalTransactionRepository', '批量更新交易失败', error, stackTrace);
-      rethrow;
-    }
-  }
-
-  /// 按 UUID 批量删除交易；本地编辑登记 delete，远端回放可关闭登记。
-  Future<int> deleteTransactionsBatchBySyncIds(
-    List<String> syncIds, {
-    bool recordChanges = true,
-  }) async {
-    if (syncIds.isEmpty) return 0;
-    try {
-      return await db.transaction(() async {
-        // SELECT 拿到 tx id 列表(syncIds 即 UUID 主键,直接按 id 匹配)
-        final query = db.select(db.transactions);
-        if (recordChanges) {
-          query.where((row) => row.id.isIn(syncIds) & row.deletedAt.isNull());
-        } else {
-          query.where((row) => row.id.isIn(syncIds));
-        }
-        final rows = await query.get();
-        final txIds = rows.map((r) => r.id).toList();
-        if (txIds.isEmpty) return 0;
-        if (recordChanges) {
-          final deletedAt = DateTime.now().toUtc();
-          for (final row in rows) {
-            // ChangeRecorder 需从尚未删除的父行读取 serverRevision，
-            // 因此登记必须早于物理删除，并与删除共用事务保证失败回滚。
-            await _recordTxChange(
-              row: row.copyWith(updatedAt: deletedAt),
-              action: 'delete',
-            );
-          }
-        }
-        // 统一入口同时清掉这些交易的编辑历史，避免批量删除产生孤儿行。
-        return deleteTransactionsWithEditHistories(db, txIds);
-      });
-    } catch (error, stackTrace) {
-      logger.error('LocalTransactionRepository', '批量删除交易失败', error, stackTrace);
-      rethrow;
-    }
   }
 
   /// 3.7：分摊行直接以 member_id 表达（服务端 3.5 起 member 直写契约）。

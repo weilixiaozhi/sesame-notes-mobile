@@ -484,7 +484,7 @@ void main() {
         ledgerId: sharedId,
       );
       expect(filtered.single.name, '共享分类');
-      // 镜像分类 id 即 Owner 分类 UUID，无负数 synthetic id
+      // 镜像分类 id 即 Owner 分类 UUID
       expect(filtered.single.id, 'cat-picker');
     });
 

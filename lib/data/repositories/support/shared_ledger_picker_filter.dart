@@ -108,20 +108,4 @@ extension SharedLedgerPickerFilter on SesameDatabase {
       updatedAt: c.updatedAt,
     );
   }
-
-  /// 按分类 UUID 反查共享分类（tx editor 的 initial selected 用）。
-  Future<Category?> findSharedCategoryById(
-    String categoryId, {
-    String? ledgerId,
-  }) async {
-    final q = select(sharedLedgerCategories);
-    if (ledgerId != null && ledgerId.isNotEmpty) {
-      q.where((t) => t.ledgerId.equals(ledgerId));
-    }
-    final all = await q.get();
-    for (final s in all) {
-      if (s.categoryId == categoryId) return _sharedCategoryAsMain(s);
-    }
-    return null;
-  }
 }

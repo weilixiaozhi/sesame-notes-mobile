@@ -1,4 +1,4 @@
-﻿// 提醒监控服务测试。
+// 提醒监控服务测试。
 //
 // 需求锚点：监控服务只负责时钟与调度，通知文案由 Composition Root
 // 经回调注入（service 不得反向依赖 BuildContext / l10n）；恢复提醒时
@@ -94,7 +94,6 @@ void main() {
     expect(util.scheduled.single.title, '注入标题');
     expect(util.scheduled.single.body, '注入正文');
 
-    service.stopMonitoring();
     // 消化 LoggerService 的 2 秒防抖落盘定时器，避免 teardown 报 pending timer
     await tester.pump(const Duration(seconds: 3));
   });

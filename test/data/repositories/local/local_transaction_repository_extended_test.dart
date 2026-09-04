@@ -3,8 +3,7 @@
 // 锚点：AA 指定分摊落 transaction_splits 关系表（与后端字段一致），
 // 共享账本 Editor 记的交易通过 categoryId（Owner 分类 UUID）反查
 // SharedLedgerCategories 镜像转 Category（与 picker/统计口径一致）。
-// 覆盖分支：AA JSON 错误路径、缺失实体报错、共享 hydration、
-// 批量 UUID 更新的快照覆盖语义。
+// 覆盖分支：AA JSON 错误路径、缺失实体报错、共享 hydration。
 library;
 
 import 'package:drift/drift.dart' as d;
@@ -13,10 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_transaction_repository.dart'
-    show
-        LocalTransactionRepository,
-        TransactionSplitInput,
-        TransactionUpdateBySyncIdData;
+    show LocalTransactionRepository, TransactionSplitInput;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -273,73 +269,6 @@ void main() {
           )
           .first;
       expect(rows.single.category?.name, '共享餐饮');
-    });
-  });
-
-  group('批量 UUID 更新快照语义', () {
-    test('overwriteSnapshot=false 不动币种/AA；true 时按成对约束补快照', () async {
-      final ledgerId = await createLedger(name: 'batch-snap');
-      final now = DateTime.now().toUtc();
-      // v1 主键即同步标识：syncId 参数实际就是 transactions.id
-      await repo.insertTransactionCompanion(
-        TransactionsCompanion.insert(
-          id: 'snap-1',
-          ledgerId: ledgerId,
-          txType: 'expense',
-          amount: '100',
-          currencyCode: 'USD',
-          nativeAmount: '720',
-          happenedAt: DateTime(2026, 8, 8),
-          createdAt: now,
-          updatedAt: now,
-        ),
-      );
-      await repo.insertTransactionCompanion(
-        TransactionsCompanion.insert(
-          id: 'snap-2',
-          ledgerId: ledgerId,
-          txType: 'expense',
-          amount: '200',
-          currencyCode: 'CNY',
-          nativeAmount: '200',
-          happenedAt: DateTime(2026, 8, 8),
-          createdAt: now,
-          updatedAt: now,
-        ),
-      );
-
-      // 不覆盖快照：只改金额/类型，保留旧币种与快照
-      await repo.updateTransactionsBatchBySyncId([
-        TransactionUpdateBySyncIdData(
-          syncId: 'snap-1',
-          type: 'expense',
-          amount: '150',
-          happenedAt: DateTime(2026, 8, 8),
-        ),
-      ]);
-      final keep = await repo.getTransactionBySyncId('snap-1');
-      expect(keep?.amount, '150');
-      expect(keep?.currencyCode, 'USD');
-      expect(keep?.nativeAmount, '720');
-
-      // 覆盖快照但缺币种 → 清空快照，避免破坏成对约束
-      await repo.updateTransactionsBatchBySyncId([
-        TransactionUpdateBySyncIdData(
-          syncId: 'snap-2',
-          type: 'expense',
-          amount: '300',
-          happenedAt: DateTime(2026, 8, 8),
-          overwriteSnapshot: true,
-          currencyCode: 'JPY',
-        ),
-      ]);
-      final overwritten = await repo.getTransactionBySyncId('snap-2');
-      expect(overwritten?.currencyCode, 'JPY');
-      expect(overwritten?.nativeAmount, '300');
-    });
-
-    test('空更新列表直接返回空 map', () async {
-      expect(await repo.updateTransactionsBatchBySyncId([]), isEmpty);
     });
   });
 

@@ -347,42 +347,7 @@
         }
     },
     "mineCloudServiceLoading": "加载中…",
-    "mineSyncTitle": "同步",
-    "mineSyncNotLoggedIn": "未登录",
-    "mineSyncNotConfigured": "未配置云端",
-    "mineSyncLocalOnly": "本地账本，仅存本机",
-    "mineSyncNoRemote": "云端暂无数据",
-    "mineSyncInSync": "已同步 (本地{count}条)",
-    "mineSyncLocalNewer": "本地有更新 (本地{count}条, 建议上传)",
-    "mineSyncCloudNewer": "云端有更新 (建议下载同步)",
-    "mineSyncDifferent": "本地与云端有差异，建议下载对比",
     "mineSyncError": "状态获取失败",
-    "mineSyncDetailTitle": "同步状态详情",
-    "mineSyncLocalRecords": "本地记录数: {count}",
-    "mineSyncCloudRecords": "云端记录数: {count}",
-    "mineSyncCloudLatest": "云端最新记账时间: {time}",
-    "mineSyncLocalFingerprint": "本地指纹: {fingerprint}",
-    "mineSyncCloudFingerprint": "云端指纹: {fingerprint}",
-    "mineSyncMessage": "说明: {message}",
-    "mineUploadTitle": "上传",
-    "mineUploadNeedLogin": "需登录",
-    "mineUploadNeedCloudService": "仅限云服务模式可用",
-    "mineUploadInProgress": "正在上传中…",
-    "mineUploadRefreshing": "刷新中…",
-    "mineUploadSynced": "已同步",
-    "mineUploadSuccess": "已上传",
-    "mineUploadSuccessMessage": "当前账本已同步到云端",
-    "mineDownloadTitle": "下载同步",
-    "mineDownloadNeedCloudService": "仅限云服务模式可用",
-    "mineDownloadComplete": "同步完成",
-    "mineDownloadResult": "导入：{inserted} 条",
-    "mineLogoutConfirmTitle": "退出登录",
-    "mineLogoutConfirmMessage": "确定要退出当前账号登录吗？\n退出后将无法使用云同步功能。",
-    "mineLogoutButton": "退出",
-    "mineLogoutPurgeFailed": "退出后清理云端账本失败，请手动处理",
-    "mineAutoSyncTitle": "自动同步账本",
-    "mineAutoSyncSubtitle": "记账后自动上传到云端",
-    "mineAutoSyncNeedLogin": "需登录后可开启",
     "mineCategoryManagement": "分类管理",
     "mineCategoryManagementSubtitle": "编辑自定义分类",
     "mineRecurringTransactions": "周期账单",
@@ -916,64 +881,6 @@
     "sharedRoleEditor": "编辑者",
     "commonCopied": "已复制",
     "commonRemove": "移除",
-    "sharedJoinPageTitle": "加入共享账本",
-    "sharedJoinPageSubtitle": "输入对方分享的邀请码",
-    "sharedJoinEnterCode": "输入邀请码",
-    "sharedJoinEnterCodeHint": "在芝麻记中输入 6 位大写字母数字邀请码。",
-    "sharedJoinPreviewButton": "验证邀请码",
-    "sharedJoinAcceptButton": "加入账本",
-    "sharedJoinInvitedBy": "{name} 邀请你加入",
-    "@sharedJoinInvitedBy": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
-    "sharedJoinRoleLine": "角色:{role}",
-    "@sharedJoinRoleLine": {
-        "placeholders": {
-            "role": {
-                "type": "String"
-            }
-        }
-    },
-    "sharedJoinExpiresInMinutes": "有效期还剩 {n} 分钟",
-    "@sharedJoinExpiresInMinutes": {
-        "placeholders": {
-            "n": {
-                "type": "int"
-            }
-        }
-    },
-    "sharedJoinExpiresInHours": "有效期还剩 {n} 小时",
-    "@sharedJoinExpiresInHours": {
-        "placeholders": {
-            "n": {
-                "type": "int"
-            }
-        }
-    },
-    "sharedJoinExpiresInDays": "有效期还剩 {n} 天",
-    "@sharedJoinExpiresInDays": {
-        "placeholders": {
-            "n": {
-                "type": "int"
-            }
-        }
-    },
-    "sharedJoinSuccess": "已加入「{name}」",
-    "@sharedJoinSuccess": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
-    "sharedJoinCodeFormatError": "邀请码格式不对,请输入 6 位字母数字",
-    "sharedJoinInvalidOrExpired": "邀请码无效或已过期,请向邀请人索取新码",
-    "sharedJoinAlreadyMember": "你已经是该账本成员",
-    "sharedJoinMemberLimit": "该账本成员已满,请联系账本所有者",
     "sharedInviteFormRole": "角色",
     "sharedInviteFormExpiry": "有效期",
     "sharedInviteExpiryHours": "{n} 小时",
@@ -1006,7 +913,6 @@
     },
     "sharedInviteWarning": "⚠️ 不要把邀请码发到公开群 / 朋友圈。拿到码的任何人都可加入账本;泄露后请到成员管理页撤销并重新生成。",
     "sharedInviteInstruction": "把邀请码发给对方。对方可在芝麻记的「我的 → 加入共享账本」中输入邀请码。",
-    "sharedInviteUnavailable": "邀请暂不可用，请重新生成",
     "sharedInviteShareText": "邀请你加入芝麻记共享账本「{ledger}」\n\n邀请码:{code}\n\n打开芝麻记 → 我的 → 加入共享账本，输入此码即可。",
     "@sharedInviteShareText": {
         "placeholders": {
@@ -1055,7 +961,6 @@
     "sharedMembersRemoved": "已移除成员",
     "sharedMembersRemoveFailed": "移除成员失败，请稍后重试",
     "sharedMembersSaveFirst": "请先保存账本",
-    "sharedMembersInviteSyncFailed": "云端同步尚未完成，请稍后重试",
     "sharedMembersLoadingHint": "云端账本尚未就绪，正在同步…",
     "sharedMembersLoadFailed": "成员列表加载失败",
     "sharedMembersRetry": "重试",
@@ -1083,7 +988,6 @@
             }
         }
     },
-    "sharedRequiresCloudSync": "请先启用云同步",
     "sharedMembersStatsTitle": "成员支出",
     "sharedMembersStatsEmpty": "暂无记账",
     "sharedMembersStatsTxCount": "{count}笔",

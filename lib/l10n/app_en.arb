@@ -347,42 +347,7 @@
         }
     },
     "mineCloudServiceLoading": "Loading...",
-    "mineSyncTitle": "Sync",
-    "mineSyncNotLoggedIn": "Not logged in",
-    "mineSyncNotConfigured": "Cloud not configured",
-    "mineSyncLocalOnly": "Local ledger, device only",
-    "mineSyncNoRemote": "No cloud data",
-    "mineSyncInSync": "Synced (local {count} records)",
-    "mineSyncLocalNewer": "Local updated ({count} records, upload recommended)",
-    "mineSyncCloudNewer": "Cloud updated (download to sync)",
-    "mineSyncDifferent": "Local and cloud differ, download to compare",
     "mineSyncError": "Failed to get status",
-    "mineSyncDetailTitle": "Sync Status Details",
-    "mineSyncLocalRecords": "Local records: {count}",
-    "mineSyncCloudRecords": "Cloud records: {count}",
-    "mineSyncCloudLatest": "Cloud latest record time: {time}",
-    "mineSyncLocalFingerprint": "Local fingerprint: {fingerprint}",
-    "mineSyncCloudFingerprint": "Cloud fingerprint: {fingerprint}",
-    "mineSyncMessage": "Message: {message}",
-    "mineUploadTitle": "Upload",
-    "mineUploadNeedLogin": "Login required",
-    "mineUploadNeedCloudService": "Available in cloud service mode only",
-    "mineUploadInProgress": "Uploading...",
-    "mineUploadRefreshing": "Refreshing...",
-    "mineUploadSynced": "Synced",
-    "mineUploadSuccess": "Uploaded",
-    "mineUploadSuccessMessage": "Current ledger synced to cloud",
-    "mineDownloadTitle": "Download & Sync",
-    "mineDownloadNeedCloudService": "Available in cloud service mode only",
-    "mineDownloadComplete": "Sync Complete",
-    "mineDownloadResult": "Imported: {inserted} records",
-    "mineLogoutConfirmTitle": "Logout",
-    "mineLogoutConfirmMessage": "Are you sure you want to logout?\nYou won't be able to use cloud sync after logout.",
-    "mineLogoutButton": "Logout",
-    "mineLogoutPurgeFailed": "Failed to clear cloud ledgers after logout. Please handle manually.",
-    "mineAutoSyncTitle": "Auto sync ledger",
-    "mineAutoSyncSubtitle": "Auto upload to cloud after recording",
-    "mineAutoSyncNeedLogin": "Login required to enable",
     "mineCategoryManagement": "Category Management",
     "mineCategoryManagementSubtitle": "Edit custom categories",
     "mineRecurringTransactions": "Recurring Bills",
@@ -916,64 +881,6 @@
     "sharedRoleEditor": "Editor",
     "commonCopied": "Copied",
     "commonRemove": "Remove",
-    "sharedJoinPageTitle": "Join shared ledger",
-    "sharedJoinPageSubtitle": "Enter the invite code you received",
-    "sharedJoinEnterCode": "Enter invite code",
-    "sharedJoinEnterCodeHint": "6 uppercase letters / digits in Sesame Notes.",
-    "sharedJoinPreviewButton": "Verify code",
-    "sharedJoinAcceptButton": "Join",
-    "sharedJoinInvitedBy": "{name} invited you to join",
-    "@sharedJoinInvitedBy": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
-    "sharedJoinRoleLine": "Role: {role}",
-    "@sharedJoinRoleLine": {
-        "placeholders": {
-            "role": {
-                "type": "String"
-            }
-        }
-    },
-    "sharedJoinExpiresInMinutes": "Expires in {n} min",
-    "@sharedJoinExpiresInMinutes": {
-        "placeholders": {
-            "n": {
-                "type": "int"
-            }
-        }
-    },
-    "sharedJoinExpiresInHours": "Expires in {n}h",
-    "@sharedJoinExpiresInHours": {
-        "placeholders": {
-            "n": {
-                "type": "int"
-            }
-        }
-    },
-    "sharedJoinExpiresInDays": "Expires in {n}d",
-    "@sharedJoinExpiresInDays": {
-        "placeholders": {
-            "n": {
-                "type": "int"
-            }
-        }
-    },
-    "sharedJoinSuccess": "Joined \"{name}\"",
-    "@sharedJoinSuccess": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
-    "sharedJoinCodeFormatError": "Invite code must be 6 letters/digits.",
-    "sharedJoinInvalidOrExpired": "Invite code is invalid or expired. Ask the inviter for a new one.",
-    "sharedJoinAlreadyMember": "You are already a member of this ledger.",
-    "sharedJoinMemberLimit": "This ledger has reached its member limit. Ask the owner.",
     "sharedInviteFormRole": "Role",
     "sharedInviteFormExpiry": "Valid for",
     "sharedInviteExpiryHours": "{n} h",
@@ -1006,7 +913,6 @@
     },
     "sharedInviteWarning": "⚠️ Don't post invite codes to public groups / social. Anyone with the code can join. Revoke and regenerate from Members if leaked.",
     "sharedInviteInstruction": "Send the code to the other person. In Sesame Notes, they can enter it from \"Me → Join shared ledger\".",
-    "sharedInviteUnavailable": "Invite is unavailable. Please generate a new one.",
     "sharedInviteShareText": "I'm inviting you to the Sesame Notes shared ledger \"{ledger}\".\n\nCode: {code}\n\nOpen Sesame Notes → Me → Join shared ledger and enter this code.",
     "@sharedInviteShareText": {
         "placeholders": {
@@ -1055,7 +961,6 @@
     "sharedMembersRemoved": "Member removed",
     "sharedMembersRemoveFailed": "Failed to remove member. Please try again later.",
     "sharedMembersSaveFirst": "Please save the ledger first",
-    "sharedMembersInviteSyncFailed": "Cloud sync not finished yet. Please try again later.",
     "sharedMembersLoadingHint": "Cloud ledger is not ready, syncing…",
     "sharedMembersLoadFailed": "Failed to load members",
     "sharedMembersRetry": "Retry",
@@ -1083,7 +988,6 @@
             }
         }
     },
-    "sharedRequiresCloudSync": "Please enable cloud sync first",
     "sharedMembersStatsTitle": "Member expenses",
     "sharedMembersStatsEmpty": "No transactions yet",
     "sharedMembersStatsTxCount": "{count} tx",

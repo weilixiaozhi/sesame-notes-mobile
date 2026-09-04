@@ -773,134 +773,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mineCloudServiceLoading => 'Loading...';
 
   @override
-  String get mineSyncTitle => 'Sync';
-
-  @override
-  String get mineSyncNotLoggedIn => 'Not logged in';
-
-  @override
-  String get mineSyncNotConfigured => 'Cloud not configured';
-
-  @override
-  String get mineSyncLocalOnly => 'Local ledger, device only';
-
-  @override
-  String get mineSyncNoRemote => 'No cloud data';
-
-  @override
-  String mineSyncInSync(Object count) {
-    return 'Synced (local $count records)';
-  }
-
-  @override
-  String mineSyncLocalNewer(Object count) {
-    return 'Local updated ($count records, upload recommended)';
-  }
-
-  @override
-  String get mineSyncCloudNewer => 'Cloud updated (download to sync)';
-
-  @override
-  String get mineSyncDifferent => 'Local and cloud differ, download to compare';
-
-  @override
   String get mineSyncError => 'Failed to get status';
-
-  @override
-  String get mineSyncDetailTitle => 'Sync Status Details';
-
-  @override
-  String mineSyncLocalRecords(Object count) {
-    return 'Local records: $count';
-  }
-
-  @override
-  String mineSyncCloudRecords(Object count) {
-    return 'Cloud records: $count';
-  }
-
-  @override
-  String mineSyncCloudLatest(Object time) {
-    return 'Cloud latest record time: $time';
-  }
-
-  @override
-  String mineSyncLocalFingerprint(Object fingerprint) {
-    return 'Local fingerprint: $fingerprint';
-  }
-
-  @override
-  String mineSyncCloudFingerprint(Object fingerprint) {
-    return 'Cloud fingerprint: $fingerprint';
-  }
-
-  @override
-  String mineSyncMessage(Object message) {
-    return 'Message: $message';
-  }
-
-  @override
-  String get mineUploadTitle => 'Upload';
-
-  @override
-  String get mineUploadNeedLogin => 'Login required';
-
-  @override
-  String get mineUploadNeedCloudService =>
-      'Available in cloud service mode only';
-
-  @override
-  String get mineUploadInProgress => 'Uploading...';
-
-  @override
-  String get mineUploadRefreshing => 'Refreshing...';
-
-  @override
-  String get mineUploadSynced => 'Synced';
-
-  @override
-  String get mineUploadSuccess => 'Uploaded';
-
-  @override
-  String get mineUploadSuccessMessage => 'Current ledger synced to cloud';
-
-  @override
-  String get mineDownloadTitle => 'Download & Sync';
-
-  @override
-  String get mineDownloadNeedCloudService =>
-      'Available in cloud service mode only';
-
-  @override
-  String get mineDownloadComplete => 'Sync Complete';
-
-  @override
-  String mineDownloadResult(Object inserted) {
-    return 'Imported: $inserted records';
-  }
-
-  @override
-  String get mineLogoutConfirmTitle => 'Logout';
-
-  @override
-  String get mineLogoutConfirmMessage =>
-      'Are you sure you want to logout?\nYou won\'t be able to use cloud sync after logout.';
-
-  @override
-  String get mineLogoutButton => 'Logout';
-
-  @override
-  String get mineLogoutPurgeFailed =>
-      'Failed to clear cloud ledgers after logout. Please handle manually.';
-
-  @override
-  String get mineAutoSyncTitle => 'Auto sync ledger';
-
-  @override
-  String get mineAutoSyncSubtitle => 'Auto upload to cloud after recording';
-
-  @override
-  String get mineAutoSyncNeedLogin => 'Login required to enable';
 
   @override
   String get mineCategoryManagement => 'Category Management';
@@ -2202,71 +2075,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonRemove => 'Remove';
 
   @override
-  String get sharedJoinPageTitle => 'Join shared ledger';
-
-  @override
-  String get sharedJoinPageSubtitle => 'Enter the invite code you received';
-
-  @override
-  String get sharedJoinEnterCode => 'Enter invite code';
-
-  @override
-  String get sharedJoinEnterCodeHint =>
-      '6 uppercase letters / digits in Sesame Notes.';
-
-  @override
-  String get sharedJoinPreviewButton => 'Verify code';
-
-  @override
-  String get sharedJoinAcceptButton => 'Join';
-
-  @override
-  String sharedJoinInvitedBy(String name) {
-    return '$name invited you to join';
-  }
-
-  @override
-  String sharedJoinRoleLine(String role) {
-    return 'Role: $role';
-  }
-
-  @override
-  String sharedJoinExpiresInMinutes(int n) {
-    return 'Expires in $n min';
-  }
-
-  @override
-  String sharedJoinExpiresInHours(int n) {
-    return 'Expires in ${n}h';
-  }
-
-  @override
-  String sharedJoinExpiresInDays(int n) {
-    return 'Expires in ${n}d';
-  }
-
-  @override
-  String sharedJoinSuccess(String name) {
-    return 'Joined \"$name\"';
-  }
-
-  @override
-  String get sharedJoinCodeFormatError =>
-      'Invite code must be 6 letters/digits.';
-
-  @override
-  String get sharedJoinInvalidOrExpired =>
-      'Invite code is invalid or expired. Ask the inviter for a new one.';
-
-  @override
-  String get sharedJoinAlreadyMember =>
-      'You are already a member of this ledger.';
-
-  @override
-  String get sharedJoinMemberLimit =>
-      'This ledger has reached its member limit. Ask the owner.';
-
-  @override
   String get sharedInviteFormRole => 'Role';
 
   @override
@@ -2306,10 +2114,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get sharedInviteInstruction =>
       'Send the code to the other person. In Sesame Notes, they can enter it from \"Me → Join shared ledger\".';
-
-  @override
-  String get sharedInviteUnavailable =>
-      'Invite is unavailable. Please generate a new one.';
 
   @override
   String sharedInviteShareText(String ledger, String code) {
@@ -2372,10 +2176,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sharedMembersSaveFirst => 'Please save the ledger first';
 
   @override
-  String get sharedMembersInviteSyncFailed =>
-      'Cloud sync not finished yet. Please try again later.';
-
-  @override
   String get sharedMembersLoadingHint => 'Cloud ledger is not ready, syncing…';
 
   @override
@@ -2398,9 +2198,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String sharedTxCreatedAndEditedBy(String name) {
     return 'Created and edited by $name';
   }
-
-  @override
-  String get sharedRequiresCloudSync => 'Please enable cloud sync first';
 
   @override
   String get sharedMembersStatsTitle => 'Member expenses';

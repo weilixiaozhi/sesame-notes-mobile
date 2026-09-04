@@ -126,7 +126,6 @@ void main() {
     expect(await repo.countUnconvertedForeignTx(ledgerId), 1);
     expect(await repo.countForeignCurrencyTx(ledgerId), 2);
     expect(await repo.getLedgerForeignCurrencies(ledgerId), {'USD', 'JPY'});
-    expect(await repo.getUsedCurrencies(), {'USD', 'JPY'});
   });
 
   test('外币重算只更新并登记活跃交易，tombstone 快照保持不变', () async {

@@ -441,14 +441,13 @@ void main() {
     });
   });
 
-  group('getLedgerForeignCurrencies / getUsedCurrencies', () {
+  group('getLedgerForeignCurrencies', () {
     test('空账本:返回空集合', () async {
       final lid = await seedLedger();
       expect(await repo.getLedgerForeignCurrencies(lid), isEmpty);
-      expect(await repo.getUsedCurrencies(), isEmpty);
     });
 
-    test('仅本位币:foreignCurrencies 为空, usedCurrencies 包含本位币', () async {
+    test('仅本位币:foreignCurrencies 为空', () async {
       final lid = await seedLedger();
       await repo.addTransaction(
         ledgerId: lid,
@@ -457,10 +456,9 @@ void main() {
         happenedAt: DateTime(2026, 7, 1),
       );
       expect(await repo.getLedgerForeignCurrencies(lid), isEmpty);
-      expect(await repo.getUsedCurrencies(), {'CNY'});
     });
 
-    test('混合币种:foreignCurrencies 排除本位币, usedCurrencies 全部', () async {
+    test('混合币种:foreignCurrencies 排除本位币', () async {
       final lid = await seedLedger();
       await seedTxRaw(
         ledgerId: lid,
@@ -481,7 +479,6 @@ void main() {
         happenedAt: DateTime(2026, 7, 1),
       );
       expect(await repo.getLedgerForeignCurrencies(lid), {'USD', 'EUR'});
-      expect(await repo.getUsedCurrencies(), {'CNY', 'USD', 'EUR'});
     });
   });
 }

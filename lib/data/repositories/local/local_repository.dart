@@ -1297,17 +1297,6 @@ class LocalRepository {
   Future<String> insertCategory(CategoriesCompanion category) =>
       _categoryRepo.insertCategory(category);
 
-  Future<Set<String>> getUsedCurrencies() async {
-    final rows = await db
-        .customSelect(
-          "SELECT DISTINCT currency_code FROM transactions "
-          "WHERE deleted_at IS NULL "
-          "AND currency_code IS NOT NULL AND currency_code != ''",
-        )
-        .get();
-    return rows.map((r) => r.read<String>('currency_code')).toSet();
-  }
-
   // ============================================
   // 统计 - 委托给 LocalStatisticsRepository
   // ============================================
@@ -1554,11 +1543,6 @@ class LocalRepository {
 
   Future<LedgerMember?> getMemberById(String id) => _memberRepo.getById(id);
 
-  Future<LedgerMember?> getMemberByLinkedAccount(
-    String ledgerId,
-    String accountId,
-  ) => _memberRepo.getByLinkedAccount(ledgerId, accountId);
-
   Future<LedgerMember> ensureLocalSelfMember({
     required String ledgerId,
     required String localSelfId,
@@ -1569,57 +1553,16 @@ class LocalRepository {
     displayName: displayName,
   );
 
-  Future<LedgerMember> ensureRegisteredMember({
-    required String ledgerId,
-    required String userId,
-    required String displayName,
-    String role = 'editor',
-    String? avatarUrl,
-    int avatarVersion = 0,
-  }) => _memberRepo.ensureRegistered(
-    ledgerId: ledgerId,
-    userId: userId,
-    displayName: displayName,
-    role: role,
-    avatarUrl: avatarUrl,
-    avatarVersion: avatarVersion,
-  );
-
   Future<String> createPlaceholderMember({
     required String ledgerId,
     required String name,
     String? id,
   }) => _memberRepo.createPlaceholder(ledgerId: ledgerId, name: name, id: id);
 
-  Future<void> upsertPlaceholderMember({
-    required String ledgerId,
-    required String id,
-    required String name,
-    required DateTime updatedAt,
-  }) => _memberRepo.upsertPlaceholder(
-    ledgerId: ledgerId,
-    id: id,
-    name: name,
-    updatedAt: updatedAt,
-  );
-
   Future<void> renameMember({required String id, required String name}) =>
       _memberRepo.rename(id: id, name: name);
 
   Future<bool> deleteMember(String id) => _memberRepo.delete(id);
-
-  Future<bool> isMemberReferencedByAnyTransaction(String id) =>
-      _memberRepo.isReferencedByAnyTransaction(id);
-
-  Future<void> bindLocalSelfMember({
-    required String ledgerId,
-    required String localSelfId,
-    required String accountId,
-  }) => _memberRepo.bindLocalSelf(
-    ledgerId: ledgerId,
-    localSelfId: localSelfId,
-    accountId: accountId,
-  );
 
   Future<void> unbindAllLocalMembers() => _memberRepo.unbindAllLocalMembers();
 

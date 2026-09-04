@@ -99,16 +99,6 @@ class AppLockService {
     return DateTime.now().millisecondsSinceEpoch < until;
   }
 
-  /// 剩余锁定时长；未锁定时返回 [Duration.zero]。
-  static Future<Duration> getLockRemaining() async {
-    final prefs = await SharedPreferences.getInstance();
-    final until = prefs.getInt(prefsKeyLockedUntil) ?? 0;
-    final remainingMs = until - DateTime.now().millisecondsSinceEpoch;
-    return remainingMs > 0
-        ? Duration(milliseconds: remainingMs)
-        : Duration.zero;
-  }
-
   /// 清除 PIN 码并禁用锁定
   static Future<void> clearPin() async {
     final prefs = await SharedPreferences.getInstance();
@@ -142,12 +132,6 @@ class AppLockService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(prefsKeyBiometricEnabled, enabled);
     logger.info('AppLock', '生物识别: ${enabled ? "开启" : "关闭"}');
-  }
-
-  /// 获取超时时间（秒）
-  static Future<int> getTimeoutSeconds() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(prefsKeyTimeoutSeconds) ?? 0;
   }
 
   /// 设置超时时间（秒）

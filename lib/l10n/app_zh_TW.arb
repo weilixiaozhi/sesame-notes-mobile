@@ -347,42 +347,7 @@
         }
     },
     "mineCloudServiceLoading": "載入中…",
-    "mineSyncTitle": "同步",
-    "mineSyncNotLoggedIn": "未登入",
-    "mineSyncNotConfigured": "未設定雲端",
-    "mineSyncLocalOnly": "本地帳本，僅存本機",
-    "mineSyncNoRemote": "雲端暫無資料",
-    "mineSyncInSync": "已同步 (本地{count}條)",
-    "mineSyncLocalNewer": "本機有更新 (本機{count}條, 建議上傳)",
-    "mineSyncCloudNewer": "雲端有更新 (建議下載同步)",
-    "mineSyncDifferent": "本機與雲端有差異，建議下載對比",
     "mineSyncError": "狀態取得失敗",
-    "mineSyncDetailTitle": "同步狀態詳情",
-    "mineSyncLocalRecords": "本地記錄數: {count}",
-    "mineSyncCloudRecords": "雲端記錄數: {count}",
-    "mineSyncCloudLatest": "雲端最新記帳時間: {time}",
-    "mineSyncLocalFingerprint": "本地指紋: {fingerprint}",
-    "mineSyncCloudFingerprint": "雲端指紋: {fingerprint}",
-    "mineSyncMessage": "說明: {message}",
-    "mineUploadTitle": "上傳",
-    "mineUploadNeedLogin": "需登入",
-    "mineUploadNeedCloudService": "僅限雲端服務模式可用",
-    "mineUploadInProgress": "正在上傳中…",
-    "mineUploadRefreshing": "重新整理中…",
-    "mineUploadSynced": "已同步",
-    "mineUploadSuccess": "已上傳",
-    "mineUploadSuccessMessage": "當前帳本已同步到雲端",
-    "mineDownloadTitle": "下載同步",
-    "mineDownloadNeedCloudService": "僅限雲端服務模式可用",
-    "mineDownloadComplete": "同步完成",
-    "mineDownloadResult": "匯入：{inserted} 條",
-    "mineLogoutConfirmTitle": "退出登入",
-    "mineLogoutConfirmMessage": "確定要退出當前帳號登入嗎？\n退出後將無法使用雲同步功能。",
-    "mineLogoutButton": "退出",
-    "mineLogoutPurgeFailed": "退出後清理雲端帳本失敗，請手動處理",
-    "mineAutoSyncTitle": "自動同步帳本",
-    "mineAutoSyncSubtitle": "記帳後自動上傳到雲端",
-    "mineAutoSyncNeedLogin": "需登入後可開啟",
     "mineCategoryManagement": "分類管理",
     "mineCategoryManagementSubtitle": "編輯自訂分類",
     "mineRecurringTransactions": "週期帳單",
@@ -916,64 +881,6 @@
     "sharedRoleEditor": "編輯者",
     "commonCopied": "已複製",
     "commonRemove": "移除",
-    "sharedJoinPageTitle": "加入共享帳本",
-    "sharedJoinPageSubtitle": "輸入對方分享的邀請碼",
-    "sharedJoinEnterCode": "輸入邀請碼",
-    "sharedJoinEnterCodeHint": "在芝麻記中輸入 6 位大寫字母數字邀請碼。",
-    "sharedJoinPreviewButton": "驗證邀請碼",
-    "sharedJoinAcceptButton": "加入帳本",
-    "sharedJoinInvitedBy": "{name} 邀請你加入",
-    "@sharedJoinInvitedBy": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
-    "sharedJoinRoleLine": "角色:{role}",
-    "@sharedJoinRoleLine": {
-        "placeholders": {
-            "role": {
-                "type": "String"
-            }
-        }
-    },
-    "sharedJoinExpiresInMinutes": "有效期還剩 {n} 分鐘",
-    "@sharedJoinExpiresInMinutes": {
-        "placeholders": {
-            "n": {
-                "type": "int"
-            }
-        }
-    },
-    "sharedJoinExpiresInHours": "有效期還剩 {n} 小時",
-    "@sharedJoinExpiresInHours": {
-        "placeholders": {
-            "n": {
-                "type": "int"
-            }
-        }
-    },
-    "sharedJoinExpiresInDays": "有效期還剩 {n} 天",
-    "@sharedJoinExpiresInDays": {
-        "placeholders": {
-            "n": {
-                "type": "int"
-            }
-        }
-    },
-    "sharedJoinSuccess": "已加入「{name}」",
-    "@sharedJoinSuccess": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
-    "sharedJoinCodeFormatError": "邀請碼格式不對,請輸入 6 位字母數字",
-    "sharedJoinInvalidOrExpired": "邀請碼無效或已過期,請向邀請人索取新碼",
-    "sharedJoinAlreadyMember": "你已經是該帳本成員",
-    "sharedJoinMemberLimit": "該帳本成員已滿,請聯絡帳本所有者",
     "sharedInviteFormRole": "角色",
     "sharedInviteFormExpiry": "有效期",
     "sharedInviteExpiryHours": "{n} 小時",
@@ -1006,7 +913,6 @@
     },
     "sharedInviteWarning": "⚠️ 不要把邀請碼發到公開群 / 朋友圈。拿到碼的任何人都可加入帳本;洩漏後請到成員管理頁撤銷並重新生成。",
     "sharedInviteInstruction": "把邀請碼發給對方。對方可在芝麻記的「我的 → 加入共享帳本」中輸入邀請碼。",
-    "sharedInviteUnavailable": "邀請暫不可用，請重新產生",
     "sharedInviteShareText": "邀請你加入芝麻記共享帳本「{ledger}」\n\n邀請碼:{code}\n\n打開芝麻記 → 我的 → 加入共享帳本，輸入此碼即可。",
     "@sharedInviteShareText": {
         "placeholders": {
@@ -1055,7 +961,6 @@
     "sharedMembersRemoved": "已移除成員",
     "sharedMembersRemoveFailed": "移除成員失敗，請稍後再試",
     "sharedMembersSaveFirst": "請先保存帳本",
-    "sharedMembersInviteSyncFailed": "雲端同步尚未完成，請稍後再試",
     "sharedMembersLoadingHint": "雲端帳本尚未就緒，正在同步…",
     "sharedMembersLoadFailed": "成員列表載入失敗",
     "sharedMembersRetry": "重試",
@@ -1083,7 +988,6 @@
             }
         }
     },
-    "sharedRequiresCloudSync": "請先啟用雲端同步",
     "sharedMembersStatsTitle": "成員支出",
     "sharedMembersStatsEmpty": "暫無記帳",
     "sharedMembersStatsTxCount": "{count}筆",

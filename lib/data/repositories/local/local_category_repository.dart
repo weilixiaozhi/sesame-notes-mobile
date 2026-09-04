@@ -480,23 +480,6 @@ class LocalCategoryRepository {
         .getSingleOrNull();
   }
 
-  /// 按分类 UUID 反查分类（tx editor 的 initial selected 用）。
-  ///
-  /// schema v1 下所有分类 id 均为 UUID，主表与共享镜像（
-  /// SharedLedgerCategories.categoryId = Owner 的分类 UUID）共用同一 id：
-  /// 先查主表，未命中再扫共享镜像（可选按账本 UUID 限定范围）。
-  Future<Category?> findCategoryBySyntheticId(
-    String id, {
-    String? ledgerSyncId,
-  }) async {
-    final local = await (db.select(
-      db.categories,
-    )..where((c) => c.id.equals(id))).getSingleOrNull();
-    // 本地已有 tombstone 时不得回退共享镜像，否则同一分类会被“复活”。
-    if (local != null) return local.deletedAt == null ? local : null;
-    return db.findSharedCategoryById(id, ledgerId: ledgerSyncId);
-  }
-
   /// 共享账本 picker 过滤：直接委托 SesameDatabase 扩展
   /// （SharedLedgerPickerFilter），扩展内部已按 ledger 角色分派：
   /// Editor + 共享账本 → SharedLedgerCategories 转 Category 返回；

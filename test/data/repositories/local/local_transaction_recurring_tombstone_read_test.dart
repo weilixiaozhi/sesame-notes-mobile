@@ -4,14 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
-import 'package:sesame_notes/data/repositories/local/local_transaction_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late SesameDatabase db;
   late LocalRepository repo;
-  late LocalTransactionRepository transactionRepo;
   late String ledgerId;
   late String categoryId;
   late String activeAaId;
@@ -22,7 +20,6 @@ void main() {
   setUp(() async {
     db = SesameDatabase.forTesting(NativeDatabase.memory());
     repo = LocalRepository(db);
-    transactionRepo = LocalTransactionRepository(db);
     ledgerId = await repo.createLedger(name: '活跃读模型账本');
     categoryId = await repo.createCategory(name: '餐饮', kind: 'expense');
     final happenedAt = DateTime(2026, 8, 21, 10);
@@ -192,12 +189,8 @@ void main() {
     );
   });
 
-  test('业务单条读隐藏 tombstone，同步 UUID 原始读仍可见', () async {
+  test('业务单条读隐藏 tombstone', () async {
     expect(await repo.getTransactionById(deletedAaId), isNull);
-    expect(
-      await transactionRepo.getTransactionBySyncId(deletedAaId),
-      isNotNull,
-    );
   });
 
   test('周期模板 get/watch 列表统一隐藏 recurring tombstone', () async {

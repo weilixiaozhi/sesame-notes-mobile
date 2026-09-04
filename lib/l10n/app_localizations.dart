@@ -1456,221 +1456,11 @@ abstract class AppLocalizations {
   /// **'Loading...'**
   String get mineCloudServiceLoading;
 
-  /// No description provided for @mineSyncTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Sync'**
-  String get mineSyncTitle;
-
-  /// No description provided for @mineSyncNotLoggedIn.
-  ///
-  /// In en, this message translates to:
-  /// **'Not logged in'**
-  String get mineSyncNotLoggedIn;
-
-  /// No description provided for @mineSyncNotConfigured.
-  ///
-  /// In en, this message translates to:
-  /// **'Cloud not configured'**
-  String get mineSyncNotConfigured;
-
-  /// No description provided for @mineSyncLocalOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'Local ledger, device only'**
-  String get mineSyncLocalOnly;
-
-  /// No description provided for @mineSyncNoRemote.
-  ///
-  /// In en, this message translates to:
-  /// **'No cloud data'**
-  String get mineSyncNoRemote;
-
-  /// No description provided for @mineSyncInSync.
-  ///
-  /// In en, this message translates to:
-  /// **'Synced (local {count} records)'**
-  String mineSyncInSync(Object count);
-
-  /// No description provided for @mineSyncLocalNewer.
-  ///
-  /// In en, this message translates to:
-  /// **'Local updated ({count} records, upload recommended)'**
-  String mineSyncLocalNewer(Object count);
-
-  /// No description provided for @mineSyncCloudNewer.
-  ///
-  /// In en, this message translates to:
-  /// **'Cloud updated (download to sync)'**
-  String get mineSyncCloudNewer;
-
-  /// No description provided for @mineSyncDifferent.
-  ///
-  /// In en, this message translates to:
-  /// **'Local and cloud differ, download to compare'**
-  String get mineSyncDifferent;
-
   /// No description provided for @mineSyncError.
   ///
   /// In en, this message translates to:
   /// **'Failed to get status'**
   String get mineSyncError;
-
-  /// No description provided for @mineSyncDetailTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Sync Status Details'**
-  String get mineSyncDetailTitle;
-
-  /// No description provided for @mineSyncLocalRecords.
-  ///
-  /// In en, this message translates to:
-  /// **'Local records: {count}'**
-  String mineSyncLocalRecords(Object count);
-
-  /// No description provided for @mineSyncCloudRecords.
-  ///
-  /// In en, this message translates to:
-  /// **'Cloud records: {count}'**
-  String mineSyncCloudRecords(Object count);
-
-  /// No description provided for @mineSyncCloudLatest.
-  ///
-  /// In en, this message translates to:
-  /// **'Cloud latest record time: {time}'**
-  String mineSyncCloudLatest(Object time);
-
-  /// No description provided for @mineSyncLocalFingerprint.
-  ///
-  /// In en, this message translates to:
-  /// **'Local fingerprint: {fingerprint}'**
-  String mineSyncLocalFingerprint(Object fingerprint);
-
-  /// No description provided for @mineSyncCloudFingerprint.
-  ///
-  /// In en, this message translates to:
-  /// **'Cloud fingerprint: {fingerprint}'**
-  String mineSyncCloudFingerprint(Object fingerprint);
-
-  /// No description provided for @mineSyncMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Message: {message}'**
-  String mineSyncMessage(Object message);
-
-  /// No description provided for @mineUploadTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Upload'**
-  String get mineUploadTitle;
-
-  /// No description provided for @mineUploadNeedLogin.
-  ///
-  /// In en, this message translates to:
-  /// **'Login required'**
-  String get mineUploadNeedLogin;
-
-  /// No description provided for @mineUploadNeedCloudService.
-  ///
-  /// In en, this message translates to:
-  /// **'Available in cloud service mode only'**
-  String get mineUploadNeedCloudService;
-
-  /// No description provided for @mineUploadInProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'Uploading...'**
-  String get mineUploadInProgress;
-
-  /// No description provided for @mineUploadRefreshing.
-  ///
-  /// In en, this message translates to:
-  /// **'Refreshing...'**
-  String get mineUploadRefreshing;
-
-  /// No description provided for @mineUploadSynced.
-  ///
-  /// In en, this message translates to:
-  /// **'Synced'**
-  String get mineUploadSynced;
-
-  /// No description provided for @mineUploadSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Uploaded'**
-  String get mineUploadSuccess;
-
-  /// No description provided for @mineUploadSuccessMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Current ledger synced to cloud'**
-  String get mineUploadSuccessMessage;
-
-  /// No description provided for @mineDownloadTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Download & Sync'**
-  String get mineDownloadTitle;
-
-  /// No description provided for @mineDownloadNeedCloudService.
-  ///
-  /// In en, this message translates to:
-  /// **'Available in cloud service mode only'**
-  String get mineDownloadNeedCloudService;
-
-  /// No description provided for @mineDownloadComplete.
-  ///
-  /// In en, this message translates to:
-  /// **'Sync Complete'**
-  String get mineDownloadComplete;
-
-  /// No description provided for @mineDownloadResult.
-  ///
-  /// In en, this message translates to:
-  /// **'Imported: {inserted} records'**
-  String mineDownloadResult(Object inserted);
-
-  /// No description provided for @mineLogoutConfirmTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Logout'**
-  String get mineLogoutConfirmTitle;
-
-  /// No description provided for @mineLogoutConfirmMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Are you sure you want to logout?\nYou won\'t be able to use cloud sync after logout.'**
-  String get mineLogoutConfirmMessage;
-
-  /// No description provided for @mineLogoutButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Logout'**
-  String get mineLogoutButton;
-
-  /// No description provided for @mineLogoutPurgeFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to clear cloud ledgers after logout. Please handle manually.'**
-  String get mineLogoutPurgeFailed;
-
-  /// No description provided for @mineAutoSyncTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto sync ledger'**
-  String get mineAutoSyncTitle;
-
-  /// No description provided for @mineAutoSyncSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto upload to cloud after recording'**
-  String get mineAutoSyncSubtitle;
-
-  /// No description provided for @mineAutoSyncNeedLogin.
-  ///
-  /// In en, this message translates to:
-  /// **'Login required to enable'**
-  String get mineAutoSyncNeedLogin;
 
   /// No description provided for @mineCategoryManagement.
   ///
@@ -4012,102 +3802,6 @@ abstract class AppLocalizations {
   /// **'Remove'**
   String get commonRemove;
 
-  /// No description provided for @sharedJoinPageTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Join shared ledger'**
-  String get sharedJoinPageTitle;
-
-  /// No description provided for @sharedJoinPageSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter the invite code you received'**
-  String get sharedJoinPageSubtitle;
-
-  /// No description provided for @sharedJoinEnterCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter invite code'**
-  String get sharedJoinEnterCode;
-
-  /// No description provided for @sharedJoinEnterCodeHint.
-  ///
-  /// In en, this message translates to:
-  /// **'6 uppercase letters / digits in Sesame Notes.'**
-  String get sharedJoinEnterCodeHint;
-
-  /// No description provided for @sharedJoinPreviewButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Verify code'**
-  String get sharedJoinPreviewButton;
-
-  /// No description provided for @sharedJoinAcceptButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Join'**
-  String get sharedJoinAcceptButton;
-
-  /// No description provided for @sharedJoinInvitedBy.
-  ///
-  /// In en, this message translates to:
-  /// **'{name} invited you to join'**
-  String sharedJoinInvitedBy(String name);
-
-  /// No description provided for @sharedJoinRoleLine.
-  ///
-  /// In en, this message translates to:
-  /// **'Role: {role}'**
-  String sharedJoinRoleLine(String role);
-
-  /// No description provided for @sharedJoinExpiresInMinutes.
-  ///
-  /// In en, this message translates to:
-  /// **'Expires in {n} min'**
-  String sharedJoinExpiresInMinutes(int n);
-
-  /// No description provided for @sharedJoinExpiresInHours.
-  ///
-  /// In en, this message translates to:
-  /// **'Expires in {n}h'**
-  String sharedJoinExpiresInHours(int n);
-
-  /// No description provided for @sharedJoinExpiresInDays.
-  ///
-  /// In en, this message translates to:
-  /// **'Expires in {n}d'**
-  String sharedJoinExpiresInDays(int n);
-
-  /// No description provided for @sharedJoinSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Joined \"{name}\"'**
-  String sharedJoinSuccess(String name);
-
-  /// No description provided for @sharedJoinCodeFormatError.
-  ///
-  /// In en, this message translates to:
-  /// **'Invite code must be 6 letters/digits.'**
-  String get sharedJoinCodeFormatError;
-
-  /// No description provided for @sharedJoinInvalidOrExpired.
-  ///
-  /// In en, this message translates to:
-  /// **'Invite code is invalid or expired. Ask the inviter for a new one.'**
-  String get sharedJoinInvalidOrExpired;
-
-  /// No description provided for @sharedJoinAlreadyMember.
-  ///
-  /// In en, this message translates to:
-  /// **'You are already a member of this ledger.'**
-  String get sharedJoinAlreadyMember;
-
-  /// No description provided for @sharedJoinMemberLimit.
-  ///
-  /// In en, this message translates to:
-  /// **'This ledger has reached its member limit. Ask the owner.'**
-  String get sharedJoinMemberLimit;
-
   /// No description provided for @sharedInviteFormRole.
   ///
   /// In en, this message translates to:
@@ -4173,12 +3867,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send the code to the other person. In Sesame Notes, they can enter it from \"Me → Join shared ledger\".'**
   String get sharedInviteInstruction;
-
-  /// No description provided for @sharedInviteUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Invite is unavailable. Please generate a new one.'**
-  String get sharedInviteUnavailable;
 
   /// No description provided for @sharedInviteShareText.
   ///
@@ -4282,12 +3970,6 @@ abstract class AppLocalizations {
   /// **'Please save the ledger first'**
   String get sharedMembersSaveFirst;
 
-  /// No description provided for @sharedMembersInviteSyncFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Cloud sync not finished yet. Please try again later.'**
-  String get sharedMembersInviteSyncFailed;
-
   /// No description provided for @sharedMembersLoadingHint.
   ///
   /// In en, this message translates to:
@@ -4323,12 +4005,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Created and edited by {name}'**
   String sharedTxCreatedAndEditedBy(String name);
-
-  /// No description provided for @sharedRequiresCloudSync.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enable cloud sync first'**
-  String get sharedRequiresCloudSync;
 
   /// No description provided for @sharedMembersStatsTitle.
   ///

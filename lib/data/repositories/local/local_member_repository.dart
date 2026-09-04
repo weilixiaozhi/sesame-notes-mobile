@@ -101,40 +101,6 @@ class LocalLedgerMemberRepository {
     return (await getById(id))!;
   }
 
-  /// 确保 REGISTERED 成员存在（服务端成员镜像，不登记同步变更）。
-  ///
-  /// 同一账本同一账号永远映射到同一 member_id；displayName 等资料随
-  /// 服务端最新值覆盖，历史账务引用不受影响。
-  Future<LedgerMember> ensureRegistered({
-    required String ledgerId,
-    required String userId,
-    required String displayName,
-    String role = 'editor',
-    String? avatarUrl,
-    int avatarVersion = 0,
-  }) async {
-    final id = registeredMemberId(ledgerId, userId);
-    final now = DateTime.now().toUtc();
-    await db
-        .into(db.ledgerMembers)
-        .insertOnConflictUpdate(
-          LedgerMembersCompanion.insert(
-            id: id,
-            ledgerId: ledgerId,
-            displayName: displayName,
-            memberType: 'REGISTERED',
-            linkedAccountId: d.Value(userId),
-            role: d.Value(role),
-            avatarUrl: d.Value(avatarUrl),
-            avatarVersion: d.Value(avatarVersion),
-            status: const d.Value('ACTIVE'),
-            updatedAt: now,
-            deletedAt: const d.Value(null),
-          ),
-        );
-    return (await getById(id))!;
-  }
-
   /// 新建 PLACEHOLDER 成员（本地创建虚拟用户）；[id] 缺省时生成 UUID。
   ///
   /// 与虚拟用户旧语义一致：id 即同步实体 id，云端接受同一 id。
@@ -173,28 +139,6 @@ class LocalLedgerMemberRepository {
       );
       rethrow;
     }
-  }
-
-  /// PLACEHOLDER 成员 upsert（同步 pull 虚拟用户实体时落库）。
-  Future<void> upsertPlaceholder({
-    required String ledgerId,
-    required String id,
-    required String name,
-    required DateTime updatedAt,
-  }) async {
-    await db
-        .into(db.ledgerMembers)
-        .insertOnConflictUpdate(
-          LedgerMembersCompanion.insert(
-            id: id,
-            ledgerId: ledgerId,
-            displayName: name,
-            memberType: 'PLACEHOLDER',
-            status: const d.Value('ACTIVE'),
-            updatedAt: updatedAt,
-            deletedAt: const d.Value(null),
-          ),
-        );
   }
 
   /// 重命名成员（PLACEHOLDER 与 LOCAL 支持；REGISTERED 由服务端权威）。
@@ -263,27 +207,6 @@ class LocalLedgerMemberRepository {
       );
       rethrow;
     }
-  }
-
-  /// 登录绑定：把本账本 LOCAL self 成员绑定到云账号（不重建、不改历史）。
-  Future<void> bindLocalSelf({
-    required String ledgerId,
-    required String localSelfId,
-    required String accountId,
-  }) async {
-    final member = await ensureLocalSelf(
-      ledgerId: ledgerId,
-      localSelfId: localSelfId,
-      displayName: '',
-    );
-    await (db.update(
-      db.ledgerMembers,
-    )..where((t) => t.id.equals(member.id))).write(
-      LedgerMembersCompanion(
-        linkedAccountId: d.Value(accountId),
-        updatedAt: d.Value(DateTime.now().toUtc()),
-      ),
-    );
   }
 
   /// 退出登录解绑：本机全部 LOCAL 成员的绑定关系清除（身份保留）。
@@ -412,19 +335,18 @@ class LocalLedgerMemberRepository {
               ),
             );
       } else {
-        await (db.update(db.ledgerMembers)..where(
-              (row) => row.id.equals(m.memberId),
-            ))
-            .write(
-              LedgerMembersCompanion(
-                displayName: d.Value(displayName),
-                linkedAccountId: d.Value(m.linkedAccountId),
-                role: d.Value(m.role),
-                status: d.Value(m.status),
-                avatarUrl: d.Value(m.avatarUrl),
-                avatarVersion: d.Value(m.avatarVersion),
-              ),
-            );
+        await (db.update(
+          db.ledgerMembers,
+        )..where((row) => row.id.equals(m.memberId))).write(
+          LedgerMembersCompanion(
+            displayName: d.Value(displayName),
+            linkedAccountId: d.Value(m.linkedAccountId),
+            role: d.Value(m.role),
+            status: d.Value(m.status),
+            avatarUrl: d.Value(m.avatarUrl),
+            avatarVersion: d.Value(m.avatarVersion),
+          ),
+        );
       }
     }
   }

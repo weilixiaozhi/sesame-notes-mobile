@@ -32,12 +32,6 @@ class ReminderMonitorService with WidgetsBindingObserver {
     logger.info('ReminderMonitor', '✅ 记账提醒监控服务已启动');
   }
 
-  /// 停止监控
-  void stopMonitoring() {
-    WidgetsBinding.instance.removeObserver(this);
-    logger.info('ReminderMonitor', '🛑 记账提醒监控服务已停止');
-  }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     logger.info('ReminderMonitor', '📱 应用生命周期变化: $state');
