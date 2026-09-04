@@ -1003,25 +1003,6 @@
             }
         }
     },
-    "cloudSyncGuideTitle": "云同步使用指南",
-    "cloudSyncGuideGotIt": "我知道了",
-    "cloudSyncGuideHowItWorks": "工作原理",
-    "cloudSyncGuideHowItem1": "上传：将当前账本的全部数据打包上传到云端，覆盖云端旧数据",
-    "cloudSyncGuideHowItem2": "下载：从云端拉取数据，与本地逐条对比差异，你可以选择要同步哪些变更",
-    "cloudSyncGuideHowItem3": "云端始终只保存最后一次上传的完整快照，不保留历史版本",
-    "cloudSyncGuideCorrect": "正确的使用方式",
-    "cloudSyncGuideCorrectItem1": "同一时间只在一台设备上记账，完成后上传",
-    "cloudSyncGuideCorrectItem2": "切换设备前，先在新设备上下载同步",
-    "cloudSyncGuideCorrectItem3": "下载时仔细查看预览，确认每条变更再应用",
-    "cloudSyncGuideCorrectItem4": "养成「编辑→上传→切换设备→下载→编辑」的习惯",
-    "cloudSyncGuideWrong": "应避免的用法",
-    "cloudSyncGuideWrongItem1": "两台设备同时编辑同一个账本，后上传的会覆盖先上传的改动",
-    "cloudSyncGuideWrongItem2": "上传后立刻在另一台设备下载，文件服务可能有几秒到几分钟的同步延迟，等一会再试",
-    "cloudSyncGuideWrongItem3": "长时间不同步后一次性下载大量变更，容易遗漏需要处理的差异",
-    "cloudSyncGuideLimitations": "已知限制",
-    "cloudSyncGuideLimitItem1": "非实时同步：需要手动点击上传和下载",
-    "cloudSyncGuideLimitItem2": "无冲突合并：不会自动合并两端的修改，以最后上传的为准",
-    "cloudSyncGuideLimitItem3": "文件服务延迟：上传后云端文件可能需要几秒到几分钟才能被其他设备读取，取决于你使用的云服务",
     "appLockTitle": "应用上锁",
     "appLockDesc": "PIN码与生物识别保护隐私",
     "appLockEnable": "启用应用锁",
@@ -1052,16 +1033,6 @@
         }
     },
     "syncHealthTitle": "同步状态",
-    "cloudSyncHelpTitle": "同步说明 · 为什么有时同步不动？",
-    "cloudSyncHelpModesTitle": "三种同步方式",
-    "cloudSyncHelpModesBody": "• 增量同步（日常自动）：记一笔 / 改一笔后，只把这条变化自动上传下载，快、无需手动操作 —— 平时一直在跑的就是它。\n• 全量上传：首次开启云同步、或云端还没有这个账本的数据时，把本地全部数据一次性推上云。\n• 全量下载：换新设备、重装、或本地为空时，从云端把全部数据拉下来。",
-    "cloudSyncHelpWhenFullTitle": "什么时候才会走全量？",
-    "cloudSyncHelpWhenFullBody": "全量只在某一端数据为空时才会自动触发（首次开启云同步 / 换新设备 / 重装 / 清空了本地或云端数据）。只要两端都有数据，之后一直走增量，不会无故重来。想强制重新全量同步，得先清空对应端的数据。",
-    "cloudSyncHelpStuckTitle": "为什么有时同步不动 / 卡住",
-    "cloudSyncHelpStuckBody": "• 全量上传 / 下载不支持断点续传：中途断网、或 App 被切到后台被系统杀掉，会从头重来，不会接着传。数据多时请用稳定网络（建议 Wi-Fi）耐心等它跑完，别中途切走。\n• 增量同步是断点安全的，日常同步不受影响。",
-    "cloudSyncHelpTroubleshootTitle": "排查办法",
-    "cloudSyncHelpTroubleshootBody": "• 先在本页下拉做一次「深度检测」，对比本地与云端差异。\n• 仍有问题，去「日志中心」查看同步日志（含失败原因），方便反馈。",
-    "cloudSyncHelpOpenLogCenter": "打开日志中心",
     "syncHealthCheckFailed": "检测失败：{msg}",
     "@syncHealthCheckFailed": {
         "placeholders": {
@@ -1107,23 +1078,6 @@
         "placeholders": {
             "local": {
                 "type": "int"
-            }
-        }
-    },
-    "twofaChallengeTitle": "二次验证",
-    "twofaMethodTotp": "动态码",
-    "twofaMethodRecovery": "恢复码",
-    "twofaTotpInputPlaceholder": "输入 6 位动态码",
-    "twofaRecoveryInputPlaceholder": "输入恢复码",
-    "twofaVerifyButton": "验证",
-    "twofaStatusTitle": "二次验证",
-    "twofaStatusEnabled": "已启用 ✓",
-    "twofaStatusDisabled": "未启用",
-    "twofaStatusEnabledAt": "启用于 {date}",
-    "@twofaStatusEnabledAt": {
-        "placeholders": {
-            "date": {
-                "type": "String"
             }
         }
     },

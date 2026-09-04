@@ -2168,65 +2168,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get cloudSyncGuideTitle => '云同步使用指南';
-
-  @override
-  String get cloudSyncGuideGotIt => '我知道了';
-
-  @override
-  String get cloudSyncGuideHowItWorks => '工作原理';
-
-  @override
-  String get cloudSyncGuideHowItem1 => '上传：将当前账本的全部数据打包上传到云端，覆盖云端旧数据';
-
-  @override
-  String get cloudSyncGuideHowItem2 => '下载：从云端拉取数据，与本地逐条对比差异，你可以选择要同步哪些变更';
-
-  @override
-  String get cloudSyncGuideHowItem3 => '云端始终只保存最后一次上传的完整快照，不保留历史版本';
-
-  @override
-  String get cloudSyncGuideCorrect => '正确的使用方式';
-
-  @override
-  String get cloudSyncGuideCorrectItem1 => '同一时间只在一台设备上记账，完成后上传';
-
-  @override
-  String get cloudSyncGuideCorrectItem2 => '切换设备前，先在新设备上下载同步';
-
-  @override
-  String get cloudSyncGuideCorrectItem3 => '下载时仔细查看预览，确认每条变更再应用';
-
-  @override
-  String get cloudSyncGuideCorrectItem4 => '养成「编辑→上传→切换设备→下载→编辑」的习惯';
-
-  @override
-  String get cloudSyncGuideWrong => '应避免的用法';
-
-  @override
-  String get cloudSyncGuideWrongItem1 => '两台设备同时编辑同一个账本，后上传的会覆盖先上传的改动';
-
-  @override
-  String get cloudSyncGuideWrongItem2 =>
-      '上传后立刻在另一台设备下载，文件服务可能有几秒到几分钟的同步延迟，等一会再试';
-
-  @override
-  String get cloudSyncGuideWrongItem3 => '长时间不同步后一次性下载大量变更，容易遗漏需要处理的差异';
-
-  @override
-  String get cloudSyncGuideLimitations => '已知限制';
-
-  @override
-  String get cloudSyncGuideLimitItem1 => '非实时同步：需要手动点击上传和下载';
-
-  @override
-  String get cloudSyncGuideLimitItem2 => '无冲突合并：不会自动合并两端的修改，以最后上传的为准';
-
-  @override
-  String get cloudSyncGuideLimitItem3 =>
-      '文件服务延迟：上传后云端文件可能需要几秒到几分钟才能被其他设备读取，取决于你使用的云服务';
-
-  @override
   String get appLockTitle => '应用上锁';
 
   @override
@@ -2298,40 +2239,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get syncHealthTitle => '同步状态';
 
   @override
-  String get cloudSyncHelpTitle => '同步说明 · 为什么有时同步不动？';
-
-  @override
-  String get cloudSyncHelpModesTitle => '三种同步方式';
-
-  @override
-  String get cloudSyncHelpModesBody =>
-      '• 增量同步（日常自动）：记一笔 / 改一笔后，只把这条变化自动上传下载，快、无需手动操作 —— 平时一直在跑的就是它。\n• 全量上传：首次开启云同步、或云端还没有这个账本的数据时，把本地全部数据一次性推上云。\n• 全量下载：换新设备、重装、或本地为空时，从云端把全部数据拉下来。';
-
-  @override
-  String get cloudSyncHelpWhenFullTitle => '什么时候才会走全量？';
-
-  @override
-  String get cloudSyncHelpWhenFullBody =>
-      '全量只在某一端数据为空时才会自动触发（首次开启云同步 / 换新设备 / 重装 / 清空了本地或云端数据）。只要两端都有数据，之后一直走增量，不会无故重来。想强制重新全量同步，得先清空对应端的数据。';
-
-  @override
-  String get cloudSyncHelpStuckTitle => '为什么有时同步不动 / 卡住';
-
-  @override
-  String get cloudSyncHelpStuckBody =>
-      '• 全量上传 / 下载不支持断点续传：中途断网、或 App 被切到后台被系统杀掉，会从头重来，不会接着传。数据多时请用稳定网络（建议 Wi-Fi）耐心等它跑完，别中途切走。\n• 增量同步是断点安全的，日常同步不受影响。';
-
-  @override
-  String get cloudSyncHelpTroubleshootTitle => '排查办法';
-
-  @override
-  String get cloudSyncHelpTroubleshootBody =>
-      '• 先在本页下拉做一次「深度检测」，对比本地与云端差异。\n• 仍有问题，去「日志中心」查看同步日志（含失败原因），方便反馈。';
-
-  @override
-  String get cloudSyncHelpOpenLogCenter => '打开日志中心';
-
-  @override
   String syncHealthCheckFailed(String msg) {
     return '检测失败：$msg';
   }
@@ -2374,38 +2281,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String syncHealthValueRemoteMissing(int local) {
     return '本地 $local · 云端 —';
-  }
-
-  @override
-  String get twofaChallengeTitle => '二次验证';
-
-  @override
-  String get twofaMethodTotp => '动态码';
-
-  @override
-  String get twofaMethodRecovery => '恢复码';
-
-  @override
-  String get twofaTotpInputPlaceholder => '输入 6 位动态码';
-
-  @override
-  String get twofaRecoveryInputPlaceholder => '输入恢复码';
-
-  @override
-  String get twofaVerifyButton => '验证';
-
-  @override
-  String get twofaStatusTitle => '二次验证';
-
-  @override
-  String get twofaStatusEnabled => '已启用 ✓';
-
-  @override
-  String get twofaStatusDisabled => '未启用';
-
-  @override
-  String twofaStatusEnabledAt(String date) {
-    return '启用于 $date';
   }
 
   @override
@@ -5804,65 +5679,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String get cloudSyncGuideTitle => '雲端同步使用指南';
-
-  @override
-  String get cloudSyncGuideGotIt => '我知道了';
-
-  @override
-  String get cloudSyncGuideHowItWorks => '運作原理';
-
-  @override
-  String get cloudSyncGuideHowItem1 => '上傳：將當前帳本的全部資料打包上傳至雲端，覆蓋雲端舊資料';
-
-  @override
-  String get cloudSyncGuideHowItem2 => '下載：從雲端拉取資料，與本機逐條比對差異，您可以選擇要同步哪些變更';
-
-  @override
-  String get cloudSyncGuideHowItem3 => '雲端始終只儲存最後一次上傳的完整快照，不保留歷史版本';
-
-  @override
-  String get cloudSyncGuideCorrect => '正確的使用方式';
-
-  @override
-  String get cloudSyncGuideCorrectItem1 => '同一時間只在一台裝置上記帳，完成後上傳';
-
-  @override
-  String get cloudSyncGuideCorrectItem2 => '切換裝置前，先在新裝置上下載同步';
-
-  @override
-  String get cloudSyncGuideCorrectItem3 => '下載時仔細查看預覽，確認每條變更再套用';
-
-  @override
-  String get cloudSyncGuideCorrectItem4 => '養成「編輯→上傳→切換裝置→下載→編輯」的習慣';
-
-  @override
-  String get cloudSyncGuideWrong => '應避免的用法';
-
-  @override
-  String get cloudSyncGuideWrongItem1 => '兩台裝置同時編輯同一帳本，後上傳的會覆蓋先上傳的改動';
-
-  @override
-  String get cloudSyncGuideWrongItem2 =>
-      '上傳後立刻在另一台裝置下載，檔案服務可能有數秒到數分鐘的同步延遲，請稍候再試';
-
-  @override
-  String get cloudSyncGuideWrongItem3 => '長時間不同步後一次性下載大量變更，容易遺漏需要處理的差異';
-
-  @override
-  String get cloudSyncGuideLimitations => '已知限制';
-
-  @override
-  String get cloudSyncGuideLimitItem1 => '非即時同步：需手動點擊上傳和下載';
-
-  @override
-  String get cloudSyncGuideLimitItem2 => '無衝突合併：不會自動合併兩端的修改，以最後上傳的為準';
-
-  @override
-  String get cloudSyncGuideLimitItem3 =>
-      '檔案服務延遲：上傳後雲端檔案可能需要數秒到數分鐘才能被其他裝置讀取，取決於您使用的雲端服務';
-
-  @override
   String get appLockTitle => '應用上鎖';
 
   @override
@@ -5934,40 +5750,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get syncHealthTitle => '同步狀態';
 
   @override
-  String get cloudSyncHelpTitle => '同步說明 · 為什麼有時同步不動？';
-
-  @override
-  String get cloudSyncHelpModesTitle => '三種同步方式';
-
-  @override
-  String get cloudSyncHelpModesBody =>
-      '• 增量同步（日常自動）：記一筆 / 改一筆後，只把這條變化自動上傳下載，快、無需手動操作 —— 平時一直在跑的就是它。\n• 全量上傳：首次開啟雲同步、或雲端還沒有這個帳本的資料時，把本機全部資料一次性推上雲。\n• 全量下載：換新裝置、重裝、或本機為空時，從雲端把全部資料拉下來。';
-
-  @override
-  String get cloudSyncHelpWhenFullTitle => '什麼時候才會走全量？';
-
-  @override
-  String get cloudSyncHelpWhenFullBody =>
-      '全量只在某一端資料為空時才會自動觸發（首次開啟雲同步 / 換新裝置 / 重裝 / 清空了本機或雲端資料）。只要兩端都有資料，之後一直走增量，不會無故重來。想強制重新全量同步，得先清空對應端的資料。';
-
-  @override
-  String get cloudSyncHelpStuckTitle => '為什麼有時同步不動 / 卡住';
-
-  @override
-  String get cloudSyncHelpStuckBody =>
-      '• 全量上傳 / 下載不支援斷點續傳：中途斷網、或 App 被切到背景被系統清掉，會從頭重來，不會接著傳。資料多時請用穩定網路（建議 Wi-Fi）耐心等它跑完，別中途切走。\n• 增量同步是斷點安全的，日常同步不受影響。';
-
-  @override
-  String get cloudSyncHelpTroubleshootTitle => '排查辦法';
-
-  @override
-  String get cloudSyncHelpTroubleshootBody =>
-      '• 先在本頁下拉做一次「深度檢測」，對比本機與雲端差異。\n• 仍有問題，去「日誌中心」查看同步日誌（含失敗原因），方便回報。';
-
-  @override
-  String get cloudSyncHelpOpenLogCenter => '開啟日誌中心';
-
-  @override
   String syncHealthCheckFailed(String msg) {
     return '檢測失敗：$msg';
   }
@@ -6010,38 +5792,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   @override
   String syncHealthValueRemoteMissing(int local) {
     return '本機 $local · 雲端 —';
-  }
-
-  @override
-  String get twofaChallengeTitle => '二次驗證';
-
-  @override
-  String get twofaMethodTotp => '動態碼';
-
-  @override
-  String get twofaMethodRecovery => '恢復碼';
-
-  @override
-  String get twofaTotpInputPlaceholder => '輸入 6 位動態碼';
-
-  @override
-  String get twofaRecoveryInputPlaceholder => '輸入恢復碼';
-
-  @override
-  String get twofaVerifyButton => '驗證';
-
-  @override
-  String get twofaStatusTitle => '二次驗證';
-
-  @override
-  String get twofaStatusEnabled => '已啟用 ✓';
-
-  @override
-  String get twofaStatusDisabled => '未啟用';
-
-  @override
-  String twofaStatusEnabledAt(String date) {
-    return '啟用於 $date';
   }
 
   @override

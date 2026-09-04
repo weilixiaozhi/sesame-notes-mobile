@@ -5,10 +5,8 @@
 //   2. LogEntry JSON 往返一致，损坏字段（timestamp/level/platform/tag/message）抛 FormatException；
 //   3. 文本格式化含时间/级别/平台/tag/message，错误与堆栈缩进展示；
 //   4. debug/info/warning/error 分别入队并带可选数据；超长字段截断；
-//   5. 监听器在新增/清空/加载后被通知，单个监听器异常不影响其余；
-//   6. 新增日志 2s 后落盘 SharedPreferences；clear 清空内存与持久化；
-//   7. exportAsText 输出头部与全部条目；
-//   8. 原生日志桥接：platform/level 字符串解析并入队。
+//   5. 新增日志 2s 后落盘 SharedPreferences；clear 清空内存与持久化；
+//   6. 原生日志桥接：platform/level 字符串解析并入队。
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -108,10 +106,6 @@ void main() {
   });
 
   group('LoggerService 行为', () {
-    test('导出文本使用 Sesame Notes 标题', () async {
-      final text = await logger.exportAsText();
-      expect(text, startsWith('=== Sesame Notes 日志导出 ==='));
-    });
 
     test('debug/info/warning/error 入队且带数据拼接', () async {
       logger.debug('T', 'd');
@@ -127,21 +121,6 @@ void main() {
       await logger.clear();
     });
 
-    test('监听器在新增时被通知；异常监听器不影响其余', () async {
-      final notified = <int>[];
-      void boom() => throw StateError('listener bug');
-      void collect() => notified.add(1);
-      logger.addListener(boom);
-      logger.addListener(collect);
-      addTearDown(() {
-        logger.removeListener(boom);
-        logger.removeListener(collect);
-      });
-
-      logger.info('T', 'x');
-      expect(notified, [1], reason: '异常监听器被隔离，其余监听器仍收到通知');
-      await logger.clear();
-    });
 
     test('超长 tag/message/error 被截断', () async {
       logger.error(

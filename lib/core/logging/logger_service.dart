@@ -163,9 +163,6 @@ class LoggerService {
   /// 当前内存日志总字符数，用于快速判断是否触发容量清理。
   int _totalChars = 0;
 
-  // 日志监听器
-  final _listeners = <VoidCallback>[];
-
   /// 是否已完成持久化日志加载
   bool _isLoaded = false;
 
@@ -190,29 +187,6 @@ class LoggerService {
     _ensureLoaded();
     _removeExpiredLogs(DateTime.now());
     return _logs.toList();
-  }
-
-  /// 添加监听器
-  void addListener(VoidCallback listener) {
-    _listeners.add(listener);
-  }
-
-  /// 移除监听器
-  void removeListener(VoidCallback listener) {
-    _listeners.remove(listener);
-  }
-
-  /// 通知监听器
-  void _notifyListeners() {
-    for (final listener in _listeners) {
-      try {
-        listener();
-      } catch (e, stackTrace) {
-        // 单个监听器异常不能影响其他监听器，也不能冒泡到日志调用方
-        debugPrint('日志监听器回调异常: $e');
-        debugPrint('堆栈: $stackTrace');
-      }
-    }
   }
 
   static String _truncate(String value, int maxChars) {
@@ -286,9 +260,6 @@ class LoggerService {
       debugPrint(sanitized.toFormattedString());
     }
 
-    // 通知监听器
-    _notifyListeners();
-
     // 异步保存到持久化存储
     _saveLogs();
   }
@@ -358,7 +329,6 @@ class LoggerService {
       if (_isDirty) {
         _scheduleSaveIfNeeded();
       }
-      _notifyListeners();
     }
   }
 
@@ -507,7 +477,6 @@ class LoggerService {
     _isDirty = false;
     _logs.clear();
     _totalChars = 0;
-    _notifyListeners();
 
     // 等待正在进行的保存结束，避免旧内容在清空后覆盖空存储
     final inFlightSave = _saveFuture;
@@ -525,30 +494,7 @@ class LoggerService {
     } catch (e, stackTrace) {
       debugPrint('清空日志持久化失败: $e');
       debugPrint('堆栈: $stackTrace');
-    } finally {
-      _notifyListeners();
     }
-  }
-
-  /// 导出所有日志为文本
-  Future<String> exportAsText() async {
-    // 导出前等待持久化日志加载完成，避免首次打开时导出为空
-    await _ensureLoaded();
-    _removeExpiredLogs(DateTime.now());
-
-    final buffer = StringBuffer();
-    buffer.writeln('=== Sesame Notes 日志导出 ===');
-    buffer.writeln('导出时间: ${DateTime.now()}');
-    buffer.writeln('日志数量: ${_logs.length}');
-    buffer.writeln('=' * 50);
-    buffer.writeln();
-
-    for (final log in _logs) {
-      buffer.write(log.toFormattedString());
-      buffer.writeln();
-    }
-
-    return buffer.toString();
   }
 
   /// 设置原生日志桥接

@@ -45,11 +45,6 @@ void main() {
       },
     );
 
-    var notified = false;
-    void markNotified() => notified = true;
-    logger.addListener(markNotified);
-    addTearDown(() => logger.removeListener(markNotified));
-
     // 首次访问触发异步加载。
     logger.logs;
     await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -61,7 +56,6 @@ void main() {
       isNot(contains('stale')),
       reason: '超 48h 的日志被过滤',
     );
-    expect(notified, isTrue, reason: '加载完成后通知监听器刷新页面');
 
     await logger.clear();
   });

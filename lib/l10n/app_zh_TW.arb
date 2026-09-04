@@ -1003,25 +1003,6 @@
             }
         }
     },
-    "cloudSyncGuideTitle": "雲端同步使用指南",
-    "cloudSyncGuideGotIt": "我知道了",
-    "cloudSyncGuideHowItWorks": "運作原理",
-    "cloudSyncGuideHowItem1": "上傳：將當前帳本的全部資料打包上傳至雲端，覆蓋雲端舊資料",
-    "cloudSyncGuideHowItem2": "下載：從雲端拉取資料，與本機逐條比對差異，您可以選擇要同步哪些變更",
-    "cloudSyncGuideHowItem3": "雲端始終只儲存最後一次上傳的完整快照，不保留歷史版本",
-    "cloudSyncGuideCorrect": "正確的使用方式",
-    "cloudSyncGuideCorrectItem1": "同一時間只在一台裝置上記帳，完成後上傳",
-    "cloudSyncGuideCorrectItem2": "切換裝置前，先在新裝置上下載同步",
-    "cloudSyncGuideCorrectItem3": "下載時仔細查看預覽，確認每條變更再套用",
-    "cloudSyncGuideCorrectItem4": "養成「編輯→上傳→切換裝置→下載→編輯」的習慣",
-    "cloudSyncGuideWrong": "應避免的用法",
-    "cloudSyncGuideWrongItem1": "兩台裝置同時編輯同一帳本，後上傳的會覆蓋先上傳的改動",
-    "cloudSyncGuideWrongItem2": "上傳後立刻在另一台裝置下載，檔案服務可能有數秒到數分鐘的同步延遲，請稍候再試",
-    "cloudSyncGuideWrongItem3": "長時間不同步後一次性下載大量變更，容易遺漏需要處理的差異",
-    "cloudSyncGuideLimitations": "已知限制",
-    "cloudSyncGuideLimitItem1": "非即時同步：需手動點擊上傳和下載",
-    "cloudSyncGuideLimitItem2": "無衝突合併：不會自動合併兩端的修改，以最後上傳的為準",
-    "cloudSyncGuideLimitItem3": "檔案服務延遲：上傳後雲端檔案可能需要數秒到數分鐘才能被其他裝置讀取，取決於您使用的雲端服務",
     "appLockTitle": "應用上鎖",
     "appLockDesc": "PIN碼與生物辨識保護隱私",
     "appLockEnable": "啟用應用鎖",
@@ -1052,16 +1033,6 @@
         }
     },
     "syncHealthTitle": "同步狀態",
-    "cloudSyncHelpTitle": "同步說明 · 為什麼有時同步不動？",
-    "cloudSyncHelpModesTitle": "三種同步方式",
-    "cloudSyncHelpModesBody": "• 增量同步（日常自動）：記一筆 / 改一筆後，只把這條變化自動上傳下載，快、無需手動操作 —— 平時一直在跑的就是它。\n• 全量上傳：首次開啟雲同步、或雲端還沒有這個帳本的資料時，把本機全部資料一次性推上雲。\n• 全量下載：換新裝置、重裝、或本機為空時，從雲端把全部資料拉下來。",
-    "cloudSyncHelpWhenFullTitle": "什麼時候才會走全量？",
-    "cloudSyncHelpWhenFullBody": "全量只在某一端資料為空時才會自動觸發（首次開啟雲同步 / 換新裝置 / 重裝 / 清空了本機或雲端資料）。只要兩端都有資料，之後一直走增量，不會無故重來。想強制重新全量同步，得先清空對應端的資料。",
-    "cloudSyncHelpStuckTitle": "為什麼有時同步不動 / 卡住",
-    "cloudSyncHelpStuckBody": "• 全量上傳 / 下載不支援斷點續傳：中途斷網、或 App 被切到背景被系統清掉，會從頭重來，不會接著傳。資料多時請用穩定網路（建議 Wi-Fi）耐心等它跑完，別中途切走。\n• 增量同步是斷點安全的，日常同步不受影響。",
-    "cloudSyncHelpTroubleshootTitle": "排查辦法",
-    "cloudSyncHelpTroubleshootBody": "• 先在本頁下拉做一次「深度檢測」，對比本機與雲端差異。\n• 仍有問題，去「日誌中心」查看同步日誌（含失敗原因），方便回報。",
-    "cloudSyncHelpOpenLogCenter": "開啟日誌中心",
     "syncHealthCheckFailed": "檢測失敗：{msg}",
     "@syncHealthCheckFailed": {
         "placeholders": {
@@ -1107,23 +1078,6 @@
         "placeholders": {
             "local": {
                 "type": "int"
-            }
-        }
-    },
-    "twofaChallengeTitle": "二次驗證",
-    "twofaMethodTotp": "動態碼",
-    "twofaMethodRecovery": "恢復碼",
-    "twofaTotpInputPlaceholder": "輸入 6 位動態碼",
-    "twofaRecoveryInputPlaceholder": "輸入恢復碼",
-    "twofaVerifyButton": "驗證",
-    "twofaStatusTitle": "二次驗證",
-    "twofaStatusEnabled": "已啟用 ✓",
-    "twofaStatusDisabled": "未啟用",
-    "twofaStatusEnabledAt": "啟用於 {date}",
-    "@twofaStatusEnabledAt": {
-        "placeholders": {
-            "date": {
-                "type": "String"
             }
         }
     },

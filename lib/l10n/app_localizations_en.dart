@@ -2255,76 +2255,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get cloudSyncGuideTitle => 'Cloud Sync Guide';
-
-  @override
-  String get cloudSyncGuideGotIt => 'Got it';
-
-  @override
-  String get cloudSyncGuideHowItWorks => 'How it works';
-
-  @override
-  String get cloudSyncGuideHowItem1 =>
-      'Upload: packages all current ledger data and uploads to cloud, replacing old cloud data';
-
-  @override
-  String get cloudSyncGuideHowItem2 =>
-      'Download: fetches cloud data and compares with local records one by one — you choose which changes to apply';
-
-  @override
-  String get cloudSyncGuideHowItem3 =>
-      'The cloud always stores only the last uploaded snapshot, no version history';
-
-  @override
-  String get cloudSyncGuideCorrect => 'Correct usage';
-
-  @override
-  String get cloudSyncGuideCorrectItem1 =>
-      'Edit on one device at a time, upload when done';
-
-  @override
-  String get cloudSyncGuideCorrectItem2 =>
-      'Download on the new device before starting to edit';
-
-  @override
-  String get cloudSyncGuideCorrectItem3 =>
-      'Review the preview carefully before applying changes';
-
-  @override
-  String get cloudSyncGuideCorrectItem4 =>
-      'Follow the pattern: edit → upload → switch device → download → edit';
-
-  @override
-  String get cloudSyncGuideWrong => 'What to avoid';
-
-  @override
-  String get cloudSyncGuideWrongItem1 =>
-      'Editing the same ledger on two devices simultaneously — the later upload overwrites the earlier one';
-
-  @override
-  String get cloudSyncGuideWrongItem2 =>
-      'Downloading immediately after upload — cloud services may have seconds to minutes of sync delay, wait a moment';
-
-  @override
-  String get cloudSyncGuideWrongItem3 =>
-      'Going long periods without syncing then downloading many changes at once — easy to miss important differences';
-
-  @override
-  String get cloudSyncGuideLimitations => 'Known limitations';
-
-  @override
-  String get cloudSyncGuideLimitItem1 =>
-      'Not real-time: requires manually tapping upload and download';
-
-  @override
-  String get cloudSyncGuideLimitItem2 =>
-      'No conflict merging: does not auto-merge edits from both sides — last upload wins';
-
-  @override
-  String get cloudSyncGuideLimitItem3 =>
-      'Cloud service delay: uploaded files may take seconds to minutes before other devices can read them, depending on your cloud provider';
-
-  @override
   String get appLockTitle => 'Lock App';
 
   @override
@@ -2396,40 +2326,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncHealthTitle => 'Sync status';
 
   @override
-  String get cloudSyncHelpTitle => 'How sync works · Why it sometimes stalls';
-
-  @override
-  String get cloudSyncHelpModesTitle => 'Three sync modes';
-
-  @override
-  String get cloudSyncHelpModesBody =>
-      '• Incremental (automatic, everyday): after you add or edit an entry, only that change is uploaded/downloaded automatically — fast, no manual action. This is what runs all the time.\n• Full upload: the first time you enable cloud sync, or when the cloud has no data for this ledger yet, all local data is pushed to the cloud at once.\n• Full download: on a new device, after a reinstall, or when local is empty, all data is pulled down from the cloud.';
-
-  @override
-  String get cloudSyncHelpWhenFullTitle => 'When does a full sync happen?';
-
-  @override
-  String get cloudSyncHelpWhenFullBody =>
-      'A full sync only triggers automatically when one side is empty (first enabling cloud sync / new device / reinstall / after clearing local or cloud data). As long as both sides have data, sync stays incremental and never restarts on its own. To force a full re-sync, you must first clear the data on the corresponding side.';
-
-  @override
-  String get cloudSyncHelpStuckTitle => 'Why sync sometimes stalls';
-
-  @override
-  String get cloudSyncHelpStuckBody =>
-      '• Full upload/download does NOT support resume: if the network drops or the app is killed in the background, it starts over from scratch instead of continuing. For large data, use a stable network (Wi-Fi recommended) and let it finish without switching away.\n• Incremental sync is resume-safe and unaffected in everyday use.';
-
-  @override
-  String get cloudSyncHelpTroubleshootTitle => 'Troubleshooting';
-
-  @override
-  String get cloudSyncHelpTroubleshootBody =>
-      '• First, pull down on this page to run a Deep Check and compare local vs cloud.\n• Still stuck? Open the Log Center to view sync logs (including failure reasons) for reporting.';
-
-  @override
-  String get cloudSyncHelpOpenLogCenter => 'Open Log Center';
-
-  @override
   String syncHealthCheckFailed(String msg) {
     return 'Check failed: $msg';
   }
@@ -2474,38 +2370,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String syncHealthValueRemoteMissing(int local) {
     return 'Local $local · Remote —';
-  }
-
-  @override
-  String get twofaChallengeTitle => 'Two-factor authentication';
-
-  @override
-  String get twofaMethodTotp => 'Code';
-
-  @override
-  String get twofaMethodRecovery => 'Recovery code';
-
-  @override
-  String get twofaTotpInputPlaceholder => '6-digit code';
-
-  @override
-  String get twofaRecoveryInputPlaceholder => 'Recovery code';
-
-  @override
-  String get twofaVerifyButton => 'Verify';
-
-  @override
-  String get twofaStatusTitle => 'Two-factor authentication';
-
-  @override
-  String get twofaStatusEnabled => 'Enabled ✓';
-
-  @override
-  String get twofaStatusDisabled => 'Not enabled';
-
-  @override
-  String twofaStatusEnabledAt(String date) {
-    return 'Enabled on $date';
   }
 
   @override

@@ -1003,25 +1003,6 @@
             }
         }
     },
-    "cloudSyncGuideTitle": "Cloud Sync Guide",
-    "cloudSyncGuideGotIt": "Got it",
-    "cloudSyncGuideHowItWorks": "How it works",
-    "cloudSyncGuideHowItem1": "Upload: packages all current ledger data and uploads to cloud, replacing old cloud data",
-    "cloudSyncGuideHowItem2": "Download: fetches cloud data and compares with local records one by one — you choose which changes to apply",
-    "cloudSyncGuideHowItem3": "The cloud always stores only the last uploaded snapshot, no version history",
-    "cloudSyncGuideCorrect": "Correct usage",
-    "cloudSyncGuideCorrectItem1": "Edit on one device at a time, upload when done",
-    "cloudSyncGuideCorrectItem2": "Download on the new device before starting to edit",
-    "cloudSyncGuideCorrectItem3": "Review the preview carefully before applying changes",
-    "cloudSyncGuideCorrectItem4": "Follow the pattern: edit → upload → switch device → download → edit",
-    "cloudSyncGuideWrong": "What to avoid",
-    "cloudSyncGuideWrongItem1": "Editing the same ledger on two devices simultaneously — the later upload overwrites the earlier one",
-    "cloudSyncGuideWrongItem2": "Downloading immediately after upload — cloud services may have seconds to minutes of sync delay, wait a moment",
-    "cloudSyncGuideWrongItem3": "Going long periods without syncing then downloading many changes at once — easy to miss important differences",
-    "cloudSyncGuideLimitations": "Known limitations",
-    "cloudSyncGuideLimitItem1": "Not real-time: requires manually tapping upload and download",
-    "cloudSyncGuideLimitItem2": "No conflict merging: does not auto-merge edits from both sides — last upload wins",
-    "cloudSyncGuideLimitItem3": "Cloud service delay: uploaded files may take seconds to minutes before other devices can read them, depending on your cloud provider",
     "appLockTitle": "Lock App",
     "appLockDesc": "PIN & biometric to protect privacy",
     "appLockEnable": "Enable App Lock",
@@ -1052,16 +1033,6 @@
         }
     },
     "syncHealthTitle": "Sync status",
-    "cloudSyncHelpTitle": "How sync works · Why it sometimes stalls",
-    "cloudSyncHelpModesTitle": "Three sync modes",
-    "cloudSyncHelpModesBody": "• Incremental (automatic, everyday): after you add or edit an entry, only that change is uploaded/downloaded automatically — fast, no manual action. This is what runs all the time.\n• Full upload: the first time you enable cloud sync, or when the cloud has no data for this ledger yet, all local data is pushed to the cloud at once.\n• Full download: on a new device, after a reinstall, or when local is empty, all data is pulled down from the cloud.",
-    "cloudSyncHelpWhenFullTitle": "When does a full sync happen?",
-    "cloudSyncHelpWhenFullBody": "A full sync only triggers automatically when one side is empty (first enabling cloud sync / new device / reinstall / after clearing local or cloud data). As long as both sides have data, sync stays incremental and never restarts on its own. To force a full re-sync, you must first clear the data on the corresponding side.",
-    "cloudSyncHelpStuckTitle": "Why sync sometimes stalls",
-    "cloudSyncHelpStuckBody": "• Full upload/download does NOT support resume: if the network drops or the app is killed in the background, it starts over from scratch instead of continuing. For large data, use a stable network (Wi-Fi recommended) and let it finish without switching away.\n• Incremental sync is resume-safe and unaffected in everyday use.",
-    "cloudSyncHelpTroubleshootTitle": "Troubleshooting",
-    "cloudSyncHelpTroubleshootBody": "• First, pull down on this page to run a Deep Check and compare local vs cloud.\n• Still stuck? Open the Log Center to view sync logs (including failure reasons) for reporting.",
-    "cloudSyncHelpOpenLogCenter": "Open Log Center",
     "syncHealthCheckFailed": "Check failed: {msg}",
     "@syncHealthCheckFailed": {
         "placeholders": {
@@ -1107,23 +1078,6 @@
         "placeholders": {
             "local": {
                 "type": "int"
-            }
-        }
-    },
-    "twofaChallengeTitle": "Two-factor authentication",
-    "twofaMethodTotp": "Code",
-    "twofaMethodRecovery": "Recovery code",
-    "twofaTotpInputPlaceholder": "6-digit code",
-    "twofaRecoveryInputPlaceholder": "Recovery code",
-    "twofaVerifyButton": "Verify",
-    "twofaStatusTitle": "Two-factor authentication",
-    "twofaStatusEnabled": "Enabled ✓",
-    "twofaStatusDisabled": "Not enabled",
-    "twofaStatusEnabledAt": "Enabled on {date}",
-    "@twofaStatusEnabledAt": {
-        "placeholders": {
-            "date": {
-                "type": "String"
             }
         }
     },
