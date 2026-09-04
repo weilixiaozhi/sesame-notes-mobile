@@ -149,9 +149,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonCurrent => 'Current';
 
   @override
-  String get commonTutorial => 'Tutorial';
-
-  @override
   String get commonConfigure => 'Configure';
 
   @override
@@ -226,15 +223,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homePullCloudFailedButLocalOk =>
       'Cloud sync failed; refreshed local data (rates/config)';
-
-  @override
-  String homePullCloudHealed(int count) {
-    return 'Auto-recovered and synced $count cloud records';
-  }
-
-  @override
-  String get homePullCloudGap =>
-      'Some cloud history could not be auto-restored. Please use \'Restore from cloud\' on the sync page';
 
   @override
   String get homeSyncing => 'Syncing ledger data';
@@ -671,16 +659,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String importProgressDetail(
-    Object done,
-    Object fail,
-    Object ok,
-    Object total,
-  ) {
-    return 'Imported $done / $total records, success $ok, failed $fail';
-  }
-
-  @override
   String importProgressRunning(Object done, Object total) {
     return 'Processed $done / $total records';
   }
@@ -808,9 +786,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cloudBackupPortLabel => 'Port';
-
-  @override
-  String get cloudBackupSave => 'Save Config';
 
   @override
   String get cloudBackupNotConfigured => 'Not configured';
@@ -1442,10 +1417,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'This shared ledger uses the owner\'s categories; edits here only affect your personal categories';
 
   @override
-  String get categorySyncFailedBeforeInvite =>
-      'Couldn\'t sync categories before creating the invite. Check your network and try again';
-
-  @override
   String get categorySortSaveFailed => 'Failed to save order. Please try again';
 
   @override
@@ -1511,83 +1482,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subcategoryEmpty => 'No subcategories yet';
 
   @override
-  String get cloudSupabaseUrlLabel => 'Supabase URL';
-
-  @override
-  String get cloudSupabaseUrlHint => 'https://xxx.supabase.co';
-
-  @override
-  String get cloudAnonKeyLabel => 'Anon Key';
-
-  @override
-  String get cloudMultiDeviceWarningTitle => 'Multi-Device Tips';
-
-  @override
-  String get cloudMultiDeviceWarningMessage =>
-      'Upload before switching devices, download on the new device before editing. Don\'t edit the same ledger on two devices at once. Tap for details →';
-
-  @override
-  String get cloudWebdavUrlLabel => 'WebDAV Server URL';
-
-  @override
-  String get cloudWebdavUrlHint => 'https://dav.jianguoyun.com/dav/';
-
-  @override
-  String get cloudWebdavUsernameLabel => 'Username';
-
-  @override
-  String get cloudWebdavPasswordLabel => 'Password';
-
-  @override
-  String get cloudWebdavPathHint => '/SesameNotes';
-
-  @override
-  String get cloudS3EndpointLabel => 'Endpoint';
-
-  @override
-  String get cloudS3EndpointHint => 's3.amazonaws.com or custom endpoint';
-
-  @override
-  String get cloudS3RegionLabel => 'Region';
-
-  @override
-  String get cloudS3RegionHint => 'us-east-1 (leave blank for auto)';
-
-  @override
-  String get cloudS3AccessKeyLabel => 'Access Key';
-
-  @override
-  String get cloudS3AccessKeyHint => 'Your Access Key ID';
-
-  @override
-  String get cloudS3SecretKeyLabel => 'Secret Key';
-
-  @override
-  String get cloudS3SecretKeyHint => 'Your Secret Access Key';
-
-  @override
-  String get cloudS3BucketLabel => 'Bucket Name';
-
-  @override
-  String get cloudS3BucketHint => 'sesame-data';
-
-  @override
-  String get cloudS3UseSSLLabel => 'Use HTTPS';
-
-  @override
-  String get cloudS3PortLabel => 'Port (optional)';
-
-  @override
-  String get cloudS3PortHint => 'Leave blank for default';
-
-  @override
-  String get cloudSupabaseBucketLabel => 'Storage Bucket Name';
-
-  @override
-  String get cloudSupabaseBucketHint =>
-      'Leave blank for default: sesame-backups';
-
-  @override
   String get authRememberAccount => 'Remember account';
 
   @override
@@ -1618,10 +1512,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cloudClearConfigDone => 'Configuration cleared';
-
-  @override
-  String get cloudPurgeFailed =>
-      'Failed to clear cloud ledgers, please try again later';
 
   @override
   String get authLogin => 'Login';
@@ -1819,13 +1709,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currencyMMK => 'Myanmar Kyat';
 
   @override
-  String get webdavConfiguredTitle => 'WebDAV Cloud Service Configured';
-
-  @override
-  String get webdavConfiguredMessage =>
-      'WebDAV cloud service uses the credentials provided during configuration, no additional login required.';
-
-  @override
   String get recurringTransactionTitle => 'Recurring Bills';
 
   @override
@@ -1917,23 +1800,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ledgerSelect => 'Select Ledger';
 
   @override
-  String get syncNotConfiguredMessage => 'Cloud not configured';
-
-  @override
-  String get syncNotLoggedInMessage => 'Not logged in';
-
-  @override
-  String get syncCloudBackupCorruptedMessage =>
-      'Cloud backup content is corrupted, possibly due to encoding issues from earlier versions. Please click \'Upload Current Ledger to Cloud\' to overwrite and fix.';
-
-  @override
-  String get syncNoCloudBackupMessage => 'No cloud backup';
-
-  @override
-  String get syncAccessDeniedMessage =>
-      '403 Access denied (check storage RLS policy and path)';
-
-  @override
   String get cloudTestConnection => 'Test Connection';
 
   @override
@@ -1979,34 +1845,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localBackupListEmpty => 'No backups yet';
-
-  @override
-  String get localBackupRestoreTitle => 'Restore Backup';
-
-  @override
-  String get localBackupRestoreMessage =>
-      'Restoring will overwrite all current data and cannot be undone. Continue?';
-
-  @override
-  String get localBackupRestoreSuccess => 'Restore completed';
-
-  @override
-  String get localBackupRestoreFailed => 'Restore failed';
-
-  @override
-  String get localBackupEmergencyFailed =>
-      'Could not create a safety copy of current data. Restore cancelled';
-
-  @override
-  String get localBackupIntegrityFailed =>
-      'Backup file is corrupted and cannot be restored';
-
-  @override
-  String get localBackupVersionTooNew =>
-      'This backup was created by a newer version of the app. Please update the app first';
-
-  @override
-  String get localBackupRestoring => 'Restoring…';
 
   @override
   String get cloudCustomSupabaseTitle => 'Custom Supabase';
@@ -2090,181 +1928,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localBackupRestoreHint => 'Tap a backup to open the restore flow';
 
   @override
-  String get cloudTabCloudSync => 'Cloud Sync';
-
-  @override
-  String get cloudSupabaseHelpTitle => 'Supabase Setup Guide';
-
-  @override
-  String get cloudSupabaseHelpIntro => 'What is Supabase';
-
-  @override
-  String get cloudSupabaseHelpIntro1 =>
-      'Supabase is an open-source backend-as-a-service platform';
-
-  @override
-  String get cloudSupabaseHelpIntro2 =>
-      'Offers a free tier, sufficient for personal use';
-
-  @override
-  String get cloudSupabaseHelpIntro3 => 'You have full control over your data';
-
-  @override
-  String get cloudSupabaseHelpSteps => 'Setup Steps';
-
-  @override
-  String get cloudSupabaseHelpStep1 =>
-      '1. Visit supabase.com to create an account';
-
-  @override
-  String get cloudSupabaseHelpStep2 =>
-      '2. Create a new project (select free tier)';
-
-  @override
-  String get cloudSupabaseHelpStep3 => '3. Go to Project Settings > API';
-
-  @override
-  String get cloudSupabaseHelpStep4 => '4. Copy Project URL and anon key';
-
-  @override
-  String get cloudSupabaseHelpStep5 =>
-      '5. Paste them into the app configuration';
-
-  @override
-  String get cloudSupabaseHelpFaq => 'FAQ';
-
-  @override
-  String get cloudSupabaseHelpFaq1 => 'Free tier includes 500MB storage';
-
-  @override
-  String get cloudSupabaseHelpFaq2 => 'Data is encrypted and secure';
-
-  @override
-  String get cloudSupabaseHelpFaq3 => 'Supports multi-device sync';
-
-  @override
-  String get cloudSupabaseHelpNote =>
-      'After configuration, you need to register/login to use sync';
-
-  @override
-  String get cloudWebdavHelpTitle => 'WebDAV Setup Guide';
-
-  @override
-  String get cloudWebdavHelpIntro => 'What is WebDAV';
-
-  @override
-  String get cloudWebdavHelpIntro1 => 'WebDAV is a network file protocol';
-
-  @override
-  String get cloudWebdavHelpIntro2 =>
-      'Supported by many cloud storage and NAS devices';
-
-  @override
-  String get cloudWebdavHelpIntro3 => 'Data is stored on your own server';
-
-  @override
-  String get cloudWebdavHelpProviders => 'Supported Providers';
-
-  @override
-  String get cloudWebdavHelpProvider1 =>
-      '- Nutstore (recommended for China users)';
-
-  @override
-  String get cloudWebdavHelpProvider2 => '- Nextcloud / ownCloud';
-
-  @override
-  String get cloudWebdavHelpProvider3 => '- Synology / QNAP NAS';
-
-  @override
-  String get cloudWebdavHelpProvider4 => '- Other WebDAV-compatible services';
-
-  @override
-  String get cloudWebdavHelpSteps => 'Setup Steps (Nutstore example)';
-
-  @override
-  String get cloudWebdavHelpStep1 => '1. Login to Nutstore web version';
-
-  @override
-  String get cloudWebdavHelpStep2 => '2. Click account name > Account Info';
-
-  @override
-  String get cloudWebdavHelpStep3 => '3. Select Security Options tab';
-
-  @override
-  String get cloudWebdavHelpStep4 =>
-      '4. Add application password (for third-party apps)';
-
-  @override
-  String get cloudWebdavHelpStep5 =>
-      '5. Copy server address, account, and app password';
-
-  @override
-  String get cloudWebdavHelpNote =>
-      'Use an app-specific password instead of your account password';
-
-  @override
-  String get cloudS3HelpTitle => 'S3 Storage Setup Guide';
-
-  @override
-  String get cloudS3HelpIntro => 'What is S3';
-
-  @override
-  String get cloudS3HelpIntro1 => 'S3 is a standard object storage protocol';
-
-  @override
-  String get cloudS3HelpIntro2 => 'Supported by many cloud providers';
-
-  @override
-  String get cloudS3HelpIntro3 => 'Data is stored on your chosen cloud service';
-
-  @override
-  String get cloudS3HelpProviders => 'Supported Providers';
-
-  @override
-  String get cloudS3HelpProvider1 => '- AWS S3 (Amazon Web Services)';
-
-  @override
-  String get cloudS3HelpProvider2 => '- Cloudflare R2 (free 10GB/month)';
-
-  @override
-  String get cloudS3HelpProvider3 => '- Backblaze B2 (free 10GB)';
-
-  @override
-  String get cloudS3HelpProvider4 => '- MinIO (self-hosted)';
-
-  @override
-  String get cloudS3HelpProvider5 => '- Alibaba Cloud OSS';
-
-  @override
-  String get cloudS3HelpProvider6 => '- Tencent Cloud COS';
-
-  @override
-  String get cloudS3HelpProvider7 => '- Qiniu Kodo';
-
-  @override
-  String get cloudS3HelpSteps => 'Setup Steps (Cloudflare R2 example)';
-
-  @override
-  String get cloudS3HelpStep1 => '1. Login to Cloudflare Dashboard';
-
-  @override
-  String get cloudS3HelpStep2 => '2. Go to R2 > Create Bucket';
-
-  @override
-  String get cloudS3HelpStep3 => '3. Go to R2 > Manage R2 API Tokens';
-
-  @override
-  String get cloudS3HelpStep4 => '4. Create API Token and copy credentials';
-
-  @override
-  String get cloudS3HelpStep5 =>
-      '5. Paste endpoint, access key, secret key, and bucket name';
-
-  @override
-  String get cloudS3HelpNote =>
-      'Recommended: Cloudflare R2 offers 10GB free storage without egress fees';
-
-  @override
   String get cloudStatusNotTested => 'Not tested';
 
   @override
@@ -2272,36 +1935,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cloudStatusFailed => 'Connection failed';
-
-  @override
-  String get cloudErrorAuthFailed => 'Authentication failed: Invalid API Key';
-
-  @override
-  String cloudErrorServerStatus(String code) {
-    return 'Server returned status code $code';
-  }
-
-  @override
-  String get cloudErrorWebdavNotSupported =>
-      'Server does not support WebDAV protocol';
-
-  @override
-  String get cloudErrorAuthFailedCredentials =>
-      'Authentication failed: Incorrect username or password';
-
-  @override
-  String get cloudErrorAccessDenied =>
-      'Access denied: Please check permissions';
-
-  @override
-  String cloudErrorPathNotFound(String path) {
-    return 'Server path not found: $path';
-  }
-
-  @override
-  String cloudErrorNetwork(String message) {
-    return 'Network error: $message';
-  }
 
   @override
   String get cloudTestSuccessMessage =>
@@ -2345,92 +1978,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cloudConfigureS3Title => 'Configure S3';
 
   @override
-  String get cloudSupabaseAnonKeyHintLong => 'Paste complete anon key';
-
-  @override
-  String get cloudWebdavRemotePathLabel => 'Remote Path';
-
-  @override
-  String get cloudWebdavRemotePathHelperText =>
-      'Remote directory path for data storage';
-
-  @override
   String get welcomeSelectCurrencyTitle => 'Select Accounting Currency';
 
   @override
   String get welcomeCurrencyDescription =>
       'Choose your preferred currency, you can change it anytime in settings';
-
-  @override
-  String get aiOcrNoLedger => 'Ledger not found';
-
-  @override
-  String get cloudTutorialTitle => 'Getting Started';
-
-  @override
-  String get cloudTutorialIntro =>
-      'Sesame Notes Cloud is a self-hosted sync server that supports real-time multi-device collaboration. The flow is simple:';
-
-  @override
-  String get cloudTutorialStep1Title => 'Step 1: Deploy or join a server';
-
-  @override
-  String get cloudTutorialStep1Desc =>
-      'Self-host with one Docker command (see the Docker guide in GitHub README). Or join an existing Sesame Notes Cloud server run by a friend / team.';
-
-  @override
-  String get cloudTutorialStep2Title => 'Step 2: Get an account';
-
-  @override
-  String get cloudTutorialStep2Desc =>
-      'Sesame Notes Cloud does NOT offer self-registration (to prevent abuse on public servers). If you self-host: the first Docker boot prints a random admin account + password to the logs — use that. Joining someone else\'s server: ask the admin to create an account for you in Web → Users.';
-
-  @override
-  String get cloudTutorialStep3Title => 'Step 3: Login + enable sync';
-
-  @override
-  String get cloudTutorialStep3Desc =>
-      'In the app, pick Sesame Notes Cloud, enter the server URL and the account you got in step 2. First login uploads your entire local ledger; every subsequent edit is pushed in real time.';
-
-  @override
-  String get cloudTutorialStep4Title => 'Step 4: Login from other devices';
-
-  @override
-  String get cloudTutorialStep4Desc =>
-      'Phone / tablet / Web — same account, instant shared state. Edits propagate within seconds.';
-
-  @override
-  String get cloudTutorialTipTitle => 'Tip';
-
-  @override
-  String get cloudTutorialTipDesc =>
-      'The Web UI lives at the server URL. Open it in a browser to manage ledgers, members, and view logs.';
-
-  @override
-  String get cloudTutorialFeaturesTitle => 'Features';
-
-  @override
-  String get cloudTutorialFeature1 =>
-      '📱 Real-time multi-device: phone A + phone B + Web on one account, sub-second sync';
-
-  @override
-  String get cloudTutorialFeature2 =>
-      '🌐 Web UI included: one Docker image ships server + Web, browser ready';
-
-  @override
-  String get cloudTutorialFeature3 =>
-      '👥 Multi-user isolation: multiple users on one server, data fully separated';
-
-  @override
-  String get cloudTutorialFeature4 =>
-      '🤝 Shared ledgers: invite family / team into one book with seconds-level sync';
-
-  @override
-  String get cloudTutorialGotIt => 'Got it';
-
-  @override
-  String get cloudSyncHint =>
-      'Downloads automatically compare differences for selective preview. Not real-time — avoid editing the same ledger on multiple devices simultaneously. Sync scope covers ledger data (including associated accounts and categories).';
 
   @override
   String get appearanceSettings => 'Preferences';
@@ -3951,12 +3503,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restoreStep1Subtitle => 'Select a backup to restore';
 
   @override
-  String get restoreOpenBackup => 'Open Backup';
-
-  @override
-  String get restoreOpening => 'Opening...';
-
-  @override
   String get restoreStep2Title => 'Backup Contents';
 
   @override
@@ -4034,17 +3580,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String restoreAccountOf(String account) {
     return 'Account $account';
   }
-
-  @override
-  String restoreLastSyncAt(String time) {
-    return 'Last synced $time';
-  }
-
-  @override
-  String get restoreSourceBackup => 'Source backup';
-
-  @override
-  String get restoreBackToStep => 'Back';
 
   @override
   String get restoreSchemaTooOld =>

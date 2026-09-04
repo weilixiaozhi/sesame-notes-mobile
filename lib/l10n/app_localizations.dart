@@ -370,12 +370,6 @@ abstract class AppLocalizations {
   /// **'Current'**
   String get commonCurrent;
 
-  /// No description provided for @commonTutorial.
-  ///
-  /// In en, this message translates to:
-  /// **'Tutorial'**
-  String get commonTutorial;
-
   /// No description provided for @commonConfigure.
   ///
   /// In en, this message translates to:
@@ -507,18 +501,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cloud sync failed; refreshed local data (rates/config)'**
   String get homePullCloudFailedButLocalOk;
-
-  /// No description provided for @homePullCloudHealed.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto-recovered and synced {count} cloud records'**
-  String homePullCloudHealed(int count);
-
-  /// No description provided for @homePullCloudGap.
-  ///
-  /// In en, this message translates to:
-  /// **'Some cloud history could not be auto-restored. Please use \'Restore from cloud\' on the sync page'**
-  String get homePullCloudGap;
 
   /// No description provided for @homeSyncing.
   ///
@@ -1270,17 +1252,6 @@ abstract class AppLocalizations {
   /// **'Non-expense skipped: {count}'**
   String importPrecheckSkippedType(Object count);
 
-  /// No description provided for @importProgressDetail.
-  ///
-  /// In en, this message translates to:
-  /// **'Imported {done} / {total} records, success {ok}, failed {fail}'**
-  String importProgressDetail(
-    Object done,
-    Object fail,
-    Object ok,
-    Object total,
-  );
-
   /// No description provided for @importProgressRunning.
   ///
   /// In en, this message translates to:
@@ -1514,12 +1485,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Port'**
   String get cloudBackupPortLabel;
-
-  /// No description provided for @cloudBackupSave.
-  ///
-  /// In en, this message translates to:
-  /// **'Save Config'**
-  String get cloudBackupSave;
 
   /// No description provided for @cloudBackupNotConfigured.
   ///
@@ -2601,12 +2566,6 @@ abstract class AppLocalizations {
   /// **'This shared ledger uses the owner\'s categories; edits here only affect your personal categories'**
   String get categorySharedManageBannerEditor;
 
-  /// No description provided for @categorySyncFailedBeforeInvite.
-  ///
-  /// In en, this message translates to:
-  /// **'Couldn\'t sync categories before creating the invite. Check your network and try again'**
-  String get categorySyncFailedBeforeInvite;
-
   /// No description provided for @categorySortSaveFailed.
   ///
   /// In en, this message translates to:
@@ -2709,156 +2668,6 @@ abstract class AppLocalizations {
   /// **'No subcategories yet'**
   String get subcategoryEmpty;
 
-  /// No description provided for @cloudSupabaseUrlLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Supabase URL'**
-  String get cloudSupabaseUrlLabel;
-
-  /// No description provided for @cloudSupabaseUrlHint.
-  ///
-  /// In en, this message translates to:
-  /// **'https://xxx.supabase.co'**
-  String get cloudSupabaseUrlHint;
-
-  /// No description provided for @cloudAnonKeyLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Anon Key'**
-  String get cloudAnonKeyLabel;
-
-  /// No description provided for @cloudMultiDeviceWarningTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Multi-Device Tips'**
-  String get cloudMultiDeviceWarningTitle;
-
-  /// No description provided for @cloudMultiDeviceWarningMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Upload before switching devices, download on the new device before editing. Don\'t edit the same ledger on two devices at once. Tap for details →'**
-  String get cloudMultiDeviceWarningMessage;
-
-  /// No description provided for @cloudWebdavUrlLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'WebDAV Server URL'**
-  String get cloudWebdavUrlLabel;
-
-  /// No description provided for @cloudWebdavUrlHint.
-  ///
-  /// In en, this message translates to:
-  /// **'https://dav.jianguoyun.com/dav/'**
-  String get cloudWebdavUrlHint;
-
-  /// No description provided for @cloudWebdavUsernameLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Username'**
-  String get cloudWebdavUsernameLabel;
-
-  /// No description provided for @cloudWebdavPasswordLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Password'**
-  String get cloudWebdavPasswordLabel;
-
-  /// No description provided for @cloudWebdavPathHint.
-  ///
-  /// In en, this message translates to:
-  /// **'/SesameNotes'**
-  String get cloudWebdavPathHint;
-
-  /// No description provided for @cloudS3EndpointLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Endpoint'**
-  String get cloudS3EndpointLabel;
-
-  /// No description provided for @cloudS3EndpointHint.
-  ///
-  /// In en, this message translates to:
-  /// **'s3.amazonaws.com or custom endpoint'**
-  String get cloudS3EndpointHint;
-
-  /// No description provided for @cloudS3RegionLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Region'**
-  String get cloudS3RegionLabel;
-
-  /// No description provided for @cloudS3RegionHint.
-  ///
-  /// In en, this message translates to:
-  /// **'us-east-1 (leave blank for auto)'**
-  String get cloudS3RegionHint;
-
-  /// No description provided for @cloudS3AccessKeyLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Access Key'**
-  String get cloudS3AccessKeyLabel;
-
-  /// No description provided for @cloudS3AccessKeyHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Your Access Key ID'**
-  String get cloudS3AccessKeyHint;
-
-  /// No description provided for @cloudS3SecretKeyLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Secret Key'**
-  String get cloudS3SecretKeyLabel;
-
-  /// No description provided for @cloudS3SecretKeyHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Your Secret Access Key'**
-  String get cloudS3SecretKeyHint;
-
-  /// No description provided for @cloudS3BucketLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Bucket Name'**
-  String get cloudS3BucketLabel;
-
-  /// No description provided for @cloudS3BucketHint.
-  ///
-  /// In en, this message translates to:
-  /// **'sesame-data'**
-  String get cloudS3BucketHint;
-
-  /// No description provided for @cloudS3UseSSLLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Use HTTPS'**
-  String get cloudS3UseSSLLabel;
-
-  /// No description provided for @cloudS3PortLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Port (optional)'**
-  String get cloudS3PortLabel;
-
-  /// No description provided for @cloudS3PortHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Leave blank for default'**
-  String get cloudS3PortHint;
-
-  /// No description provided for @cloudSupabaseBucketLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Storage Bucket Name'**
-  String get cloudSupabaseBucketLabel;
-
-  /// No description provided for @cloudSupabaseBucketHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Leave blank for default: sesame-backups'**
-  String get cloudSupabaseBucketHint;
-
   /// No description provided for @authRememberAccount.
   ///
   /// In en, this message translates to:
@@ -2918,12 +2727,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Configuration cleared'**
   String get cloudClearConfigDone;
-
-  /// No description provided for @cloudPurgeFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to clear cloud ledgers, please try again later'**
-  String get cloudPurgeFailed;
 
   /// No description provided for @authLogin.
   ///
@@ -3309,18 +3112,6 @@ abstract class AppLocalizations {
   /// **'Myanmar Kyat'**
   String get currencyMMK;
 
-  /// No description provided for @webdavConfiguredTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'WebDAV Cloud Service Configured'**
-  String get webdavConfiguredTitle;
-
-  /// No description provided for @webdavConfiguredMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'WebDAV cloud service uses the credentials provided during configuration, no additional login required.'**
-  String get webdavConfiguredMessage;
-
   /// No description provided for @recurringTransactionTitle.
   ///
   /// In en, this message translates to:
@@ -3477,36 +3268,6 @@ abstract class AppLocalizations {
   /// **'Select Ledger'**
   String get ledgerSelect;
 
-  /// No description provided for @syncNotConfiguredMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Cloud not configured'**
-  String get syncNotConfiguredMessage;
-
-  /// No description provided for @syncNotLoggedInMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Not logged in'**
-  String get syncNotLoggedInMessage;
-
-  /// No description provided for @syncCloudBackupCorruptedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Cloud backup content is corrupted, possibly due to encoding issues from earlier versions. Please click \'Upload Current Ledger to Cloud\' to overwrite and fix.'**
-  String get syncCloudBackupCorruptedMessage;
-
-  /// No description provided for @syncNoCloudBackupMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'No cloud backup'**
-  String get syncNoCloudBackupMessage;
-
-  /// No description provided for @syncAccessDeniedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'403 Access denied (check storage RLS policy and path)'**
-  String get syncAccessDeniedMessage;
-
   /// No description provided for @cloudTestConnection.
   ///
   /// In en, this message translates to:
@@ -3590,54 +3351,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No backups yet'**
   String get localBackupListEmpty;
-
-  /// No description provided for @localBackupRestoreTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore Backup'**
-  String get localBackupRestoreTitle;
-
-  /// No description provided for @localBackupRestoreMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Restoring will overwrite all current data and cannot be undone. Continue?'**
-  String get localBackupRestoreMessage;
-
-  /// No description provided for @localBackupRestoreSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore completed'**
-  String get localBackupRestoreSuccess;
-
-  /// No description provided for @localBackupRestoreFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore failed'**
-  String get localBackupRestoreFailed;
-
-  /// No description provided for @localBackupEmergencyFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not create a safety copy of current data. Restore cancelled'**
-  String get localBackupEmergencyFailed;
-
-  /// No description provided for @localBackupIntegrityFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup file is corrupted and cannot be restored'**
-  String get localBackupIntegrityFailed;
-
-  /// No description provided for @localBackupVersionTooNew.
-  ///
-  /// In en, this message translates to:
-  /// **'This backup was created by a newer version of the app. Please update the app first'**
-  String get localBackupVersionTooNew;
-
-  /// No description provided for @localBackupRestoring.
-  ///
-  /// In en, this message translates to:
-  /// **'Restoring…'**
-  String get localBackupRestoring;
 
   /// No description provided for @cloudCustomSupabaseTitle.
   ///
@@ -3789,330 +3502,6 @@ abstract class AppLocalizations {
   /// **'Tap a backup to open the restore flow'**
   String get localBackupRestoreHint;
 
-  /// No description provided for @cloudTabCloudSync.
-  ///
-  /// In en, this message translates to:
-  /// **'Cloud Sync'**
-  String get cloudTabCloudSync;
-
-  /// No description provided for @cloudSupabaseHelpTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Supabase Setup Guide'**
-  String get cloudSupabaseHelpTitle;
-
-  /// No description provided for @cloudSupabaseHelpIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'What is Supabase'**
-  String get cloudSupabaseHelpIntro;
-
-  /// No description provided for @cloudSupabaseHelpIntro1.
-  ///
-  /// In en, this message translates to:
-  /// **'Supabase is an open-source backend-as-a-service platform'**
-  String get cloudSupabaseHelpIntro1;
-
-  /// No description provided for @cloudSupabaseHelpIntro2.
-  ///
-  /// In en, this message translates to:
-  /// **'Offers a free tier, sufficient for personal use'**
-  String get cloudSupabaseHelpIntro2;
-
-  /// No description provided for @cloudSupabaseHelpIntro3.
-  ///
-  /// In en, this message translates to:
-  /// **'You have full control over your data'**
-  String get cloudSupabaseHelpIntro3;
-
-  /// No description provided for @cloudSupabaseHelpSteps.
-  ///
-  /// In en, this message translates to:
-  /// **'Setup Steps'**
-  String get cloudSupabaseHelpSteps;
-
-  /// No description provided for @cloudSupabaseHelpStep1.
-  ///
-  /// In en, this message translates to:
-  /// **'1. Visit supabase.com to create an account'**
-  String get cloudSupabaseHelpStep1;
-
-  /// No description provided for @cloudSupabaseHelpStep2.
-  ///
-  /// In en, this message translates to:
-  /// **'2. Create a new project (select free tier)'**
-  String get cloudSupabaseHelpStep2;
-
-  /// No description provided for @cloudSupabaseHelpStep3.
-  ///
-  /// In en, this message translates to:
-  /// **'3. Go to Project Settings > API'**
-  String get cloudSupabaseHelpStep3;
-
-  /// No description provided for @cloudSupabaseHelpStep4.
-  ///
-  /// In en, this message translates to:
-  /// **'4. Copy Project URL and anon key'**
-  String get cloudSupabaseHelpStep4;
-
-  /// No description provided for @cloudSupabaseHelpStep5.
-  ///
-  /// In en, this message translates to:
-  /// **'5. Paste them into the app configuration'**
-  String get cloudSupabaseHelpStep5;
-
-  /// No description provided for @cloudSupabaseHelpFaq.
-  ///
-  /// In en, this message translates to:
-  /// **'FAQ'**
-  String get cloudSupabaseHelpFaq;
-
-  /// No description provided for @cloudSupabaseHelpFaq1.
-  ///
-  /// In en, this message translates to:
-  /// **'Free tier includes 500MB storage'**
-  String get cloudSupabaseHelpFaq1;
-
-  /// No description provided for @cloudSupabaseHelpFaq2.
-  ///
-  /// In en, this message translates to:
-  /// **'Data is encrypted and secure'**
-  String get cloudSupabaseHelpFaq2;
-
-  /// No description provided for @cloudSupabaseHelpFaq3.
-  ///
-  /// In en, this message translates to:
-  /// **'Supports multi-device sync'**
-  String get cloudSupabaseHelpFaq3;
-
-  /// No description provided for @cloudSupabaseHelpNote.
-  ///
-  /// In en, this message translates to:
-  /// **'After configuration, you need to register/login to use sync'**
-  String get cloudSupabaseHelpNote;
-
-  /// No description provided for @cloudWebdavHelpTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'WebDAV Setup Guide'**
-  String get cloudWebdavHelpTitle;
-
-  /// No description provided for @cloudWebdavHelpIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'What is WebDAV'**
-  String get cloudWebdavHelpIntro;
-
-  /// No description provided for @cloudWebdavHelpIntro1.
-  ///
-  /// In en, this message translates to:
-  /// **'WebDAV is a network file protocol'**
-  String get cloudWebdavHelpIntro1;
-
-  /// No description provided for @cloudWebdavHelpIntro2.
-  ///
-  /// In en, this message translates to:
-  /// **'Supported by many cloud storage and NAS devices'**
-  String get cloudWebdavHelpIntro2;
-
-  /// No description provided for @cloudWebdavHelpIntro3.
-  ///
-  /// In en, this message translates to:
-  /// **'Data is stored on your own server'**
-  String get cloudWebdavHelpIntro3;
-
-  /// No description provided for @cloudWebdavHelpProviders.
-  ///
-  /// In en, this message translates to:
-  /// **'Supported Providers'**
-  String get cloudWebdavHelpProviders;
-
-  /// No description provided for @cloudWebdavHelpProvider1.
-  ///
-  /// In en, this message translates to:
-  /// **'- Nutstore (recommended for China users)'**
-  String get cloudWebdavHelpProvider1;
-
-  /// No description provided for @cloudWebdavHelpProvider2.
-  ///
-  /// In en, this message translates to:
-  /// **'- Nextcloud / ownCloud'**
-  String get cloudWebdavHelpProvider2;
-
-  /// No description provided for @cloudWebdavHelpProvider3.
-  ///
-  /// In en, this message translates to:
-  /// **'- Synology / QNAP NAS'**
-  String get cloudWebdavHelpProvider3;
-
-  /// No description provided for @cloudWebdavHelpProvider4.
-  ///
-  /// In en, this message translates to:
-  /// **'- Other WebDAV-compatible services'**
-  String get cloudWebdavHelpProvider4;
-
-  /// No description provided for @cloudWebdavHelpSteps.
-  ///
-  /// In en, this message translates to:
-  /// **'Setup Steps (Nutstore example)'**
-  String get cloudWebdavHelpSteps;
-
-  /// No description provided for @cloudWebdavHelpStep1.
-  ///
-  /// In en, this message translates to:
-  /// **'1. Login to Nutstore web version'**
-  String get cloudWebdavHelpStep1;
-
-  /// No description provided for @cloudWebdavHelpStep2.
-  ///
-  /// In en, this message translates to:
-  /// **'2. Click account name > Account Info'**
-  String get cloudWebdavHelpStep2;
-
-  /// No description provided for @cloudWebdavHelpStep3.
-  ///
-  /// In en, this message translates to:
-  /// **'3. Select Security Options tab'**
-  String get cloudWebdavHelpStep3;
-
-  /// No description provided for @cloudWebdavHelpStep4.
-  ///
-  /// In en, this message translates to:
-  /// **'4. Add application password (for third-party apps)'**
-  String get cloudWebdavHelpStep4;
-
-  /// No description provided for @cloudWebdavHelpStep5.
-  ///
-  /// In en, this message translates to:
-  /// **'5. Copy server address, account, and app password'**
-  String get cloudWebdavHelpStep5;
-
-  /// No description provided for @cloudWebdavHelpNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Use an app-specific password instead of your account password'**
-  String get cloudWebdavHelpNote;
-
-  /// No description provided for @cloudS3HelpTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'S3 Storage Setup Guide'**
-  String get cloudS3HelpTitle;
-
-  /// No description provided for @cloudS3HelpIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'What is S3'**
-  String get cloudS3HelpIntro;
-
-  /// No description provided for @cloudS3HelpIntro1.
-  ///
-  /// In en, this message translates to:
-  /// **'S3 is a standard object storage protocol'**
-  String get cloudS3HelpIntro1;
-
-  /// No description provided for @cloudS3HelpIntro2.
-  ///
-  /// In en, this message translates to:
-  /// **'Supported by many cloud providers'**
-  String get cloudS3HelpIntro2;
-
-  /// No description provided for @cloudS3HelpIntro3.
-  ///
-  /// In en, this message translates to:
-  /// **'Data is stored on your chosen cloud service'**
-  String get cloudS3HelpIntro3;
-
-  /// No description provided for @cloudS3HelpProviders.
-  ///
-  /// In en, this message translates to:
-  /// **'Supported Providers'**
-  String get cloudS3HelpProviders;
-
-  /// No description provided for @cloudS3HelpProvider1.
-  ///
-  /// In en, this message translates to:
-  /// **'- AWS S3 (Amazon Web Services)'**
-  String get cloudS3HelpProvider1;
-
-  /// No description provided for @cloudS3HelpProvider2.
-  ///
-  /// In en, this message translates to:
-  /// **'- Cloudflare R2 (free 10GB/month)'**
-  String get cloudS3HelpProvider2;
-
-  /// No description provided for @cloudS3HelpProvider3.
-  ///
-  /// In en, this message translates to:
-  /// **'- Backblaze B2 (free 10GB)'**
-  String get cloudS3HelpProvider3;
-
-  /// No description provided for @cloudS3HelpProvider4.
-  ///
-  /// In en, this message translates to:
-  /// **'- MinIO (self-hosted)'**
-  String get cloudS3HelpProvider4;
-
-  /// No description provided for @cloudS3HelpProvider5.
-  ///
-  /// In en, this message translates to:
-  /// **'- Alibaba Cloud OSS'**
-  String get cloudS3HelpProvider5;
-
-  /// No description provided for @cloudS3HelpProvider6.
-  ///
-  /// In en, this message translates to:
-  /// **'- Tencent Cloud COS'**
-  String get cloudS3HelpProvider6;
-
-  /// No description provided for @cloudS3HelpProvider7.
-  ///
-  /// In en, this message translates to:
-  /// **'- Qiniu Kodo'**
-  String get cloudS3HelpProvider7;
-
-  /// No description provided for @cloudS3HelpSteps.
-  ///
-  /// In en, this message translates to:
-  /// **'Setup Steps (Cloudflare R2 example)'**
-  String get cloudS3HelpSteps;
-
-  /// No description provided for @cloudS3HelpStep1.
-  ///
-  /// In en, this message translates to:
-  /// **'1. Login to Cloudflare Dashboard'**
-  String get cloudS3HelpStep1;
-
-  /// No description provided for @cloudS3HelpStep2.
-  ///
-  /// In en, this message translates to:
-  /// **'2. Go to R2 > Create Bucket'**
-  String get cloudS3HelpStep2;
-
-  /// No description provided for @cloudS3HelpStep3.
-  ///
-  /// In en, this message translates to:
-  /// **'3. Go to R2 > Manage R2 API Tokens'**
-  String get cloudS3HelpStep3;
-
-  /// No description provided for @cloudS3HelpStep4.
-  ///
-  /// In en, this message translates to:
-  /// **'4. Create API Token and copy credentials'**
-  String get cloudS3HelpStep4;
-
-  /// No description provided for @cloudS3HelpStep5.
-  ///
-  /// In en, this message translates to:
-  /// **'5. Paste endpoint, access key, secret key, and bucket name'**
-  String get cloudS3HelpStep5;
-
-  /// No description provided for @cloudS3HelpNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Recommended: Cloudflare R2 offers 10GB free storage without egress fees'**
-  String get cloudS3HelpNote;
-
   /// No description provided for @cloudStatusNotTested.
   ///
   /// In en, this message translates to:
@@ -4130,48 +3519,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Connection failed'**
   String get cloudStatusFailed;
-
-  /// No description provided for @cloudErrorAuthFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Authentication failed: Invalid API Key'**
-  String get cloudErrorAuthFailed;
-
-  /// No description provided for @cloudErrorServerStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Server returned status code {code}'**
-  String cloudErrorServerStatus(String code);
-
-  /// No description provided for @cloudErrorWebdavNotSupported.
-  ///
-  /// In en, this message translates to:
-  /// **'Server does not support WebDAV protocol'**
-  String get cloudErrorWebdavNotSupported;
-
-  /// No description provided for @cloudErrorAuthFailedCredentials.
-  ///
-  /// In en, this message translates to:
-  /// **'Authentication failed: Incorrect username or password'**
-  String get cloudErrorAuthFailedCredentials;
-
-  /// No description provided for @cloudErrorAccessDenied.
-  ///
-  /// In en, this message translates to:
-  /// **'Access denied: Please check permissions'**
-  String get cloudErrorAccessDenied;
-
-  /// No description provided for @cloudErrorPathNotFound.
-  ///
-  /// In en, this message translates to:
-  /// **'Server path not found: {path}'**
-  String cloudErrorPathNotFound(String path);
-
-  /// No description provided for @cloudErrorNetwork.
-  ///
-  /// In en, this message translates to:
-  /// **'Network error: {message}'**
-  String cloudErrorNetwork(String message);
 
   /// No description provided for @cloudTestSuccessMessage.
   ///
@@ -4245,24 +3592,6 @@ abstract class AppLocalizations {
   /// **'Configure S3'**
   String get cloudConfigureS3Title;
 
-  /// No description provided for @cloudSupabaseAnonKeyHintLong.
-  ///
-  /// In en, this message translates to:
-  /// **'Paste complete anon key'**
-  String get cloudSupabaseAnonKeyHintLong;
-
-  /// No description provided for @cloudWebdavRemotePathLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Remote Path'**
-  String get cloudWebdavRemotePathLabel;
-
-  /// No description provided for @cloudWebdavRemotePathHelperText.
-  ///
-  /// In en, this message translates to:
-  /// **'Remote directory path for data storage'**
-  String get cloudWebdavRemotePathHelperText;
-
   /// No description provided for @welcomeSelectCurrencyTitle.
   ///
   /// In en, this message translates to:
@@ -4274,126 +3603,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose your preferred currency, you can change it anytime in settings'**
   String get welcomeCurrencyDescription;
-
-  /// No description provided for @aiOcrNoLedger.
-  ///
-  /// In en, this message translates to:
-  /// **'Ledger not found'**
-  String get aiOcrNoLedger;
-
-  /// No description provided for @cloudTutorialTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Getting Started'**
-  String get cloudTutorialTitle;
-
-  /// No description provided for @cloudTutorialIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'Sesame Notes Cloud is a self-hosted sync server that supports real-time multi-device collaboration. The flow is simple:'**
-  String get cloudTutorialIntro;
-
-  /// No description provided for @cloudTutorialStep1Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Step 1: Deploy or join a server'**
-  String get cloudTutorialStep1Title;
-
-  /// No description provided for @cloudTutorialStep1Desc.
-  ///
-  /// In en, this message translates to:
-  /// **'Self-host with one Docker command (see the Docker guide in GitHub README). Or join an existing Sesame Notes Cloud server run by a friend / team.'**
-  String get cloudTutorialStep1Desc;
-
-  /// No description provided for @cloudTutorialStep2Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Step 2: Get an account'**
-  String get cloudTutorialStep2Title;
-
-  /// No description provided for @cloudTutorialStep2Desc.
-  ///
-  /// In en, this message translates to:
-  /// **'Sesame Notes Cloud does NOT offer self-registration (to prevent abuse on public servers). If you self-host: the first Docker boot prints a random admin account + password to the logs — use that. Joining someone else\'s server: ask the admin to create an account for you in Web → Users.'**
-  String get cloudTutorialStep2Desc;
-
-  /// No description provided for @cloudTutorialStep3Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Step 3: Login + enable sync'**
-  String get cloudTutorialStep3Title;
-
-  /// No description provided for @cloudTutorialStep3Desc.
-  ///
-  /// In en, this message translates to:
-  /// **'In the app, pick Sesame Notes Cloud, enter the server URL and the account you got in step 2. First login uploads your entire local ledger; every subsequent edit is pushed in real time.'**
-  String get cloudTutorialStep3Desc;
-
-  /// No description provided for @cloudTutorialStep4Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Step 4: Login from other devices'**
-  String get cloudTutorialStep4Title;
-
-  /// No description provided for @cloudTutorialStep4Desc.
-  ///
-  /// In en, this message translates to:
-  /// **'Phone / tablet / Web — same account, instant shared state. Edits propagate within seconds.'**
-  String get cloudTutorialStep4Desc;
-
-  /// No description provided for @cloudTutorialTipTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Tip'**
-  String get cloudTutorialTipTitle;
-
-  /// No description provided for @cloudTutorialTipDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'The Web UI lives at the server URL. Open it in a browser to manage ledgers, members, and view logs.'**
-  String get cloudTutorialTipDesc;
-
-  /// No description provided for @cloudTutorialFeaturesTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Features'**
-  String get cloudTutorialFeaturesTitle;
-
-  /// No description provided for @cloudTutorialFeature1.
-  ///
-  /// In en, this message translates to:
-  /// **'📱 Real-time multi-device: phone A + phone B + Web on one account, sub-second sync'**
-  String get cloudTutorialFeature1;
-
-  /// No description provided for @cloudTutorialFeature2.
-  ///
-  /// In en, this message translates to:
-  /// **'🌐 Web UI included: one Docker image ships server + Web, browser ready'**
-  String get cloudTutorialFeature2;
-
-  /// No description provided for @cloudTutorialFeature3.
-  ///
-  /// In en, this message translates to:
-  /// **'👥 Multi-user isolation: multiple users on one server, data fully separated'**
-  String get cloudTutorialFeature3;
-
-  /// No description provided for @cloudTutorialFeature4.
-  ///
-  /// In en, this message translates to:
-  /// **'🤝 Shared ledgers: invite family / team into one book with seconds-level sync'**
-  String get cloudTutorialFeature4;
-
-  /// No description provided for @cloudTutorialGotIt.
-  ///
-  /// In en, this message translates to:
-  /// **'Got it'**
-  String get cloudTutorialGotIt;
-
-  /// No description provided for @cloudSyncHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloads automatically compare differences for selective preview. Not real-time — avoid editing the same ledger on multiple devices simultaneously. Sync scope covers ledger data (including associated accounts and categories).'**
-  String get cloudSyncHint;
 
   /// No description provided for @appearanceSettings.
   ///
@@ -7119,18 +6328,6 @@ abstract class AppLocalizations {
   /// **'Select a backup to restore'**
   String get restoreStep1Subtitle;
 
-  /// No description provided for @restoreOpenBackup.
-  ///
-  /// In en, this message translates to:
-  /// **'Open Backup'**
-  String get restoreOpenBackup;
-
-  /// No description provided for @restoreOpening.
-  ///
-  /// In en, this message translates to:
-  /// **'Opening...'**
-  String get restoreOpening;
-
   /// No description provided for @restoreStep2Title.
   ///
   /// In en, this message translates to:
@@ -7256,24 +6453,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Account {account}'**
   String restoreAccountOf(String account);
-
-  /// No description provided for @restoreLastSyncAt.
-  ///
-  /// In en, this message translates to:
-  /// **'Last synced {time}'**
-  String restoreLastSyncAt(String time);
-
-  /// No description provided for @restoreSourceBackup.
-  ///
-  /// In en, this message translates to:
-  /// **'Source backup'**
-  String get restoreSourceBackup;
-
-  /// No description provided for @restoreBackToStep.
-  ///
-  /// In en, this message translates to:
-  /// **'Back'**
-  String get restoreBackToStep;
 
   /// No description provided for @restoreSchemaTooOld.
   ///

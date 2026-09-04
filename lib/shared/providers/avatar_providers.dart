@@ -15,12 +15,6 @@ final avatarRefreshProvider = NotifierProvider<TickStateNotifier, int>(
   () => TickStateNotifier((ref) => 0),
 );
 
-/// 用户头像路径
-final avatarPathProvider = FutureProvider<String?>((ref) async {
-  ref.watch(avatarRefreshProvider);
-  return avatarStorage.getAvatarPath();
-});
-
 /// 从系统相册选择并保存头像（动作函数）。
 ///
 /// 设计意图：把 `avatarPicker.pickAndSaveAvatar` 的调用收敛到 providers 层，

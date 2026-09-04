@@ -23,7 +23,6 @@ import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/features/statistics/application/calendar_providers.dart';
 import 'package:sesame_notes/features/statistics/application/statistics_providers.dart';
-import 'package:sesame_notes/shared/providers/avatar_providers.dart';
 import 'package:sesame_notes/utils/member_id.dart';
 
 void main() {
@@ -47,7 +46,6 @@ void main() {
       overrides: [
         databaseProvider.overrideWithValue(db),
         repositoryProvider.overrideWithValue(repo),
-        avatarPathProvider.overrideWith((ref) async => null),
         localSelfIdProvider.overrideWith((ref) async => 'local-self'),
       ],
     );

@@ -27,7 +27,6 @@ import 'package:sesame_notes/features/statistics/presentation/calendar_page.dart
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/shared/providers/simple_state_notifier.dart';
-import 'package:sesame_notes/shared/providers/avatar_providers.dart';
 import 'package:sesame_notes/shared/providers/ui_state_providers.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
@@ -95,7 +94,6 @@ void main() {
           currentLedgerIdProvider.overrideWith(
             () => SimpleStateNotifier<String>((ref) => ledgerId),
           ),
-          avatarPathProvider.overrideWith((ref) async => null),
           localSelfIdProvider.overrideWith((ref) async => 'local-self'),
           if (syncCoordinator != null)
             syncCoordinatorProvider.overrideWithValue(syncCoordinator),

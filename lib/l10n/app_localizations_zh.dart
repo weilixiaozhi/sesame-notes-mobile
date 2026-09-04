@@ -148,9 +148,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonCurrent => '当前';
 
   @override
-  String get commonTutorial => '教程';
-
-  @override
   String get commonConfigure => '配置';
 
   @override
@@ -223,14 +220,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homePullCloudFailedButLocalOk => '云端同步失败，已刷新本地数据（汇率/配置）';
-
-  @override
-  String homePullCloudHealed(int count) {
-    return '已自动修复并同步 $count 条云端数据';
-  }
-
-  @override
-  String get homePullCloudGap => '云端有历史数据未能自动恢复，请到云同步页执行「从云端恢复」';
 
   @override
   String get homeSyncing => '正在同步账本数据';
@@ -655,16 +644,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String importProgressDetail(
-    Object done,
-    Object fail,
-    Object ok,
-    Object total,
-  ) {
-    return '已完成：$done/$total，成功 $ok，失败 $fail';
-  }
-
-  @override
   String importProgressRunning(Object done, Object total) {
     return '已处理：$done/$total';
   }
@@ -792,9 +771,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cloudBackupPortLabel => '端口';
-
-  @override
-  String get cloudBackupSave => '保存配置';
 
   @override
   String get cloudBackupNotConfigured => '未配置';
@@ -1388,9 +1364,6 @@ class AppLocalizationsZh extends AppLocalizations {
       '共享账本记账使用所有者的分类；此处的编辑仅影响你的个人分类';
 
   @override
-  String get categorySyncFailedBeforeInvite => '分类同步失败，请检查网络后重试';
-
-  @override
   String get categorySortSaveFailed => '排序保存失败，请重试';
 
   @override
@@ -1450,82 +1423,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get subcategoryEmpty => '暂无子分类';
 
   @override
-  String get cloudSupabaseUrlLabel => 'Supabase URL';
-
-  @override
-  String get cloudSupabaseUrlHint => 'https://xxx.supabase.co';
-
-  @override
-  String get cloudAnonKeyLabel => 'Anon Key';
-
-  @override
-  String get cloudMultiDeviceWarningTitle => '多设备使用提醒';
-
-  @override
-  String get cloudMultiDeviceWarningMessage =>
-      '换设备前记得先上传，到新设备后先下载再记账。不要同时在两台设备上记同一个账本。点击查看详情 →';
-
-  @override
-  String get cloudWebdavUrlLabel => 'WebDAV 服务器地址';
-
-  @override
-  String get cloudWebdavUrlHint => 'https://dav.jianguoyun.com/dav/';
-
-  @override
-  String get cloudWebdavUsernameLabel => '用户名';
-
-  @override
-  String get cloudWebdavPasswordLabel => '密码';
-
-  @override
-  String get cloudWebdavPathHint => '/SesameNotes';
-
-  @override
-  String get cloudS3EndpointLabel => '端点地址';
-
-  @override
-  String get cloudS3EndpointHint => 's3.amazonaws.com 或自定义端点';
-
-  @override
-  String get cloudS3RegionLabel => '区域';
-
-  @override
-  String get cloudS3RegionHint => 'us-east-1（留空自动）';
-
-  @override
-  String get cloudS3AccessKeyLabel => 'Access Key';
-
-  @override
-  String get cloudS3AccessKeyHint => '您的 Access Key ID';
-
-  @override
-  String get cloudS3SecretKeyLabel => 'Secret Key';
-
-  @override
-  String get cloudS3SecretKeyHint => '您的 Secret Access Key';
-
-  @override
-  String get cloudS3BucketLabel => '存储桶名称';
-
-  @override
-  String get cloudS3BucketHint => 'sesame-data';
-
-  @override
-  String get cloudS3UseSSLLabel => '使用 HTTPS';
-
-  @override
-  String get cloudS3PortLabel => '端口（可选）';
-
-  @override
-  String get cloudS3PortHint => '留空使用默认端口';
-
-  @override
-  String get cloudSupabaseBucketLabel => 'Storage Bucket 名称';
-
-  @override
-  String get cloudSupabaseBucketHint => '留空使用默认值 sesame-backups';
-
-  @override
   String get authRememberAccount => '记住账号密码';
 
   @override
@@ -1555,9 +1452,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cloudClearConfigDone => '配置已清除';
-
-  @override
-  String get cloudPurgeFailed => '云端账本清理失败，请稍后重试';
 
   @override
   String get authLogin => '登录';
@@ -1752,12 +1646,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get currencyMMK => '缅甸元';
 
   @override
-  String get webdavConfiguredTitle => 'WebDAV 云服务已配置';
-
-  @override
-  String get webdavConfiguredMessage => 'WebDAV 云服务使用配置时提供的凭据，无需额外登录。';
-
-  @override
   String get recurringTransactionTitle => '周期账单';
 
   @override
@@ -1845,22 +1733,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ledgerSelect => '选择账本';
 
   @override
-  String get syncNotConfiguredMessage => '未配置云端';
-
-  @override
-  String get syncNotLoggedInMessage => '未登录';
-
-  @override
-  String get syncCloudBackupCorruptedMessage =>
-      '云端备份内容无法解析，可能是早期版本编码问题造成的损坏。请点击\\\"上传当前账本到云端\\\"覆盖修复。';
-
-  @override
-  String get syncNoCloudBackupMessage => '云端暂无备份';
-
-  @override
-  String get syncAccessDeniedMessage => '403 拒绝访问（检查 storage RLS 策略与路径）';
-
-  @override
   String get cloudTestConnection => '测试连接';
 
   @override
@@ -1903,30 +1775,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get localBackupListEmpty => '暂无备份';
-
-  @override
-  String get localBackupRestoreTitle => '恢复备份';
-
-  @override
-  String get localBackupRestoreMessage => '恢复将覆盖当前全部数据且不可逆，是否继续？';
-
-  @override
-  String get localBackupRestoreSuccess => '恢复成功';
-
-  @override
-  String get localBackupRestoreFailed => '恢复失败';
-
-  @override
-  String get localBackupEmergencyFailed => '无法为当前数据创建安全副本，已取消恢复';
-
-  @override
-  String get localBackupIntegrityFailed => '备份文件已损坏，无法恢复';
-
-  @override
-  String get localBackupVersionTooNew => '该备份由更新版本的应用创建，请升级应用后再恢复';
-
-  @override
-  String get localBackupRestoring => '正在恢复…';
 
   @override
   String get cloudCustomSupabaseTitle => '自定义 Supabase';
@@ -2004,168 +1852,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get localBackupRestoreHint => '点击备份进入恢复流程';
 
   @override
-  String get cloudTabCloudSync => '云端协同';
-
-  @override
-  String get cloudSupabaseHelpTitle => 'Supabase 配置说明';
-
-  @override
-  String get cloudSupabaseHelpIntro => '什么是 Supabase';
-
-  @override
-  String get cloudSupabaseHelpIntro1 => 'Supabase 是一个开源的后端即服务平台';
-
-  @override
-  String get cloudSupabaseHelpIntro2 => '提供免费套餐，足够个人使用';
-
-  @override
-  String get cloudSupabaseHelpIntro3 => '数据完全由您掌控';
-
-  @override
-  String get cloudSupabaseHelpSteps => '配置步骤';
-
-  @override
-  String get cloudSupabaseHelpStep1 => '1. 访问 supabase.com 注册账号';
-
-  @override
-  String get cloudSupabaseHelpStep2 => '2. 创建新项目（选择免费套餐）';
-
-  @override
-  String get cloudSupabaseHelpStep3 => '3. 进入项目设置 > API';
-
-  @override
-  String get cloudSupabaseHelpStep4 => '4. 复制 Project URL 和 anon key';
-
-  @override
-  String get cloudSupabaseHelpStep5 => '5. 粘贴到应用的配置中';
-
-  @override
-  String get cloudSupabaseHelpFaq => '常见问题';
-
-  @override
-  String get cloudSupabaseHelpFaq1 => '免费套餐有 500MB 存储空间';
-
-  @override
-  String get cloudSupabaseHelpFaq2 => '数据加密存储，安全可靠';
-
-  @override
-  String get cloudSupabaseHelpFaq3 => '支持多设备同步';
-
-  @override
-  String get cloudSupabaseHelpNote => '配置完成后需要注册/登录账号才能使用同步功能';
-
-  @override
-  String get cloudWebdavHelpTitle => 'WebDAV 配置说明';
-
-  @override
-  String get cloudWebdavHelpIntro => '什么是 WebDAV';
-
-  @override
-  String get cloudWebdavHelpIntro1 => 'WebDAV 是一种网络文件协议';
-
-  @override
-  String get cloudWebdavHelpIntro2 => '支持多种云盘和NAS设备';
-
-  @override
-  String get cloudWebdavHelpIntro3 => '数据存储在您自己的服务器上';
-
-  @override
-  String get cloudWebdavHelpProviders => '支持的服务商';
-
-  @override
-  String get cloudWebdavHelpProvider1 => '• 坚果云（推荐国内用户）';
-
-  @override
-  String get cloudWebdavHelpProvider2 => '• Nextcloud / ownCloud';
-
-  @override
-  String get cloudWebdavHelpProvider3 => '• 群晖 / 威联通 NAS';
-
-  @override
-  String get cloudWebdavHelpProvider4 => '• 其他支持 WebDAV 的服务';
-
-  @override
-  String get cloudWebdavHelpSteps => '配置步骤（以坚果云为例）';
-
-  @override
-  String get cloudWebdavHelpStep1 => '1. 登录坚果云网页版';
-
-  @override
-  String get cloudWebdavHelpStep2 => '2. 点击右上角账户名 > 账户信息';
-
-  @override
-  String get cloudWebdavHelpStep3 => '3. 选择「安全选项」标签';
-
-  @override
-  String get cloudWebdavHelpStep4 => '4. 添加应用密码（用于第三方应用）';
-
-  @override
-  String get cloudWebdavHelpStep5 => '5. 复制服务器地址、账号、应用密码';
-
-  @override
-  String get cloudWebdavHelpNote => '建议使用应用专用密码，而非账号密码';
-
-  @override
-  String get cloudS3HelpTitle => 'S3 存储配置说明';
-
-  @override
-  String get cloudS3HelpIntro => '什么是 S3';
-
-  @override
-  String get cloudS3HelpIntro1 => 'S3 是一种标准的对象存储协议';
-
-  @override
-  String get cloudS3HelpIntro2 => '支持多家云服务商';
-
-  @override
-  String get cloudS3HelpIntro3 => '数据存储在您选择的云服务中';
-
-  @override
-  String get cloudS3HelpProviders => '支持的服务商';
-
-  @override
-  String get cloudS3HelpProvider1 => '• AWS S3（Amazon Web Services）';
-
-  @override
-  String get cloudS3HelpProvider2 => '• Cloudflare R2（免费 10GB/月）';
-
-  @override
-  String get cloudS3HelpProvider3 => '• Backblaze B2（免费 10GB）';
-
-  @override
-  String get cloudS3HelpProvider4 => '• MinIO（自建服务）';
-
-  @override
-  String get cloudS3HelpProvider5 => '• 阿里云 OSS';
-
-  @override
-  String get cloudS3HelpProvider6 => '• 腾讯云 COS';
-
-  @override
-  String get cloudS3HelpProvider7 => '• 七牛云 Kodo';
-
-  @override
-  String get cloudS3HelpSteps => '配置步骤（以 Cloudflare R2 为例）';
-
-  @override
-  String get cloudS3HelpStep1 => '1. 登录 Cloudflare 控制台';
-
-  @override
-  String get cloudS3HelpStep2 => '2. 进入 R2 > 创建存储桶';
-
-  @override
-  String get cloudS3HelpStep3 => '3. 进入 R2 > 管理 R2 API 令牌';
-
-  @override
-  String get cloudS3HelpStep4 => '4. 创建 API 令牌并复制凭据';
-
-  @override
-  String get cloudS3HelpStep5 => '5. 粘贴端点、访问密钥、私密密钥和存储桶名称';
-
-  @override
-  String get cloudS3HelpNote => '推荐使用 Cloudflare R2，提供 10GB 免费存储且无流量费';
-
-  @override
   String get cloudStatusNotTested => '未测试';
 
   @override
@@ -2173,33 +1859,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cloudStatusFailed => '连接失败';
-
-  @override
-  String get cloudErrorAuthFailed => '认证失败: API Key 无效';
-
-  @override
-  String cloudErrorServerStatus(String code) {
-    return '服务器返回状态码 $code';
-  }
-
-  @override
-  String get cloudErrorWebdavNotSupported => '服务器不支持 WebDAV 协议';
-
-  @override
-  String get cloudErrorAuthFailedCredentials => '认证失败: 用户名或密码错误';
-
-  @override
-  String get cloudErrorAccessDenied => '访问被拒绝: 请检查权限';
-
-  @override
-  String cloudErrorPathNotFound(String path) {
-    return '服务器路径不存在: $path';
-  }
-
-  @override
-  String cloudErrorNetwork(String message) {
-    return '网络错误: $message';
-  }
 
   @override
   String get cloudTestSuccessMessage => '连接正常,配置有效';
@@ -2240,87 +1899,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cloudConfigureS3Title => '配置 S3';
 
   @override
-  String get cloudSupabaseAnonKeyHintLong => '粘贴完整的 anon key';
-
-  @override
-  String get cloudWebdavRemotePathLabel => '远程路径';
-
-  @override
-  String get cloudWebdavRemotePathHelperText => '数据存储的远程目录路径';
-
-  @override
   String get welcomeSelectCurrencyTitle => '选择记账货币';
 
   @override
   String get welcomeCurrencyDescription => '选择您常用的货币，之后可以随时在设置中更改';
-
-  @override
-  String get aiOcrNoLedger => '未找到账本';
-
-  @override
-  String get cloudTutorialTitle => '使用教程';
-
-  @override
-  String get cloudTutorialIntro =>
-      'Sesame Notes Cloud 是可以自建的云同步服务端,支持多设备实时协同。流程很简单:';
-
-  @override
-  String get cloudTutorialStep1Title => '第一步:部署或选择服务器';
-
-  @override
-  String get cloudTutorialStep1Desc =>
-      '自己部署:Docker 一行命令拉起(见 GitHub README 的 Docker 指南)。或直接使用朋友/团队已有的 Sesame Notes Cloud 服务器。';
-
-  @override
-  String get cloudTutorialStep2Title => '第二步:获取账号';
-
-  @override
-  String get cloudTutorialStep2Desc =>
-      'Sesame Notes Cloud 不支持自助注册(避免公网服务被滥用)。自己部署的同学:首次启动 Docker 日志里会打印随机管理员账号密码,直接用。加入他人服务器的同学:让管理员在 Web 后台 →「用户」里帮你添加账号。';
-
-  @override
-  String get cloudTutorialStep3Title => '第三步:登录并开启同步';
-
-  @override
-  String get cloudTutorialStep3Desc =>
-      'App 里选「Sesame Notes Cloud」,填服务器地址 + 管理员给你的账号,登录。首次会全量上传你本地所有账本数据,之后每次编辑实时推送。';
-
-  @override
-  String get cloudTutorialStep4Title => '第四步:其他设备登录';
-
-  @override
-  String get cloudTutorialStep4Desc => '手机、平板、Web 三端用同一账号登录,数据即刻互通。修改几秒内互相感知。';
-
-  @override
-  String get cloudTutorialTipTitle => '小贴士';
-
-  @override
-  String get cloudTutorialTipDesc =>
-      'Web 端地址 = 服务器地址,浏览器直接访问即可。登录后可以管理账本、成员、查看日志。';
-
-  @override
-  String get cloudTutorialFeaturesTitle => '特色功能';
-
-  @override
-  String get cloudTutorialFeature1 =>
-      '📱 多设备实时协同:手机 A + 手机 B + Web 三端同账号,数据秒级同步';
-
-  @override
-  String get cloudTutorialFeature2 =>
-      '🌐 自带 Web 管理端:一个 Docker 镜像包含 server + web,浏览器即可使用';
-
-  @override
-  String get cloudTutorialFeature3 => '👥 多用户独立:一个服务器可以多人注册,各自数据完全隔离';
-
-  @override
-  String get cloudTutorialFeature4 => '🤝 共享账本:邀请家人 / 团队一起记同一本,实时秒级同步';
-
-  @override
-  String get cloudTutorialGotIt => '我知道了';
-
-  @override
-  String get cloudSyncHint =>
-      '下载时可自动对比差异并逐条预览。非实时同步，请避免多设备同时编辑同一账本。同步范围为账本数据（含关联的账户、分类）。';
 
   @override
   String get appearanceSettings => '偏好调节';
@@ -3795,12 +3377,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restoreStep1Subtitle => '选择要恢复的备份';
 
   @override
-  String get restoreOpenBackup => '打开备份';
-
-  @override
-  String get restoreOpening => '正在打开…';
-
-  @override
   String get restoreStep2Title => '查看备份内容';
 
   @override
@@ -3872,17 +3448,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String restoreAccountOf(String account) {
     return '账号 $account';
   }
-
-  @override
-  String restoreLastSyncAt(String time) {
-    return '最后同步 $time';
-  }
-
-  @override
-  String get restoreSourceBackup => '来源备份';
-
-  @override
-  String get restoreBackToStep => '上一步';
 
   @override
   String get restoreSchemaTooOld => '备份由旧版本应用创建，请重新备份';
@@ -4288,9 +3853,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get commonCurrent => '當前';
 
   @override
-  String get commonTutorial => '教學';
-
-  @override
   String get commonConfigure => '配置';
 
   @override
@@ -4363,14 +3925,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get homePullCloudFailedButLocalOk => '雲端同步失敗，已刷新本地資料（匯率/設定）';
-
-  @override
-  String homePullCloudHealed(int count) {
-    return '已自動修復並同步 $count 條雲端資料';
-  }
-
-  @override
-  String get homePullCloudGap => '雲端有歷史資料未能自動恢復，請到雲端同步頁執行「從雲端恢復」';
 
   @override
   String get homeSyncing => '正在同步帳本資料';
@@ -4795,16 +4349,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String importProgressDetail(
-    Object done,
-    Object fail,
-    Object ok,
-    Object total,
-  ) {
-    return '已完成：$done/$total，成功 $ok，失敗 $fail';
-  }
-
-  @override
   String importProgressRunning(Object done, Object total) {
     return '已處理：$done/$total';
   }
@@ -4932,9 +4476,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get cloudBackupPortLabel => '連接埠';
-
-  @override
-  String get cloudBackupSave => '儲存配置';
 
   @override
   String get cloudBackupNotConfigured => '未設定';
@@ -5528,9 +5069,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
       '共享帳本記帳使用擁有者的分類；此處的編輯僅影響你的個人分類';
 
   @override
-  String get categorySyncFailedBeforeInvite => '分類同步失敗，請檢查網路後重試';
-
-  @override
   String get categorySortSaveFailed => '排序保存失敗，請重試';
 
   @override
@@ -5590,82 +5128,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get subcategoryEmpty => '暫無子分類';
 
   @override
-  String get cloudSupabaseUrlLabel => 'Supabase URL';
-
-  @override
-  String get cloudSupabaseUrlHint => 'https://xxx.supabase.co';
-
-  @override
-  String get cloudAnonKeyLabel => 'Anon Key';
-
-  @override
-  String get cloudMultiDeviceWarningTitle => '多裝置使用提醒';
-
-  @override
-  String get cloudMultiDeviceWarningMessage =>
-      '換裝置前記得先上傳，到新裝置後先下載再記帳。不要同時在兩台裝置上記同一個帳本。點擊查看詳情 →';
-
-  @override
-  String get cloudWebdavUrlLabel => 'WebDAV 伺服器地址';
-
-  @override
-  String get cloudWebdavUrlHint => 'https://dav.jianguoyun.com/dav/';
-
-  @override
-  String get cloudWebdavUsernameLabel => '使用者名稱';
-
-  @override
-  String get cloudWebdavPasswordLabel => '密碼';
-
-  @override
-  String get cloudWebdavPathHint => '/SesameNotes';
-
-  @override
-  String get cloudS3EndpointLabel => '端點地址';
-
-  @override
-  String get cloudS3EndpointHint => 's3.amazonaws.com 或自訂端點';
-
-  @override
-  String get cloudS3RegionLabel => '區域';
-
-  @override
-  String get cloudS3RegionHint => 'us-east-1（留空自動）';
-
-  @override
-  String get cloudS3AccessKeyLabel => 'Access Key';
-
-  @override
-  String get cloudS3AccessKeyHint => '您的 Access Key ID';
-
-  @override
-  String get cloudS3SecretKeyLabel => 'Secret Key';
-
-  @override
-  String get cloudS3SecretKeyHint => '您的 Secret Access Key';
-
-  @override
-  String get cloudS3BucketLabel => '儲存桶名稱';
-
-  @override
-  String get cloudS3BucketHint => 'sesame-data';
-
-  @override
-  String get cloudS3UseSSLLabel => '使用 HTTPS';
-
-  @override
-  String get cloudS3PortLabel => '連接埠（選填）';
-
-  @override
-  String get cloudS3PortHint => '留空使用預設連接埠';
-
-  @override
-  String get cloudSupabaseBucketLabel => 'Storage Bucket 名稱';
-
-  @override
-  String get cloudSupabaseBucketHint => '留空使用預設值 sesame-backups';
-
-  @override
   String get authRememberAccount => '記住帳號密碼';
 
   @override
@@ -5695,9 +5157,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get cloudClearConfigDone => '設定已清除';
-
-  @override
-  String get cloudPurgeFailed => '雲端帳本清理失敗，請稍後重試';
 
   @override
   String get authLogin => '登入';
@@ -5892,12 +5351,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get currencyMMK => '緬甸元';
 
   @override
-  String get webdavConfiguredTitle => 'WebDAV 雲服務已設定';
-
-  @override
-  String get webdavConfiguredMessage => 'WebDAV 雲服務使用設定時提供的憑證，無需額外登入。';
-
-  @override
   String get recurringTransactionTitle => '週期帳單';
 
   @override
@@ -5985,22 +5438,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get ledgerSelect => '選擇帳本';
 
   @override
-  String get syncNotConfiguredMessage => '未設定雲端';
-
-  @override
-  String get syncNotLoggedInMessage => '未登入';
-
-  @override
-  String get syncCloudBackupCorruptedMessage =>
-      '雲端備份內容無法解析，可能是早期版本編碼問題造成的損壞。請點擊\\\"上傳當前帳本到雲端\\\"覆蓋修復。';
-
-  @override
-  String get syncNoCloudBackupMessage => '雲端暫無備份';
-
-  @override
-  String get syncAccessDeniedMessage => '403 拒絕存取（檢查 storage RLS 策略與路徑）';
-
-  @override
   String get cloudTestConnection => '測試連線';
 
   @override
@@ -6043,30 +5480,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get localBackupListEmpty => '暫無備份';
-
-  @override
-  String get localBackupRestoreTitle => '恢復備份';
-
-  @override
-  String get localBackupRestoreMessage => '恢復將覆蓋目前全部資料且不可逆，是否繼續？';
-
-  @override
-  String get localBackupRestoreSuccess => '恢復成功';
-
-  @override
-  String get localBackupRestoreFailed => '恢復失敗';
-
-  @override
-  String get localBackupEmergencyFailed => '無法為目前資料建立安全副本，已取消恢復';
-
-  @override
-  String get localBackupIntegrityFailed => '備份檔案已損毀，無法恢復';
-
-  @override
-  String get localBackupVersionTooNew => '該備份由更新版本的應用程式建立，請升級應用程式後再恢復';
-
-  @override
-  String get localBackupRestoring => '正在恢復…';
 
   @override
   String get cloudCustomSupabaseTitle => '自訂 Supabase';
@@ -6144,168 +5557,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get localBackupRestoreHint => '點擊備份進入恢復流程';
 
   @override
-  String get cloudTabCloudSync => '雲端協同';
-
-  @override
-  String get cloudSupabaseHelpTitle => 'Supabase 設定說明';
-
-  @override
-  String get cloudSupabaseHelpIntro => '什麼是 Supabase';
-
-  @override
-  String get cloudSupabaseHelpIntro1 => 'Supabase 是一個開源的後端即服務平台';
-
-  @override
-  String get cloudSupabaseHelpIntro2 => '提供免費方案，足夠個人使用';
-
-  @override
-  String get cloudSupabaseHelpIntro3 => '資料完全由您掌控';
-
-  @override
-  String get cloudSupabaseHelpSteps => '設定步驟';
-
-  @override
-  String get cloudSupabaseHelpStep1 => '1. 前往 supabase.com 註冊帳號';
-
-  @override
-  String get cloudSupabaseHelpStep2 => '2. 建立新專案（選擇免費方案）';
-
-  @override
-  String get cloudSupabaseHelpStep3 => '3. 進入專案設定 > API';
-
-  @override
-  String get cloudSupabaseHelpStep4 => '4. 複製 Project URL 和 anon key';
-
-  @override
-  String get cloudSupabaseHelpStep5 => '5. 貼到應用程式的設定中';
-
-  @override
-  String get cloudSupabaseHelpFaq => '常見問題';
-
-  @override
-  String get cloudSupabaseHelpFaq1 => '免費方案有 500MB 儲存空間';
-
-  @override
-  String get cloudSupabaseHelpFaq2 => '資料加密儲存，安全可靠';
-
-  @override
-  String get cloudSupabaseHelpFaq3 => '支援多裝置同步';
-
-  @override
-  String get cloudSupabaseHelpNote => '設定完成後需要註冊/登入帳號才能使用同步功能';
-
-  @override
-  String get cloudWebdavHelpTitle => 'WebDAV 設定說明';
-
-  @override
-  String get cloudWebdavHelpIntro => '什麼是 WebDAV';
-
-  @override
-  String get cloudWebdavHelpIntro1 => 'WebDAV 是一種網路檔案通訊協定';
-
-  @override
-  String get cloudWebdavHelpIntro2 => '支援多種雲端硬碟和 NAS 裝置';
-
-  @override
-  String get cloudWebdavHelpIntro3 => '資料儲存在您自己的伺服器上';
-
-  @override
-  String get cloudWebdavHelpProviders => '支援的服務商';
-
-  @override
-  String get cloudWebdavHelpProvider1 => '• 堅果雲（推薦國內用戶）';
-
-  @override
-  String get cloudWebdavHelpProvider2 => '• Nextcloud / ownCloud';
-
-  @override
-  String get cloudWebdavHelpProvider3 => '• 群暉 / 威聯通 NAS';
-
-  @override
-  String get cloudWebdavHelpProvider4 => '• 其他支援 WebDAV 的服務';
-
-  @override
-  String get cloudWebdavHelpSteps => '設定步驟（以堅果雲為例）';
-
-  @override
-  String get cloudWebdavHelpStep1 => '1. 登入堅果雲網頁版';
-
-  @override
-  String get cloudWebdavHelpStep2 => '2. 點擊右上角帳戶名 > 帳戶資訊';
-
-  @override
-  String get cloudWebdavHelpStep3 => '3. 選擇「安全選項」標籤';
-
-  @override
-  String get cloudWebdavHelpStep4 => '4. 新增應用程式密碼（用於第三方應用程式）';
-
-  @override
-  String get cloudWebdavHelpStep5 => '5. 複製伺服器地址、帳號、應用程式密碼';
-
-  @override
-  String get cloudWebdavHelpNote => '建議使用應用程式專用密碼，而非帳號密碼';
-
-  @override
-  String get cloudS3HelpTitle => 'S3 儲存設定說明';
-
-  @override
-  String get cloudS3HelpIntro => '什麼是 S3';
-
-  @override
-  String get cloudS3HelpIntro1 => 'S3 是一種標準的物件儲存通訊協定';
-
-  @override
-  String get cloudS3HelpIntro2 => '支援多家雲端服務商';
-
-  @override
-  String get cloudS3HelpIntro3 => '資料儲存在您選擇的雲端服務中';
-
-  @override
-  String get cloudS3HelpProviders => '支援的服務商';
-
-  @override
-  String get cloudS3HelpProvider1 => '• AWS S3（Amazon Web Services）';
-
-  @override
-  String get cloudS3HelpProvider2 => '• Cloudflare R2（免費 10GB/月）';
-
-  @override
-  String get cloudS3HelpProvider3 => '• Backblaze B2（免費 10GB）';
-
-  @override
-  String get cloudS3HelpProvider4 => '• MinIO（自建服務）';
-
-  @override
-  String get cloudS3HelpProvider5 => '• 阿里雲 OSS';
-
-  @override
-  String get cloudS3HelpProvider6 => '• 騰訊雲 COS';
-
-  @override
-  String get cloudS3HelpProvider7 => '• 七牛雲 Kodo';
-
-  @override
-  String get cloudS3HelpSteps => '設定步驟（以 Cloudflare R2 為例）';
-
-  @override
-  String get cloudS3HelpStep1 => '1. 登入 Cloudflare 控制台';
-
-  @override
-  String get cloudS3HelpStep2 => '2. 進入 R2 > 建立儲存桶';
-
-  @override
-  String get cloudS3HelpStep3 => '3. 進入 R2 > 管理 R2 API 令牌';
-
-  @override
-  String get cloudS3HelpStep4 => '4. 建立 API 令牌並複製憑據';
-
-  @override
-  String get cloudS3HelpStep5 => '5. 貼上端點、存取金鑰、私密金鑰和儲存桶名稱';
-
-  @override
-  String get cloudS3HelpNote => '推薦使用 Cloudflare R2，提供 10GB 免費儲存且無流量費';
-
-  @override
   String get cloudStatusNotTested => '未測試';
 
   @override
@@ -6313,33 +5564,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get cloudStatusFailed => '連線失敗';
-
-  @override
-  String get cloudErrorAuthFailed => '認證失敗: API Key 無效';
-
-  @override
-  String cloudErrorServerStatus(String code) {
-    return '伺服器返回狀態碼 $code';
-  }
-
-  @override
-  String get cloudErrorWebdavNotSupported => '伺服器不支援 WebDAV 通訊協定';
-
-  @override
-  String get cloudErrorAuthFailedCredentials => '認證失敗: 使用者名稱或密碼錯誤';
-
-  @override
-  String get cloudErrorAccessDenied => '存取被拒絕: 請檢查權限';
-
-  @override
-  String cloudErrorPathNotFound(String path) {
-    return '伺服器路徑不存在: $path';
-  }
-
-  @override
-  String cloudErrorNetwork(String message) {
-    return '網路錯誤: $message';
-  }
 
   @override
   String get cloudTestSuccessMessage => '連線正常，設定有效';
@@ -6380,87 +5604,10 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get cloudConfigureS3Title => '設定 S3';
 
   @override
-  String get cloudSupabaseAnonKeyHintLong => '貼上完整的 anon key';
-
-  @override
-  String get cloudWebdavRemotePathLabel => '遠端路徑';
-
-  @override
-  String get cloudWebdavRemotePathHelperText => '資料儲存的遠端目錄路徑';
-
-  @override
   String get welcomeSelectCurrencyTitle => '選擇記帳貨幣';
 
   @override
   String get welcomeCurrencyDescription => '選擇您常用的貨幣，之後可以隨時在設定中更改';
-
-  @override
-  String get aiOcrNoLedger => '未找到帳本';
-
-  @override
-  String get cloudTutorialTitle => '使用教程';
-
-  @override
-  String get cloudTutorialIntro =>
-      'Sesame Notes Cloud 是可自建的雲同步服務端,支援多裝置即時協同。流程很簡單:';
-
-  @override
-  String get cloudTutorialStep1Title => '第一步:部署或選擇伺服器';
-
-  @override
-  String get cloudTutorialStep1Desc =>
-      '自行部署:Docker 一行指令拉起(詳見 GitHub README 的 Docker 指南)。或直接使用朋友/團隊既有的 Sesame Notes Cloud 伺服器。';
-
-  @override
-  String get cloudTutorialStep2Title => '第二步:取得帳號';
-
-  @override
-  String get cloudTutorialStep2Desc =>
-      'Sesame Notes Cloud 不支援自助註冊(避免公網服務被濫用)。自行部署:Docker 首次啟動日誌會印出隨機管理員帳密,直接用。加入他人伺服器:請管理員在 Web 後台 →「使用者」裡為你建立帳號。';
-
-  @override
-  String get cloudTutorialStep3Title => '第三步:登入並開啟同步';
-
-  @override
-  String get cloudTutorialStep3Desc =>
-      'App 內選「Sesame Notes Cloud」,填伺服器位址 + 管理員給你的帳號,登入。首次會全量上傳你本機所有帳本資料,之後每次編輯即時推送。';
-
-  @override
-  String get cloudTutorialStep4Title => '第四步:其他裝置登入';
-
-  @override
-  String get cloudTutorialStep4Desc => '手機、平板、Web 三端用同一帳號登入,資料即刻互通。修改數秒內互相感知。';
-
-  @override
-  String get cloudTutorialTipTitle => '小提示';
-
-  @override
-  String get cloudTutorialTipDesc =>
-      'Web 端地址 = 伺服器位址,瀏覽器直接開啟即可。登入後可管理帳本、成員、查看紀錄。';
-
-  @override
-  String get cloudTutorialFeaturesTitle => '特色功能';
-
-  @override
-  String get cloudTutorialFeature1 =>
-      '📱 多裝置即時協同:手機 A + 手機 B + Web 三端同帳號,資料秒級同步';
-
-  @override
-  String get cloudTutorialFeature2 =>
-      '🌐 內建 Web 管理端:一個 Docker 映像檔含 server + web,瀏覽器即可使用';
-
-  @override
-  String get cloudTutorialFeature3 => '👥 多用戶獨立:一個伺服器可多人註冊,各自資料完全隔離';
-
-  @override
-  String get cloudTutorialFeature4 => '🤝 共享帳本:邀請家人 / 團隊一起記同一本,即時秒級同步';
-
-  @override
-  String get cloudTutorialGotIt => '我知道了';
-
-  @override
-  String get cloudSyncHint =>
-      '下載時可自動對比差異並逐條預覽。非即時同步，請避免多裝置同時編輯同一帳本。同步範圍為帳本資料（含關聯的帳戶、分類）。';
 
   @override
   String get appearanceSettings => '偏好調節';
@@ -7935,12 +7082,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get restoreStep1Subtitle => '選擇要恢復的備份';
 
   @override
-  String get restoreOpenBackup => '打開備份';
-
-  @override
-  String get restoreOpening => '正在開啟…';
-
-  @override
   String get restoreStep2Title => '檢視備份內容';
 
   @override
@@ -8012,17 +7153,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String restoreAccountOf(String account) {
     return '帳號 $account';
   }
-
-  @override
-  String restoreLastSyncAt(String time) {
-    return '最後同步 $time';
-  }
-
-  @override
-  String get restoreSourceBackup => '來源備份';
-
-  @override
-  String get restoreBackToStep => '上一步';
 
   @override
   String get restoreSchemaTooOld => '備份由舊版本應用程式建立，請重新備份';

@@ -17,7 +17,6 @@ import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
-import 'package:sesame_notes/shared/providers/avatar_providers.dart';
 import 'package:sesame_notes/shared/providers/language_provider.dart';
 import 'package:sesame_notes/utils/member_id.dart';
 import 'dart:ui' show Locale;
@@ -54,7 +53,6 @@ void main() {
       overrides: [
         databaseProvider.overrideWithValue(db),
         repositoryProvider.overrideWithValue(repo),
-        avatarPathProvider.overrideWith((ref) async => null),
         localSelfIdProvider.overrideWith((ref) async => 'local-self'),
         // 固定中文环境,展示名断言不随系统语言漂移。
         languageProvider.overrideWith(_ZhLanguageNotifier.new),
