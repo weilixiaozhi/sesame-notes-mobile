@@ -31,7 +31,6 @@ import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/utils/member_id.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
-import 'package:sesame_notes/shared/providers/sync_state_providers.dart';
 
 const _uuid = Uuid();
 
@@ -382,19 +381,6 @@ class LedgerStorageActions {
         }
       }),
     );
-  }
-
-  /// 退出登录 purge：置闸（暂停同步防重拉）→ 清除云端账本 → 开闸。
-  ///
-  /// finally 保证闸门必然恢复：purge 失败也不得让同步永久停摆。
-  Future<void> purgeAllCloudLedgersWithGate() async {
-    final gate = ref.read(syncGateProvider.notifier);
-    gate.hold();
-    try {
-      await ref.read(repositoryProvider).purgeAllCloudLedgers();
-    } finally {
-      gate.release();
-    }
   }
 
   /// 复制到本地：云端账本留一份本地副本（云端原件保留），返回新账本 id。

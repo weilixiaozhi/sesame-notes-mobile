@@ -3,10 +3,12 @@
 
 /// 孤儿/未接线扫描:找出「注册了但没有入口」的死代码候选。
 ///
-/// 三类扫描(启发式,结果是候选清单,需人工确认;误报来源见各类注释):
+/// 四类扫描(启发式,结果是候选清单,需人工确认;误报来源见各类注释):
 /// 1. 死路由:Routes 常量在路由文件之外零引用(注册了但没人跳转);
 /// 2. 孤儿页面:presentation 下的 *Page 类在自身文件之外零引用;
-/// 3. 未用 provider:lib 中声明的 Provider 全库仅剩声明行。
+/// 3. 未用 provider:lib 中声明的 Provider 全库仅剩声明行;
+/// 4. 未用公共方法:Repository/Service/Actions/Coordinator 类的公共方法在
+///    自身文件之外零引用(如「有实现有测试但生产从不调用」的 P0 死代码)。
 ///
 /// 注意:l10n 未使用/多余键的检查与清理由 scripts/i18n/check_status.dart 负责,
 /// 本脚本不做文案扫描,避免重复。
@@ -107,6 +109,30 @@ void main() {
   }
   report('未用 provider:全 lib 仅剩声明行', unusedProviders);
 
+  // ---- 4. 未用公共方法 ----
+  // 只扫数据/编排层的类:这些类的公共方法若全库无人调用,大概率是
+  // 「有实现有测试、生产从不接线」的死代码(如未接线的 purge 编排)。
+  final targetClassRe = RegExp(r'class \w+(Repository|Service|Actions|Coordinator)\s');
+  final methodRe = RegExp(
+    r'^\s{2}(?:static\s+)?(?:Future<\S+>|Future|void|bool|String|int|double|File|Uint8List|Stream<\S+>)\s+(\w+)\s*\(',
+    multiLine: true,
+  );
+  final deadMethods = <String>[];
+  for (final f in allLib) {
+    if (f.endsWith('.g.dart')) continue;
+    final text = File(f).readAsStringSync();
+    if (!targetClassRe.hasMatch(text)) continue;
+    for (final m in methodRe.allMatches(text)) {
+      final name = m.group(1)!;
+      if (name.startsWith('_')) continue;
+      // 引用总数含自身文件:仅剩声明行(1 次)才算死代码,
+      // 类内部自用的静态/私有辅助方法不会被误报。
+      final refs = countRefs(name, allLib);
+      if (refs <= 1) deadMethods.add('$name ($f)');
+    }
+  }
+  report('未用公共方法:Repository/Service/Actions/Coordinator 方法在自身文件外零引用', deadMethods);
+
   print('');
-  print('提示:以上均为候选,请人工确认。误报常见原因:动态路由拼接、测试专用注入。');
+  print('提示:以上均为候选,请人工确认。误报常见原因:动态路由拼接、测试专用注入、接口动态分发、字符串键。');
 }

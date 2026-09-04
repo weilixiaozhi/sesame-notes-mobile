@@ -23,7 +23,6 @@ import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
-import 'package:sesame_notes/features/ledgers/application/ledger_storage_providers.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
 import 'package:sesame_notes/shared/providers/sync_state_providers.dart';
 import 'package:sesame_notes/shared/providers/refresh_ticks.dart';
@@ -208,43 +207,4 @@ void main() {
     expect(result.ok, isFalse, reason: '页面必须能区分同步失败，不能误报成功');
     expect(container.read(manualDataRefreshProvider), before + 1);
   });
-
-  test('purgeWithGate：purge 执行成功且闸门恢复开启', () async {
-    final cloudId = 'cloud-1';
-    await repo.createBoundLedger(id: cloudId, name: '云端账本');
-    final localId = await repo.createLedger(name: '本地账本', storageMode: 'local');
-
-    final actions = container.read(ledgerStorageActionsProvider);
-    await actions.purgeAllCloudLedgersWithGate();
-
-    expect(await repo.getLedgerById(cloudId), isNull, reason: '云端账本被 purge');
-    expect(await repo.getLedgerById(localId), isNotNull, reason: '本地账本保留');
-    expect(container.read(syncGateProvider), isFalse, reason: 'purge 后必须开闸');
-  });
-
-  test('purgeWithGate：purge 抛错也恢复闸门（finally 语义）', () async {
-    // 注入一个必然失败的仓库（getLedgerById 抛错）。
-    final boomRepo = _BoomRepo(db);
-    final container2 = ProviderContainer(
-      overrides: [repositoryProvider.overrideWithValue(boomRepo)],
-    );
-    addTearDown(container2.dispose);
-    final actions = container2.read(ledgerStorageActionsProvider);
-
-    await expectLater(actions.purgeAllCloudLedgersWithGate(), throwsStateError);
-    expect(
-      container2.read(syncGateProvider),
-      isFalse,
-      reason: 'purge 失败也绝不能让闸门永久关闭',
-    );
-  });
-}
-
-class _BoomRepo extends LocalRepository {
-  _BoomRepo(super.db);
-
-  @override
-  Future<void> purgeAllCloudLedgers() async {
-    throw StateError('purge boom');
-  }
 }
