@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yaml/yaml.dart';
 import 'package:drift/drift.dart' as d;
@@ -1229,42 +1228,5 @@ class ConfigExportService {
         logger.error('ConfigImport', '导入周期账单失败: $e');
       }
     }
-  }
-
-  /// 导出配置到文件
-  static Future<void> exportToFile(
-    String filePath, {
-    LocalRepository? repository,
-    ExportOptions options = ExportOptions.all,
-  }) async {
-    final yamlContent = await exportToYaml(
-      repository: repository,
-      options: options,
-    );
-    final file = File(filePath);
-    await file.writeAsString(yamlContent);
-    logger.info('ConfigExport', '配置已导出到: $filePath');
-  }
-
-  /// 从文件导入配置
-  static Future<void> importFromFile(
-    String filePath, {
-    LocalRepository? repository,
-    String? ledgerId,
-    ExportOptions options = ExportOptions.all,
-  }) async {
-    final file = File(filePath);
-    if (!await file.exists()) {
-      throw Exception('文件不存在: $filePath');
-    }
-
-    final yamlContent = await file.readAsString();
-    await importFromYaml(
-      yamlContent,
-      repository: repository,
-      ledgerId: ledgerId,
-      options: options,
-    );
-    logger.info('ConfigImport', '配置已从文件导入: $filePath');
   }
 }

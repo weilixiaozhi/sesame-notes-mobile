@@ -319,26 +319,6 @@
     "languageChinese": "简体中文",
     "languageEnglish": "English",
     "languageSystemDefault": "Follow System",
-    "mineSlogan": "No nickname set",
-    "mineDisplayNameEditTitle": "Set nickname",
-    "mineDisplayNameHint": "Enter a nickname",
-    "mineDisplayNameSaved": "Nickname updated",
-    "mineGreetingMorning": "Good morning",
-    "mineGreetingNoon": "Good noon",
-    "mineGreetingAfternoon": "Good afternoon",
-    "mineGreetingEvening": "Good evening",
-    "mineGreetingNight": "Good night",
-    "mineGreetingNamed": "{greeting}, {name}",
-    "@mineGreetingNamed": {
-        "placeholders": {
-            "greeting": {
-                "type": "String"
-            },
-            "name": {
-                "type": "String"
-            }
-        }
-    },
     "mineAvatarDelete": "Delete Avatar",
     "mineAvatarUploadNew": "Upload New Avatar",
     "mineCloudService": "Backup & Cloud Sync",
@@ -873,61 +853,6 @@
     "configExportConfirmTitle": "Confirm Export",
     "configImportSelectTitle": "Select Import Content",
     "configImportPreviewTitle": "Import Preview",
-    "ledgersConflictTitle": "Sync Conflict",
-    "ledgersConflictMessage": "Local and cloud ledger data are inconsistent, please choose an action:",
-    "ledgersConflictLocalInfo": "Local: {count} transactions",
-    "@ledgersConflictLocalInfo": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "ledgersConflictRemoteInfo": "Cloud: {count} transactions",
-    "@ledgersConflictRemoteInfo": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "ledgersConflictRemoteUpdated": "Cloud updated: {time}",
-    "@ledgersConflictRemoteUpdated": {
-        "placeholders": {
-            "time": {
-                "type": "String"
-            }
-        }
-    },
-    "ledgersConflictLocalFingerprint": "Local fingerprint: {fp}",
-    "@ledgersConflictLocalFingerprint": {
-        "placeholders": {
-            "fp": {
-                "type": "String"
-            }
-        }
-    },
-    "ledgersConflictRemoteFingerprint": "Cloud fingerprint: {fp}",
-    "@ledgersConflictRemoteFingerprint": {
-        "placeholders": {
-            "fp": {
-                "type": "String"
-            }
-        }
-    },
-    "ledgersConflictUpload": "Upload to Cloud",
-    "ledgersConflictDownload": "Download to Local",
-    "ledgersConflictUploading": "Uploading...",
-    "ledgersConflictDownloading": "Downloading...",
-    "ledgersConflictUploadSuccess": "Upload successful",
-    "ledgersConflictDownloadSuccess": "Download successful, merged {inserted} transactions",
-    "@ledgersConflictDownloadSuccess": {
-        "placeholders": {
-            "inserted": {
-                "type": "int"
-            }
-        }
-    },
     "welcomeExistingUserTitle": "Existing User?",
     "welcomeExistingUserButton": "Import Config",
     "welcomeImportingConfig": "Importing configuration...",
@@ -954,55 +879,6 @@
     },
     "calendarAddTransaction": "Add entry on this day",
     "commonUncategorized": "Uncategorized",
-    "syncPreviewTitle": "Sync Preview",
-    "syncPreviewSelectAll": "Select All",
-    "syncPreviewDeselectAll": "Deselect All",
-    "syncPreviewAdded": "Added",
-    "syncPreviewModified": "Modified",
-    "syncPreviewDeleted": "Deleted",
-    "syncPreviewAddedCount": "{count} added",
-    "@syncPreviewAddedCount": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "syncPreviewModifiedCount": "{count} modified",
-    "@syncPreviewModifiedCount": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "syncPreviewDeletedCount": "{count} deleted",
-    "@syncPreviewDeletedCount": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "syncPreviewApply": "Apply {count} items",
-    "@syncPreviewApply": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "syncPreviewEmpty": "Cloud data matches local, no sync needed",
-    "syncPreviewOldFormat": "Old cloud format, full replace required",
-    "syncPreviewOldFormatMessage": "Cloud data does not contain sync IDs. Local data will be cleared and re-imported from cloud.",
-    "syncPreviewApplied": "Applied {count} changes",
-    "@syncPreviewApplied": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
     "appLockTitle": "Lock App",
     "appLockDesc": "PIN & biometric to protect privacy",
     "appLockEnable": "Enable App Lock",
@@ -1032,54 +908,9 @@
             }
         }
     },
-    "syncHealthTitle": "Sync status",
-    "syncHealthCheckFailed": "Check failed: {msg}",
-    "@syncHealthCheckFailed": {
-        "placeholders": {
-            "msg": {
-                "type": "String"
-            }
-        }
-    },
-    "syncHealthRecovering": "Restoring sign-in status…",
-    "@syncHealthRecovering": {
-        "description": "Shown while cloud sign-in is silently recovering after a session loss; auto-retries after cooldown"
-    },
-    "syncHealthNeedsLogin": "Not signed in or session expired. Please sign in to cloud sync again.",
-    "@syncHealthNeedsLogin": {
-        "description": "Shown when silent recovery failed and the user must manually sign in to cloud sync"
-    },
-    "syncHealthHasDiff": "Diff detected; auto-synced",
     "cloudSyncHealFailed": "Auto-restore failed; please restore from cloud manually",
     "@cloudSyncHealFailed": {
         "description": "Shown when the self-heal circuit breaker is open and the missing cloud data could not be restored automatically"
-    },
-    "syncHealthInSync": "Local matches cloud",
-    "syncHealthGroupCurrentLedger": "Current ledger",
-    "syncHealthGroupAll": "All ledgers",
-    "syncHealthRowTx": "Transactions",
-    "syncHealthRowCategory": "Categories",
-    "syncHealthRowUnpushed": "Unpushed changes",
-    "syncHealthValue": "Local {local} · Remote {remote}",
-    "@syncHealthValue": {
-        "description": "Per-item sync counts in the sync-status detail panel, local vs remote",
-        "placeholders": {
-            "local": {
-                "type": "int"
-            },
-            "remote": {
-                "type": "int"
-            }
-        }
-    },
-    "syncHealthValueRemoteMissing": "Local {local} · Remote —",
-    "@syncHealthValueRemoteMissing": {
-        "description": "Per-item sync count when the remote count cannot be fetched",
-        "placeholders": {
-            "local": {
-                "type": "int"
-            }
-        }
     },
     "sharedRoleOwner": "Owner",
     "sharedRoleEditor": "Editor",

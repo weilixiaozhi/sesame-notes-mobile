@@ -708,38 +708,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageSystemDefault => 'Follow System';
 
   @override
-  String get mineSlogan => 'No nickname set';
-
-  @override
-  String get mineDisplayNameEditTitle => 'Set nickname';
-
-  @override
-  String get mineDisplayNameHint => 'Enter a nickname';
-
-  @override
-  String get mineDisplayNameSaved => 'Nickname updated';
-
-  @override
-  String get mineGreetingMorning => 'Good morning';
-
-  @override
-  String get mineGreetingNoon => 'Good noon';
-
-  @override
-  String get mineGreetingAfternoon => 'Good afternoon';
-
-  @override
-  String get mineGreetingEvening => 'Good evening';
-
-  @override
-  String get mineGreetingNight => 'Good night';
-
-  @override
-  String mineGreetingNamed(String greeting, String name) {
-    return '$greeting, $name';
-  }
-
-  @override
   String get mineAvatarDelete => 'Delete Avatar';
 
   @override
@@ -2110,58 +2078,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get configImportPreviewTitle => 'Import Preview';
 
   @override
-  String get ledgersConflictTitle => 'Sync Conflict';
-
-  @override
-  String get ledgersConflictMessage =>
-      'Local and cloud ledger data are inconsistent, please choose an action:';
-
-  @override
-  String ledgersConflictLocalInfo(int count) {
-    return 'Local: $count transactions';
-  }
-
-  @override
-  String ledgersConflictRemoteInfo(int count) {
-    return 'Cloud: $count transactions';
-  }
-
-  @override
-  String ledgersConflictRemoteUpdated(String time) {
-    return 'Cloud updated: $time';
-  }
-
-  @override
-  String ledgersConflictLocalFingerprint(String fp) {
-    return 'Local fingerprint: $fp';
-  }
-
-  @override
-  String ledgersConflictRemoteFingerprint(String fp) {
-    return 'Cloud fingerprint: $fp';
-  }
-
-  @override
-  String get ledgersConflictUpload => 'Upload to Cloud';
-
-  @override
-  String get ledgersConflictDownload => 'Download to Local';
-
-  @override
-  String get ledgersConflictUploading => 'Uploading...';
-
-  @override
-  String get ledgersConflictDownloading => 'Downloading...';
-
-  @override
-  String get ledgersConflictUploadSuccess => 'Upload successful';
-
-  @override
-  String ledgersConflictDownloadSuccess(int inserted) {
-    return 'Download successful, merged $inserted transactions';
-  }
-
-  @override
   String get welcomeExistingUserTitle => 'Existing User?';
 
   @override
@@ -2200,59 +2116,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonUncategorized => 'Uncategorized';
-
-  @override
-  String get syncPreviewTitle => 'Sync Preview';
-
-  @override
-  String get syncPreviewSelectAll => 'Select All';
-
-  @override
-  String get syncPreviewDeselectAll => 'Deselect All';
-
-  @override
-  String get syncPreviewAdded => 'Added';
-
-  @override
-  String get syncPreviewModified => 'Modified';
-
-  @override
-  String get syncPreviewDeleted => 'Deleted';
-
-  @override
-  String syncPreviewAddedCount(int count) {
-    return '$count added';
-  }
-
-  @override
-  String syncPreviewModifiedCount(int count) {
-    return '$count modified';
-  }
-
-  @override
-  String syncPreviewDeletedCount(int count) {
-    return '$count deleted';
-  }
-
-  @override
-  String syncPreviewApply(int count) {
-    return 'Apply $count items';
-  }
-
-  @override
-  String get syncPreviewEmpty => 'Cloud data matches local, no sync needed';
-
-  @override
-  String get syncPreviewOldFormat => 'Old cloud format, full replace required';
-
-  @override
-  String get syncPreviewOldFormatMessage =>
-      'Cloud data does not contain sync IDs. Local data will be cleared and re-imported from cloud.';
-
-  @override
-  String syncPreviewApplied(int count) {
-    return 'Applied $count changes';
-  }
 
   @override
   String get appLockTitle => 'Lock App';
@@ -2323,54 +2186,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get syncHealthTitle => 'Sync status';
-
-  @override
-  String syncHealthCheckFailed(String msg) {
-    return 'Check failed: $msg';
-  }
-
-  @override
-  String get syncHealthRecovering => 'Restoring sign-in status…';
-
-  @override
-  String get syncHealthNeedsLogin =>
-      'Not signed in or session expired. Please sign in to cloud sync again.';
-
-  @override
-  String get syncHealthHasDiff => 'Diff detected; auto-synced';
-
-  @override
   String get cloudSyncHealFailed =>
       'Auto-restore failed; please restore from cloud manually';
-
-  @override
-  String get syncHealthInSync => 'Local matches cloud';
-
-  @override
-  String get syncHealthGroupCurrentLedger => 'Current ledger';
-
-  @override
-  String get syncHealthGroupAll => 'All ledgers';
-
-  @override
-  String get syncHealthRowTx => 'Transactions';
-
-  @override
-  String get syncHealthRowCategory => 'Categories';
-
-  @override
-  String get syncHealthRowUnpushed => 'Unpushed changes';
-
-  @override
-  String syncHealthValue(int local, int remote) {
-    return 'Local $local · Remote $remote';
-  }
-
-  @override
-  String syncHealthValueRemoteMissing(int local) {
-    return 'Local $local · Remote —';
-  }
 
   @override
   String get sharedRoleOwner => 'Owner';

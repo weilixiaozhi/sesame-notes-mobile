@@ -319,26 +319,6 @@
     "languageChinese": "简体中文",
     "languageEnglish": "English",
     "languageSystemDefault": "跟随系统",
-    "mineSlogan": "未设置昵称",
-    "mineDisplayNameEditTitle": "设置昵称",
-    "mineDisplayNameHint": "输入昵称",
-    "mineDisplayNameSaved": "昵称已更新",
-    "mineGreetingMorning": "早上好",
-    "mineGreetingNoon": "中午好",
-    "mineGreetingAfternoon": "下午好",
-    "mineGreetingEvening": "晚上好",
-    "mineGreetingNight": "夜深了",
-    "mineGreetingNamed": "{greeting}，{name}",
-    "@mineGreetingNamed": {
-        "placeholders": {
-            "greeting": {
-                "type": "String"
-            },
-            "name": {
-                "type": "String"
-            }
-        }
-    },
     "mineAvatarDelete": "删除头像",
     "mineAvatarUploadNew": "上传新头像",
     "mineCloudService": "备份与云同步配置",
@@ -873,61 +853,6 @@
     "configExportConfirmTitle": "确认导出",
     "configImportSelectTitle": "选择导入内容",
     "configImportPreviewTitle": "导入预览",
-    "ledgersConflictTitle": "同步冲突",
-    "ledgersConflictMessage": "本地和云端账本数据不一致，请选择操作：",
-    "ledgersConflictLocalInfo": "本地：{count} 笔账单",
-    "@ledgersConflictLocalInfo": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "ledgersConflictRemoteInfo": "云端：{count} 笔账单",
-    "@ledgersConflictRemoteInfo": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "ledgersConflictRemoteUpdated": "云端更新：{time}",
-    "@ledgersConflictRemoteUpdated": {
-        "placeholders": {
-            "time": {
-                "type": "String"
-            }
-        }
-    },
-    "ledgersConflictLocalFingerprint": "本地指纹：{fp}",
-    "@ledgersConflictLocalFingerprint": {
-        "placeholders": {
-            "fp": {
-                "type": "String"
-            }
-        }
-    },
-    "ledgersConflictRemoteFingerprint": "云端指纹：{fp}",
-    "@ledgersConflictRemoteFingerprint": {
-        "placeholders": {
-            "fp": {
-                "type": "String"
-            }
-        }
-    },
-    "ledgersConflictUpload": "上传到云端",
-    "ledgersConflictDownload": "下载到本地",
-    "ledgersConflictUploading": "正在上传...",
-    "ledgersConflictDownloading": "正在下载...",
-    "ledgersConflictUploadSuccess": "上传成功",
-    "ledgersConflictDownloadSuccess": "下载成功，已合并 {inserted} 笔账单",
-    "@ledgersConflictDownloadSuccess": {
-        "placeholders": {
-            "inserted": {
-                "type": "int"
-            }
-        }
-    },
     "welcomeExistingUserTitle": "老用户？",
     "welcomeExistingUserButton": "导入配置",
     "welcomeImportingConfig": "正在导入配置...",
@@ -954,55 +879,6 @@
     },
     "calendarAddTransaction": "在该日记账",
     "commonUncategorized": "未分类",
-    "syncPreviewTitle": "同步预览",
-    "syncPreviewSelectAll": "全选",
-    "syncPreviewDeselectAll": "取消全选",
-    "syncPreviewAdded": "新增",
-    "syncPreviewModified": "修改",
-    "syncPreviewDeleted": "删除",
-    "syncPreviewAddedCount": "新增 {count} 条",
-    "@syncPreviewAddedCount": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "syncPreviewModifiedCount": "修改 {count} 条",
-    "@syncPreviewModifiedCount": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "syncPreviewDeletedCount": "删除 {count} 条",
-    "@syncPreviewDeletedCount": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "syncPreviewApply": "应用 {count} 项",
-    "@syncPreviewApply": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "syncPreviewEmpty": "云端数据与本地一致，无需同步",
-    "syncPreviewOldFormat": "云端数据格式较旧，将执行全量替换",
-    "syncPreviewOldFormatMessage": "云端数据不包含同步标识，无法逐条对比。将清空当前账本数据并从云端重新导入。",
-    "syncPreviewApplied": "已应用 {count} 项变更",
-    "@syncPreviewApplied": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
     "appLockTitle": "应用上锁",
     "appLockDesc": "PIN码与生物识别保护隐私",
     "appLockEnable": "启用应用锁",
@@ -1032,54 +908,9 @@
             }
         }
     },
-    "syncHealthTitle": "同步状态",
-    "syncHealthCheckFailed": "检测失败：{msg}",
-    "@syncHealthCheckFailed": {
-        "placeholders": {
-            "msg": {
-                "type": "String"
-            }
-        }
-    },
-    "syncHealthRecovering": "登录状态恢复中…",
-    "@syncHealthRecovering": {
-        "description": "Shown while cloud sign-in is silently recovering after a session loss; auto-retries after cooldown"
-    },
-    "syncHealthNeedsLogin": "未登录或登录已失效，请重新登录云同步",
-    "@syncHealthNeedsLogin": {
-        "description": "Shown when silent recovery failed and the user must manually sign in to cloud sync"
-    },
-    "syncHealthHasDiff": "检测到差异，已自动同步",
     "cloudSyncHealFailed": "自动恢复失败，请从云端恢复",
     "@cloudSyncHealFailed": {
         "description": "Shown when the self-heal circuit breaker is open and the missing cloud data could not be restored automatically"
-    },
-    "syncHealthInSync": "本地与云端一致",
-    "syncHealthGroupCurrentLedger": "当前账本",
-    "syncHealthGroupAll": "全部账本",
-    "syncHealthRowTx": "交易",
-    "syncHealthRowCategory": "分类",
-    "syncHealthRowUnpushed": "未推送变更",
-    "syncHealthValue": "本地 {local} · 云端 {remote}",
-    "@syncHealthValue": {
-        "description": "Per-item sync counts in the sync-status detail panel, local vs remote",
-        "placeholders": {
-            "local": {
-                "type": "int"
-            },
-            "remote": {
-                "type": "int"
-            }
-        }
-    },
-    "syncHealthValueRemoteMissing": "本地 {local} · 云端 —",
-    "@syncHealthValueRemoteMissing": {
-        "description": "Per-item sync count when the remote count cannot be fetched",
-        "placeholders": {
-            "local": {
-                "type": "int"
-            }
-        }
     },
     "sharedRoleOwner": "所有者",
     "sharedRoleEditor": "编辑者",

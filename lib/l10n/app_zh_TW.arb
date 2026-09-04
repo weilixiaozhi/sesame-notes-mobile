@@ -319,26 +319,6 @@
     "languageChinese": "简体中文",
     "languageEnglish": "English",
     "languageSystemDefault": "跟隨系統",
-    "mineSlogan": "未設置暱稱",
-    "mineDisplayNameEditTitle": "設定暱稱",
-    "mineDisplayNameHint": "輸入暱稱",
-    "mineDisplayNameSaved": "暱稱已更新",
-    "mineGreetingMorning": "早安",
-    "mineGreetingNoon": "中午好",
-    "mineGreetingAfternoon": "午安",
-    "mineGreetingEvening": "晚安",
-    "mineGreetingNight": "夜深了",
-    "mineGreetingNamed": "{greeting}，{name}",
-    "@mineGreetingNamed": {
-        "placeholders": {
-            "greeting": {
-                "type": "String"
-            },
-            "name": {
-                "type": "String"
-            }
-        }
-    },
     "mineAvatarDelete": "刪除頭像",
     "mineAvatarUploadNew": "上傳新頭像",
     "mineCloudService": "備份與雲端同步配置",
@@ -873,61 +853,6 @@
     "configExportConfirmTitle": "確認匯出",
     "configImportSelectTitle": "選擇匯入內容",
     "configImportPreviewTitle": "匯入預覽",
-    "ledgersConflictTitle": "同步衝突",
-    "ledgersConflictMessage": "本地和雲端帳本資料不一致，請選擇操作：",
-    "ledgersConflictLocalInfo": "本地：{count} 筆帳單",
-    "@ledgersConflictLocalInfo": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "ledgersConflictRemoteInfo": "雲端：{count} 筆帳單",
-    "@ledgersConflictRemoteInfo": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "ledgersConflictRemoteUpdated": "雲端更新：{time}",
-    "@ledgersConflictRemoteUpdated": {
-        "placeholders": {
-            "time": {
-                "type": "String"
-            }
-        }
-    },
-    "ledgersConflictLocalFingerprint": "本地指紋：{fp}",
-    "@ledgersConflictLocalFingerprint": {
-        "placeholders": {
-            "fp": {
-                "type": "String"
-            }
-        }
-    },
-    "ledgersConflictRemoteFingerprint": "雲端指紋：{fp}",
-    "@ledgersConflictRemoteFingerprint": {
-        "placeholders": {
-            "fp": {
-                "type": "String"
-            }
-        }
-    },
-    "ledgersConflictUpload": "上傳到雲端",
-    "ledgersConflictDownload": "下載到本地",
-    "ledgersConflictUploading": "正在上傳...",
-    "ledgersConflictDownloading": "正在下載...",
-    "ledgersConflictUploadSuccess": "上傳成功",
-    "ledgersConflictDownloadSuccess": "下載成功，已合併 {inserted} 筆帳單",
-    "@ledgersConflictDownloadSuccess": {
-        "placeholders": {
-            "inserted": {
-                "type": "int"
-            }
-        }
-    },
     "welcomeExistingUserTitle": "老用戶？",
     "welcomeExistingUserButton": "匯入配置",
     "welcomeImportingConfig": "正在匯入配置...",
@@ -954,55 +879,6 @@
     },
     "calendarAddTransaction": "在該日記帳",
     "commonUncategorized": "未分類",
-    "syncPreviewTitle": "同步預覽",
-    "syncPreviewSelectAll": "全選",
-    "syncPreviewDeselectAll": "取消全選",
-    "syncPreviewAdded": "新增",
-    "syncPreviewModified": "修改",
-    "syncPreviewDeleted": "刪除",
-    "syncPreviewAddedCount": "新增 {count} 條",
-    "@syncPreviewAddedCount": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "syncPreviewModifiedCount": "修改 {count} 條",
-    "@syncPreviewModifiedCount": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "syncPreviewDeletedCount": "刪除 {count} 條",
-    "@syncPreviewDeletedCount": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "syncPreviewApply": "套用 {count} 項",
-    "@syncPreviewApply": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "syncPreviewEmpty": "雲端資料與本機一致，無需同步",
-    "syncPreviewOldFormat": "雲端資料格式較舊，將執行全量替換",
-    "syncPreviewOldFormatMessage": "雲端資料不包含同步標識，無法逐條對比。將清空當前帳本資料並從雲端重新匯入。",
-    "syncPreviewApplied": "已套用 {count} 項變更",
-    "@syncPreviewApplied": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
     "appLockTitle": "應用上鎖",
     "appLockDesc": "PIN碼與生物辨識保護隱私",
     "appLockEnable": "啟用應用鎖",
@@ -1032,54 +908,9 @@
             }
         }
     },
-    "syncHealthTitle": "同步狀態",
-    "syncHealthCheckFailed": "檢測失敗：{msg}",
-    "@syncHealthCheckFailed": {
-        "placeholders": {
-            "msg": {
-                "type": "String"
-            }
-        }
-    },
-    "syncHealthRecovering": "登入狀態恢復中…",
-    "@syncHealthRecovering": {
-        "description": "Shown while cloud sign-in is silently recovering after a session loss; auto-retries after cooldown"
-    },
-    "syncHealthNeedsLogin": "未登入或登入已失效，請重新登入雲同步",
-    "@syncHealthNeedsLogin": {
-        "description": "Shown when silent recovery failed and the user must manually sign in to cloud sync"
-    },
-    "syncHealthHasDiff": "偵測到差異，已自動同步",
     "cloudSyncHealFailed": "自動恢復失敗，請從雲端恢復",
     "@cloudSyncHealFailed": {
         "description": "Shown when the self-heal circuit breaker is open and the missing cloud data could not be restored automatically"
-    },
-    "syncHealthInSync": "本地與雲端一致",
-    "syncHealthGroupCurrentLedger": "目前帳本",
-    "syncHealthGroupAll": "全部帳本",
-    "syncHealthRowTx": "交易",
-    "syncHealthRowCategory": "分類",
-    "syncHealthRowUnpushed": "未推送變更",
-    "syncHealthValue": "本機 {local} · 雲端 {remote}",
-    "@syncHealthValue": {
-        "description": "Per-item sync counts in the sync-status detail panel, local vs remote",
-        "placeholders": {
-            "local": {
-                "type": "int"
-            },
-            "remote": {
-                "type": "int"
-            }
-        }
-    },
-    "syncHealthValueRemoteMissing": "本機 {local} · 雲端 —",
-    "@syncHealthValueRemoteMissing": {
-        "description": "Per-item sync count when the remote count cannot be fetched",
-        "placeholders": {
-            "local": {
-                "type": "int"
-            }
-        }
     },
     "sharedRoleOwner": "所有者",
     "sharedRoleEditor": "編輯者",

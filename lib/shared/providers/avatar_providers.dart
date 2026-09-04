@@ -1,27 +1,12 @@
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sesame_notes/shared/providers/simple_state_notifier.dart';
 
-import 'package:sesame_notes/shared/services/avatar_picker.dart';
 import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/core/api/profile_service.dart';
-import 'package:sesame_notes/core/storage/avatar_storage.dart';
 import 'package:sesame_notes/core/storage/member_avatar_storage.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 
-/// 头像刷新触发器
-final avatarRefreshProvider = NotifierProvider<TickStateNotifier, int>(
-  () => TickStateNotifier((ref) => 0),
-);
-
-/// 从系统相册选择并保存头像（动作函数）。
-///
-/// 设计意图：把 `avatarPicker.pickAndSaveAvatar` 的调用收敛到 providers 层，
-/// widgets 层不直接 import shared/services/*，保持
-/// `pages/widgets → providers → services → data` 单向依赖。
-Future<String?> pickAndSaveAvatarFromUi(WidgetRef ref) =>
-    avatarPicker.pickAndSaveAvatar();
 
 /// 成员头像缓存请求键：userId + 服务端版本号 + 是否有头像 URL。
 typedef MemberAvatarKey = ({String userId, int version, bool hasAvatar});
@@ -63,14 +48,3 @@ final memberAvatarPathProvider =
       }
     });
 
-/// 删除本地头像（动作函数）。
-///
-/// 注意：只负责清理本地缓存文件，不触达云端；「先删云端再删本地」的顺序
-/// 编排仍由 UI 层负责（防止服务端头像被周期 pull 回灌）。
-Future<void> deleteAvatarFromUi(WidgetRef ref) => avatarStorage.deleteAvatar();
-
-/// 记录服务端头像版本号到本地（动作函数）。
-///
-/// 上传成功后调用，避免下一次 bootstrap 再次下载自己刚传的头像。
-Future<void> setStoredAvatarRemoteVersion(WidgetRef ref, int version) =>
-    avatarStorage.setStoredRemoteVersion(version);

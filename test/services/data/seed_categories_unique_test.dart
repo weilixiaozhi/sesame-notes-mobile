@@ -1,4 +1,4 @@
-﻿// seed 默认分类契约测试:① 无「同父级作用域内」(name,kind) 重复 ② 无
+// seed 默认分类契约测试:① 无「同父级作用域内」(name,kind) 重复 ② 无
 // fallback(段数错位会让名字 fallback 成 snake_case key)。锁死三语言
 // (简/繁/英)seed 二级分类质量。
 //
@@ -31,11 +31,11 @@ void main() {
 
   for (final locale in locales) {
     final tag = locale.toLanguageTag();
-    test('seed 二级分类无重复、无 fallback [$tag]', () async {
+    test('seed 混合分类无重复、无 fallback [$tag]', () async {
       final l10n = await AppLocalizations.delegate.load(locale);
       final db = SesameDatabase.forTesting(NativeDatabase.memory());
       try {
-        await SeedService.createHierarchicalCategories(db, l10n);
+        await SeedService.createHybridCategories(db, l10n);
         final cats = await db.select(db.categories).get();
 
         // ① 无「同父级作用域内」(name,kind) 重复:

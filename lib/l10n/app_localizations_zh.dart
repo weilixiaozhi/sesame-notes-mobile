@@ -693,38 +693,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get languageSystemDefault => '跟随系统';
 
   @override
-  String get mineSlogan => '未设置昵称';
-
-  @override
-  String get mineDisplayNameEditTitle => '设置昵称';
-
-  @override
-  String get mineDisplayNameHint => '输入昵称';
-
-  @override
-  String get mineDisplayNameSaved => '昵称已更新';
-
-  @override
-  String get mineGreetingMorning => '早上好';
-
-  @override
-  String get mineGreetingNoon => '中午好';
-
-  @override
-  String get mineGreetingAfternoon => '下午好';
-
-  @override
-  String get mineGreetingEvening => '晚上好';
-
-  @override
-  String get mineGreetingNight => '夜深了';
-
-  @override
-  String mineGreetingNamed(String greeting, String name) {
-    return '$greeting，$name';
-  }
-
-  @override
   String get mineAvatarDelete => '删除头像';
 
   @override
@@ -2024,57 +1992,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get configImportPreviewTitle => '导入预览';
 
   @override
-  String get ledgersConflictTitle => '同步冲突';
-
-  @override
-  String get ledgersConflictMessage => '本地和云端账本数据不一致，请选择操作：';
-
-  @override
-  String ledgersConflictLocalInfo(int count) {
-    return '本地：$count 笔账单';
-  }
-
-  @override
-  String ledgersConflictRemoteInfo(int count) {
-    return '云端：$count 笔账单';
-  }
-
-  @override
-  String ledgersConflictRemoteUpdated(String time) {
-    return '云端更新：$time';
-  }
-
-  @override
-  String ledgersConflictLocalFingerprint(String fp) {
-    return '本地指纹：$fp';
-  }
-
-  @override
-  String ledgersConflictRemoteFingerprint(String fp) {
-    return '云端指纹：$fp';
-  }
-
-  @override
-  String get ledgersConflictUpload => '上传到云端';
-
-  @override
-  String get ledgersConflictDownload => '下载到本地';
-
-  @override
-  String get ledgersConflictUploading => '正在上传...';
-
-  @override
-  String get ledgersConflictDownloading => '正在下载...';
-
-  @override
-  String get ledgersConflictUploadSuccess => '上传成功';
-
-  @override
-  String ledgersConflictDownloadSuccess(int inserted) {
-    return '下载成功，已合并 $inserted 笔账单';
-  }
-
-  @override
   String get welcomeExistingUserTitle => '老用户？';
 
   @override
@@ -2113,59 +2030,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get commonUncategorized => '未分类';
-
-  @override
-  String get syncPreviewTitle => '同步预览';
-
-  @override
-  String get syncPreviewSelectAll => '全选';
-
-  @override
-  String get syncPreviewDeselectAll => '取消全选';
-
-  @override
-  String get syncPreviewAdded => '新增';
-
-  @override
-  String get syncPreviewModified => '修改';
-
-  @override
-  String get syncPreviewDeleted => '删除';
-
-  @override
-  String syncPreviewAddedCount(int count) {
-    return '新增 $count 条';
-  }
-
-  @override
-  String syncPreviewModifiedCount(int count) {
-    return '修改 $count 条';
-  }
-
-  @override
-  String syncPreviewDeletedCount(int count) {
-    return '删除 $count 条';
-  }
-
-  @override
-  String syncPreviewApply(int count) {
-    return '应用 $count 项';
-  }
-
-  @override
-  String get syncPreviewEmpty => '云端数据与本地一致，无需同步';
-
-  @override
-  String get syncPreviewOldFormat => '云端数据格式较旧，将执行全量替换';
-
-  @override
-  String get syncPreviewOldFormatMessage =>
-      '云端数据不包含同步标识，无法逐条对比。将清空当前账本数据并从云端重新导入。';
-
-  @override
-  String syncPreviewApplied(int count) {
-    return '已应用 $count 项变更';
-  }
 
   @override
   String get appLockTitle => '应用上锁';
@@ -2236,52 +2100,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get syncHealthTitle => '同步状态';
-
-  @override
-  String syncHealthCheckFailed(String msg) {
-    return '检测失败：$msg';
-  }
-
-  @override
-  String get syncHealthRecovering => '登录状态恢复中…';
-
-  @override
-  String get syncHealthNeedsLogin => '未登录或登录已失效，请重新登录云同步';
-
-  @override
-  String get syncHealthHasDiff => '检测到差异，已自动同步';
-
-  @override
   String get cloudSyncHealFailed => '自动恢复失败，请从云端恢复';
-
-  @override
-  String get syncHealthInSync => '本地与云端一致';
-
-  @override
-  String get syncHealthGroupCurrentLedger => '当前账本';
-
-  @override
-  String get syncHealthGroupAll => '全部账本';
-
-  @override
-  String get syncHealthRowTx => '交易';
-
-  @override
-  String get syncHealthRowCategory => '分类';
-
-  @override
-  String get syncHealthRowUnpushed => '未推送变更';
-
-  @override
-  String syncHealthValue(int local, int remote) {
-    return '本地 $local · 云端 $remote';
-  }
-
-  @override
-  String syncHealthValueRemoteMissing(int local) {
-    return '本地 $local · 云端 —';
-  }
 
   @override
   String get sharedRoleOwner => '所有者';
@@ -4204,38 +4023,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get languageSystemDefault => '跟隨系統';
 
   @override
-  String get mineSlogan => '未設置暱稱';
-
-  @override
-  String get mineDisplayNameEditTitle => '設定暱稱';
-
-  @override
-  String get mineDisplayNameHint => '輸入暱稱';
-
-  @override
-  String get mineDisplayNameSaved => '暱稱已更新';
-
-  @override
-  String get mineGreetingMorning => '早安';
-
-  @override
-  String get mineGreetingNoon => '中午好';
-
-  @override
-  String get mineGreetingAfternoon => '午安';
-
-  @override
-  String get mineGreetingEvening => '晚安';
-
-  @override
-  String get mineGreetingNight => '夜深了';
-
-  @override
-  String mineGreetingNamed(String greeting, String name) {
-    return '$greeting，$name';
-  }
-
-  @override
   String get mineAvatarDelete => '刪除頭像';
 
   @override
@@ -5535,57 +5322,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get configImportPreviewTitle => '匯入預覽';
 
   @override
-  String get ledgersConflictTitle => '同步衝突';
-
-  @override
-  String get ledgersConflictMessage => '本地和雲端帳本資料不一致，請選擇操作：';
-
-  @override
-  String ledgersConflictLocalInfo(int count) {
-    return '本地：$count 筆帳單';
-  }
-
-  @override
-  String ledgersConflictRemoteInfo(int count) {
-    return '雲端：$count 筆帳單';
-  }
-
-  @override
-  String ledgersConflictRemoteUpdated(String time) {
-    return '雲端更新：$time';
-  }
-
-  @override
-  String ledgersConflictLocalFingerprint(String fp) {
-    return '本地指紋：$fp';
-  }
-
-  @override
-  String ledgersConflictRemoteFingerprint(String fp) {
-    return '雲端指紋：$fp';
-  }
-
-  @override
-  String get ledgersConflictUpload => '上傳到雲端';
-
-  @override
-  String get ledgersConflictDownload => '下載到本地';
-
-  @override
-  String get ledgersConflictUploading => '正在上傳...';
-
-  @override
-  String get ledgersConflictDownloading => '正在下載...';
-
-  @override
-  String get ledgersConflictUploadSuccess => '上傳成功';
-
-  @override
-  String ledgersConflictDownloadSuccess(int inserted) {
-    return '下載成功，已合併 $inserted 筆帳單';
-  }
-
-  @override
   String get welcomeExistingUserTitle => '老用戶？';
 
   @override
@@ -5624,59 +5360,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get commonUncategorized => '未分類';
-
-  @override
-  String get syncPreviewTitle => '同步預覽';
-
-  @override
-  String get syncPreviewSelectAll => '全選';
-
-  @override
-  String get syncPreviewDeselectAll => '取消全選';
-
-  @override
-  String get syncPreviewAdded => '新增';
-
-  @override
-  String get syncPreviewModified => '修改';
-
-  @override
-  String get syncPreviewDeleted => '刪除';
-
-  @override
-  String syncPreviewAddedCount(int count) {
-    return '新增 $count 條';
-  }
-
-  @override
-  String syncPreviewModifiedCount(int count) {
-    return '修改 $count 條';
-  }
-
-  @override
-  String syncPreviewDeletedCount(int count) {
-    return '刪除 $count 條';
-  }
-
-  @override
-  String syncPreviewApply(int count) {
-    return '套用 $count 項';
-  }
-
-  @override
-  String get syncPreviewEmpty => '雲端資料與本機一致，無需同步';
-
-  @override
-  String get syncPreviewOldFormat => '雲端資料格式較舊，將執行全量替換';
-
-  @override
-  String get syncPreviewOldFormatMessage =>
-      '雲端資料不包含同步標識，無法逐條對比。將清空當前帳本資料並從雲端重新匯入。';
-
-  @override
-  String syncPreviewApplied(int count) {
-    return '已套用 $count 項變更';
-  }
 
   @override
   String get appLockTitle => '應用上鎖';
@@ -5747,52 +5430,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String get syncHealthTitle => '同步狀態';
-
-  @override
-  String syncHealthCheckFailed(String msg) {
-    return '檢測失敗：$msg';
-  }
-
-  @override
-  String get syncHealthRecovering => '登入狀態恢復中…';
-
-  @override
-  String get syncHealthNeedsLogin => '未登入或登入已失效，請重新登入雲同步';
-
-  @override
-  String get syncHealthHasDiff => '偵測到差異，已自動同步';
-
-  @override
   String get cloudSyncHealFailed => '自動恢復失敗，請從雲端恢復';
-
-  @override
-  String get syncHealthInSync => '本地與雲端一致';
-
-  @override
-  String get syncHealthGroupCurrentLedger => '目前帳本';
-
-  @override
-  String get syncHealthGroupAll => '全部帳本';
-
-  @override
-  String get syncHealthRowTx => '交易';
-
-  @override
-  String get syncHealthRowCategory => '分類';
-
-  @override
-  String get syncHealthRowUnpushed => '未推送變更';
-
-  @override
-  String syncHealthValue(int local, int remote) {
-    return '本機 $local · 雲端 $remote';
-  }
-
-  @override
-  String syncHealthValueRemoteMissing(int local) {
-    return '本機 $local · 雲端 —';
-  }
 
   @override
   String get sharedRoleOwner => '所有者';
