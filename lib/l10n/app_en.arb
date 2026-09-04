@@ -850,7 +850,6 @@
     "cloudTabBackupSubtitle": "Tap a card to switch backup methods. The first setup requires configuration.",
     "restoreOpenButton": "Open Selected Backup",
     "restoreSelectHint": "Tap a backup to select it",
-    "restoreDeviceKeyHint": "Backups are encrypted with this device's key and open directly",
     "cloudBackupEntryLocalOnly": "Local backup only",
     "cloudBackupEntryFailed": "Last backup failed — will retry automatically",
     "cloudBackupStatusTitle": "Backup status",
@@ -1790,7 +1789,7 @@
     "restoreDone": "Restore Complete",
     "restoreNoOverwrite": "Restore will not overwrite existing ledgers",
     "restoreNoBackups": "No backups yet",
-    "restoreOpenFailed": "Cannot open backup: device key mismatch or corrupted file",
+    "restoreOpenFailed": "Cannot open backup: file is corrupted or not a backup",
     "restoreMemberCount": "{count} members",
     "@restoreMemberCount": {
         "placeholders": {

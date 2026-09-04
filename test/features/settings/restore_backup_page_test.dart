@@ -1,13 +1,13 @@
 /// 备份恢复页 4 步流程 widget 测试。
 ///
-/// - Step 1 选择备份 + 设备密钥自动解密 → 打开（只读）；
+/// - Step 1 选择备份 + 明文解帧 → 打开（只读）；
 /// - Step 2 查看备份内容（本地/云端分域展示）；
 /// - Step 3 每账本选择恢复策略（显式三选一）；
 /// - Step 4 确认导入（明示不覆盖现有账本）→ 单事务应用；
 /// - Step 1–3 全程 live DB 0 mutation；
 /// - 应用后：云端账本 Fork（sync_id 恒 NULL）、recovery_log 落库。
 ///
-/// 说明：文件 IO 与 Argon2id 是真实异步，FakeAsync 区不驱动它们——
+/// 说明：文件 IO 是真实异步，FakeAsync 区不驱动它们——
 /// 所有 IO 步骤收进 runAsync，UI 步骤验证渲染与状态切换。
 library;
 
@@ -21,11 +21,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:sesame_notes/core/identity/local_user_identity.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/features/settings/application/backup_restore_providers.dart';
-import 'package:sesame_notes/features/settings/domain/backup_crypto.dart';
 import 'package:sesame_notes/features/settings/infrastructure/backup_import_service.dart';
 import 'package:sesame_notes/features/settings/infrastructure/local_backup_service.dart';
 import 'package:sesame_notes/features/settings/presentation/restore_backup_page.dart';
@@ -91,16 +89,10 @@ void main() {
                 updatedAt: now,
               ),
             );
-        final localSelfId = await LocalSelfId.getOrCreate();
         await LocalBackupService(
           backupDir: backupDir,
           databaseFile: srcFile,
-        ).createBackup(
-          db: srcDb,
-          secrets: BackupSecrets(
-            deviceKey: BackupCrypto.deviceKeyFromLocalSelfId(localSelfId),
-          ),
-        );
+        ).createBackup(db: srcDb);
       });
       addTearDown(() async {
         try {
@@ -153,7 +145,7 @@ void main() {
         reason: 'Step 1 应展示时间戳备份列表',
       );
 
-      // Step 1→2：打开备份（Argon2id + 文件 IO 在 runAsync 中驱动）
+      // Step 1→2：打开备份（文件 IO 在 runAsync 中驱动）
       final backups = container.read(backupRestoreFlowProvider).backups;
       expect(backups, hasLength(1));
       await tester.runAsync(

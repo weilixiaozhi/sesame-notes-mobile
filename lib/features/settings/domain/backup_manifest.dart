@@ -1,7 +1,8 @@
 /// 备份清单（BackupManifest）模型与 JSON 编解码。
 ///
-/// - Manifest 位于 encrypted_payload 内部，与业务数据同密；
-/// - format_version 与 db_schema_version 分离，打开时双写校验；
+/// - .snbak 为**明文**分帧文件：[u32 manifest 长度][manifest JSON][u32 sqlite
+///   长度][SQLite 体]，无任何加密，任何设备可直接打开恢复；
+/// - format_version 与 db_schema_version 分离，打开时校验；
 /// - 统计字段（pending_mutation_count / open_conflict_count /
 ///   last_sync_at）仅展示与审计，恢复时全部销毁。
 library;
@@ -9,7 +10,37 @@ library;
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'backup_envelope.dart';
+/// 备份格式版本（.snbak 明文分帧协议，首版 = 1）。
+const int backupFormatVersion = 1;
+
+/// 备份打开失败的分类原因；每种原因对应独立用户文案。
+enum BackupOpenError {
+  /// 文件损坏 / 非备份文件 / 截断
+  corrupt,
+
+  /// Manifest 校验失败（字段缺失/类型错误）
+  invalidManifest,
+
+  /// 备份 schema 旧于当前应用
+  schemaTooOld,
+
+  /// 备份 schema 新于当前应用（提示升级 App）
+  schemaTooNew,
+}
+
+/// 备份格式异常：携带分类原因，UI 据此展示对应文案。
+class BackupFormatException implements Exception {
+  const BackupFormatException(this.reason, this.message);
+
+  /// 失败分类（决定用户提示与后续策略）
+  final BackupOpenError reason;
+
+  /// 人类可读描述（记日志用，不直接向用户展示原始信息）
+  final String message;
+
+  @override
+  String toString() => 'BackupFormatException($reason): $message';
+}
 
 /// 账本存储归属（备份时快照）。
 enum LedgerStorageOrigin {
@@ -297,5 +328,46 @@ class BackupManifestCodec {
         'Manifest JSON 解析失败',
       );
     }
+  }
+}
+
+/// .snbak 明文分帧编解码：[u32 manifest 长度][manifest JSON][u32 sqlite 长度][SQLite 体]。
+///
+/// 无任何加密：manifest 与 SQLite 体均为明文，任何设备可直接解码恢复。
+class BackupPayloadCodec {
+  BackupPayloadCodec._();
+
+  /// 分帧编码。
+  static Uint8List encode(Uint8List manifestJson, Uint8List sqliteBytes) {
+    final out = ByteData(8 + manifestJson.length + sqliteBytes.length);
+    out.setUint32(0, manifestJson.length);
+    out.setUint32(4, sqliteBytes.length);
+    out.buffer.asUint8List().setRange(8, 8 + manifestJson.length, manifestJson);
+    out.buffer.asUint8List().setRange(
+      8 + manifestJson.length,
+      8 + manifestJson.length + sqliteBytes.length,
+      sqliteBytes,
+    );
+    return out.buffer.asUint8List();
+  }
+
+  /// 分帧解码；长度字段越界或截断 → corrupt。
+  static ({Uint8List manifestJson, Uint8List sqliteBytes}) decode(
+    Uint8List bytes,
+  ) {
+    if (bytes.length < 8) {
+      throw const BackupFormatException(BackupOpenError.corrupt, '载荷帧过短');
+    }
+    final data = ByteData.sublistView(bytes);
+    final manifestLength = data.getUint32(0);
+    final sqliteLength = data.getUint32(4);
+    final total = 8 + manifestLength + sqliteLength;
+    if (total > bytes.length) {
+      throw const BackupFormatException(BackupOpenError.corrupt, '载荷帧长度字段损坏');
+    }
+    return (
+      manifestJson: Uint8List.sublistView(bytes, 8, 8 + manifestLength),
+      sqliteBytes: Uint8List.sublistView(bytes, 8 + manifestLength, total),
+    );
   }
 }

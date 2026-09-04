@@ -3705,12 +3705,6 @@ abstract class AppLocalizations {
   /// **'Tap a backup to select it'**
   String get restoreSelectHint;
 
-  /// No description provided for @restoreDeviceKeyHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Backups are encrypted with this device\'s key and open directly'**
-  String get restoreDeviceKeyHint;
-
   /// No description provided for @cloudBackupEntryLocalOnly.
   ///
   /// In en, this message translates to:
@@ -7212,7 +7206,7 @@ abstract class AppLocalizations {
   /// No description provided for @restoreOpenFailed.
   ///
   /// In en, this message translates to:
-  /// **'Cannot open backup: device key mismatch or corrupted file'**
+  /// **'Cannot open backup: file is corrupted or not a backup'**
   String get restoreOpenFailed;
 
   /// No description provided for @restoreMemberCount.

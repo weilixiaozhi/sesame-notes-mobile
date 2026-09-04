@@ -2045,10 +2045,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restoreSelectHint => 'Tap a backup to select it';
 
   @override
-  String get restoreDeviceKeyHint =>
-      'Backups are encrypted with this device\'s key and open directly';
-
-  @override
   String get cloudBackupEntryLocalOnly => 'Local backup only';
 
   @override
@@ -4000,7 +3996,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restoreOpenFailed =>
-      'Cannot open backup: device key mismatch or corrupted file';
+      'Cannot open backup: file is corrupted or not a backup';
 
   @override
   String restoreMemberCount(int count) {

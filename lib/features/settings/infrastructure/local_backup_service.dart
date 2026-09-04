@@ -1,12 +1,12 @@
-/// 本地备份服务：备份文件 = BackupEnvelope（.snbak）。
+/// 本地备份服务：备份文件 = 明文分帧 .snbak（无加密）。
 ///
-/// - 备份文件为冻结格式 .snbak：Envelope 头部明文，Manifest + SQLite 体
-///   由设备密钥加密；
+/// - .snbak = [u32 manifest 长度][manifest JSON][u32 sqlite 长度][SQLite 体]，
+///   任何设备可直接打开恢复；
 /// - 命名 sesame_notes_ 加时间戳加 .snbak，时间戳字典序即时间序；
 /// - 保留最近 N 份（默认 7，可配置）+ 紧急备份 3 份；
 /// - 一切写盘走"临时文件 + rename"原子落盘；
-/// - restoreFromBackup 是**整库覆盖原语**，输入为解密后的原始 .sqlite
-///   （.snbak 解密由紧急通道/恢复流程负责，本类不感知密钥）。
+/// - restoreFromBackup 是**整库覆盖原语**，输入为解帧后的原始 .sqlite
+///   （.snbak 解帧由紧急通道/恢复流程负责，本类不感知分帧格式）。
 library;
 
 import 'dart:io';
@@ -20,8 +20,6 @@ import 'package:sqlite3/sqlite3.dart' show sqlite3, OpenMode, Database;
 
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/db.dart';
-import 'package:sesame_notes/features/settings/domain/backup_crypto.dart';
-import 'package:sesame_notes/features/settings/domain/backup_envelope.dart';
 import 'package:sesame_notes/features/settings/domain/backup_manifest.dart';
 
 /// 单个本地备份文件信息（供恢复列表展示）。
@@ -203,15 +201,13 @@ class LocalBackupService {
   }
 
   /// 执行一次备份：checkpoint 合并 WAL → 构建 Manifest（实时统计）→
-  /// 分帧加密成 Envelope → 原子落盘 .snbak → prune 超量旧备份。
+  /// 明文分帧（无加密）→ 原子落盘 .snbak → prune 超量旧备份。
   ///
   /// [filePrefix] 默认正式备份前缀；恢复流程传 [emergencyPrefix] 生成回滚点。
-  /// [secrets] 提供设备密钥；自动备份路径由调用方装配。
   /// 返回生成的备份文件。并发调用时后到者抛 [StateError]。
   Future<File> createBackup({
     required SesameDatabase db,
     String filePrefix = backupPrefix,
-    BackupSecrets? secrets,
     String? deviceId,
     String? appVersion,
     Map<String, String>? accountNames,
@@ -224,10 +220,6 @@ class LocalBackupService {
     }
     _backupInProgress = true;
     try {
-      final creds = secrets ?? const BackupSecrets();
-      if (!creds.hasAny) {
-        throw ArgumentError('需要设备密钥');
-      }
       final dbFile = await databaseFile();
       final dir = await backupDirectory();
 
@@ -252,20 +244,16 @@ class LocalBackupService {
         dbFile: dbFile,
         currentAccountId: currentAccountId,
       );
+      // 明文分帧：manifest JSON + SQLite 体直接落盘，无任何加密。
       final payload = BackupPayloadCodec.encode(
         BackupManifestCodec.encodeJson(manifest),
         sqliteBytes,
-      );
-      // creds.hasAny 已保证设备密钥存在（见上方校验）。
-      final envelope = await BackupCrypto.createEnvelope(
-        plaintextPayload: payload,
-        deviceKey: creds.deviceKey!,
       );
 
       final name =
           filePrefix + formatTimestamp(DateTime.now()) + backupExtension;
       final target = File(p.join(dir.path, name));
-      await _writeAtomic(target, BackupEnvelopeCodec.encode(envelope));
+      await _writeAtomic(target, payload);
 
       logger.info('LocalBackup', '备份完成: ${target.path}');
       await pruneBackups();
@@ -432,7 +420,7 @@ class LocalBackupService {
       );
     }
     return BackupManifest(
-      formatVersion: BackupEnvelopeConstants.formatVersion,
+      formatVersion: backupFormatVersion,
       dbSchemaVersion: db.schemaVersion,
       createdAt: now,
       deviceId: deviceId ?? '',
@@ -476,14 +464,13 @@ class LocalBackupService {
   /// 从备份恢复（整库覆盖原语）：校验 → 紧急备份当前库 → 关闭连接 →
   /// 原子覆盖 → 清理 WAL 残留。
   ///
-  /// 输入 [backupFile] 必须是**解密后的原始 .sqlite**（.snbak 的解密由
-  /// 紧急通道/恢复流程负责，本原语不感知密钥）。
+  /// 输入 [backupFile] 必须是原始 .sqlite（.snbak 的解帧由紧急通道/恢复
+  /// 流程负责，本原语不感知分帧格式）。
   /// 成功返回 [RestoreStatus.success] 后，**调用方负责 ref.invalidate(databaseProvider)**
   /// 触发级联热重建。所有失败路径都不破坏当前库。
   Future<RestoreResult> restoreFromBackup({
     required SesameDatabase db,
     required File backupFile,
-    String? localSelfId,
   }) async {
     if (_restoreInProgress) {
       return const RestoreResult(
@@ -500,17 +487,7 @@ class LocalBackupService {
       // 2. 紧急备份当前库（回滚点）：恢复不可逆，先留"恢复前状态"才能在误操作时救回。
       //    失败则中止恢复——没有回滚点的覆盖操作对记账 App 不可接受。
       try {
-        // 紧急备份（回滚点）：设备密钥兜底（本机可解）
-        if (localSelfId == null || localSelfId.isEmpty) {
-          throw StateError('紧急备份需要 localSelfId');
-        }
-        await createBackup(
-          db: db,
-          filePrefix: emergencyPrefix,
-          secrets: BackupSecrets(
-            deviceKey: BackupCrypto.deviceKeyFromLocalSelfId(localSelfId),
-          ),
-        );
+        await createBackup(db: db, filePrefix: emergencyPrefix);
       } catch (e, st) {
         logger.error('LocalBackup', '恢复前紧急备份失败，已中止恢复', e, st);
         return RestoreResult(RestoreStatus.emergencyFailed, error: e);
@@ -546,34 +523,22 @@ class LocalBackupService {
 
   /// 紧急整库回滚通道（restoreWholeDatabaseForEmergency，**不进正常 UI**）。
   ///
-  /// 仅开发/运维使用：解密 .snbak → 校验 → 整库覆盖原语 → 强制进入
+  /// 仅开发/运维使用：解帧 .snbak → 校验 → 整库覆盖原语 → 强制进入
   /// "未同步状态"：所有云端账本 sync_id 失效并标记
   /// STALE_BINDING，清除待推送队列/冲突/游标——绝不保留备份中的同步状态。
   ///
-  /// [secrets] 提供设备密钥（解 DEVICE_LOCAL slot）。
   /// 成功返回 [RestoreStatus.success] 后，调用方负责 invalidate(databaseProvider)。
   Future<RestoreResult> restoreWholeDatabaseForEmergency({
     required SesameDatabase db,
     required File backupFile,
-    required BackupSecrets secrets,
-    required String localSelfId,
   }) async {
-    // 1) 解密 .snbak 并提取 SQLite 备份体
+    // 1) 解帧 .snbak 并提取 SQLite 备份体（明文，无解密）
     Uint8List sqliteBytes;
     try {
-      final envelope = BackupEnvelopeCodec.decode(
-        await backupFile.readAsBytes(),
-      );
-      if (secrets.deviceKey == null) {
-        throw ArgumentError('紧急恢复需要设备密钥');
-      }
-      final payload = await BackupCrypto.decryptEnvelopePayload(
-        envelope: envelope,
-        deviceKey: secrets.deviceKey!,
-      );
-      sqliteBytes = BackupPayloadCodec.decode(payload).sqliteBytes;
+      final framed = BackupPayloadCodec.decode(await backupFile.readAsBytes());
+      sqliteBytes = framed.sqliteBytes;
     } on BackupFormatException catch (e, st) {
-      logger.error('LocalBackup', '紧急恢复：备份解密失败', e, st);
+      logger.error('LocalBackup', '紧急恢复：备份解帧失败', e, st);
       return RestoreResult(RestoreStatus.integrityFailed, error: e);
     } catch (e, st) {
       logger.error('LocalBackup', '紧急恢复：备份读取失败', e, st);
@@ -595,7 +560,6 @@ class LocalBackupService {
       final result = await restoreFromBackup(
         db: db,
         backupFile: tmpSqlite,
-        localSelfId: localSelfId,
       );
       if (!result.success) return result;
       // 3) 覆盖成功：强制未同步状态（云端账本 sync_id 失效 + STALE_BINDING，

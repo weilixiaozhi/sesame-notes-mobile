@@ -121,14 +121,6 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
         if (flow.loading) const LinearProgressIndicator(),
         if (flow.backups.isNotEmpty) ...[
           const SizedBox(height: AppDimens.p16),
-          // 备份统一用本机设备密钥加密，可直接打开。
-          Text(
-            l10n.restoreDeviceKeyHint,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppTokens.textTertiary(context),
-            ),
-          ),
-          const SizedBox(height: AppDimens.p12),
           FilledButton(
             onPressed: selected == null
                 ? null

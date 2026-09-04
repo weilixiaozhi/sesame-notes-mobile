@@ -1962,9 +1962,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restoreSelectHint => '点击列表选择要恢复的备份';
 
   @override
-  String get restoreDeviceKeyHint => '备份由本机设备密钥加密，可直接打开';
-
-  @override
   String get cloudBackupEntryLocalOnly => '仅本地备份';
 
   @override
@@ -3840,7 +3837,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restoreNoBackups => '暂无备份';
 
   @override
-  String get restoreOpenFailed => '无法打开备份：设备密钥不匹配或文件损坏';
+  String get restoreOpenFailed => '无法打开备份：文件已损坏或不是备份文件';
 
   @override
   String restoreMemberCount(int count) {
@@ -6096,9 +6093,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get restoreSelectHint => '點擊列表選擇要恢復的備份';
 
   @override
-  String get restoreDeviceKeyHint => '備份由本機裝置金鑰加密，可直接開啟';
-
-  @override
   String get cloudBackupEntryLocalOnly => '僅本機備份';
 
   @override
@@ -7974,7 +7968,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get restoreNoBackups => '暫無備份';
 
   @override
-  String get restoreOpenFailed => '無法開啟備份：裝置金鑰不匹配或檔案損壞';
+  String get restoreOpenFailed => '無法開啟備份：檔案已損壞或不是備份檔案';
 
   @override
   String restoreMemberCount(int count) {

@@ -1,8 +1,8 @@
 /// 自动备份编排 provider 装配（本地 .snbak 快照 + 第三方云端版本化上传）。
 ///
-/// - 本地快照 = LocalBackupService 的 .snbak Envelope（设备密钥加密）；
+/// - 本地快照 = LocalBackupService 的 .snbak 明文分帧文件（无加密）；
 /// - 云端上传：已配置第三方后端即上传；未配置则跳过（本地快照仍成功）；
-/// - 上传路径版本化（时间戳命名）；base64 仅作传输编码，内容已是密文；
+/// - 上传路径版本化（时间戳命名）；base64 仅作传输编码；
 /// - 云端保留最近 5 份（冻结默认），超限按时间戳清理。
 library;
 
@@ -19,11 +19,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
-import 'package:sesame_notes/core/identity/local_user_identity.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/settings/infrastructure/auto_backup_service.dart';
-import 'package:sesame_notes/features/settings/domain/backup_crypto.dart';
 import 'package:sesame_notes/features/settings/infrastructure/local_backup_service.dart';
 
 /// 云端备份目录（版本化 .snbak 存放处）。
@@ -77,14 +75,10 @@ final autoBackupCoordinatorProvider = Provider<AutoBackupService>((ref) {
           );
     },
     createLocalBackup: () async {
-      // 加密输入：设备密钥（localSelfId 派生，DEVICE_LOCAL slot）。
-      final localSelfId = await LocalSelfId.getOrCreate();
+      // 明文备份：manifest JSON + SQLite 体，无任何加密。
       final deviceId = await identity.load();
       return backupService.createBackup(
         db: db,
-        secrets: BackupSecrets(
-          deviceKey: BackupCrypto.deviceKeyFromLocalSelfId(localSelfId),
-        ),
         deviceId: deviceId,
         // 备份只含本地域与当前账号域：其他账号数据不进入 .snbak
         currentAccountId: ref.read(authSessionProvider)?.userId,
@@ -113,7 +107,7 @@ Future<void> uploadBackupFile(File file) async {
     final remoteName = p.basename(file.path);
     final remotePath = '$cloudBackupDirectory/$remoteName';
     final bytes = await file.readAsBytes();
-    // base64 仅作传输编码：内容已是 Envelope 密文。
+    // base64 仅作传输编码（存储接口按字符串承载字节）。
     await storage.upload(
       path: remotePath,
       data: base64Encode(bytes),
@@ -186,17 +180,13 @@ typedef CloudReadFn = T Function<T>(ProviderListenable<T> listenable);
 
 /// 与自动备份一致的本地快照创建（手动「立即备份」与自动路径共用装配）。
 ///
-/// 加密输入：设备密钥（localSelfId 派生，DEVICE_LOCAL slot）。
+/// 明文备份：manifest JSON + SQLite 体，无任何加密。
 Future<File> createLocalBackupNow({required CloudReadFn read}) async {
   final db = read(databaseProvider);
   final backupService = read(localBackupServiceProvider);
-  final localSelfId = await LocalSelfId.getOrCreate();
   final deviceId = await read(deviceIdentityProvider).load();
   return backupService.createBackup(
     db: db,
-    secrets: BackupSecrets(
-      deviceKey: BackupCrypto.deviceKeyFromLocalSelfId(localSelfId),
-    ),
     deviceId: deviceId,
     // 备份只含本地域与当前账号域：其他账号数据不进入 .snbak
     currentAccountId: read(authSessionProvider)?.userId,

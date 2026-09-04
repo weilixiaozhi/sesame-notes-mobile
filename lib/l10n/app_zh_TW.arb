@@ -850,7 +850,6 @@
     "cloudTabBackupSubtitle": "點擊卡片切換備份方式，首次需要配置資訊",
     "restoreOpenButton": "開啟所選備份",
     "restoreSelectHint": "點擊列表選擇要恢復的備份",
-    "restoreDeviceKeyHint": "備份由本機裝置金鑰加密，可直接開啟",
     "cloudBackupEntryLocalOnly": "僅本機備份",
     "cloudBackupEntryFailed": "上次備份失敗，將自動重試",
     "cloudBackupStatusTitle": "備份狀態",
@@ -1790,7 +1789,7 @@
     "restoreDone": "還原完成",
     "restoreNoOverwrite": "還原不會覆蓋現有帳本",
     "restoreNoBackups": "暫無備份",
-    "restoreOpenFailed": "無法開啟備份：裝置金鑰不匹配或檔案損壞",
+    "restoreOpenFailed": "無法開啟備份：檔案已損壞或不是備份檔案",
     "restoreMemberCount": "{count} 位成員",
     "@restoreMemberCount": {
         "placeholders": {

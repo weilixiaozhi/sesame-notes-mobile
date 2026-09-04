@@ -2,10 +2,9 @@
 ///
 /// - openBackup→validate→readManifest→listRecoveryItems 全程零写入
 ///   （Step 1–3 不触碰 live DB）；
-/// - 损坏/AEAD 失败/设备密钥错误/schema 不匹配/双写不一致一律拒绝；
+/// - 损坏/明文分帧长度字段损坏/schema 不匹配/format_version 不受支持一律拒绝；
 /// - importLocalLedger：ID 冲突 → Fork 新 ID；无冲突 → 原 identity；
-/// - forkCloudLedgerToLocal：永远 Fork，origin 溯源，
-///   同步状态不恢复；
+/// - forkCloudLedgerToLocal：永远 Fork，origin 溯源，同步状态不恢复；
 /// - Step 4 单事务应用：任一步失败 → 回滚，live DB 不变；
 /// - 每次恢复写 recovery_log（审计）；
 /// - 已有 live identity 时无隐式 Merge：未决策的账本 = skip；
@@ -21,8 +20,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:sesame_notes/data/db.dart';
-import 'package:sesame_notes/features/settings/domain/backup_crypto.dart';
-import 'package:sesame_notes/features/settings/domain/backup_envelope.dart';
 import 'package:sesame_notes/features/settings/infrastructure/backup_import_service.dart';
 import 'package:sesame_notes/features/settings/domain/backup_manifest.dart';
 import 'package:sesame_notes/features/settings/infrastructure/local_backup_service.dart';
@@ -60,6 +57,19 @@ void main() {
     } catch (_) {}
     if (await tmp.exists()) await tmp.delete(recursive: true);
   });
+
+  /// 把 [manifest] 以明文分帧写入 .snbak 文件（不写真实 sqlite 体，仅用于
+  /// format/schema 版本守卫测试——这些校验在提取 sqlite 之前即抛错）。
+  Future<File> writePlainBackup(String name, BackupManifest manifest) async {
+    final file = File(p.join(tmp.path, name));
+    await file.writeAsBytes(
+      BackupPayloadCodec.encode(
+        BackupManifestCodec.encodeJson(manifest),
+        Uint8List.fromList([0]),
+      ),
+    );
+    return file;
+  }
 
   /// 构造一个含本地账本 + 云端账本（成员/交易/AA/pending/冲突）的备份源库，
   /// 并通过独立 backupService（指向源库文件）生成 .snbak。
@@ -205,17 +215,16 @@ void main() {
             localMutationId: 'm-1',
           ),
         );
-    // 用设备密钥生成 .snbak（设备密钥加密路径）
+    // 明文分帧生成 .snbak
     final backup = await srcBackupService.createBackup(
       db: srcDb,
-      secrets: BackupSecrets(deviceKey: 'test-device-key'),
       deviceId: 'dev-src',
       appVersion: '1.0.0',
     );
     return (srcDb, backup);
   }
 
-  test('openBackup：正确设备密钥打开，Manifest 与统计字段完整，live DB 0 mutation', () async {
+  test('openBackup：明文打开，Manifest 与统计字段完整，live DB 0 mutation', () async {
     final (srcDb, backup) = await seedBackupSource();
     addTearDown(srcDb.close);
     // live 库当前状态快照
@@ -223,7 +232,6 @@ void main() {
 
     final session = await importService.openBackup(
       backupFile: backup,
-      deviceKey: 'test-device-key',
       currentSchemaVersion: liveDb.schemaVersion,
     );
     expect(session.manifest.formatVersion, 1);
@@ -257,32 +265,12 @@ void main() {
     await session.close();
   });
 
-  test('openBackup：设备密钥错误 → wrongKeyOrCorrupted', () async {
-    final (srcDb, backup) = await seedBackupSource();
-    addTearDown(srcDb.close);
-    expect(
-      () => importService.openBackup(
-        backupFile: backup,
-        deviceKey: 'wrong-device-key',
-        currentSchemaVersion: liveDb.schemaVersion,
-      ),
-      throwsA(
-        isA<BackupFormatException>().having(
-          (e) => e.reason,
-          'reason',
-          BackupOpenError.wrongKeyOrCorrupted,
-        ),
-      ),
-    );
-  });
-
   test('openBackup：损坏文件 → corrupt', () async {
     final badFile = File(p.join(tmp.path, 'bad.snbak'));
     await badFile.writeAsString('garbage');
     expect(
       () => importService.openBackup(
         backupFile: badFile,
-        deviceKey: 'x',
         currentSchemaVersion: liveDb.schemaVersion,
       ),
       throwsA(
@@ -295,8 +283,7 @@ void main() {
     );
   });
 
-  test('openBackup：schema 旧于当前完整 v1 → schemaTooOld', () async {
-    // 当前没有存量版本，任何低于 v1 的备份都直接拒绝。
+  test('openBackup：schema 旧于当前 → schemaTooOld', () async {
     final manifest = BackupManifest(
       formatVersion: 1,
       dbSchemaVersion: 0,
@@ -306,19 +293,10 @@ void main() {
       ledgers: const [],
       accounts: const [],
     );
-    final envelope = await BackupCrypto.createEnvelope(
-      deviceKey: 'test-device-key',
-      plaintextPayload: BackupPayloadCodec.encode(
-        BackupManifestCodec.encodeJson(manifest),
-        Uint8List.fromList([0]),
-      ),
-    );
-    final file = File(p.join(tmp.path, 'old_schema.snbak'));
-    await file.writeAsBytes(BackupEnvelopeCodec.encode(envelope));
+    final file = await writePlainBackup('old_schema.snbak', manifest);
     expect(
       () => importService.openBackup(
         backupFile: file,
-        deviceKey: 'test-device-key',
         currentSchemaVersion: 1,
       ),
       throwsA(
@@ -341,19 +319,10 @@ void main() {
       ledgers: const [],
       accounts: const [],
     );
-    final envelope = await BackupCrypto.createEnvelope(
-      deviceKey: 'test-device-key',
-      plaintextPayload: BackupPayloadCodec.encode(
-        BackupManifestCodec.encodeJson(manifest),
-        Uint8List.fromList([0]),
-      ),
-    );
-    final file = File(p.join(tmp.path, 'new_schema.snbak'));
-    await file.writeAsBytes(BackupEnvelopeCodec.encode(envelope));
+    final file = await writePlainBackup('new_schema.snbak', manifest);
     expect(
       () => importService.openBackup(
         backupFile: file,
-        deviceKey: 'test-device-key',
         currentSchemaVersion: 1,
       ),
       throwsA(
@@ -367,7 +336,7 @@ void main() {
   });
 
   test(
-    'openBackup：Manifest format_version 与 Envelope 双写不一致 → invalidManifest',
+    'openBackup：Manifest format_version 不受支持 → invalidManifest',
     () async {
       final manifest = BackupManifest(
         formatVersion: 999,
@@ -378,19 +347,10 @@ void main() {
         ledgers: const [],
         accounts: const [],
       );
-      final envelope = await BackupCrypto.createEnvelope(
-        deviceKey: 'test-device-key',
-        plaintextPayload: BackupPayloadCodec.encode(
-          BackupManifestCodec.encodeJson(manifest),
-          Uint8List.fromList([0]),
-        ),
-      );
-      final file = File(p.join(tmp.path, 'mismatch.snbak'));
-      await file.writeAsBytes(BackupEnvelopeCodec.encode(envelope));
+      final file = await writePlainBackup('mismatch.snbak', manifest);
       expect(
         () => importService.openBackup(
           backupFile: file,
-          deviceKey: 'test-device-key',
           currentSchemaVersion: 1,
         ),
         throwsA(
@@ -409,7 +369,6 @@ void main() {
     addTearDown(srcDb.close);
     final session = await importService.openBackup(
       backupFile: backup,
-      deviceKey: 'test-device-key',
       currentSchemaVersion: liveDb.schemaVersion,
     );
     final items = await importService.listRecoveryItems(session);
@@ -482,7 +441,6 @@ void main() {
     addTearDown(srcDb.close);
     final session = await importService.openBackup(
       backupFile: backup,
-      deviceKey: 'test-device-key',
       currentSchemaVersion: liveDb.schemaVersion,
     );
     // 打开后不设置任何决策（默认 skip）
@@ -517,7 +475,6 @@ void main() {
         );
     final session = await importService.openBackup(
       backupFile: backup,
-      deviceKey: 'test-device-key',
       currentSchemaVersion: liveDb.schemaVersion,
     );
     final items = await importService.listRecoveryItems(session);
@@ -553,7 +510,6 @@ void main() {
     addTearDown(srcDb.close);
     final session = await importService.openBackup(
       backupFile: backup,
-      deviceKey: 'test-device-key',
       currentSchemaVersion: liveDb.schemaVersion,
     );
     final items = await importService.listRecoveryItems(session);
@@ -615,6 +571,7 @@ void main() {
     expect(logs.single.result, 'failed');
     expect(logs.single.action, 'apply_failed');
   });
+
   test(
     'restoreWholeDatabaseForEmergency：整库覆盖后云端账本 STALE_BINDING + 同步状态清除',
     () async {
@@ -635,8 +592,6 @@ void main() {
       final result = await backupService.restoreWholeDatabaseForEmergency(
         db: liveDb,
         backupFile: backup,
-        secrets: BackupSecrets(deviceKey: 'test-device-key'),
-        localSelfId: 'self-live',
       );
       expect(result.status, RestoreStatus.success);
 

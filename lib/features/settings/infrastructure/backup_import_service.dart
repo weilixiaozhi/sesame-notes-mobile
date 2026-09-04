@@ -21,8 +21,6 @@ import 'package:uuid/uuid.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_ledger_repository.dart';
-import 'package:sesame_notes/features/settings/domain/backup_crypto.dart';
-import 'package:sesame_notes/features/settings/domain/backup_envelope.dart';
 import 'package:sesame_notes/features/settings/domain/backup_manifest.dart';
 import 'package:sesame_notes/features/settings/infrastructure/backup_recovery_repository.dart';
 
@@ -172,37 +170,28 @@ class BackupImportService {
 
   final Directory? _tempDirOverride;
 
-  /// 打开备份：解析并解密 Envelope，校验 Manifest 与当前 schema，
+  /// 打开备份：解析 .snbak 明文分帧，校验 Manifest 与当前 schema，
   /// 再把 SQLite 提取到临时隔离区构建只读 RecoverySession。
   ///
-  /// [deviceKey] 为设备密钥（localSelfId 派生）；[currentSchemaVersion] 为
-  /// 当前应用 db schema 版本。
+  /// 备份无加密，任何设备可直接打开；[currentSchemaVersion] 为当前应用
+  /// db schema 版本。
   Future<RecoverySession> openBackup({
     required File backupFile,
-    required String deviceKey,
     required int currentSchemaVersion,
   }) async {
     try {
       final bytes = await backupFile.readAsBytes();
-      // 1) Envelope 头部（明文）校验：magic/版本范围/加密方案/KDF 参数/slots
-      final envelope = BackupEnvelopeCodec.decode(bytes);
-      // 2) 用设备密钥解密 payload（DEVICE_LOCAL slot）
-      final payload = await BackupCrypto.decryptEnvelopePayload(
-        envelope: envelope,
-        deviceKey: deviceKey,
-      );
-      // 3) 分帧还原 Manifest + SQLite 体
-      final framed = BackupPayloadCodec.decode(payload);
+      // 1) 明文分帧还原 Manifest + SQLite 体
+      final framed = BackupPayloadCodec.decode(bytes);
       final manifest = BackupManifestCodec.decodeJson(framed.manifestJson);
-      // 4) 双写校验：Manifest 内 format_version 必须与 Envelope 一致
-      if (manifest.formatVersion != envelope.formatVersion) {
+      // 2) Manifest 格式版本校验（与 .snbak 协议一致）
+      if (manifest.formatVersion != backupFormatVersion) {
         throw const BackupFormatException(
           BackupOpenError.invalidManifest,
-          'Manifest 与 Envelope 的 format_version 不一致',
+          'Manifest 的 format_version 不受支持',
         );
       }
-      // 当前没有存量 schema，备份必须与应用的完整 v1 精确匹配；
-      // 版本不一致直接拒绝，避免保留未经真实用户验证的迁移分支。
+      // 3) schema 版本校验：版本不一致直接拒绝，避免未验证的迁移分支。
       if (manifest.dbSchemaVersion > currentSchemaVersion) {
         throw const BackupFormatException(
           BackupOpenError.schemaTooNew,

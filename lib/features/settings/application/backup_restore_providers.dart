@@ -13,8 +13,6 @@ import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
-import 'package:sesame_notes/features/settings/domain/backup_crypto.dart';
-import 'package:sesame_notes/features/settings/domain/backup_envelope.dart';
 import 'package:sesame_notes/features/settings/infrastructure/backup_import_service.dart';
 import 'package:sesame_notes/features/settings/domain/backup_manifest.dart';
 import 'package:sesame_notes/features/settings/infrastructure/local_backup_service.dart';
@@ -242,17 +240,15 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
     state = state.copyWith(selected: file, error: RestoreFlowError.none);
   }
 
-  /// Step 1→2：打开备份（解析 Envelope + 解密 Manifest + 预览），零写入。
+  /// Step 1→2：打开备份（明文解帧 + Manifest 校验 + 预览），零写入。
   ///
-  /// 备份统一用设备密钥加密，本机可直接打开；打开失败即密钥不匹配或文件损坏。
+  /// 备份无加密，任何设备可直接打开；打开失败即文件损坏或非备份文件。
   Future<void> openBackup({required RestoreBackupFile file}) async {
     state = state.copyWith(loading: true, error: RestoreFlowError.none);
     try {
       final db = ref.read(databaseProvider);
-      final localSelfId = await ref.read(localSelfIdProvider.future);
       final session = await _import.openBackup(
         backupFile: file._source.file,
-        deviceKey: BackupCrypto.deviceKeyFromLocalSelfId(localSelfId),
         currentSchemaVersion: db.schemaVersion,
       );
       final items = (await _import.listRecoveryItems(session))
