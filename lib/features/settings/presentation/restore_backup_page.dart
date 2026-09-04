@@ -10,6 +10,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/widgets/app_list_tile.dart';
 import 'package:sesame_notes/shared/widgets/primary_header.dart';
@@ -250,6 +251,8 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
 
   Widget _buildStep3(BuildContext context, BackupRestoreFlowState flow) {
     final l10n = AppLocalizations.of(context);
+    // 当前登录账号：云端账本「登录原账号」选项的账号身份校验基准。
+    final currentAccountId = ref.watch(authSessionProvider)?.userId;
     return ListView(
       padding: const EdgeInsets.all(AppDimens.p16),
       children: [
@@ -257,7 +260,7 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
           title: l10n.restoreStep3Title,
           subtitle: flow.selected?.sizeLabel ?? '',
         ),
-        for (final item in flow.items)
+        for (final item in flow.items) ...[
           SectionCard(
             margin: const EdgeInsets.only(bottom: AppDimens.p12),
             child: Column(
@@ -301,13 +304,44 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
                         RadioListTile<RestoreDecision>(
                           title: Text(_decisionLabel(context, decision)),
                           value: decision,
+                          // 「登录原账号」未通过账号身份校验时禁用：
+                          // 未登录 / 账号不符 / 缺少原账号信息均拦截。
+                          enabled:
+                              decision != RestoreDecision.reconnect ||
+                              reconnectBlockerOf(
+                                    itemAccountId: item.accountId,
+                                    currentAccountId: currentAccountId,
+                                  ) ==
+                                  ReconnectBlocker.none,
                         ),
                     ],
                   ),
                 ),
+                // 拦截原因提示（仅云端账本的「登录原账号」被拦截时展示）。
+                if (_reconnectBlockedHint(
+                      context,
+                      item,
+                      currentAccountId,
+                    ) !=
+                    null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppDimens.p12,
+                      0,
+                      AppDimens.p12,
+                      AppDimens.p12,
+                    ),
+                    child: Text(
+                      _reconnectBlockedHint(context, item, currentAccountId)!,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppTokens.warning(context),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
+          ],
         Padding(
           padding: const EdgeInsets.only(top: AppDimens.p12),
           child: FilledButton(
@@ -318,6 +352,26 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
         ),
       ],
     );
+  }
+
+  /// 「登录原账号」拦截提示文案；未拦截返回 null。
+  String? _reconnectBlockedHint(
+    BuildContext context,
+    RestoreLedgerItem item,
+    String? currentAccountId,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    final blocker = reconnectBlockerOf(
+      itemAccountId: item.accountId,
+      currentAccountId: currentAccountId,
+    );
+    return switch (blocker) {
+      ReconnectBlocker.none => null,
+      ReconnectBlocker.needLogin => l10n.restoreDecisionReconnectNeedLogin,
+      ReconnectBlocker.accountMismatch =>
+        l10n.restoreDecisionReconnectAccountMismatch,
+      ReconnectBlocker.noAccount => l10n.restoreDecisionReconnectNoAccount,
+    };
   }
 
   /// 决策选项：云端账本 3 选（恢复为本地副本/登录原账号/暂不处理）；

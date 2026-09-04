@@ -5,6 +5,7 @@
 /// 生产由默认装配）。Step 1–3 零写入，Step 4 单事务应用。
 library;
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +13,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
+import 'package:sesame_notes/shared/providers/refresh_ticks.dart';
+import 'package:sesame_notes/shared/providers/sync_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/settings/infrastructure/backup_import_service.dart';
 import 'package:sesame_notes/features/settings/domain/backup_manifest.dart';
@@ -83,6 +86,59 @@ class RestoreLedgerItem {
 
 /// 页面可选的恢复决策。
 enum RestoreDecision { restoreLocal, forkCloudToLocal, reconnect, skip }
+
+/// 「登录原账号获取最新」的账号身份拦截原因。
+enum ReconnectBlocker {
+  /// 账号匹配，可用。
+  none,
+
+  /// 未登录。
+  needLogin,
+
+  /// 当前账号不是备份记录的原账号。
+  accountMismatch,
+
+  /// 备份缺少原账号信息，无从校验身份。
+  noAccount,
+}
+
+/// 判定云端账本「登录原账号获取最新」是否被拦截（纯函数，测试锚点）。
+///
+/// 规则：未登录 → 需登录；原账号缺失 → 无法校验；当前账号 ≠ 原账号 → 不符；
+/// 全部满足才可用。
+ReconnectBlocker reconnectBlockerOf({
+  required String? itemAccountId,
+  required String? currentAccountId,
+}) {
+  if (currentAccountId == null || currentAccountId.isEmpty) {
+    return ReconnectBlocker.needLogin;
+  }
+  if (itemAccountId == null || itemAccountId.isEmpty) {
+    return ReconnectBlocker.noAccount;
+  }
+  if (itemAccountId != currentAccountId) {
+    return ReconnectBlocker.accountMismatch;
+  }
+  return ReconnectBlocker.none;
+}
+
+/// 应用恢复后是否需要触发 Reconnect v1（纯函数，测试锚点）。
+///
+/// 仅当存在「reconnect 决策已应用且原账号 == 当前账号」的账本时为 true；
+/// 未登录/账号不符时不得触发（备份内容不复制，云端最新由登录后的
+/// Reconnect v1 下载）。
+bool shouldReconnectAfterApply({
+  required List<RestoreLedgerItem> items,
+  required Map<String, RestoreDecision> decisions,
+  required String? currentAccountId,
+}) {
+  if (currentAccountId == null || currentAccountId.isEmpty) return false;
+  return items.any(
+    (item) =>
+        decisions[item.ledgerBackupId] == RestoreDecision.reconnect &&
+        item.accountId == currentAccountId,
+  );
+}
 
 /// 单个账本的恢复结果展示项。
 class RestoreApplyEntry {
@@ -344,6 +400,15 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
         localSelfId: localSelfId,
         currentAccountId: currentAccountId,
       );
+      // 存在「登录原账号」且账号匹配的决策：触发 Reconnect v1 从服务器
+      // 下载云端最新（备份内容不复制，实际数据由同步引擎收敛）。
+      if (shouldReconnectAfterApply(
+        items: state.items,
+        decisions: state.decisions,
+        currentAccountId: currentAccountId,
+      )) {
+        unawaited(_reconnectAfterApply());
+      }
       final report = RestoreApplyReport(
         rawReport.entries
             .map(
@@ -383,6 +448,18 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
         RecoveryDecision.reconnect => RestoreDecision.reconnect,
         RecoveryDecision.skip => RestoreDecision.skip,
       };
+
+  /// 应用恢复后触发 Reconnect v1：收敛云端账本并刷新账本列表。
+  ///
+  /// 失败仅记日志不打断恢复流程（恢复本身已完成，云端收敛可重试）。
+  Future<void> _reconnectAfterApply() async {
+    try {
+      await ref.read(syncCoordinatorProvider).reconnect();
+      ref.read(ledgerListRefreshProvider.notifier).tick();
+    } catch (e, st) {
+      logger.error('RestoreFlow', '恢复后 Reconnect 失败', e, st);
+    }
+  }
 
   /// 返回上一步（2→1 时关闭会话，释放临时文件）。
   Future<void> back() async {

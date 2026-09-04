@@ -7167,6 +7167,24 @@ abstract class AppLocalizations {
   /// **'Sign in to original account for latest'**
   String get restoreDecisionReconnect;
 
+  /// No description provided for @restoreDecisionReconnectNeedLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Not signed in — sign in to the original account first'**
+  String get restoreDecisionReconnectNeedLogin;
+
+  /// No description provided for @restoreDecisionReconnectAccountMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The current account is not the original account of this ledger'**
+  String get restoreDecisionReconnectAccountMismatch;
+
+  /// No description provided for @restoreDecisionReconnectNoAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'The backup lacks original account info and cannot restore by account'**
+  String get restoreDecisionReconnectNoAccount;
+
   /// No description provided for @restoreDecisionSkip.
   ///
   /// In en, this message translates to:

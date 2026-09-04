@@ -3819,6 +3819,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restoreDecisionReconnect => '登录原账号获取最新';
 
   @override
+  String get restoreDecisionReconnectNeedLogin => '未登录，登录原账号后可用';
+
+  @override
+  String get restoreDecisionReconnectAccountMismatch => '当前账号不是该账本的原账号';
+
+  @override
+  String get restoreDecisionReconnectNoAccount => '备份缺少原账号信息，无法按原账号恢复';
+
+  @override
   String get restoreDecisionSkip => '暂不处理';
 
   @override
@@ -7948,6 +7957,15 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get restoreDecisionReconnect => '登入原帳號取得最新';
+
+  @override
+  String get restoreDecisionReconnectNeedLogin => '未登入，登入原帳號後可用';
+
+  @override
+  String get restoreDecisionReconnectAccountMismatch => '目前帳號不是該帳本的原帳號';
+
+  @override
+  String get restoreDecisionReconnectNoAccount => '備份缺少原帳號資訊，無法按原帳號恢復';
 
   @override
   String get restoreDecisionSkip => '暫不處理';

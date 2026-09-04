@@ -3976,6 +3976,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Sign in to original account for latest';
 
   @override
+  String get restoreDecisionReconnectNeedLogin =>
+      'Not signed in — sign in to the original account first';
+
+  @override
+  String get restoreDecisionReconnectAccountMismatch =>
+      'The current account is not the original account of this ledger';
+
+  @override
+  String get restoreDecisionReconnectNoAccount =>
+      'The backup lacks original account info and cannot restore by account';
+
+  @override
   String get restoreDecisionSkip => 'Skip';
 
   @override
