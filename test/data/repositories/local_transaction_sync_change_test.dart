@@ -1,6 +1,6 @@
 // 回归测试：交易写路径必须登记 sync_changes，云端账本的本地记账才能上行。
 //
-// add/update/deleteTransaction 与批量导入路径此前不登记变更，交易永远推不上云端。
+// add/update/deleteTransaction 与批量导入路径登记同步变更，保证交易可推送云端。
 // 本测试断言「写交易 → sync_changes 生成 → push 消费」完整闭环，
 // 与 ledger 登记模式对称（仅云端账本进同步通道）。
 import 'dart:convert';
