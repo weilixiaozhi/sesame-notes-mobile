@@ -17,6 +17,7 @@ import 'package:sesame_notes/core/api/secure_account_store.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/shared_preferences_provider.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
+import 'package:sesame_notes/shared/providers/sync_state_providers.dart';
 
 // 账号状态（AccountState/AccountStateNotifier/accountStateProvider）
 // 定义于 shared/providers 叶子，此处 re-export 保持调用方不变。
@@ -160,8 +161,10 @@ Future<void> _refreshInBackground(
   } on DioException catch (error, stackTrace) {
     final status = error.response?.statusCode;
     if (status == 401) {
-      // 明确认证类 401：删除 ActiveCredential 回到未登录；本地账本与
-      // 原账号域缓存保留，重新登录同账号后恢复
+      // 明确认证类 401：与显式退出登录同口径先执行 P0-1 purge（整本清除
+      // 云端账本与同步簿记），再删除 ActiveCredential 回到未登录；重登后
+      // 由 reconnect 全量快照拉回，本地账本一行不动。
+      await purgeCloudDataOnAuthFailure(ref);
       try {
         await store.clear();
       } catch (clearError, clearStackTrace) {

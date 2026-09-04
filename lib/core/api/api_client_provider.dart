@@ -78,7 +78,9 @@ final apiClientProvider = Provider<SesameApiClient>((ref) {
             );
             rethrow;
           }
-          // 明确认证类 401：清除凭证回到未登录，原账号域数据保留
+          // 明确认证类 401：清除凭证回到未登录；账号域云端数据由账号状态
+          // 会话失效监听统一执行 P0-1 purge（与显式退出登录同口径），
+          // 重登后由 reconnect 全量快照拉回。
           try {
             await store.clear();
           } catch (clearError, clearStackTrace) {

@@ -13,15 +13,23 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:drift/drift.dart' as d;
+import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_api_client/sesame_api_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
 import 'package:sesame_notes/core/api/secure_account_store.dart';
+import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/features/auth/application/account_providers.dart';
+import 'package:sesame_notes/shared/providers/database_providers.dart';
+
+import '../../helpers/realtime_test_stub.dart';
 
 /// 会话响应样例（注册/登录/刷新共用形状）。
 Map<String, Object> _sessionBody({String token = 'new-access'}) => {
@@ -100,6 +108,8 @@ void main() {
   late _MemorySecureStore rawStore;
   late ProviderContainer container;
   late _QueuedAdapter adapter;
+  late SesameDatabase db;
+  late LocalRepository repo;
 
   ProviderContainer buildContainer() {
     final client = SesameApiClient(basePathOverride: 'http://test.local');
@@ -110,6 +120,9 @@ void main() {
         secureAccountStoreProvider.overrideWithValue(
           SecureAccountStore(rawStore),
         ),
+        databaseProvider.overrideWithValue(db),
+        repositoryProvider.overrideWithValue(repo),
+        realtimeNoopOverride,
       ],
     );
   }
@@ -123,9 +136,14 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     rawStore = _MemorySecureStore();
+    db = SesameDatabase.forTesting(NativeDatabase.memory());
+    repo = LocalRepository(db);
   });
 
-  tearDown(() => container.dispose());
+  tearDown(() async {
+    container.dispose();
+    await db.close();
+  });
 
   test('无凭证：保持未登录，不发起任何刷新请求', () async {
     adapter = _QueuedAdapter([
@@ -221,6 +239,63 @@ void main() {
     // 本地账本等业务数据不在本次范围；资料缓存按账号键控保留
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('sesame_notes_cloud_profile_user-1'), isNull);
+  });
+
+  test('刷新认证类 401：云端账本与同步簿记整本清除（P0-1），本地账本保留', () async {
+    await rawStore.write(
+      const ActiveCredential(
+        userId: 'user-1',
+        deviceId: 'device-1',
+        refreshToken: 'old-refresh',
+      ).encode(),
+    );
+    const cloudId = 'cloud-1';
+    await repo.createBoundLedger(id: cloudId, name: '云端账本');
+    final localId = await repo.createLedger(name: '本地账本', storageMode: 'local');
+    final now = DateTime.now().toUtc();
+    await db
+        .into(db.syncChanges)
+        .insert(
+          SyncChangesCompanion.insert(
+            entityType: 'ledger',
+            entityId: cloudId,
+            ledgerId: d.Value(cloudId),
+            action: 'upsert',
+            payload: '{}',
+            updatedAt: now,
+            mutationId: const Uuid().v4(),
+          ),
+        );
+    await db
+        .into(db.syncState)
+        .insert(SyncStateCompanion.insert(deviceId: 'device-1'));
+    adapter = _QueuedAdapter([
+      (
+        status: 401,
+        body: {
+          'code': 'INVALID_REFRESH_TOKEN',
+          'message': '登录状态已失效，请重新登录',
+          'request_id': 'r1',
+        },
+        error: null,
+      ),
+    ]);
+    container = buildContainer();
+
+    await container.read(accountBootstrapProvider.future);
+    await flushUntil(
+      () => container.read(accountStateProvider).status == AccountStatus.local,
+    );
+
+    expect(await rawStore.read(), isNull, reason: '认证类 401 必须清除凭证');
+    expect(
+      await repo.getLedgerById(cloudId),
+      isNull,
+      reason: '认证类 401 与显式退出同口径：云端账本整本清除',
+    );
+    expect(await repo.getLedgerById(localId), isNotNull, reason: '本地账本一行不动');
+    expect(await db.select(db.syncChanges).get(), isEmpty, reason: '待推送队列整表清除');
+    expect(await db.select(db.syncState).get(), isEmpty, reason: '设备同步游标清除');
   });
 
   test('刷新网络错误：凭证与缓存身份保留，账号保持 authenticated', () async {

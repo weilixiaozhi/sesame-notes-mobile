@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_api_client/sesame_api_client.dart';
@@ -12,6 +13,12 @@ import 'package:sesame_notes/core/api/auth_service.dart';
 import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
 import 'package:sesame_notes/core/api/device_identity.dart';
 import 'package:sesame_notes/core/api/secure_account_store.dart';
+import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/data/repositories/local/local_repository.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
+import 'package:sesame_notes/shared/providers/database_providers.dart';
+
+import '../../helpers/realtime_test_stub.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -93,7 +100,90 @@ void main() {
       await _getProtected(client);
       expect(adapter.authorizationHeaders.last, isNull);
     });
+
+    test('认证类刷新失败：会话失效监听按 P0-1 整本清除云端账本，本地账本保留', () async {
+      final db = SesameDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+      final repo = LocalRepository(db);
+      const cloudId = 'cloud-1';
+      await repo.createBoundLedger(id: cloudId, name: '云端账本');
+      final localId = await repo.createLedger(
+        name: '本地账本',
+        storageMode: 'local',
+      );
+      await db
+          .into(db.syncState)
+          .insert(SyncStateCompanion.insert(deviceId: 'd'));
+
+      final rawStore = _MemorySecureStore()
+        ..value = ActiveCredential(
+          userId: 'u',
+          deviceId: 'd',
+          refreshToken: 'refresh-token',
+        ).encode();
+      final accountStore = SecureAccountStore(rawStore);
+      final failingService = _FailingAuthService();
+      final container = ProviderContainer(
+        overrides: [
+          authServiceProvider.overrideWithValue(failingService),
+          secureAccountStoreProvider.overrideWithValue(accountStore),
+          databaseProvider.overrideWithValue(db),
+          repositoryProvider.overrideWithValue(repo),
+          realtimeNoopOverride,
+        ],
+      );
+      addTearDown(container.dispose);
+      final client = container.read(apiClientProvider);
+      final adapter = _RecordingAdapter(statusCode: 401);
+      client.dio.httpClientAdapter = adapter;
+      container
+          .read(authSessionProvider.notifier)
+          .signIn(
+            const AuthSession(
+              accessToken: 'expired-token',
+              userId: 'u',
+              deviceId: 'd',
+            ),
+          );
+      container
+          .read(accountStateProvider.notifier)
+          .signIn(
+            session: const AuthSession(
+              accessToken: 'expired-token',
+              userId: 'u',
+              deviceId: 'd',
+            ),
+            credential: ActiveCredential(
+              userId: 'u',
+              deviceId: 'd',
+              refreshToken: 'refresh-token',
+            ),
+            profile: const CloudProfile(userId: 'u'),
+          );
+
+      await expectLater(_getProtected(client), throwsA(isA<DioException>()));
+      await _flushUntil(
+        () async => (await repo.getLedgerById(cloudId)) == null,
+      );
+
+      expect(
+        await repo.getLedgerById(cloudId),
+        isNull,
+        reason: '运行期认证类 401 同样整本清除云端账本',
+      );
+      expect(await repo.getLedgerById(localId), isNotNull, reason: '本地账本一行不动');
+      expect(await db.select(db.syncState).get(), isEmpty, reason: '设备同步游标清除');
+      expect(await accountStore.load(), isNull, reason: '凭证束已清除');
+      expect(container.read(authSessionProvider), isNull);
+    });
   });
+}
+
+/// 轮询等待异步清理完成（最多 500ms）。
+Future<void> _flushUntil(Future<bool> Function() condition) async {
+  for (var i = 0; i < 100 && !await condition(); i++) {
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+  }
 }
 
 /// 发起一个带生成客户端安全元数据的受保护请求。

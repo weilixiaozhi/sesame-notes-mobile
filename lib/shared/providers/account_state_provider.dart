@@ -7,6 +7,7 @@ import 'package:sesame_notes/core/api/auth_session.dart';
 import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
 import 'package:sesame_notes/core/api/secure_account_store.dart';
 import 'package:sesame_notes/shared/providers/realtime_providers.dart';
+import 'package:sesame_notes/shared/providers/sync_state_providers.dart';
 
 /// 账号状态：只有 local 与 authenticated 两种，无登录失效中间态。
 enum AccountStatus { local, authenticated }
@@ -31,6 +32,10 @@ class AccountStateNotifier extends Notifier<AccountState> {
     ref.listen<AuthSession?>(authSessionProvider, (previous, next) {
       if (next == null && state.status == AccountStatus.authenticated) {
         state = AccountState.local;
+        // 运行期认证类 401：凭证已清、会话归零——与显式退出登录同口径执行
+        // P0-1 purge（整本清除云端账本），重登后由 reconnect 全量快照拉回；
+        // 显式登出协调器置闸清理时该函数内部直接跳过，不会提前开闸。
+        unawaited(purgeCloudDataOnAuthFailure(ref));
       }
       // 会话建立即启动实时通知、清空即停止：WS 只触发 pull 提示，不承载状态；
       // 启停内部已做失败降级与幂等守卫，不阻塞登录主流程。
