@@ -150,6 +150,16 @@ class AccountSwitchCoordinator {
     final profile = state.profile;
     final credential = await store.load();
     if (credential == null) {
+      // 无凭证仍执行 P0-1 退出 purge：整本清除可能残留的云端账本
+      // （scope_account_id 为 NULL 的存量行也在清除范围），本地账本一行不动。
+      // 闸门 finally 必然开闸；purge 失败向上抛出，由登出流程提示重试。
+      final gate = ref.read(syncGateProvider.notifier);
+      gate.hold();
+      try {
+        await ref.read(repositoryProvider).purgeAllCloudLedgers();
+      } finally {
+        gate.release();
+      }
       // 无凭证：直接清内存状态（本地身份）
       ref.read(accountStateProvider.notifier).signOut();
       return;
@@ -210,10 +220,12 @@ class AccountSwitchCoordinator {
     final userGlobalChangeCount = pendingChanges
         .where((c) => c.ledgerId == null)
         .length;
+    // 云端账本选区与 purge 对齐（storage_mode）：scope_account_id 为 NULL 的
+    // 存量行同样参与 pending/conflict 预检，避免带未同步数据或冲突的云账本被误清。
     final cloudLedgerIds =
         (await (db.select(
               db.ledgers,
-            )..where((l) => l.scopeAccountId.equals(credential.userId))).get())
+            )..where((l) => l.storageMode.equals('cloud'))).get())
             .map((l) => l.id)
             .toList();
     final openConflictCount = cloudLedgerIds.isEmpty
@@ -286,16 +298,17 @@ class AccountSwitchCoordinator {
       await db.transaction(() async {
         // 必须在删除账本前保存目标 id；账本删除后再查询会得到空集，遗留的
         // 冲突与拉取错误会污染下一账号的同步状态。
+        // 云端账本选区按 storage_mode 而非 scope_account_id：P0-1 要求退出
+        // 登录后设备不持有任何云端账本；scope_account_id 为 NULL 的存量行
+        // 按 scope 清会漏删，导致未登录时云端账本仍然可见。
         final cloudLedgerIds =
             (await (db.select(
                   db.ledgers,
-                )..where((l) => l.scopeAccountId.equals(userId))).get())
+                )..where((l) => l.storageMode.equals('cloud'))).get())
                 .map((ledger) => ledger.id)
                 .toList();
-        // 云账本整本删除（交易/成员/分摊等经外键级联）
-        await (db.delete(
-          db.ledgers,
-        )..where((l) => l.scopeAccountId.equals(userId))).go();
+        // 云账本整本删除（交易/编辑历史/成员/共享分类镜像/待推送变更级联）
+        await ref.read(repositoryProvider).purgeAllCloudLedgers();
         // 账号域 user-global 数据：分类与手工汇率各账号一份
         await (db.delete(
           db.categories,

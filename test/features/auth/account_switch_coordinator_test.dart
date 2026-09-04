@@ -116,6 +116,23 @@ void main() {
     await db.close();
   });
 
+  /// 直接经 db 层插入 scope_account_id 为 NULL 的存量云端账本：
+  /// 模拟账号域架构上线前落库、从未回填 scope 的历史数据。
+  Future<String> seedLegacyNullScopeCloudLedger(String name) async {
+    final id = const Uuid().v4();
+    await db
+        .into(db.ledgers)
+        .insert(
+          LedgersCompanion.insert(
+            id: id,
+            name: name,
+            storageMode: const d.Value('cloud'),
+            updatedAt: DateTime.now().toUtc(),
+          ),
+        );
+    return id;
+  }
+
   /// A 已登录 + 云端账本（scope A）+ 一条未推送变更。
   Future<void> seedAccountA({bool withPending = true}) async {
     await rawStore.write(credentialA().encode());
@@ -225,6 +242,22 @@ void main() {
               .get();
       expect(localLedgers, hasLength(1), reason: 'A 的 pending 账本必须生成保护副本');
       expect(localLedgers.single.originType, 'DR_PROTECT');
+    });
+
+    test('A→B 切换 purge 按 storage_mode 选区：NULL scope 存量云账本同样清除', () async {
+      await seedAccountA(withPending: false);
+      final legacyId = await seedLegacyNullScopeCloudLedger('存量云账本');
+      when(() => auth.revokeServerSession(any())).thenAnswer((_) async {});
+      final ok = await container
+          .read(accountSwitchCoordinatorProvider)
+          .commitLogin(candidate: candidateB(), onReconnect: null);
+      expect(ok, isTrue);
+      expect(await repo.getLedgerById('ledger-a'), isNull, reason: 'A 域云账本已清');
+      expect(
+        await repo.getLedgerById(legacyId),
+        isNull,
+        reason: 'scope 为 NULL 的云端账本同样按 storage_mode 清除',
+      );
     });
 
     test('同账号重新登录：不 purge 数据域，只原子轮换凭证束', () async {
@@ -365,6 +398,62 @@ void main() {
         isNull,
         reason: '云端副本已清理，保护副本保留',
       );
+    });
+
+    test('登出 purge 按 storage_mode 选区：NULL scope 存量云账本必须整本清除', () async {
+      await seedAccountA(withPending: false);
+      final legacyId = await seedLegacyNullScopeCloudLedger('存量云账本');
+      // 直接落库交易（不登记同步变更）：保持无 pending 状态以便登出直达 purge。
+      await db
+          .into(db.transactions)
+          .insert(
+            TransactionsCompanion.insert(
+              id: const Uuid().v4(),
+              ledgerId: legacyId,
+              txType: 'expense',
+              amount: '5.00',
+              currencyCode: 'CNY',
+              nativeAmount: '5.00',
+              happenedAt: DateTime(2026, 7, 5),
+              createdAt: DateTime.now().toUtc(),
+              updatedAt: DateTime.now().toUtc(),
+            ),
+          );
+      when(() => auth.revokeServerSession(any())).thenAnswer((_) async {});
+
+      await container.read(accountSwitchCoordinatorProvider).logout();
+
+      expect(await repo.getLedgerById('ledger-a'), isNull, reason: 'A 域云账本已清');
+      expect(
+        await repo.getLedgerById(legacyId),
+        isNull,
+        reason: 'scope 为 NULL 的云端账本同样按 storage_mode 清除',
+      );
+      expect(
+        await (db.select(
+          db.transactions,
+        )..where((t) => t.ledgerId.equals(legacyId))).get(),
+        isEmpty,
+        reason: '存量云账本交易随账本级联清除',
+      );
+    });
+
+    test('无凭证登出：存量云端账本仍整本清除，本地账本不动', () async {
+      final legacyId = await seedLegacyNullScopeCloudLedger('存量云账本');
+      final localId = await repo.createLedger(
+        name: '本地账本',
+        storageMode: 'local',
+        localSelfId: 'self-x',
+      );
+
+      await container.read(accountSwitchCoordinatorProvider).logout();
+
+      expect(
+        await repo.getLedgerById(legacyId),
+        isNull,
+        reason: '无凭证退出登录同样整本清除云端账本（P0-1）',
+      );
+      expect(await repo.getLedgerById(localId), isNotNull, reason: '本地账本一行不动');
     });
 
     test('LOCAL 本地账本与 null scope 数据在任何清理中不动', () async {
