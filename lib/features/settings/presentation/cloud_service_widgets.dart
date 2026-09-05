@@ -268,136 +268,128 @@ Widget buildCloudServiceCard({
             margin: EdgeInsets.zero,
             // 将 SectionCard 默认内边距收窄为 p4。
             padding: const EdgeInsets.all(AppDimens.p4),
-            // 整卡可点击选中，高度固定保证所有卡片等高。
+            // 整卡可点击选中；高度由内容撑起（标题/副标题均单行，
+            // 各卡结构一致自然等高）。
             child: InkWell(
               onTap: isDisabled ? null : onTap,
               borderRadius: BorderRadius.circular(AppDimens.radius12),
-              child: SizedBox(
-                height: 71,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimens.p12,
-                    vertical: AppDimens.p8,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 图标
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: iconColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(
-                            AppDimens.radius8,
-                          ),
-                        ),
-                        child: Icon(
-                          icon,
-                          color: iconColor,
-                          size: AppDimens.icon16,
-                        ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimens.p12,
+                  vertical: AppDimens.p8,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 图标
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: iconColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppDimens.radius8),
                       ),
-                      const SizedBox(width: AppDimens.p8),
+                      child: Icon(
+                        icon,
+                        color: iconColor,
+                        size: AppDimens.icon16,
+                      ),
+                    ),
+                    const SizedBox(width: AppDimens.p8),
 
-                      // 文字信息。副标题为单行省略（兼顾固定卡片高度与长端点不横向溢出）。
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
+                    // 文字信息。副标题为单行省略（兼顾固定卡片高度与长端点不横向溢出）。
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                              if (isDisabled)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppDimens.p8,
+                                    vertical: AppDimens.p4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppTokens.textTertiary(
+                                      context,
+                                    ).withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(
+                                      AppDimens.radius8,
+                                    ),
+                                  ),
                                   child: Text(
-                                    title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    '不可用',
                                     style: Theme.of(context)
                                         .textTheme
-                                        .titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                                if (isDisabled)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppDimens.p8,
-                                      vertical: AppDimens.p4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppTokens.textTertiary(
-                                        context,
-                                      ).withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(
-                                        AppDimens.radius8,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      '不可用',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelSmall
-                                          ?.copyWith(
-                                            color: AppTokens.textTertiary(
-                                              context,
-                                            ),
-                                          ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 7),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    subtitle,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context).textTheme.bodySmall
+                                        .labelSmall
                                         ?.copyWith(
-                                          color: AppTokens.textSecondary(
+                                          color: AppTokens.textTertiary(
                                             context,
                                           ),
                                         ),
                                   ),
                                 ),
-                                // 「配置」文字链内联在副标题行右侧，
-                                // 与副标题垂直对齐；点按不触发卡片选中。
-                                if (!isDisabled &&
-                                    isConfigured &&
-                                    onConfigure != null)
-                                  TextButton.icon(
-                                    onPressed: onConfigure,
-                                    icon: const Icon(
-                                      AppIcons.settings,
-                                      size: AppDimens.icon16,
-                                    ),
-                                    label: Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      ).commonConfigure,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.labelSmall,
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: AppDimens.p8,
-                                        vertical: 0,
+                            ],
+                          ),
+                          const SizedBox(height: 7),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  subtitle,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: AppTokens.textSecondary(context),
                                       ),
-                                      minimumSize: Size.zero,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
+                                ),
+                              ),
+                              // 「配置」文字链内联在副标题行右侧，
+                              // 与副标题垂直对齐；点按不触发卡片选中。
+                              if (!isDisabled &&
+                                  isConfigured &&
+                                  onConfigure != null)
+                                TextButton.icon(
+                                  onPressed: onConfigure,
+                                  icon: const Icon(
+                                    AppIcons.settings,
+                                    size: AppDimens.icon16,
                                   ),
-                              ],
-                            ),
-                          ],
-                        ),
+                                  label: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).commonConfigure,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.labelSmall,
+                                  ),
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppDimens.p8,
+                                      vertical: 0,
+                                    ),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
