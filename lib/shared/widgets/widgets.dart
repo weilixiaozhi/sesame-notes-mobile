@@ -16,6 +16,8 @@ export 'app_route.dart';
 export 'day_section_header.dart';
 export 'primary_header.dart';
 export 'section_card.dart';
+export 'section_title.dart';
+export 'selectable_card.dart';
 export 'skeleton.dart';
 export 'swipe_hint.dart';
 export 'capsule_switcher.dart';

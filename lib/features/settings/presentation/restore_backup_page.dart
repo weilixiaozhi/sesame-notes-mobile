@@ -18,6 +18,8 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/widgets/currency_flag.dart';
 import 'package:sesame_notes/shared/widgets/format_money.dart';
+import 'package:sesame_notes/shared/widgets/section_title.dart';
+import 'package:sesame_notes/shared/widgets/selectable_card.dart';
 import 'package:sesame_notes/shared/widgets/toast.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
@@ -164,10 +166,15 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
       // 与账本管理页一致：页面不给水平内边距，两侧留白由卡片自带 margin 承担
       padding: const EdgeInsets.symmetric(vertical: AppDimens.p8),
       children: [
-        _sectionHeader(
-          context,
-          AppIcons.localStorage,
-          l10n.restoreSectionLocal,
+        // 分区标题统一走全局 SectionTitle（主题色条 + 主题色标题）。
+        SectionTitle(
+          title: l10n.restoreSectionLocal,
+          padding: const EdgeInsets.fromLTRB(
+            AppDimens.p12,
+            AppDimens.p8,
+            AppDimens.p12,
+            AppDimens.p8,
+          ),
         ),
         for (final item in locals)
           _RestoreLedgerCard(
@@ -178,7 +185,15 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
             onToggle: () => _toggleDecision(item, currentAccountId),
           ),
         const SizedBox(height: AppDimens.p16),
-        _sectionHeader(context, AppIcons.cloudQueue, l10n.restoreSectionCloud),
+        SectionTitle(
+          title: l10n.restoreSectionCloud,
+          padding: const EdgeInsets.fromLTRB(
+            AppDimens.p12,
+            AppDimens.p8,
+            AppDimens.p12,
+            AppDimens.p8,
+          ),
+        ),
         for (final item in clouds)
           _RestoreLedgerCard(
             item: item,
@@ -214,32 +229,6 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
     } else {
       showToast(context, l10n.restoreApplyFailed);
     }
-  }
-
-  /// 分区标题（图标 + 文案），与账本管理页双分区标题同一视觉。
-  Widget _sectionHeader(BuildContext context, IconData icon, String title) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppDimens.p16,
-        AppDimens.p8,
-        AppDimens.p16,
-        AppDimens.p8,
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: AppDimens.icon16, color: theme.colorScheme.outline),
-          const SizedBox(width: AppDimens.p8),
-          Text(
-            title,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.outline,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   /// 勾选/取消勾选：选中 = 该账本默认决策恢复，未选中 = skip（暂不处理）。
@@ -289,7 +278,6 @@ class _RestoreLedgerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final primary = Theme.of(context).colorScheme.primary;
     final isCloud = item.storageOrigin == LedgerStorageOrigin.cloud;
     final warnings = <String>[
       if (item.conflictCount > 0)
@@ -305,13 +293,8 @@ class _RestoreLedgerCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTokens.surface(context),
           borderRadius: BorderRadius.circular(AppDimens.radius12),
-          // 边框与账本管理页 LedgerCard 同口径：浅色未选中无边框，
-          // 暗色未选中 1px 常规边框；选中态统一变主题色 1px。
-          border: selected
-              ? Border.all(color: primary, width: 1)
-              : (AppTokens.isDark(context)
-                    ? Border.all(color: AppTokens.border(context), width: 1)
-                    : null),
+          // 选中边框与「备份与云同步」「账本管理」共用同一口径。
+          border: selectableCardBorder(context, selected: selected),
           boxShadow: AppTokens.isDark(context)
               ? null
               : [
@@ -447,31 +430,8 @@ class _RestoreLedgerCard extends StatelessWidget {
                 ),
               ),
             ),
-            // 右上角勾选标签：位于裁剪层之外覆盖在边框之上。
-            // 外移量 = 边框宽度 1px，顶边/右边与卡片外沿精确齐平，
-            // 右上圆角（r12）圆心与卡片外角圆弧圆心重合，
-            // 角上只露一条弧线、无凸出。
-            if (selected)
-              Positioned(
-                top: -1,
-                right: -1,
-                child: Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: primary,
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(AppDimens.radius12),
-                      bottomLeft: Radius.circular(AppDimens.radius12),
-                    ),
-                  ),
-                  child: Icon(
-                    AppIcons.check,
-                    size: AppDimens.icon12,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                ),
-              ),
+            // 右上角勾选角标：共用全局组件，位于裁剪层之外覆盖在边框之上。
+            if (selected) const SelectableCardCheckBadge(),
           ],
         ),
       ),

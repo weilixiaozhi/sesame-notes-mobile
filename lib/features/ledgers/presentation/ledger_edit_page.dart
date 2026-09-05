@@ -211,46 +211,6 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
     );
   }
 
-  /// 模块标题 — 页面统一采用「标题在外 + 内容卡片」的版块结构。
-  ///
-  /// 左侧 3px 主题色条 + 加粗标题,与「备份与云同步」等页面的模块标题
-  /// 风格一致,让编辑页各模块(账本名称 / 币种 / 每月起始日 / 成员管理 /
-  /// 成员收支 / 存储位置)在长列表中区分更明显;水平内缩与 Card 默认
-  /// margin(all: 4) 对齐;[disabled] 时色条与文字整行置灰,与只读内容的
-  /// 禁用色保持一致。
-  Widget _buildSectionTitle(
-    BuildContext context,
-    String text, {
-    bool disabled = false,
-  }) {
-    final color = disabled
-        ? Theme.of(context).disabledColor
-        : Theme.of(context).colorScheme.primary;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimens.p4),
-      child: Row(
-        children: [
-          Container(
-            width: 3,
-            height: 15,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(AppDimens.radius4),
-            ),
-          ),
-          const SizedBox(width: AppDimens.p8),
-          Text(
-            text,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   /// 编辑数据加载失败态：友好提示 + 重试按钮。
   Widget _buildLoadError(BuildContext context, AppLocalizations l10n) {
     return Center(
@@ -348,11 +308,7 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
         children: [
           // ── 1. 账本名称 ──
           // 不设置 elevation，与编辑分类等其他模块保持一致的扁平卡片风格。
-          _buildSectionTitle(
-            context,
-            l10n.ledgerNameLabel,
-            disabled: _isReadOnly,
-          ),
+          SectionTitle(title: l10n.ledgerNameLabel, disabled: _isReadOnly),
           const SizedBox(height: AppDimens.p8),
           Card(
             child: Padding(
@@ -390,9 +346,8 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
           ],
 
           // ── 2. 主币种 ──
-          _buildSectionTitle(
-            context,
-            l10n.ledgerBaseCurrencyLabel,
+          SectionTitle(
+            title: l10n.ledgerBaseCurrencyLabel,
             disabled: _isReadOnly,
           ),
           const SizedBox(height: AppDimens.p8),
@@ -452,11 +407,7 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
           const SizedBox(height: AppDimens.p16),
 
           // ── 3. 每月起始日 ──
-          _buildSectionTitle(
-            context,
-            l10n.ledgersMonthStartDay,
-            disabled: _isReadOnly,
-          ),
+          SectionTitle(title: l10n.ledgersMonthStartDay, disabled: _isReadOnly),
           const SizedBox(height: AppDimens.p8),
           Card(
             child: ListTile(
@@ -585,7 +536,7 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle(context, l10n.ledgersStorageLocation),
+          SectionTitle(title: l10n.ledgersStorageLocation),
           const SizedBox(height: AppDimens.p8),
           Card(
             child: Column(

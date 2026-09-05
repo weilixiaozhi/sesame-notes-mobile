@@ -139,7 +139,12 @@ class AaStatisticsPage extends ConsumerWidget {
       children: [
         _buildOverviewCard(context, l10n, totalAmount, active.length),
         const SizedBox(height: AppDimens.p16),
-        _buildSectionTitle(context, l10n.aaStatisticsPerPerson),
+        // 模块标题统一走全局 SectionTitle;本页列表内边距 16、
+        // 卡片 margin 为 0,色条左缘直接对齐卡片外缘,无需水平内缩。
+        SectionTitle(
+          title: l10n.aaStatisticsPerPerson,
+          padding: EdgeInsets.zero,
+        ),
         const SizedBox(height: AppDimens.p8),
         _buildPerPersonCard(
           context,
@@ -150,12 +155,18 @@ class AaStatisticsPage extends ConsumerWidget {
           totalPaidAllOf,
         ),
         const SizedBox(height: AppDimens.p16),
-        _buildSectionTitle(context, l10n.aaStatisticsTransferPlan),
+        SectionTitle(
+          title: l10n.aaStatisticsTransferPlan,
+          padding: EdgeInsets.zero,
+        ),
         const SizedBox(height: AppDimens.p8),
         _buildTransferCard(context, ref, l10n, statistics.transfers),
         // 不分摊区块始终展示(数据为空时由卡片内部渲染空态)。
         const SizedBox(height: AppDimens.p16),
-        _buildSectionTitle(context, l10n.aaStatisticsExcluded),
+        SectionTitle(
+          title: l10n.aaStatisticsExcluded,
+          padding: EdgeInsets.zero,
+        ),
         const SizedBox(height: AppDimens.p8),
         _buildExcludedCard(context, ref, l10n, excluded, memberMap, isShared),
       ],
@@ -679,34 +690,6 @@ class AaStatisticsPage extends ConsumerWidget {
       editorUserId: it.t.lastEditedByMemberId,
       isShared: isShared,
       excludeFromStats: it.t.excludeFromStats,
-    );
-  }
-
-  /// 模块标题:与账本编辑页版块标题同风格(主题色小条 + 加粗标题)。
-  Widget _buildSectionTitle(BuildContext context, String text) {
-    final color = Theme.of(context).colorScheme.primary;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimens.p4),
-      child: Row(
-        children: [
-          Container(
-            width: 3,
-            height: 15,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(AppDimens.radius4),
-            ),
-          ),
-          const SizedBox(width: AppDimens.p8),
-          Text(
-            text,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: color,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

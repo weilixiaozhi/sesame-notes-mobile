@@ -14,6 +14,7 @@ import 'package:sesame_notes/shared/providers/sync_providers.dart';
 import 'package:sesame_notes/sync/ledger_sync_status.dart';
 import 'currency_flag.dart';
 import 'format_money.dart';
+import 'selectable_card.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
@@ -62,9 +63,9 @@ class LedgerCard extends ConsumerWidget {
         decoration: BoxDecoration(
           color: AppTokens.surface(context),
           borderRadius: BorderRadius.circular(AppDimens.radius12),
-          border: AppTokens.isDark(context)
-              ? Border.all(color: AppTokens.border(context), width: 1)
-              : null,
+          // 选中态与「备份与云同步」「备份内容」完全一致：
+          // 主题色 1px 边框 + 右上角勾选角标（共用全局组件）。
+          border: selectableCardBorder(context, selected: selected),
           boxShadow: AppTokens.isDark(context)
               ? null
               : [
@@ -75,154 +76,145 @@ class LedgerCard extends ConsumerWidget {
                   ),
                 ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppDimens.radius12),
-          child: Stack(
-            children: [
-              // 左侧色条：仅选中时显示
-              if (selected)
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 4,
-                    decoration: BoxDecoration(
-                      color: primaryColor,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(AppDimens.radius12),
-                        bottomLeft: Radius.circular(AppDimens.radius12),
-                      ),
-                    ),
-                  ),
-                ),
-
-              // 底层：账本信息（始终显示）
-              Padding(
-                padding: const EdgeInsets.all(AppDimens.p16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 顶部：名称 + 状态图标
-                    Row(
+        child: Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppDimens.radius12),
+              child: Stack(
+                children: [
+                  // 底层：账本信息（始终显示）
+                  Padding(
+                    padding: const EdgeInsets.all(AppDimens.p16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 账本名称
-                        // 裸 RichText 默认 textScaler 为 noScaling（不随系统/全局缩放），
-                        // 显式透传 MediaQuery 的 textScaler，使账本名随全局 0.85 一同缩小。
-                        Expanded(
-                          child: RichText(
-                            textScaler: MediaQuery.textScalerOf(context),
-                            text: TextSpan(
+                        // 顶部：名称 + 状态图标
+                        Row(
+                          children: [
+                            // 账本名称
+                            // 裸 RichText 默认 textScaler 为 noScaling（不随系统/全局缩放），
+                            // 显式透传 MediaQuery 的 textScaler，使账本名随全局 0.85 一同缩小。
+                            Expanded(
+                              child: RichText(
+                                textScaler: MediaQuery.textScalerOf(context),
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: translateLedgerName(
+                                        context,
+                                        ledger.name,
+                                      ),
+                                      style: AppTextTokens.boldTitle(context)
+                                          .copyWith(
+                                            color: AppTokens.textPrimary(
+                                              context,
+                                            ),
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            // 共享账本角标 + 成员数,图标与成员管理入口保持一致
+                            if (ledger.isShared) ...[
+                              const SizedBox(width: AppDimens.p4),
+                              Icon(
+                                AppIcons.people,
+                                size: AppDimens.icon12,
+                                color: primaryColor,
+                              ),
+                              const SizedBox(width: AppDimens.p4),
+                              Text(
+                                '${ledger.memberCount}',
+                                style: AppTextTokens.label(
+                                  context,
+                                ).copyWith(color: primaryColor),
+                              ),
+                            ],
+
+                            const SizedBox(width: AppDimens.p8),
+
+                            // 状态图标
+                            _buildStatusIcon(context, isUploading, status),
+                          ],
+                        ),
+
+                        const SizedBox(height: AppDimens.p12),
+
+                        // 统计数据（本地和远程都显示）
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 币种：全局统一「ISO + (符号)」展示
+                            Row(
                               children: [
-                                TextSpan(
-                                  text: translateLedgerName(
-                                    context,
-                                    ledger.name,
+                                Text(
+                                  '${l10n.ledgersCurrency}：',
+                                  style: AppTextTokens.body(context).copyWith(
+                                    color: AppTokens.textSecondary(context),
                                   ),
-                                  style: AppTextTokens.boldTitle(context)
+                                ),
+                                currencyFlagLabel(
+                                  context,
+                                  ledger.currency,
+                                  textStyle: AppTextTokens.body(context)
                                       .copyWith(
-                                        color: AppTokens.textPrimary(context),
+                                        color: AppTokens.textSecondary(context),
                                       ),
                                 ),
                               ],
                             ),
-                          ),
-                        ),
-
-                        // 共享账本角标 + 成员数,图标与成员管理入口保持一致
-                        if (ledger.isShared) ...[
-                          const SizedBox(width: AppDimens.p4),
-                          Icon(
-                            AppIcons.people,
-                            size: AppDimens.icon12,
-                            color: primaryColor,
-                          ),
-                          const SizedBox(width: AppDimens.p4),
-                          Text(
-                            '${ledger.memberCount}',
-                            style: AppTextTokens.label(
-                              context,
-                            ).copyWith(color: primaryColor),
-                          ),
-                        ],
-
-                        const SizedBox(width: AppDimens.p8),
-
-                        // 状态图标
-                        _buildStatusIcon(context, isUploading, status),
-                      ],
-                    ),
-
-                    const SizedBox(height: AppDimens.p12),
-
-                    // 统计数据（本地和远程都显示）
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // 币种：全局统一「ISO + (符号)」展示
-                        Row(
-                          children: [
+                            const SizedBox(height: AppDimens.p4),
+                            // 记账笔数
                             Text(
-                              '${l10n.ledgersCurrency}：',
+                              l10n.ledgersRecords('${ledger.transactionCount}'),
                               style: AppTextTokens.body(context).copyWith(
                                 color: AppTokens.textSecondary(context),
                               ),
                             ),
-                            currencyFlagLabel(
-                              context,
-                              ledger.currency,
-                              textStyle: AppTextTokens.body(context).copyWith(
-                                color: AppTokens.textSecondary(context),
+                            const SizedBox(height: AppDimens.p4),
+                            // 支出：账本累计支出总额（数据即 expenseTotal；中性显示，不取负、不染色）
+                            Text(
+                              l10n.ledgersExpense(
+                                // 符号+金额统一走唯一来源 formatMoneyWithCurrency
+                                formatMoneyWithCurrency(
+                                  ledger.expenseTotal,
+                                  currencyCode: ledger.currency,
+                                ),
                               ),
+                              style: AppTextTokens.body(
+                                context,
+                              ).copyWith(color: AppTokens.textPrimary(context)),
                             ),
                           ],
                         ),
-                        const SizedBox(height: AppDimens.p4),
-                        // 记账笔数
-                        Text(
-                          l10n.ledgersRecords('${ledger.transactionCount}'),
-                          style: AppTextTokens.body(
-                            context,
-                          ).copyWith(color: AppTokens.textSecondary(context)),
-                        ),
-                        const SizedBox(height: AppDimens.p4),
-                        // 支出：账本累计支出总额（数据即 expenseTotal；中性显示，不取负、不染色）
-                        Text(
-                          l10n.ledgersExpense(
-                            // 符号+金额统一走唯一来源 formatMoneyWithCurrency
-                            formatMoneyWithCurrency(
-                              ledger.expenseTotal,
-                              currencyCode: ledger.currency,
-                            ),
-                          ),
-                          style: AppTextTokens.body(
-                            context,
-                          ).copyWith(color: AppTokens.textPrimary(context)),
-                        ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-
-              // 右下角编辑按钮(进入编辑二级页面)
-              if (onMore != null)
-                Positioned(
-                  right: 4,
-                  bottom: 4,
-                  child: IconButton(
-                    onPressed: onMore,
-                    tooltip: l10n.ledgersEdit,
-                    icon: Icon(
-                      AppIcons.edit,
-                      size: AppDimens.icon20,
-                      color: AppTokens.iconSecondary(context),
-                    ),
-                    visualDensity: VisualDensity.compact,
                   ),
-                ),
-            ],
-          ),
+
+                  // 右下角编辑按钮(进入编辑二级页面)
+                  if (onMore != null)
+                    Positioned(
+                      right: 4,
+                      bottom: 4,
+                      child: IconButton(
+                        onPressed: onMore,
+                        tooltip: l10n.ledgersEdit,
+                        icon: Icon(
+                          AppIcons.edit,
+                          size: AppDimens.icon20,
+                          color: AppTokens.iconSecondary(context),
+                        ),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            // 右上角勾选角标：挂在裁剪层外，覆盖在边框之上。
+            if (selected) const SelectableCardCheckBadge(),
+          ],
         ),
       ),
     );

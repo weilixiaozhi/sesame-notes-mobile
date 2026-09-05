@@ -138,17 +138,26 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       backgroundColor: AppTokens.scaffoldBackground(context),
       body: Column(
         children: [
-          // 头部
+          // 头部:「日历」标题沿用全局区块标题规范(主题色条 + 主题色标题),
+          // 经 PrimaryHeader 的 content 模式承载,保留其状态栏与留白体系;
+          // 首行高度沿用全局最小 30,与其它 tab 头部行高一致。
           PrimaryHeader(
             title: l10n.calendarTitle,
-            actions: [
-              if (showBackToToday)
-                // 「今天」文字链：统一全局文字链规格（14/w600/主题主色）
-                HeaderTextAction(
-                  label: l10n.calendarToday,
-                  onPressed: _jumpToToday,
-                ),
-            ],
+            showTitleSection: false,
+            content: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 30),
+              child: SectionTitle(
+                title: l10n.calendarTitle,
+                padding: EdgeInsets.zero,
+                trailing: showBackToToday
+                    // 「今天」文字链：统一全局文字链规格（14/w600/主题主色）
+                    ? HeaderTextAction(
+                        label: l10n.calendarToday,
+                        onPressed: _jumpToToday,
+                      )
+                    : null,
+              ),
+            ),
           ),
 
           // 日历主体
@@ -460,75 +469,54 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final primaryColor = Theme.of(context).colorScheme.primary;
     final localeName = Localizations.localeOf(context).toString();
     final dateLabel = DateFormat.MMMMd(localeName).format(date);
-    final weekdayLabel = DateFormat.E(localeName).format(date);
 
     final transactionsAsync = ref.watch(
       transactionsByDateProvider((ledgerId: ledgerId, date: date)),
     );
 
-    final header = Padding(
+    // 日期标题沿用全局 SectionTitle 规范(主题色条 + 主题色标题),
+    // 不再展示「周几」副标题;水平内缩 12 与下方卡片外边距对齐。
+    final header = SectionTitle(
+      title: dateLabel,
       padding: const EdgeInsets.fromLTRB(
-        AppDimens.p4,
+        AppDimens.p12,
         0,
-        AppDimens.p4,
+        AppDimens.p12,
         AppDimens.p8,
       ),
-      child: Row(
-        children: [
-          Expanded(
+      // 「在该日记账」按钮：使用 Material 直接承载颜色与圆角，
+      // 不套 Ink + boxShadow，避免出现直角浅蓝色背景蒙层。
+      trailing: Material(
+        color: primaryColor,
+        borderRadius: BorderRadius.circular(AppDimens.radius20),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppDimens.radius20),
+          onTap: _addTransactionForSelectedDate,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimens.p12,
+              vertical: AppDimens.p8,
+            ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  dateLabel,
-                  style: AppTextTokens.strongTitle(
-                    context,
-                  ).copyWith(color: AppTokens.textPrimary(context)),
+                Icon(
+                  AppIcons.add,
+                  size: AppDimens.icon16,
+                  color: AppTokens.textOnPrimary(context),
                 ),
                 const SizedBox(width: AppDimens.p4),
                 Text(
-                  weekdayLabel,
-                  style: AppTextTokens.label(
-                    context,
-                  ).copyWith(color: AppTokens.textTertiary(context)),
+                  l10n.calendarAddTransaction,
+                  style: AppTextTokens.label(context).copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppTokens.textOnPrimary(context),
+                  ),
                 ),
               ],
             ),
           ),
-          // 「在该日记账」按钮：使用 Material 直接承载颜色与圆角，
-          // 不套 Ink + boxShadow，避免出现直角浅蓝色背景蒙层。
-          Material(
-            color: primaryColor,
-            borderRadius: BorderRadius.circular(AppDimens.radius20),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(AppDimens.radius20),
-              onTap: _addTransactionForSelectedDate,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimens.p12,
-                  vertical: AppDimens.p8,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      AppIcons.add,
-                      size: AppDimens.icon16,
-                      color: AppTokens.textOnPrimary(context),
-                    ),
-                    const SizedBox(width: AppDimens.p4),
-                    Text(
-                      l10n.calendarAddTransaction,
-                      style: AppTextTokens.label(context).copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppTokens.textOnPrimary(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
 

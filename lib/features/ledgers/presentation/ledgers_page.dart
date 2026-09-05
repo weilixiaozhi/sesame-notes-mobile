@@ -163,10 +163,16 @@ class _LedgersPageState extends ConsumerState<LedgersPage> {
       padding: const EdgeInsets.symmetric(vertical: AppDimens.p8),
       children: [
         // ---------------- 本地账本 ----------------
-        _buildSectionHeader(
-          context,
-          icon: AppIcons.localStorage,
+        // 分区标题统一走全局 SectionTitle（主题色条 + 主题色标题），
+        // 水平内缩 12 与下方账本卡片外边距对齐。
+        SectionTitle(
           title: l10n.ledgersSectionLocal,
+          padding: const EdgeInsets.fromLTRB(
+            AppDimens.p12,
+            AppDimens.p8,
+            AppDimens.p12,
+            AppDimens.p8,
+          ),
         ),
         if (localOnly.isEmpty)
           _buildSectionEmptyHint(
@@ -185,20 +191,25 @@ class _LedgersPageState extends ConsumerState<LedgersPage> {
         const SizedBox(height: AppDimens.p16),
 
         // ---------------- 云端账本 ----------------
-        _buildSectionHeader(
-          context,
-          icon: AppIcons.cloudQueue,
+        SectionTitle(
           title: l10n.ledgersSectionCloud,
+          padding: const EdgeInsets.fromLTRB(
+            AppDimens.p12,
+            AppDimens.p8,
+            AppDimens.p12,
+            AppDimens.p8,
+          ),
         ),
         // 共享账本入口 — 与上游 LedgersSection 一致：归属模型下它属于云端
         // 范畴，因此收进云端分区标题下方；登录后即展示（新架构无后端类型
         // 概念，「登录」就是云服务可用性的门控）。
         if (loggedIn)
           Padding(
+            // 水平内缩 12:与分区标题色条、账本卡片外缘对齐。
             padding: const EdgeInsets.fromLTRB(
-              AppDimens.p16,
+              AppDimens.p12,
               AppDimens.p4,
-              AppDimens.p16,
+              AppDimens.p12,
               AppDimens.p8,
             ),
             child: OutlinedButton.icon(
@@ -230,36 +241,6 @@ class _LedgersPageState extends ConsumerState<LedgersPage> {
     );
   }
 
-  /// 分区标题（图标 + 文案），本地/云端两侧共用同一套视觉。
-  Widget _buildSectionHeader(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-  }) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppDimens.p16,
-        AppDimens.p8,
-        AppDimens.p16,
-        AppDimens.p8,
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: AppDimens.icon16, color: theme.colorScheme.outline),
-          const SizedBox(width: AppDimens.p8),
-          Text(
-            title,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.outline,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   /// 分区空提示：一句说明 + 可选行动按钮。
   ///
   /// 刻意不用整页 AppEmpty —— 分区标题必须常驻，空提示只能占据分区内部
@@ -271,10 +252,11 @@ class _LedgersPageState extends ConsumerState<LedgersPage> {
   }) {
     final theme = Theme.of(context);
     return Padding(
+      // 水平内缩 12:与分区标题色条、账本卡片外缘对齐。
       padding: const EdgeInsets.fromLTRB(
-        AppDimens.p16,
+        AppDimens.p12,
         AppDimens.p4,
-        AppDimens.p16,
+        AppDimens.p12,
         AppDimens.p12,
       ),
       child: Column(

@@ -11,6 +11,8 @@ import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/shared/widgets/section_card.dart';
+import 'package:sesame_notes/shared/widgets/section_title.dart';
+import 'package:sesame_notes/shared/widgets/selectable_card.dart';
 
 /// 头部「当前类型 / 脱敏端点 / 连接状态」信息块。
 ///
@@ -175,59 +177,17 @@ Widget _buildTestConnectionLink({
 }
 
 /// 列表分组主标题，仅作视觉分组，无交互。
-/// 左侧色条用于清晰区分不同分组（离线模式 / 备份同步）。
+/// 委托全局统一 [SectionTitle]（主题色条 + 主题色标题），
+/// 本页卡片与列表内边距同为 16，故只保留上下留白、不做水平内缩。
 Widget buildCloudServiceSectionHeader(
   BuildContext context,
   String title, {
   String? subtitle,
 }) {
-  final Widget titleRow = Row(
-    children: [
-      // 左侧色条：用主题主色区分分组边界
-      Container(
-        width: 3,
-        height: 15,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary,
-          borderRadius: BorderRadius.circular(AppDimens.radius4),
-        ),
-      ),
-      const SizedBox(width: AppDimens.p8),
-      Text(
-        title,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w800,
-          color: AppTokens.textPrimary(context),
-        ),
-      ),
-    ],
-  );
-
-  // 未传入副标题时，复用单行标题布局。
-  if (subtitle == null) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppDimens.p4, bottom: AppDimens.p8),
-      child: titleRow,
-    );
-  }
-
-  return Padding(
+  return SectionTitle(
+    title: title,
+    subtitle: subtitle,
     padding: const EdgeInsets.only(top: AppDimens.p4, bottom: AppDimens.p8),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        titleRow,
-        Padding(
-          padding: const EdgeInsets.only(top: AppDimens.p4),
-          child: Text(
-            subtitle,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppTokens.textSecondary(context),
-            ),
-          ),
-        ),
-      ],
-    ),
   );
 }
 
@@ -252,14 +212,9 @@ Widget buildCloudServiceCard({
     opacity: isDisabled ? 0.5 : 1.0,
     child: Container(
       decoration: BoxDecoration(
-        // 选中态 = 主题色 1px 边框（与恢复卡片同款）；未选中透明 1px 占位，
-        // 确保固定高度下所有卡片高度完全一致。
-        border: Border.all(
-          color: isSelected
-              ? Theme.of(context).colorScheme.primary
-              : Colors.transparent,
-          width: 1,
-        ),
+        // 选中边框与「备份内容」「账本管理」共用同一口径：
+        // 选中 = 主题色 1px；未选中 = 暗色 1px 常规边框 / 亮色无边框。
+        border: selectableCardBorder(context, selected: isSelected),
         borderRadius: BorderRadius.circular(AppDimens.radius12),
       ),
       child: Stack(
@@ -394,30 +349,8 @@ Widget buildCloudServiceCard({
               ),
             ),
           ),
-          // 右上角勾选标签：与恢复卡片同款——覆盖在边框之上。
-          // 外移量 = 边框宽度 1px，顶边/右边与卡片外沿精确齐平；
-          // 右上圆角（r12）圆心与卡片外角圆弧圆心重合，只露一条弧线。
-          if (isSelected && !isDisabled)
-            Positioned(
-              top: -1,
-              right: -1,
-              child: Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(AppDimens.radius12),
-                    bottomLeft: Radius.circular(AppDimens.radius12),
-                  ),
-                ),
-                child: Icon(
-                  AppIcons.check,
-                  size: AppDimens.icon12,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-              ),
-            ),
+          // 右上角勾选角标：共用全局组件，覆盖在边框之上；禁用态不显示。
+          if (isSelected && !isDisabled) const SelectableCardCheckBadge(),
         ],
       ),
     ),

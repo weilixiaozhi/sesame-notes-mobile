@@ -82,10 +82,18 @@ void main() {
     expect(find.text('修改密码'), findsOneWidget);
     expect(find.byType(SectionCard), findsNWidgets(2));
 
-    // 分组标题与内容区统一 12px：分组标题（基本资料）与行标题（昵称）同字号
+    // 分组标题统一走全局 SectionTitle 规范（titleSmall/w800），
+    // 与行标题（12px label）分层：分组 14px 加粗、行内 12px。
     final basicInfoStyle = tester.widget<Text>(find.text('基本资料')).style;
     final nicknameStyle = tester.widget<Text>(find.text('昵称')).style;
-    expect(nicknameStyle!.fontSize, basicInfoStyle!.fontSize);
+    final context = tester.element(find.text('基本资料'));
+    expect(
+      basicInfoStyle!.fontSize,
+      Theme.of(context).textTheme.titleSmall?.fontSize,
+      reason: '分组标题应为 titleSmall 字号',
+    );
+    expect(basicInfoStyle.fontWeight, FontWeight.w800, reason: '分组标题加粗');
+    expect(nicknameStyle!.fontSize, 12, reason: '行标题保持 12px label');
 
     final avatarRect = tester.getRect(find.byType(SelfAvatar));
     final basicInfoRect = tester.getRect(find.text('基本资料'));

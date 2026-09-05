@@ -16,6 +16,7 @@ import 'package:sesame_notes/shared/widgets/aa_participant_avatar.dart';
 import 'package:sesame_notes/shared/widgets/format_money.dart';
 import 'package:sesame_notes/shared/widgets/me_suffix.dart';
 import 'package:sesame_notes/shared/widgets/section_card.dart';
+import 'package:sesame_notes/shared/widgets/section_title.dart';
 
 /// 成员支出模块
 ///
@@ -64,44 +65,26 @@ class MemberStatsSection extends ConsumerWidget {
     );
   }
 
-  /// 模块标题行：左侧色条 + "成员支出"，右侧账本总支出金额右对齐副标题。
+  /// 模块标题行：全局统一 SectionTitle（色条 + "成员支出"），
+  /// 右侧账本总支出金额右对齐副标题。
   Widget _buildTitle(
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
     AsyncValue<List<MemberExpenseStatItem>> statsAsync,
   ) {
-    final primary = Theme.of(context).colorScheme.primary;
     // 总支出带账本币种符号展示,与成员条目金额口径一致。
     final amount = _totalExpenseText(
       statsAsync.value,
       ref.watch(currentLedgerCurrencyProvider),
     );
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimens.p4),
-      child: Row(
-        children: [
-          Container(
-            width: 3,
-            height: 15,
-            decoration: BoxDecoration(
-              color: primary,
-              borderRadius: BorderRadius.circular(AppDimens.radius4),
-            ),
-          ),
-          const SizedBox(width: AppDimens.p8),
-          Text(
-            l10n.sharedMembersStatsTitle,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: primary,
-            ),
-          ),
-          const Spacer(),
-          if (amount != null)
-            // 右边缘与成员条目金额对齐：卡片 margin(4) + 卡片 padding(12) + ListTile contentPadding(12) = 28,
-            // 减去标题行自身 padding(4) 后需补 24
-            Padding(
+    return SectionTitle(
+      title: l10n.sharedMembersStatsTitle,
+      trailing: amount == null
+          ? null
+          : Padding(
+              // 右边缘与成员条目金额对齐：卡片 margin(4) + 卡片 padding(12)
+              // + ListTile contentPadding(12) = 28,减去标题行自身 padding(4) 后需补 24
               padding: const EdgeInsets.only(right: AppDimens.p20),
               child: Text(
                 amount,
@@ -112,8 +95,6 @@ class MemberStatsSection extends ConsumerWidget {
                 ),
               ),
             ),
-        ],
-      ),
     );
   }
 

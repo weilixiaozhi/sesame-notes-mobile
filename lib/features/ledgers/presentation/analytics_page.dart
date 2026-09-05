@@ -991,7 +991,9 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
         padding: const EdgeInsets.all(AppDimens.p16),
         children: [
           // 支出趋势模块
-          Text(l10n.analyticsTrend, style: AppTextTokens.title(context)),
+          // 模块标题统一走全局 SectionTitle；本页列表内边距 16,
+          // 图表/卡片无外边距,色条左缘直接对齐内容外缘。
+          SectionTitle(title: l10n.analyticsTrend, padding: EdgeInsets.zero),
           const SizedBox(height: AppDimens.p12),
           _buildTrendGrid(sum, dailyAvg, mom, primary),
           const SizedBox(height: AppDimens.p12),
@@ -1016,9 +1018,9 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
           ),
           const SizedBox(height: AppDimens.p20),
           // 分类排行模块
-          Text(
-            l10n.analyticsCategoryLabel,
-            style: AppTextTokens.title(context),
+          SectionTitle(
+            title: l10n.analyticsCategoryLabel,
+            padding: EdgeInsets.zero,
           ),
           const SizedBox(height: AppDimens.p12),
           CategoryDonutChart(data: donutData, sum: sum),

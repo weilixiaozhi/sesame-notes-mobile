@@ -180,6 +180,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   /// 构建带统一标题与卡片样式的资料分组。
+  /// 分组标题走全局 SectionTitle（主题色条 + 主题色标题），
+  /// 水平内缩 16 与下方卡片外边距对齐。
   Widget _buildSection(
     BuildContext context, {
     required String title,
@@ -188,16 +190,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
+        SectionTitle(
+          title: title,
           padding: const EdgeInsets.only(
             left: AppDimens.p16,
+            right: AppDimens.p16,
             bottom: AppDimens.p8,
-          ),
-          child: Text(
-            title,
-            style: AppTextTokens.label(
-              context,
-            ).copyWith(color: AppTokens.textTertiary(context)),
           ),
         ),
         SectionCard(
