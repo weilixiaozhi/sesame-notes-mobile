@@ -2917,11 +2917,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String restorePendingWarning(int count) {
-    return '$count unsynced changes (will not be pushed after restore)';
-  }
-
-  @override
   String restoreConflictWarning(int count) {
     return '$count open conflicts (restore uses backup-time state)';
   }

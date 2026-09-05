@@ -48,7 +48,6 @@ class RestoreLedgerItem {
     required this.expenseTotal,
     required this.memberCount,
     required this.transactionCount,
-    required this.pendingCount,
     required this.conflictCount,
   });
 
@@ -67,7 +66,6 @@ class RestoreLedgerItem {
 
   final int memberCount;
   final int transactionCount;
-  final int pendingCount;
   final int conflictCount;
 }
 
@@ -215,7 +213,6 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
               expenseTotal: item.expenseTotal,
               memberCount: item.memberCount,
               transactionCount: item.transactionCount,
-              pendingCount: item.pendingCount,
               conflictCount: item.conflictCount,
             ),
           )

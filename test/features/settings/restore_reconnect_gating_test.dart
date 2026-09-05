@@ -28,7 +28,6 @@ RestoreLedgerItem _item({
   expenseTotal: 0,
   memberCount: 1,
   transactionCount: 0,
-  pendingCount: 0,
   conflictCount: 0,
 );
 

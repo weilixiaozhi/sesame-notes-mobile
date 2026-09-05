@@ -5338,12 +5338,6 @@ abstract class AppLocalizations {
   /// **'{count} members'**
   String restoreMemberCount(int count);
 
-  /// No description provided for @restorePendingWarning.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} unsynced changes (will not be pushed after restore)'**
-  String restorePendingWarning(int count);
-
   /// No description provided for @restoreConflictWarning.
   ///
   /// In en, this message translates to:

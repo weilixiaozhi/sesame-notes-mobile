@@ -1290,14 +1290,6 @@
             }
         }
     },
-    "restorePendingWarning": "有 {count} 筆未同步變更（還原後不會推送）",
-    "@restorePendingWarning": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
     "restoreConflictWarning": "有 {count} 個未解決衝突（依備份時狀態還原）",
     "@restoreConflictWarning": {
         "placeholders": {

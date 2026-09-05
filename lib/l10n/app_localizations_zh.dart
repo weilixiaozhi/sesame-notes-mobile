@@ -2815,11 +2815,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String restorePendingWarning(int count) {
-    return '有 $count 条未同步改动（恢复后不会推送）';
-  }
-
-  @override
   String restoreConflictWarning(int count) {
     return '有 $count 个未解决冲突（按备份时状态恢复）';
   }
@@ -5892,11 +5887,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   @override
   String restoreMemberCount(int count) {
     return '$count 位成員';
-  }
-
-  @override
-  String restorePendingWarning(int count) {
-    return '有 $count 筆未同步變更（還原後不會推送）';
   }
 
   @override

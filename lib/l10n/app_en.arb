@@ -1290,14 +1290,6 @@
             }
         }
     },
-    "restorePendingWarning": "{count} unsynced changes (will not be pushed after restore)",
-    "@restorePendingWarning": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
     "restoreConflictWarning": "{count} open conflicts (restore uses backup-time state)",
     "@restoreConflictWarning": {
         "placeholders": {

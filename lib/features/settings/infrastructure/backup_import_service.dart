@@ -86,7 +86,7 @@ class RecoveryItem {
   /// 备份时交易数。
   final int transactionCount;
 
-  /// 备份时未推送 mutation 数（仅警告展示）。
+  /// 备份时未推送 mutation 数（Manifest 统计，仅审计）。
   final int pendingCount;
 
   /// 备份时 OPEN 冲突数（仅警告展示）。

@@ -1290,14 +1290,6 @@
             }
         }
     },
-    "restorePendingWarning": "有 {count} 条未同步改动（恢复后不会推送）",
-    "@restorePendingWarning": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
     "restoreConflictWarning": "有 {count} 个未解决冲突（按备份时状态恢复）",
     "@restoreConflictWarning": {
         "placeholders": {

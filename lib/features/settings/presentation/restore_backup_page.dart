@@ -286,7 +286,6 @@ class _RestoreLedgerCard extends StatelessWidget {
     final primary = Theme.of(context).colorScheme.primary;
     final isCloud = item.storageOrigin == LedgerStorageOrigin.cloud;
     final warnings = <String>[
-      if (item.pendingCount > 0) l10n.restorePendingWarning(item.pendingCount),
       if (item.conflictCount > 0)
         l10n.restoreConflictWarning(item.conflictCount),
     ];
@@ -323,8 +322,8 @@ class _RestoreLedgerCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppDimens.radius12),
           child: Stack(
             children: [
-              // 右上角勾选标签：选中即贴角标证明已勾选。
-              // 角标左下圆弧与卡片右上圆角同半径（radius12），两弧重合只露一条边。
+              // 右上角勾选标签：直角方块贴在角上，左下角被外层 ClipRRect
+              // 沿卡片自身的圆弧裁剪——只露卡片边框这一条弧线，两弧不再打架。
               if (selected)
                 Positioned(
                   top: 0,
@@ -332,12 +331,7 @@ class _RestoreLedgerCard extends StatelessWidget {
                   child: Container(
                     width: 20,
                     height: 20,
-                    decoration: BoxDecoration(
-                      color: primary,
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(AppDimens.radius12),
-                      ),
-                    ),
+                    color: primary,
                     child: Icon(
                       AppIcons.check,
                       size: AppDimens.icon12,
