@@ -187,7 +187,7 @@
     },
     "ledgersEmpty": "暂无账本",
     "ledgersSectionLocal": "本地账本",
-    "ledgersSectionCloud": "Sesame Notes Cloud 账本",
+    "ledgersSectionCloud": "云端账本",
     "ledgersSectionLocalEmpty": "暂无本地账本，本地账本只保存在这台设备上",
     "ledgersSectionCloudEmpty": "暂无云端账本，云端账本会在各设备间同步",
     "ledgersSectionCloudSignInHint": "登录 Sesame Notes Cloud 后即可使用云端账本",

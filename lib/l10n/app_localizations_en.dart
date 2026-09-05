@@ -384,7 +384,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ledgersSectionLocal => 'Local ledgers';
 
   @override
-  String get ledgersSectionCloud => 'Sesame Notes Cloud ledgers';
+  String get ledgersSectionCloud => 'Cloud Ledgers';
 
   @override
   String get ledgersSectionLocalEmpty =>

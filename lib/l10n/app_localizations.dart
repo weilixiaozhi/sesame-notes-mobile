@@ -793,7 +793,7 @@ abstract class AppLocalizations {
   /// No description provided for @ledgersSectionCloud.
   ///
   /// In en, this message translates to:
-  /// **'Sesame Notes Cloud ledgers'**
+  /// **'Cloud Ledgers'**
   String get ledgersSectionCloud;
 
   /// No description provided for @ledgersSectionLocalEmpty.

@@ -146,7 +146,7 @@ void main() {
 
     // 两个分区标题常驻。
     expect(find.text('本地账本'), findsOneWidget);
-    expect(find.text('Sesame Notes Cloud 账本'), findsOneWidget);
+    expect(find.text('云端账本'), findsOneWidget);
 
     // 两本账本都渲染出来。
     // 注：账本名经 RichText/TextSpan 渲染，且可能与其它 span 拼接，
@@ -155,9 +155,9 @@ void main() {
     expect(find.textContaining('工资卡', findRichText: true), findsWidgets);
 
     // 归属正确性：本地账本在「本地账本」标题之下、
-    // 「Sesame Notes Cloud 账本」标题之上；云端账本则在云端标题之下。
+    // 「云端账本」标题之上；云端账本则在云端标题之下。
     final localTitleY = tester.getCenter(find.text('本地账本')).dy;
-    final cloudTitleY = tester.getCenter(find.text('Sesame Notes Cloud 账本')).dy;
+    final cloudTitleY = tester.getCenter(find.text('云端账本')).dy;
     final localCardY = tester
         .getCenter(find.textContaining('旅行账本', findRichText: true).first)
         .dy;
@@ -179,7 +179,7 @@ void main() {
     await _pumpLedgersPage(tester, container);
 
     expect(find.text('本地账本'), findsOneWidget);
-    expect(find.text('Sesame Notes Cloud 账本'), findsOneWidget);
+    expect(find.text('云端账本'), findsOneWidget);
     // 未登录时云端分区空提示给「去登录」引导，而非「暂无」。
     expect(find.text('登录 Sesame Notes Cloud 后即可使用云端账本'), findsOneWidget);
     expect(find.text('暂无云端账本，云端账本会在各设备间同步'), findsNothing);

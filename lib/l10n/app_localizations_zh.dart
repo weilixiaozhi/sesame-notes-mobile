@@ -379,7 +379,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ledgersSectionLocal => '本地账本';
 
   @override
-  String get ledgersSectionCloud => 'Sesame Notes Cloud 账本';
+  String get ledgersSectionCloud => '云端账本';
 
   @override
   String get ledgersSectionLocalEmpty => '暂无本地账本，本地账本只保存在这台设备上';
@@ -3445,7 +3445,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get ledgersSectionLocal => '本機帳本';
 
   @override
-  String get ledgersSectionCloud => 'Sesame Notes Cloud 帳本';
+  String get ledgersSectionCloud => '雲端帳本';
 
   @override
   String get ledgersSectionLocalEmpty => '暫無本機帳本，本機帳本只保存在這台裝置上';

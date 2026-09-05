@@ -187,7 +187,7 @@
     },
     "ledgersEmpty": "No ledgers",
     "ledgersSectionLocal": "Local ledgers",
-    "ledgersSectionCloud": "Sesame Notes Cloud ledgers",
+    "ledgersSectionCloud": "Cloud Ledgers",
     "ledgersSectionLocalEmpty": "No local ledgers. Local ledgers stay on this device only.",
     "ledgersSectionCloudEmpty": "No cloud ledgers. Cloud ledgers sync across your devices.",
     "ledgersSectionCloudSignInHint": "Sign in to Sesame Notes Cloud to use cloud ledgers",
