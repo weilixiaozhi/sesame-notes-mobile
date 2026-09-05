@@ -187,13 +187,25 @@ class SyncService {
 
     final rows = await (db.select(
       db.categories,
-    )..where((c) => c.id.isIn(referencedIds) & c.deletedAt.isNull())).get();
+    )..where((c) => c.deletedAt.isNull())).get();
     if (rows.isEmpty) return false;
+    final rowById = {for (final row in rows) row.id: row};
+    // 沿 parentId 展开祖先链：交易直接引用二级分类时，其一/多级父分类必须
+    // 先于子分类上云，否则服务端按序应用时报「父分类不存在」。
+    final ensureIds = <String>{};
+    final stack = referencedIds.toList();
+    while (stack.isNotEmpty) {
+      final id = stack.removeLast();
+      final row = rowById[id];
+      if (row == null || !ensureIds.add(id)) continue;
+      final parentId = row.parentId;
+      if (parentId != null && parentId.isNotEmpty) stack.add(parentId);
+    }
     final pendingCategoryChanges =
         await (db.select(db.syncChanges)..where(
               (c) =>
                   c.entityType.equals('category') &
-                  c.entityId.isIn(referencedIds) &
+                  c.entityId.isIn(ensureIds) &
                   c.accountId.equals(accountId) &
                   c.pushedAt.isNull(),
             ))
@@ -201,12 +213,17 @@ class SyncService {
     final pendingIds = {
       for (final change in pendingCategoryChanges) change.entityId,
     };
-    final toEnsure = rows
-        .where(
-          (row) =>
-              row.scopeAccountId != accountId && !pendingIds.contains(row.id),
-        )
-        .toList();
+    final toEnsure =
+        ensureIds
+            .map((id) => rowById[id]!)
+            .where(
+              (row) =>
+                  row.scopeAccountId != accountId &&
+                  !pendingIds.contains(row.id),
+            )
+            .toList()
+          // 服务端按请求数组顺序应用：一级（父）必须先于二级（子）落库
+          ..sort((a, b) => a.level.compareTo(b.level));
     if (toEnsure.isEmpty) return false;
 
     await db.transaction(() async {

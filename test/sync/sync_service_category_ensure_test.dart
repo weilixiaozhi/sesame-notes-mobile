@@ -266,4 +266,121 @@ void main() {
     final splits = payload['splits'] as List<dynamic>;
     expect((splits.single as Map<String, dynamic>)['amount'], '50');
   });
+
+  test('先导登记的分类按层级排序：一级父分类先于二级子分类', () async {
+    const parentId = '1527ffc3-6087-5b6b-99c6-c6837a5db1b6';
+    const childId = 'd5f0c25f-7ec2-5d9c-9f0b-0b2c1f8a7c3d';
+    const ledgerId = 'b27e759f-c9eb-49c4-b9f7-dffcd95c6235';
+    const txnId = '3c0d0f14-04aa-4c11-bbf8-f0358ab1b9d7';
+    final updatedAt = DateTime.utc(2026, 9, 5, 8);
+    await db
+        .into(db.ledgers)
+        .insert(
+          LedgersCompanion.insert(
+            id: ledgerId,
+            name: '可乐',
+            storageMode: const d.Value('cloud'),
+            syncId: const d.Value('32479a53-fbb4-4155-9865-850aa191dcd4'),
+            updatedAt: updatedAt,
+          ),
+        );
+    await db
+        .into(db.categories)
+        .insert(
+          CategoriesCompanion.insert(
+            id: parentId,
+            name: '餐饮',
+            kind: 'expense',
+            level: 1,
+            sortOrder: const d.Value(0),
+            updatedAt: updatedAt,
+          ),
+        );
+    await db
+        .into(db.categories)
+        .insert(
+          CategoriesCompanion.insert(
+            id: childId,
+            name: '早餐',
+            kind: 'expense',
+            level: 2,
+            parentId: const d.Value(parentId),
+            sortOrder: const d.Value(1),
+            updatedAt: updatedAt,
+          ),
+        );
+    // 交易只引用二级子分类：父分类也必须一并先导登记
+    await db
+        .into(db.syncChanges)
+        .insert(
+          SyncChangesCompanion.insert(
+            entityType: 'transaction',
+            entityId: txnId,
+            ledgerId: const d.Value(ledgerId),
+            action: 'upsert',
+            payload: jsonEncode({
+              'tx_type': 'expense',
+              'amount': '10.5',
+              'happened_at': '2026-09-05T08:00:00.000Z',
+              'note': '二级分类交易',
+              'category_id': childId,
+              'exclude_from_stats': false,
+              'currency_code': 'CNY',
+              'native_amount': '10.5',
+              'recurring_id': null,
+              'payer_member_id': null,
+              'aa_mode': null,
+              'splits': null,
+              'last_edited_at': null,
+            }),
+            updatedAt: updatedAt,
+            mutationId: 'm-tx-3',
+            accountId: const d.Value('user-a'),
+          ),
+        );
+
+    when(
+      () => api.postSyncPush(
+        postSyncPushRequest: any(named: 'postSyncPushRequest'),
+      ),
+    ).thenAnswer(
+      (_) async => Response(
+        requestOptions: RequestOptions(path: '/sync/push'),
+        statusCode: 200,
+        data: PostSyncPush200Response(
+          (b) => b
+            ..outcomes = BuiltList<PostSyncPush200ResponseOutcomesInner>(
+              [],
+            ).toBuilder()
+            ..serverCursor = '0',
+        ),
+      ),
+    );
+
+    await buildService().push();
+
+    final captured = verify(
+      () => api.postSyncPush(
+        postSyncPushRequest: captureAny(named: 'postSyncPushRequest'),
+      ),
+    ).captured;
+    final request = captured.single as PostSyncPushRequest;
+    Map<String, dynamic> wireOf(PostSyncPushRequestChangesInner ch) {
+      final anyOf = ch.anyOf;
+      return client.serializers.serialize(
+            anyOf,
+            specifiedType: FullType(
+              AnyOf,
+              anyOf.valueTypes.map((type) => FullType(type)).toList(),
+            ),
+          )!
+          as Map<String, dynamic>;
+    }
+
+    final changes = request.changes.map(wireOf).toList();
+    expect(changes, hasLength(3), reason: '父分类 + 子分类 + 交易');
+    expect(changes[0]['entity_id'], parentId, reason: '一级父分类必须最先');
+    expect(changes[1]['entity_id'], childId);
+    expect(changes[2]['entity_type'], 'transaction');
+  });
 }
