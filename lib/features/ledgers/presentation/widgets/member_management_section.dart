@@ -279,45 +279,48 @@ class _MemberManagementSectionState
     );
   }
 
-  /// 内嵌邀请模块 — 默认收起只显示标题(personAdd + 「邀请新成员」),
-  /// 点击标题展开内容,未生成时展示表单,已生成时展示邀请码分享视图。
+  /// 内嵌邀请模块 — 默认收起只展示与账本管理页「加入共享账本」同款的全宽
+  /// 描边按钮(personAdd + 「邀请新成员」),点击在按钮下方展开内容:
+  /// 未生成时展示表单,已生成时展示邀请码分享视图;再次点击收起。
   Widget _buildInviteSection(BuildContext context, AppLocalizations l10n) {
-    final primary = Theme.of(context).colorScheme.primary;
-    return Theme(
-      // 不显示 ExpansionTile 默认的上下分割线,贴合 SectionCard 风格
-      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        initiallyExpanded: _inviteExpanded,
-        onExpansionChanged: (v) => setState(() => _inviteExpanded = v),
-        tilePadding: EdgeInsets.zero,
-        childrenPadding: const EdgeInsets.only(
-          top: AppDimens.p16,
-          bottom: AppDimens.p4,
-          left: AppDimens.p16,
-          right: AppDimens.p16,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          // 外边距与账本管理页「加入共享账本」按钮一致(上 4 / 下 8 / 左右 16)
+          padding: const EdgeInsets.fromLTRB(
+            AppDimens.p16,
+            AppDimens.p4,
+            AppDimens.p16,
+            AppDimens.p8,
+          ),
+          child: OutlinedButton.icon(
+            icon: const Icon(AppIcons.personAdd, size: AppDimens.icon16),
+            label: Text(l10n.sharedMembersInviteCta),
+            onPressed: () => setState(() => _inviteExpanded = !_inviteExpanded),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 40.0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppDimens.radius8),
+              ),
+            ),
+          ),
         ),
-        leading: Icon(
-          AppIcons.personAdd,
-          size: AppDimens.icon16,
-          color: primary,
-        ),
-        title: Text(
-          l10n.sharedMembersInviteCta,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        // 收起朝右、展开朝下,指向明确
-        trailing: Icon(
-          _inviteExpanded ? AppIcons.chevronDown : AppIcons.chevronRight,
-          size: AppDimens.icon16,
-          color: AppTokens.iconTertiary(context),
-        ),
-        children: [
-          if (_generated == null)
-            _buildInviteForm(l10n)
-          else
-            _buildShareView(_generated!, l10n),
-        ],
-      ),
+        // 展开区内边距:上 16 / 下 4 / 左右 16;内容形态不变——
+        // 未生成邀请码时展示表单,已生成时展示邀请码分享视图。
+        if (_inviteExpanded)
+          Padding(
+            padding: const EdgeInsets.only(
+              top: AppDimens.p16,
+              bottom: AppDimens.p4,
+              left: AppDimens.p16,
+              right: AppDimens.p16,
+            ),
+            child: _generated == null
+                ? _buildInviteForm(l10n)
+                : _buildShareView(_generated!, l10n),
+          ),
+      ],
     );
   }
 
