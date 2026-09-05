@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 
 # **postLedgersByLedgerIdImports**
-> PostLedgersByLedgerIdImports201Response postLedgersByLedgerIdImports(ledgerId, postLedgersByLedgerIdImportsRequest)
+> PostLedgersByLedgerIdImports200Response postLedgersByLedgerIdImports(ledgerId, postLedgersByLedgerIdImportsRequest, idempotencyKey)
 
 
 
@@ -24,9 +24,10 @@ import 'package:sesame_api_client/api.dart';
 final api = SesameApiClient().getImportsApi();
 final String ledgerId = 018f7f95-4b8a-4f5e-8d0c-2ebf4682c761; // String | 
 final PostLedgersByLedgerIdImportsRequest postLedgersByLedgerIdImportsRequest = ; // PostLedgersByLedgerIdImportsRequest | 
+final String idempotencyKey = idempotencyKey_example; // String | 
 
 try {
-    final response = api.postLedgersByLedgerIdImports(ledgerId, postLedgersByLedgerIdImportsRequest);
+    final response = api.postLedgersByLedgerIdImports(ledgerId, postLedgersByLedgerIdImportsRequest, idempotencyKey);
     print(response);
 } on DioException catch (e) {
     print('Exception when calling ImportsApi->postLedgersByLedgerIdImports: $e\n');
@@ -39,10 +40,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ledgerId** | **String**|  | 
  **postLedgersByLedgerIdImportsRequest** | [**PostLedgersByLedgerIdImportsRequest**](PostLedgersByLedgerIdImportsRequest.md)|  | 
+ **idempotencyKey** | **String**|  | [optional] 
 
 ### Return type
 
-[**PostLedgersByLedgerIdImports201Response**](PostLedgersByLedgerIdImports201Response.md)
+[**PostLedgersByLedgerIdImports200Response**](PostLedgersByLedgerIdImports200Response.md)
 
 ### Authorization
 

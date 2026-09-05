@@ -6,7 +6,7 @@ void main() {
   final instance = SesameApiClient().getImportsApi();
 
   group(ImportsApi, () {
-    //Future<PostLedgersByLedgerIdImports201Response> postLedgersByLedgerIdImports(String ledgerId, PostLedgersByLedgerIdImportsRequest postLedgersByLedgerIdImportsRequest) async
+    //Future<PostLedgersByLedgerIdImports200Response> postLedgersByLedgerIdImports(String ledgerId, PostLedgersByLedgerIdImportsRequest postLedgersByLedgerIdImportsRequest, { String idempotencyKey }) async
     test('test postLedgersByLedgerIdImports', () async {
       // TODO
     });

@@ -1,41 +1,41 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'post_ledgers_by_ledger_id_imports201_response.dart';
+part of 'post_ledgers_by_ledger_id_imports200_response.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$PostLedgersByLedgerIdImports201Response
-    extends PostLedgersByLedgerIdImports201Response {
+class _$PostLedgersByLedgerIdImports200Response
+    extends PostLedgersByLedgerIdImports200Response {
   @override
   final int importedCategories;
   @override
   final int importedTransactions;
 
-  factory _$PostLedgersByLedgerIdImports201Response(
-          [void Function(PostLedgersByLedgerIdImports201ResponseBuilder)?
+  factory _$PostLedgersByLedgerIdImports200Response(
+          [void Function(PostLedgersByLedgerIdImports200ResponseBuilder)?
               updates]) =>
-      (PostLedgersByLedgerIdImports201ResponseBuilder()..update(updates))
+      (PostLedgersByLedgerIdImports200ResponseBuilder()..update(updates))
           ._build();
 
-  _$PostLedgersByLedgerIdImports201Response._(
+  _$PostLedgersByLedgerIdImports200Response._(
       {required this.importedCategories, required this.importedTransactions})
       : super._();
   @override
-  PostLedgersByLedgerIdImports201Response rebuild(
-          void Function(PostLedgersByLedgerIdImports201ResponseBuilder)
+  PostLedgersByLedgerIdImports200Response rebuild(
+          void Function(PostLedgersByLedgerIdImports200ResponseBuilder)
               updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  PostLedgersByLedgerIdImports201ResponseBuilder toBuilder() =>
-      PostLedgersByLedgerIdImports201ResponseBuilder()..replace(this);
+  PostLedgersByLedgerIdImports200ResponseBuilder toBuilder() =>
+      PostLedgersByLedgerIdImports200ResponseBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is PostLedgersByLedgerIdImports201Response &&
+    return other is PostLedgersByLedgerIdImports200Response &&
         importedCategories == other.importedCategories &&
         importedTransactions == other.importedTransactions;
   }
@@ -52,18 +52,18 @@ class _$PostLedgersByLedgerIdImports201Response
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'PostLedgersByLedgerIdImports201Response')
+            r'PostLedgersByLedgerIdImports200Response')
           ..add('importedCategories', importedCategories)
           ..add('importedTransactions', importedTransactions))
         .toString();
   }
 }
 
-class PostLedgersByLedgerIdImports201ResponseBuilder
+class PostLedgersByLedgerIdImports200ResponseBuilder
     implements
-        Builder<PostLedgersByLedgerIdImports201Response,
-            PostLedgersByLedgerIdImports201ResponseBuilder> {
-  _$PostLedgersByLedgerIdImports201Response? _$v;
+        Builder<PostLedgersByLedgerIdImports200Response,
+            PostLedgersByLedgerIdImports200ResponseBuilder> {
+  _$PostLedgersByLedgerIdImports200Response? _$v;
 
   int? _importedCategories;
   int? get importedCategories => _$this._importedCategories;
@@ -75,11 +75,11 @@ class PostLedgersByLedgerIdImports201ResponseBuilder
   set importedTransactions(int? importedTransactions) =>
       _$this._importedTransactions = importedTransactions;
 
-  PostLedgersByLedgerIdImports201ResponseBuilder() {
-    PostLedgersByLedgerIdImports201Response._defaults(this);
+  PostLedgersByLedgerIdImports200ResponseBuilder() {
+    PostLedgersByLedgerIdImports200Response._defaults(this);
   }
 
-  PostLedgersByLedgerIdImports201ResponseBuilder get _$this {
+  PostLedgersByLedgerIdImports200ResponseBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _importedCategories = $v.importedCategories;
@@ -90,29 +90,29 @@ class PostLedgersByLedgerIdImports201ResponseBuilder
   }
 
   @override
-  void replace(PostLedgersByLedgerIdImports201Response other) {
-    _$v = other as _$PostLedgersByLedgerIdImports201Response;
+  void replace(PostLedgersByLedgerIdImports200Response other) {
+    _$v = other as _$PostLedgersByLedgerIdImports200Response;
   }
 
   @override
   void update(
-      void Function(PostLedgersByLedgerIdImports201ResponseBuilder)? updates) {
+      void Function(PostLedgersByLedgerIdImports200ResponseBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  PostLedgersByLedgerIdImports201Response build() => _build();
+  PostLedgersByLedgerIdImports200Response build() => _build();
 
-  _$PostLedgersByLedgerIdImports201Response _build() {
+  _$PostLedgersByLedgerIdImports200Response _build() {
     final _$result = _$v ??
-        _$PostLedgersByLedgerIdImports201Response._(
+        _$PostLedgersByLedgerIdImports200Response._(
           importedCategories: BuiltValueNullFieldError.checkNotNull(
               importedCategories,
-              r'PostLedgersByLedgerIdImports201Response',
+              r'PostLedgersByLedgerIdImports200Response',
               'importedCategories'),
           importedTransactions: BuiltValueNullFieldError.checkNotNull(
               importedTransactions,
-              r'PostLedgersByLedgerIdImports201Response',
+              r'PostLedgersByLedgerIdImports200Response',
               'importedTransactions'),
         );
     replace(_$result);

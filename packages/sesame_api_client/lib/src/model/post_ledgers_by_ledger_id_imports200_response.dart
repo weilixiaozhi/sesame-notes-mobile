@@ -6,52 +6,52 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'post_ledgers_by_ledger_id_imports201_response.g.dart';
+part 'post_ledgers_by_ledger_id_imports200_response.g.dart';
 
-/// PostLedgersByLedgerIdImports201Response
+/// PostLedgersByLedgerIdImports200Response
 ///
 /// Properties:
 /// * [importedCategories]
 /// * [importedTransactions]
 @BuiltValue()
-abstract class PostLedgersByLedgerIdImports201Response
+abstract class PostLedgersByLedgerIdImports200Response
     implements
-        Built<PostLedgersByLedgerIdImports201Response,
-            PostLedgersByLedgerIdImports201ResponseBuilder> {
+        Built<PostLedgersByLedgerIdImports200Response,
+            PostLedgersByLedgerIdImports200ResponseBuilder> {
   @BuiltValueField(wireName: r'imported_categories')
   int get importedCategories;
 
   @BuiltValueField(wireName: r'imported_transactions')
   int get importedTransactions;
 
-  PostLedgersByLedgerIdImports201Response._();
+  PostLedgersByLedgerIdImports200Response._();
 
-  factory PostLedgersByLedgerIdImports201Response(
-          [void updates(PostLedgersByLedgerIdImports201ResponseBuilder b)]) =
-      _$PostLedgersByLedgerIdImports201Response;
+  factory PostLedgersByLedgerIdImports200Response(
+          [void updates(PostLedgersByLedgerIdImports200ResponseBuilder b)]) =
+      _$PostLedgersByLedgerIdImports200Response;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(PostLedgersByLedgerIdImports201ResponseBuilder b) => b;
+  static void _defaults(PostLedgersByLedgerIdImports200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PostLedgersByLedgerIdImports201Response> get serializer =>
-      _$PostLedgersByLedgerIdImports201ResponseSerializer();
+  static Serializer<PostLedgersByLedgerIdImports200Response> get serializer =>
+      _$PostLedgersByLedgerIdImports200ResponseSerializer();
 }
 
-class _$PostLedgersByLedgerIdImports201ResponseSerializer
-    implements PrimitiveSerializer<PostLedgersByLedgerIdImports201Response> {
+class _$PostLedgersByLedgerIdImports200ResponseSerializer
+    implements PrimitiveSerializer<PostLedgersByLedgerIdImports200Response> {
   @override
   final Iterable<Type> types = const [
-    PostLedgersByLedgerIdImports201Response,
-    _$PostLedgersByLedgerIdImports201Response
+    PostLedgersByLedgerIdImports200Response,
+    _$PostLedgersByLedgerIdImports200Response
   ];
 
   @override
-  final String wireName = r'PostLedgersByLedgerIdImports201Response';
+  final String wireName = r'PostLedgersByLedgerIdImports200Response';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    PostLedgersByLedgerIdImports201Response object, {
+    PostLedgersByLedgerIdImports200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'imported_categories';
@@ -69,7 +69,7 @@ class _$PostLedgersByLedgerIdImports201ResponseSerializer
   @override
   Object serialize(
     Serializers serializers,
-    PostLedgersByLedgerIdImports201Response object, {
+    PostLedgersByLedgerIdImports200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(serializers, object,
@@ -82,7 +82,7 @@ class _$PostLedgersByLedgerIdImports201ResponseSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required PostLedgersByLedgerIdImports201ResponseBuilder result,
+    required PostLedgersByLedgerIdImports200ResponseBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -112,12 +112,12 @@ class _$PostLedgersByLedgerIdImports201ResponseSerializer
   }
 
   @override
-  PostLedgersByLedgerIdImports201Response deserialize(
+  PostLedgersByLedgerIdImports200Response deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = PostLedgersByLedgerIdImports201ResponseBuilder();
+    final result = PostLedgersByLedgerIdImports200ResponseBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

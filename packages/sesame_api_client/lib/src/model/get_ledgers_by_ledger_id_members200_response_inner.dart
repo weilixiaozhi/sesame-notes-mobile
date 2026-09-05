@@ -31,14 +31,14 @@ abstract class GetLedgersByLedgerIdMembers200ResponseInner
   String get userId;
 
   @BuiltValueField(wireName: r'member_id')
-  String? get memberId;
+  String get memberId;
 
   @BuiltValueField(wireName: r'status')
-  GetLedgersByLedgerIdMembers200ResponseInnerStatusEnum? get status;
+  GetLedgersByLedgerIdMembers200ResponseInnerStatusEnum get status;
   // enum statusEnum {  ACTIVE,  LEFT,  REMOVED,  };
 
   @BuiltValueField(wireName: r'linked_account_id')
-  String? get linkedAccountId;
+  String get linkedAccountId;
 
   @BuiltValueField(wireName: r'sesame_number')
   String? get sesameNumber;
@@ -98,28 +98,22 @@ class _$GetLedgersByLedgerIdMembers200ResponseInnerSerializer
       object.userId,
       specifiedType: const FullType(String),
     );
-    if (object.memberId != null) {
-      yield r'member_id';
-      yield serializers.serialize(
-        object.memberId,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.status != null) {
-      yield r'status';
-      yield serializers.serialize(
-        object.status,
-        specifiedType: const FullType(
-            GetLedgersByLedgerIdMembers200ResponseInnerStatusEnum),
-      );
-    }
-    if (object.linkedAccountId != null) {
-      yield r'linked_account_id';
-      yield serializers.serialize(
-        object.linkedAccountId,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
+    yield r'member_id';
+    yield serializers.serialize(
+      object.memberId,
+      specifiedType: const FullType(String),
+    );
+    yield r'status';
+    yield serializers.serialize(
+      object.status,
+      specifiedType:
+          const FullType(GetLedgersByLedgerIdMembers200ResponseInnerStatusEnum),
+    );
+    yield r'linked_account_id';
+    yield serializers.serialize(
+      object.linkedAccountId,
+      specifiedType: const FullType(String),
+    );
     yield r'sesame_number';
     yield object.sesameNumber == null
         ? null
@@ -192,26 +186,23 @@ class _$GetLedgersByLedgerIdMembers200ResponseInnerSerializer
         case r'member_id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
+            specifiedType: const FullType(String),
+          ) as String;
           result.memberId = valueDes;
           break;
         case r'status':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(
+            specifiedType: const FullType(
                 GetLedgersByLedgerIdMembers200ResponseInnerStatusEnum),
-          ) as GetLedgersByLedgerIdMembers200ResponseInnerStatusEnum?;
-          if (valueDes == null) continue;
+          ) as GetLedgersByLedgerIdMembers200ResponseInnerStatusEnum;
           result.status = valueDes;
           break;
         case r'linked_account_id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
+            specifiedType: const FullType(String),
+          ) as String;
           result.linkedAccountId = valueDes;
           break;
         case r'sesame_number':

@@ -148,11 +148,11 @@ class _$GetLedgersByLedgerIdMembers200ResponseInner
   @override
   final String userId;
   @override
-  final String? memberId;
+  final String memberId;
   @override
-  final GetLedgersByLedgerIdMembers200ResponseInnerStatusEnum? status;
+  final GetLedgersByLedgerIdMembers200ResponseInnerStatusEnum status;
   @override
-  final String? linkedAccountId;
+  final String linkedAccountId;
   @override
   final String? sesameNumber;
   @override
@@ -174,9 +174,9 @@ class _$GetLedgersByLedgerIdMembers200ResponseInner
 
   _$GetLedgersByLedgerIdMembers200ResponseInner._(
       {required this.userId,
-      this.memberId,
-      this.status,
-      this.linkedAccountId,
+      required this.memberId,
+      required this.status,
+      required this.linkedAccountId,
       this.sesameNumber,
       this.displayName,
       this.avatarUrl,
@@ -338,9 +338,14 @@ class GetLedgersByLedgerIdMembers200ResponseInnerBuilder
         _$GetLedgersByLedgerIdMembers200ResponseInner._(
           userId: BuiltValueNullFieldError.checkNotNull(
               userId, r'GetLedgersByLedgerIdMembers200ResponseInner', 'userId'),
-          memberId: memberId,
-          status: status,
-          linkedAccountId: linkedAccountId,
+          memberId: BuiltValueNullFieldError.checkNotNull(memberId,
+              r'GetLedgersByLedgerIdMembers200ResponseInner', 'memberId'),
+          status: BuiltValueNullFieldError.checkNotNull(
+              status, r'GetLedgersByLedgerIdMembers200ResponseInner', 'status'),
+          linkedAccountId: BuiltValueNullFieldError.checkNotNull(
+              linkedAccountId,
+              r'GetLedgersByLedgerIdMembers200ResponseInner',
+              'linkedAccountId'),
           sesameNumber: sesameNumber,
           displayName: displayName,
           avatarUrl: avatarUrl,

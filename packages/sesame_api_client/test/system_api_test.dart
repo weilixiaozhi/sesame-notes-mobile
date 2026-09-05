@@ -10,5 +10,10 @@ void main() {
     test('test getHealth', () async {
       // TODO
     });
+
+    //Future<GetHealth200Response> getHealthReady() async
+    test('test getHealthReady', () async {
+      // TODO
+    });
   });
 }

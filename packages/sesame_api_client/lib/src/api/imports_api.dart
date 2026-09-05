@@ -10,7 +10,7 @@ import 'package:dio/dio.dart';
 
 import 'package:sesame_api_client/src/api_util.dart';
 import 'package:sesame_api_client/src/model/error.dart';
-import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports201_response.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports200_response.dart';
 import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports400_response.dart';
 import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports_request.dart';
 
@@ -27,6 +27,7 @@ class ImportsApi {
   /// Parameters:
   /// * [ledgerId]
   /// * [postLedgersByLedgerIdImportsRequest]
+  /// * [idempotencyKey]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -34,13 +35,14 @@ class ImportsApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [PostLedgersByLedgerIdImports201Response] as data
+  /// Returns a [Future] containing a [Response] with a [PostLedgersByLedgerIdImports200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PostLedgersByLedgerIdImports201Response>>
+  Future<Response<PostLedgersByLedgerIdImports200Response>>
       postLedgersByLedgerIdImports({
     required String ledgerId,
     required PostLedgersByLedgerIdImportsRequest
         postLedgersByLedgerIdImportsRequest,
+    String? idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -55,6 +57,7 @@ class ImportsApi {
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
+        if (idempotencyKey != null) r'idempotency-key': idempotencyKey,
         ...?headers,
       },
       extra: <String, dynamic>{
@@ -98,7 +101,7 @@ class ImportsApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    PostLedgersByLedgerIdImports201Response? _responseData;
+    PostLedgersByLedgerIdImports200Response? _responseData;
 
     try {
       final rawResponse = _response.data;
@@ -107,8 +110,8 @@ class ImportsApi {
           : _serializers.deserialize(
               rawResponse,
               specifiedType:
-                  const FullType(PostLedgersByLedgerIdImports201Response),
-            ) as PostLedgersByLedgerIdImports201Response;
+                  const FullType(PostLedgersByLedgerIdImports200Response),
+            ) as PostLedgersByLedgerIdImports200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -119,7 +122,7 @@ class ImportsApi {
       );
     }
 
-    return Response<PostLedgersByLedgerIdImports201Response>(
+    return Response<PostLedgersByLedgerIdImports200Response>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

@@ -57,7 +57,7 @@ import 'package:sesame_api_client/src/model/post_auth_register_request.dart';
 import 'package:sesame_api_client/src/model/post_auth_register_request_device.dart';
 import 'package:sesame_api_client/src/model/post_invites_by_code_accept200_response.dart';
 import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_categories_request.dart';
-import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports201_response.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports200_response.dart';
 import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports400_response.dart';
 import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports400_response_details_inner.dart';
 import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports_request.dart';
@@ -147,7 +147,7 @@ part 'serializers.g.dart';
   PostAuthRegisterRequestDevice,
   PostInvitesByCodeAccept200Response,
   PostLedgersByLedgerIdCategoriesRequest,
-  PostLedgersByLedgerIdImports201Response,
+  PostLedgersByLedgerIdImports200Response,
   PostLedgersByLedgerIdImports400Response,
   PostLedgersByLedgerIdImports400ResponseDetailsInner,
   PostLedgersByLedgerIdImportsRequest,

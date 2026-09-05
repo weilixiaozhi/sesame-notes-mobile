@@ -54,7 +54,7 @@ GitHub Actions 的 `Backend E2E (manual)` 任务可显式传入一次性测试�
 
 ## OpenAPI Client
 
-- 契约固定为 `api/openapi/sesame-notes-api-v1.0.0.json`（后端生成物，不得手工修改）。SHA-256 固定 `4FB61737E64D39A45F0282E0379714BB1612D18C438C84490B981EA025329BFA`。
+- 契约固定为 `api/openapi/sesame-notes-api-v1.0.0.json`（后端生成物，不得手工修改）。SHA-256 固定 `F35F026EB516ED7D874425D0BDCB01381B4EBDA092A1516CB22833D1998321D3`。
 - 生成器固定 `openapitools/openapi-generator-cli:v7.24.0`（dart-dio），产物在 `packages/sesame_api_client`，生成代码不手工编辑。生成流程内置 `build_runner`（产出 built_value 的 `.g.dart`）与 `dart format`（产物格式合规），一键生成即完整可用。
 - 重复生成校验（CI 步骤）：`powershell -File scripts/openapi/generate_api_client.ps1 -Check`
 - `python scripts/test/api_contract_test.py` 校验 Artifact 哈希、版本、唯一 `operationId` 与统一错误模型。

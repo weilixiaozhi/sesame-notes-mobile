@@ -110,6 +110,7 @@ Class | Method | HTTP request | Description
 [*SyncApi*](doc/SyncApi.md) | [**getSyncPull**](doc/SyncApi.md#getsyncpull) | **GET** /api/v1/sync/pull | 
 [*SyncApi*](doc/SyncApi.md) | [**postSyncPush**](doc/SyncApi.md#postsyncpush) | **POST** /api/v1/sync/push | 
 [*SystemApi*](doc/SystemApi.md) | [**getHealth**](doc/SystemApi.md#gethealth) | **GET** /api/v1/health | 
+[*SystemApi*](doc/SystemApi.md) | [**getHealthReady**](doc/SystemApi.md#gethealthready) | **GET** /api/v1/health/ready | 
 [*TransactionsApi*](doc/TransactionsApi.md) | [**deleteLedgersByLedgerIdTransactionsByTransactionId**](doc/TransactionsApi.md#deleteledgersbyledgeridtransactionsbytransactionid) | **DELETE** /api/v1/ledgers/{ledger_id}/transactions/{transaction_id} | 
 [*TransactionsApi*](doc/TransactionsApi.md) | [**getLedgersByLedgerIdTransactions**](doc/TransactionsApi.md#getledgersbyledgeridtransactions) | **GET** /api/v1/ledgers/{ledger_id}/transactions | 
 [*TransactionsApi*](doc/TransactionsApi.md) | [**patchLedgersByLedgerIdTransactionsByTransactionId**](doc/TransactionsApi.md#patchledgersbyledgeridtransactionsbytransactionid) | **PATCH** /api/v1/ledgers/{ledger_id}/transactions/{transaction_id} | 
@@ -161,7 +162,7 @@ Class | Method | HTTP request | Description
  - [PostAuthRegisterRequestDevice](doc/PostAuthRegisterRequestDevice.md)
  - [PostInvitesByCodeAccept200Response](doc/PostInvitesByCodeAccept200Response.md)
  - [PostLedgersByLedgerIdCategoriesRequest](doc/PostLedgersByLedgerIdCategoriesRequest.md)
- - [PostLedgersByLedgerIdImports201Response](doc/PostLedgersByLedgerIdImports201Response.md)
+ - [PostLedgersByLedgerIdImports200Response](doc/PostLedgersByLedgerIdImports200Response.md)
  - [PostLedgersByLedgerIdImports400Response](doc/PostLedgersByLedgerIdImports400Response.md)
  - [PostLedgersByLedgerIdImports400ResponseDetailsInner](doc/PostLedgersByLedgerIdImports400ResponseDetailsInner.md)
  - [PostLedgersByLedgerIdImportsRequest](doc/PostLedgersByLedgerIdImportsRequest.md)

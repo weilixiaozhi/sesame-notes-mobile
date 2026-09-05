@@ -143,7 +143,7 @@ class SyncService {
 
     // user 级变更（分类/汇率）置前：服务端按请求数组顺序逐条应用，
     // 分类必须早于引用它的账本级变更落库；分类内部按层级排序，
-    // 一级父分类先于二级子分类（历史队列中子分类 id 可能更小）。
+    // 一级父分类先于二级子分类（子分类变更可能先于父分类登记）。
     final userGlobal = sendable
         .where((change) => change.ledgerId == null)
         .toList();
@@ -184,7 +184,7 @@ class SyncService {
 
   /// 把账本级待推变更引用的未登记分类补登记为 user 级 upsert 变更。
   ///
-  /// 种子默认分类是确定性 UUIDv5 且通常在无云上下文时创建，从未进过同步队列；
+  /// 种子默认分类是确定性 UUIDv5，在无云上下文创建时不登记同步变更；
   /// 云账本交易引用它们时必须在交易之前上云。返回是否登记了任何新变更。
   Future<bool> _ensureReferencedCategoryRegistrations(
     String? accountId,
@@ -1110,7 +1110,7 @@ class SyncService {
     String? syncId,
   ) {
     // 推送出口对齐服务端契约：amount/native_amount 必须为规范化 decimal
-    //（历史验收填充数据可能带尾零，如 "857.00"）。
+    //（尾零剥离，如 "857.00" → "857"）。
     final payload = _normalizeTransactionAmounts(ch.payload);
     if (ch.action == 'delete') {
       return PostSyncPushRequestChangesInner(
@@ -1178,8 +1178,8 @@ class SyncService {
 
   /// 把交易 payload 的金额字段规范化为契约格式（尾零剥离，如 "857.00" → "857"）。
   ///
-  /// 服务端金额契约要求规范化 decimal；验收填充等历史数据可能带尾零，
-  /// 推送出口统一归一，避免整批因单条金额格式被 400 拒绝。
+  /// 服务端金额契约要求规范化 decimal；推送出口统一归一
+  /// （尾零剥离，如 "857.00" → "857"），避免整批因单条金额格式被 400 拒绝。
   String _normalizeTransactionAmounts(String rawPayload) {
     Map<String, dynamic> data;
     try {
@@ -1194,7 +1194,7 @@ class SyncService {
         if (parsed != null) data[key] = normalizeDecimal(parsed);
       }
     }
-    // 指定分摊行金额同口径规范化（历史填充数据同样可能带尾零）。
+    // 指定分摊行金额同口径规范化。
     final splits = data['splits'];
     if (splits is List) {
       for (final split in splits) {

@@ -11,7 +11,7 @@ void main() {
       // TODO
     });
 
-    //Future<Uint8List> getProfileAvatarByUserId(String userId) async
+    //Future getProfileAvatarByUserId(String userId) async
     test('test getProfileAvatarByUserId', () async {
       // TODO
     });

@@ -213,9 +213,9 @@
           "category_id": {
             "anyOf": [
               {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                 "examples": [
-                  "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                  "056cf10d-2d59-599c-9d97-6749e866aa52"
                 ],
                 "type": "string"
               },
@@ -481,9 +481,9 @@
         ],
         "properties": {
           "id": {
-            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
             "type": "string",
-            "example": "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+            "example": "056cf10d-2d59-599c-9d97-6749e866aa52"
           },
           "name": {
             "minLength": 1,
@@ -544,9 +544,9 @@
           "parent_id": {
             "anyOf": [
               {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                 "examples": [
-                  "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                  "056cf10d-2d59-599c-9d97-6749e866aa52"
                 ],
                 "type": "string"
               },
@@ -629,9 +629,9 @@
           "category_id": {
             "anyOf": [
               {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                 "examples": [
-                  "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                  "056cf10d-2d59-599c-9d97-6749e866aa52"
                 ],
                 "type": "string"
               },
@@ -897,6 +897,121 @@
         }
       }
     },
+    "/api/v1/health/ready": {
+      "get": {
+        "operationId": "getHealthReady",
+        "tags": [
+          "system"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "request_id"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "request_id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "request_id"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "request_id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/register": {
       "post": {
         "operationId": "postAuthRegister",
@@ -1063,8 +1178,7 @@
                           "type": "integer"
                         },
                         "phone": {
-                          "type": "string",
-                          "example": "+8613800138000"
+                          "type": "string"
                         },
                         "phone_masked": {
                           "anyOf": [
@@ -1338,8 +1452,7 @@
                           "type": "integer"
                         },
                         "phone": {
-                          "type": "string",
-                          "example": "+8613800138000"
+                          "type": "string"
                         },
                         "phone_masked": {
                           "anyOf": [
@@ -1559,8 +1672,7 @@
                           "type": "integer"
                         },
                         "phone": {
-                          "type": "string",
-                          "example": "+8613800138000"
+                          "type": "string"
                         },
                         "phone_masked": {
                           "anyOf": [
@@ -2985,29 +3097,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "原始头像图片字节",
-            "content": {
-              "image/png": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              },
-              "image/jpeg": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              },
-              "image/webp": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Default Response",
             "content": {
@@ -3280,8 +3369,7 @@
                       "type": "integer"
                     },
                     "phone": {
-                      "type": "string",
-                      "example": "+8613800138000"
+                      "type": "string"
                     },
                     "phone_masked": {
                       "anyOf": [
@@ -3453,7 +3541,6 @@
                   "display_name": {
                     "anyOf": [
                       {
-                        "minLength": 1,
                         "maxLength": 64,
                         "type": "string"
                       },
@@ -3593,8 +3680,7 @@
                       "type": "integer"
                     },
                     "phone": {
-                      "type": "string",
-                      "example": "+8613800138000"
+                      "type": "string"
                     },
                     "phone_masked": {
                       "anyOf": [
@@ -4649,9 +4735,9 @@
                 ],
                 "properties": {
                   "id": {
-                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                     "type": "string",
-                    "example": "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                    "example": "056cf10d-2d59-599c-9d97-6749e866aa52"
                   },
                   "name": {
                     "minLength": 1,
@@ -4713,9 +4799,9 @@
                   "parent_id": {
                     "anyOf": [
                       {
-                        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                         "examples": [
-                          "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                          "056cf10d-2d59-599c-9d97-6749e866aa52"
                         ],
                         "type": "string"
                       },
@@ -4893,9 +4979,9 @@
                   "parent_id": {
                     "anyOf": [
                       {
-                        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                         "examples": [
-                          "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                          "056cf10d-2d59-599c-9d97-6749e866aa52"
                         ],
                         "type": "string"
                       },
@@ -4922,10 +5008,10 @@
           },
           {
             "schema": {
-              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
               "type": "string"
             },
-            "example": "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761",
+            "example": "056cf10d-2d59-599c-9d97-6749e866aa52",
             "in": "path",
             "name": "category_id",
             "required": true
@@ -5027,10 +5113,10 @@
           },
           {
             "schema": {
-              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
               "type": "string"
             },
-            "example": "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761",
+            "example": "056cf10d-2d59-599c-9d97-6749e866aa52",
             "in": "path",
             "name": "category_id",
             "required": true
@@ -5318,9 +5404,9 @@
                   "category_id": {
                     "anyOf": [
                       {
-                        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                         "examples": [
-                          "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                          "056cf10d-2d59-599c-9d97-6749e866aa52"
                         ],
                         "type": "string"
                       },
@@ -5614,9 +5700,9 @@
                   "category_id": {
                     "anyOf": [
                       {
-                        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                         "examples": [
-                          "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                          "056cf10d-2d59-599c-9d97-6749e866aa52"
                         ],
                         "type": "string"
                       },
@@ -6451,6 +6537,9 @@
                     "type": "object",
                     "required": [
                       "user_id",
+                      "member_id",
+                      "status",
+                      "linked_account_id",
                       "sesame_number",
                       "display_name",
                       "avatar_url",
@@ -6492,18 +6581,9 @@
                         ]
                       },
                       "linked_account_id": {
-                        "anyOf": [
-                          {
-                            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
-                            "examples": [
-                              "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
-                            ],
-                            "type": "string"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
+                        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                        "type": "string",
+                        "example": "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
                       },
                       "sesame_number": {
                         "anyOf": [
@@ -7928,9 +8008,9 @@
                                     "category_id": {
                                       "anyOf": [
                                         {
-                                          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                                           "examples": [
-                                            "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                                            "056cf10d-2d59-599c-9d97-6749e866aa52"
                                           ],
                                           "type": "string"
                                         },
@@ -8164,9 +8244,9 @@
                                   ]
                                 },
                                 "entity_id": {
-                                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                                   "examples": [
-                                    "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                                    "056cf10d-2d59-599c-9d97-6749e866aa52"
                                   ],
                                   "type": "string"
                                 },
@@ -8268,9 +8348,9 @@
                                     "parent_id": {
                                       "anyOf": [
                                         {
-                                          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                                           "examples": [
-                                            "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                                            "056cf10d-2d59-599c-9d97-6749e866aa52"
                                           ],
                                           "type": "string"
                                         },
@@ -8309,9 +8389,9 @@
                                   ]
                                 },
                                 "entity_id": {
-                                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                                   "examples": [
-                                    "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                                    "056cf10d-2d59-599c-9d97-6749e866aa52"
                                   ],
                                   "type": "string"
                                 },
@@ -8470,9 +8550,9 @@
                                     "category_id": {
                                       "anyOf": [
                                         {
-                                          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                                           "examples": [
-                                            "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                                            "056cf10d-2d59-599c-9d97-6749e866aa52"
                                           ],
                                           "type": "string"
                                         },
@@ -9284,9 +9364,9 @@
                             ]
                           },
                           "entity_id": {
-                            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                             "type": "string",
-                            "example": "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                            "example": "056cf10d-2d59-599c-9d97-6749e866aa52"
                           },
                           "action": {
                             "anyOf": [
@@ -9626,9 +9706,9 @@
                       ],
                       "properties": {
                         "id": {
-                          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                           "type": "string",
-                          "example": "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                          "example": "056cf10d-2d59-599c-9d97-6749e866aa52"
                         },
                         "name": {
                           "minLength": 1,
@@ -9690,9 +9770,9 @@
                         "parent_id": {
                           "anyOf": [
                             {
-                              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                               "examples": [
-                                "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                                "056cf10d-2d59-599c-9d97-6749e866aa52"
                               ],
                               "type": "string"
                             },
@@ -9768,9 +9848,9 @@
                         "category_id": {
                           "anyOf": [
                             {
-                              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                               "examples": [
-                                "018f7f95-4b8a-4f5e-8d0c-2ebf4682c761"
+                                "056cf10d-2d59-599c-9d97-6749e866aa52"
                               ],
                               "type": "string"
                             },
@@ -9904,6 +9984,16 @@
             "in": "path",
             "name": "ledger_id",
             "required": true
+          },
+          {
+            "schema": {
+              "minLength": 8,
+              "maxLength": 128,
+              "type": "string"
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false
           }
         ],
         "security": [
@@ -9912,6 +10002,30 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "imported_categories",
+                    "imported_transactions"
+                  ],
+                  "properties": {
+                    "imported_categories": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "imported_transactions": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "201": {
             "description": "Default Response",
             "content": {

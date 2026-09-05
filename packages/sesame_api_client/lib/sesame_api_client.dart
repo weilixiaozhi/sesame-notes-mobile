@@ -67,7 +67,7 @@ export 'package:sesame_api_client/src/model/post_auth_register_request.dart';
 export 'package:sesame_api_client/src/model/post_auth_register_request_device.dart';
 export 'package:sesame_api_client/src/model/post_invites_by_code_accept200_response.dart';
 export 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_categories_request.dart';
-export 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports201_response.dart';
+export 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports200_response.dart';
 export 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports400_response.dart';
 export 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports400_response_details_inner.dart';
 export 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports_request.dart';

@@ -1,12 +1,12 @@
 import 'package:test/test.dart';
 import 'package:sesame_api_client/sesame_api_client.dart';
 
-// tests for PostLedgersByLedgerIdImports201Response
+// tests for PostLedgersByLedgerIdImports200Response
 void main() {
-  final instance = PostLedgersByLedgerIdImports201ResponseBuilder();
+  final instance = PostLedgersByLedgerIdImports200ResponseBuilder();
   // TODO add properties to the builder and call build()
 
-  group(PostLedgersByLedgerIdImports201Response, () {
+  group(PostLedgersByLedgerIdImports200Response, () {
     // int importedCategories
     test('to test the property `importedCategories`', () async {
       // TODO

@@ -53,7 +53,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getProfileAvatarByUserId**
-> Uint8List getProfileAvatarByUserId(userId)
+> getProfileAvatarByUserId(userId)
 
 
 
@@ -65,8 +65,7 @@ final api = SesameApiClient().getProfileApi();
 final String userId = 018f7f95-4b8a-4f5e-8d0c-2ebf4682c761; // String | 
 
 try {
-    final response = api.getProfileAvatarByUserId(userId);
-    print(response);
+    api.getProfileAvatarByUserId(userId);
 } on DioException catch (e) {
     print('Exception when calling ProfileApi->getProfileAvatarByUserId: $e\n');
 }
@@ -80,7 +79,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Uint8List**](Uint8List.md)
+void (empty response body)
 
 ### Authorization
 
@@ -89,7 +88,7 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: image/png, image/jpeg, image/webp, application/json
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

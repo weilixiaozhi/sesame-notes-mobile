@@ -52,7 +52,7 @@ doc/PostAuthRegisterRequest.md
 doc/PostAuthRegisterRequestDevice.md
 doc/PostInvitesByCodeAccept200Response.md
 doc/PostLedgersByLedgerIdCategoriesRequest.md
-doc/PostLedgersByLedgerIdImports201Response.md
+doc/PostLedgersByLedgerIdImports200Response.md
 doc/PostLedgersByLedgerIdImports400Response.md
 doc/PostLedgersByLedgerIdImports400ResponseDetailsInner.md
 doc/PostLedgersByLedgerIdImportsRequest.md
@@ -167,7 +167,7 @@ lib/src/model/post_auth_register_request.dart
 lib/src/model/post_auth_register_request_device.dart
 lib/src/model/post_invites_by_code_accept200_response.dart
 lib/src/model/post_ledgers_by_ledger_id_categories_request.dart
-lib/src/model/post_ledgers_by_ledger_id_imports201_response.dart
+lib/src/model/post_ledgers_by_ledger_id_imports200_response.dart
 lib/src/model/post_ledgers_by_ledger_id_imports400_response.dart
 lib/src/model/post_ledgers_by_ledger_id_imports400_response_details_inner.dart
 lib/src/model/post_ledgers_by_ledger_id_imports_request.dart
@@ -262,7 +262,7 @@ test/post_auth_register_request_device_test.dart
 test/post_auth_register_request_test.dart
 test/post_invites_by_code_accept200_response_test.dart
 test/post_ledgers_by_ledger_id_categories_request_test.dart
-test/post_ledgers_by_ledger_id_imports201_response_test.dart
+test/post_ledgers_by_ledger_id_imports200_response_test.dart
 test/post_ledgers_by_ledger_id_imports400_response_details_inner_test.dart
 test/post_ledgers_by_ledger_id_imports400_response_test.dart
 test/post_ledgers_by_ledger_id_imports_request_test.dart

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_api_client/sesame_api_client.dart';
 import 'package:uuid/uuid.dart';
@@ -20,10 +21,13 @@ class ApiConfig {
 
   const ApiConfig({this.baseUrl = _effectiveBaseUrl});
 
-  /// 编译期注入优先于线上默认地址（验收/联调本地后端用 dart-define 覆盖）。
-  static const String _effectiveBaseUrl = kApiBaseUrlOverride == ''
-      ? 'https://api.9100300.xyz'
-      : kApiBaseUrlOverride;
+  /// 编译期注入优先；debug 构建默认直连本机验收后端（无需 dart-define），
+  /// release 构建默认线上地址。
+  static const String _effectiveBaseUrl = kApiBaseUrlOverride != ''
+      ? kApiBaseUrlOverride
+      : kDebugMode
+      ? 'http://192.168.5.5:8080'
+      : 'https://api.9100300.xyz';
 }
 
 /// 构建带请求追踪、Bearer 认证和单飞刷新的全局 API 客户端。

@@ -24,13 +24,13 @@ class MemberDirectoryService {
       if (data == null) throw const FormatException('成员列表响应为空');
       return [
         for (final m in data)
-          if (m.memberId != null && m.memberId!.isNotEmpty)
+          if (m.memberId.isNotEmpty)
             LedgerDirectoryMember(
-              memberId: m.memberId!,
+              memberId: m.memberId,
               displayName: m.displayName ?? '',
               linkedAccountId: m.linkedAccountId,
               role: m.role.name,
-              status: m.status?.name ?? 'ACTIVE',
+              status: m.status.name,
               avatarUrl: _absoluteAvatarUrl(m.avatarUrl),
               avatarVersion: m.avatarVersion,
               joinedAt: m.joinedAt,

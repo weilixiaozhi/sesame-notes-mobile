@@ -252,7 +252,7 @@ void main() {
         registeredMemberId(ledgerId, owner.userId),
         reason: '客户端派生 member_id 必须与服务端 golden 一致',
       );
-      expect(ownerItem.status!.name, 'ACTIVE');
+      expect(ownerItem.status.name, 'ACTIVE');
       expect(ownerItem.linkedAccountId, owner.userId);
       expect(ownerItem.role.name, 'owner');
 
@@ -290,7 +290,7 @@ void main() {
         (m) => m.userId == member.userId,
       );
       expect(editorItem.memberId, registeredMemberId(ledgerId, member.userId));
-      expect(editorItem.status!.name, 'ACTIVE');
+      expect(editorItem.status.name, 'ACTIVE');
       expect(editorItem.role.name, 'editor');
 
       // 成员角色固定 owner/editor（无只读档）：角色变更接口已移除
@@ -298,7 +298,7 @@ void main() {
       // canonical DELETE by member_id：成员列表只剩 owner
       await sharingApi.deleteLedgersByLedgerIdMembersByMemberId(
         ledgerId: ledgerId,
-        memberId: editorItem.memberId!,
+        memberId: editorItem.memberId,
       );
       final members3 = await sharingApi.getLedgersByLedgerIdMembers(
         ledgerId: ledgerId,

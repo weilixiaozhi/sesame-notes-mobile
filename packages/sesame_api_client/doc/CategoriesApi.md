@@ -26,7 +26,7 @@ import 'package:sesame_api_client/api.dart';
 
 final api = SesameApiClient().getCategoriesApi();
 final String ledgerId = 018f7f95-4b8a-4f5e-8d0c-2ebf4682c761; // String | 
-final String categoryId = 018f7f95-4b8a-4f5e-8d0c-2ebf4682c761; // String | 
+final String categoryId = 056cf10d-2d59-599c-9d97-6749e866aa52; // String | 
 
 try {
     api.deleteLedgersByLedgerIdCategoriesByCategoryId(ledgerId, categoryId);
@@ -109,7 +109,7 @@ import 'package:sesame_api_client/api.dart';
 
 final api = SesameApiClient().getCategoriesApi();
 final String ledgerId = 018f7f95-4b8a-4f5e-8d0c-2ebf4682c761; // String | 
-final String categoryId = 018f7f95-4b8a-4f5e-8d0c-2ebf4682c761; // String | 
+final String categoryId = 056cf10d-2d59-599c-9d97-6749e866aa52; // String | 
 final PatchLedgersByLedgerIdCategoriesByCategoryIdRequest patchLedgersByLedgerIdCategoriesByCategoryIdRequest = ; // PatchLedgersByLedgerIdCategoriesByCategoryIdRequest | 
 
 try {

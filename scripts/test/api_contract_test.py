@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 ARTIFACT = ROOT / "api/openapi/sesame-notes-api-v1.0.0.json"
-EXPECTED_SHA256 = "4FB61737E64D39A45F0282E0379714BB1612D18C438C84490B981EA025329BFA"
+EXPECTED_SHA256 = "F35F026EB516ED7D874425D0BDCB01381B4EBDA092A1516CB22833D1998321D3"
 HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
 ERROR_STATUSES = {"400", "401", "403", "404", "409", "500"}
 
@@ -45,8 +45,8 @@ class ApiContractTest(unittest.TestCase):
 
         self.assertEqual("3.0.3", contract["openapi"])
         self.assertEqual("1.0.0", contract["info"]["version"])
-        self.assertEqual(49, len(operations))
-        self.assertEqual(49, len(set(operation_ids)))
+        self.assertEqual(50, len(operations))
+        self.assertEqual(50, len(set(operation_ids)))
         for operation in operations:
             with self.subTest(operation_id=operation["operationId"]):
                 self.assertTrue(ERROR_STATUSES.issubset(operation["responses"]))

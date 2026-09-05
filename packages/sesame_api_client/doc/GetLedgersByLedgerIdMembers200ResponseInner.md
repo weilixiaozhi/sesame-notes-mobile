@@ -9,9 +9,9 @@ import 'package:sesame_api_client/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **userId** | **String** |  | 
-**memberId** | **String** |  | [optional] 
-**status** | **String** |  | [optional] 
-**linkedAccountId** | **String** |  | [optional] 
+**memberId** | **String** |  | 
+**status** | **String** |  | 
+**linkedAccountId** | **String** |  | 
 **sesameNumber** | **String** |  | 
 **displayName** | **String** |  | 
 **avatarUrl** | **String** |  | 

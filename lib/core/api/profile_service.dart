@@ -118,13 +118,13 @@ class ProfileService {
   /// 契约：接口返回原始图片字节，Uint8List 可直接用于 Image.memory。
   Future<List<int>?> downloadAvatar(String userId) async {
     try {
-      final resp = await ProfileApi(
-        client.dio,
-        client.serializers,
-      ).getProfileAvatarByUserId(userId: userId);
-      final data = resp.data;
-      if (data == null) return null;
-      return data;
+      // 二进制响应无法用生成客户端表达（生成器只支持 JSON 模型），
+      // 由 core 层以 bytes 模式直取原始字节。
+      final resp = await client.dio.get<List<int>>(
+        '/api/v1/profile/avatar/$userId',
+        options: Options(responseType: ResponseType.bytes),
+      );
+      return resp.data;
     } on DioException catch (error) {
       if (error.response?.statusCode == 404) return null;
       logger.error('ProfileService', '下载头像失败', error, error.stackTrace);
