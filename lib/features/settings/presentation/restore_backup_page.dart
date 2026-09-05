@@ -161,7 +161,8 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
             return a.storageOrigin == LedgerStorageOrigin.local ? -1 : 1;
           });
     return ListView(
-      padding: const EdgeInsets.all(AppDimens.p16),
+      // 与账本管理页一致：页面不给水平内边距，两侧留白由卡片自带 margin 承担
+      padding: const EdgeInsets.symmetric(vertical: AppDimens.p8),
       children: [
         _sectionHeader(
           context,
@@ -188,9 +189,14 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
             onToggle: () => _toggleDecision(item, currentAccountId),
           ),
         const SizedBox(height: AppDimens.p16),
-        FilledButton(
-          onPressed: flow.loading ? null : _applyRestore,
-          child: Text(flow.loading ? l10n.restoreApplying : l10n.restoreApply),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppDimens.p16),
+          child: FilledButton(
+            onPressed: flow.loading ? null : _applyRestore,
+            child: Text(
+              flow.loading ? l10n.restoreApplying : l10n.restoreApply,
+            ),
+          ),
         ),
       ],
     );
@@ -215,9 +221,9 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppDimens.p4,
+        AppDimens.p16,
         AppDimens.p8,
-        AppDimens.p4,
+        AppDimens.p16,
         AppDimens.p8,
       ),
       child: Row(
@@ -299,16 +305,13 @@ class _RestoreLedgerCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTokens.surface(context),
           borderRadius: BorderRadius.circular(AppDimens.radius12),
-          // 边框宽度与账本管理页 LedgerCard 一致（1.0）；
-          // 选中态 = 边框变主题色；未选中浅色模式透明边框（保持尺寸一致）
-          border: Border.all(
-            color: selected
-                ? primary
-                : (AppTokens.isDark(context)
-                      ? AppTokens.border(context)
-                      : Colors.transparent),
-            width: 1,
-          ),
+          // 边框与账本管理页 LedgerCard 同口径：浅色未选中无边框，
+          // 暗色未选中 1px 常规边框；选中态统一变主题色 1px。
+          border: selected
+              ? Border.all(color: primary, width: 1)
+              : (AppTokens.isDark(context)
+                    ? Border.all(color: AppTokens.border(context), width: 1)
+                    : null),
           boxShadow: AppTokens.isDark(context)
               ? null
               : [
@@ -445,12 +448,13 @@ class _RestoreLedgerCard extends StatelessWidget {
               ),
             ),
             // 右上角勾选标签：位于裁剪层之外覆盖在边框之上。
-            // 顶边再上移 0.5px 盖住边框线抗锯齿缝隙；右侧与边框外沿齐平。
-            // 右上圆角与卡片外角同半径（r12），角上只露一条弧线。
+            // 外移量 = 边框宽度 1px，顶边/右边与卡片外沿精确齐平，
+            // 右上圆角（r12）圆心与卡片外角圆弧圆心重合，
+            // 角上只露一条弧线、无凸出。
             if (selected)
               Positioned(
-                top: -2,
-                right: -1.5,
+                top: -1,
+                right: -1,
                 child: Container(
                   width: 20,
                   height: 20,
