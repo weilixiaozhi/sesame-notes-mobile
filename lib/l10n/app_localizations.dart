@@ -3286,24 +3286,6 @@ abstract class AppLocalizations {
   /// **'Choose your preferred currency, you can change it anytime in settings'**
   String get welcomeCurrencyDescription;
 
-  /// No description provided for @appearanceSettings.
-  ///
-  /// In en, this message translates to:
-  /// **'Preferences'**
-  String get appearanceSettings;
-
-  /// No description provided for @appearanceSettingsPageTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Preferences'**
-  String get appearanceSettingsPageTitle;
-
-  /// No description provided for @appearanceSettingsPageSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Appearance, display, security and other app preferences'**
-  String get appearanceSettingsPageSubtitle;
-
   /// No description provided for @configImportExportTitle.
   ///
   /// In en, this message translates to:

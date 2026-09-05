@@ -29,7 +29,6 @@ import 'package:sesame_notes/features/ledgers/presentation/join_shared_ledger_pa
 import 'package:sesame_notes/features/ledgers/presentation/ledger_edit_page.dart';
 import 'package:sesame_notes/features/ledgers/presentation/ledgers_page.dart';
 import 'package:sesame_notes/features/settings/presentation/app_lock_settings_page.dart';
-import 'package:sesame_notes/features/settings/presentation/appearance_settings_page.dart';
 import 'package:sesame_notes/features/settings/presentation/cloud_service_page.dart';
 import 'package:sesame_notes/features/settings/presentation/local_backup_page.dart';
 import 'package:sesame_notes/features/settings/presentation/config_import_export_page.dart';
@@ -187,7 +186,6 @@ List<GoRoute> buildAppRoutes({Map<String, WidgetBuilder> stubs = const {}}) {
       );
     }),
     plain(Routes.reminderSettings, (_) => const ReminderSettingsPage()),
-    plain(Routes.appearanceSettings, (_) => const AppearanceSettingsPage()),
     plain(Routes.languageSettings, (_) => const LanguageSettingsPage()),
     plain(Routes.appLockSettings, (_) => const AppLockSettingsPage()),
     // 模式经 extra 传 PinSetupMode?；缺失默认 create。

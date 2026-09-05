@@ -17,17 +17,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/features/settings/presentation/language_settings_page.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/router/app_router.dart';
 import 'package:sesame_notes/features/ledgers/presentation/mine_page.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
+import 'package:sesame_notes/shared/providers/theme_providers.dart';
 
 import '../../helpers/cloud_backend_registration.dart';
 
 /// 挂载 MinePage（使用加高视口，确保列表末尾的分组入口也被构建出来）。
 ///
-/// 云入口状态 provider 读取内存数据库，注入独立容器避免污染其他测试。
-Future<void> _pumpMinePage(WidgetTester tester) async {
+/// 返回注入的 [ProviderContainer]，供测试断言 provider 状态。
+Future<ProviderContainer> _pumpMinePage(WidgetTester tester) async {
   // 默认 800x600 视口下第二组入口可能落在首屏外（ListView 懒构建），
   // 加高视口让全部入口 tile 都被构建，断言才能稳定命中。
   tester.view.physicalSize = const Size(800, 12000);
@@ -56,7 +58,12 @@ Future<void> _pumpMinePage(WidgetTester tester) async {
   // 头像加载的 setState 完成解析即可，断言不依赖 spinner 是否消失。
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 200));
+  return container;
 }
+
+/// 取 [text] 所在 tile 的纵向坐标，用于断言分组内顺序。
+double _yOf(WidgetTester tester, String text) =>
+    tester.getTopLeft(find.text(text)).dy;
 
 /// 注册 Mine 页的组件行为测试。
 void main() {
@@ -70,29 +77,84 @@ void main() {
   });
   tearDown(() => unregisterBackends?.call());
 
-  testWidgets('记账设置分组展示分类管理、汇率管理与周期账单', (tester) async {
+  testWidgets('记账设置分组展示分类管理、汇率管理、周期账单与支出颜色', (tester) async {
     await _pumpMinePage(tester);
 
     expect(find.text('分类管理'), findsOneWidget);
     expect(find.text('汇率管理'), findsOneWidget);
     expect(find.text('周期账单'), findsOneWidget);
+    // 支出颜色紧随周期账单（同组相邻两行）。
+    expect(find.text('支出颜色'), findsOneWidget);
+    expect(_yOf(tester, '支出颜色'), greaterThan(_yOf(tester, '周期账单')));
   });
 
-  testWidgets('通用设置分组展示通知/偏好/云同步/数据入口，应用上锁紧随配置导入导出', (tester) async {
+  testWidgets('通用设置分组按序展示且不再包含偏好调节', (tester) async {
     await _pumpMinePage(tester);
 
+    expect(find.text('偏好调节'), findsNothing);
+    expect(find.text('应用语言'), findsOneWidget);
+    expect(find.text('深色模式'), findsOneWidget);
     expect(find.text('通知设置'), findsOneWidget);
-    expect(find.text('偏好调节'), findsOneWidget);
-    expect(find.text('备份与云同步'), findsOneWidget);
+    expect(find.text('应用上锁'), findsOneWidget);
     expect(find.text('数据导入导出'), findsOneWidget);
     expect(find.text('配置导入导出'), findsOneWidget);
+    expect(find.text('备份与云同步'), findsOneWidget);
     expect(find.text('数据清理'), findsNothing);
 
-    // 应用上锁已上提至通用设置，直接位于配置导入导出之下。
-    expect(find.text('应用上锁'), findsOneWidget);
-    final configY = tester.getTopLeft(find.text('配置导入导出')).dy;
-    final lockY = tester.getTopLeft(find.text('应用上锁')).dy;
-    expect(lockY, greaterThan(configY));
+    // 分组内顺序：应用语言 → 深色模式 → 通知设置 → 应用上锁 →
+    // 数据导入导出 → 配置导入导出 → 备份与云同步。
+    expect(_yOf(tester, '深色模式'), greaterThan(_yOf(tester, '应用语言')));
+    expect(_yOf(tester, '通知设置'), greaterThan(_yOf(tester, '深色模式')));
+    expect(_yOf(tester, '应用上锁'), greaterThan(_yOf(tester, '通知设置')));
+    expect(_yOf(tester, '数据导入导出'), greaterThan(_yOf(tester, '应用上锁')));
+    expect(_yOf(tester, '配置导入导出'), greaterThan(_yOf(tester, '数据导入导出')));
+    expect(_yOf(tester, '备份与云同步'), greaterThan(_yOf(tester, '配置导入导出')));
+  });
+
+  testWidgets('支出颜色弹窗切换方案并持久化', (tester) async {
+    final container = await _pumpMinePage(tester);
+    // 激活持久化监听（真实应用中由 app 根节点 watch 该 init provider）
+    container.read(expenseColorSchemeInitProvider);
+
+    // 默认红色方案
+    expect(container.read(expenseColorSchemeProvider), 'red');
+
+    // 打开配色对话框并选绿色
+    await tester.tap(find.text('支出颜色'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Dialog), findsOneWidget);
+    // 点选项行本体，避免命中文字下方的 ListTile 命中区域告警
+    await tester.tap(find.widgetWithText(ListTile, '绿色表示支出'));
+    await tester.pump();
+    await tester.tap(find.text('保存'));
+    // 保存后 1s 弱化 loading + toast，推进时间落定
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(container.read(expenseColorSchemeProvider), 'green');
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('expenseColorScheme'), 'green');
+  });
+
+  testWidgets('深色模式弹窗切换到暗黑', (tester) async {
+    final container = await _pumpMinePage(tester);
+
+    expect(container.read(themeModeProvider), ThemeMode.system);
+    await tester.tap(find.text('深色模式'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('暗黑模式'));
+    await tester.pumpAndSettle();
+
+    expect(container.read(themeModeProvider), ThemeMode.dark);
+  });
+
+  testWidgets('点击应用语言导航到语言设置页', (tester) async {
+    await _pumpMinePage(tester);
+
+    await tester.tap(find.text('应用语言'));
+    await tester.pumpAndSettle();
+    expect(find.byType(LanguageSettingsPage), findsOneWidget);
   });
 
   testWidgets('展示应用内更新入口且独立成组位于末尾，点击弹三态弹窗（unknown 降级）', (tester) async {
@@ -121,8 +183,8 @@ void main() {
 
     expect(find.text('检查更新'), findsOneWidget, reason: 'P2 恢复应用内更新入口');
     // 检查更新单独成组并放在页面最后（位于通用设置的应用上锁之下）。
-    final lockY = tester.getTopLeft(find.text('应用上锁')).dy;
-    final updateY = tester.getTopLeft(find.text('检查更新')).dy;
+    final lockY = _yOf(tester, '应用上锁');
+    final updateY = _yOf(tester, '检查更新');
     expect(updateY, greaterThan(lockY));
 
     await tester.tap(find.text('检查更新'));

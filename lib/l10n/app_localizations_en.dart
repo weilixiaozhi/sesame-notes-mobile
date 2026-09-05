@@ -1801,16 +1801,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose your preferred currency, you can change it anytime in settings';
 
   @override
-  String get appearanceSettings => 'Preferences';
-
-  @override
-  String get appearanceSettingsPageTitle => 'Preferences';
-
-  @override
-  String get appearanceSettingsPageSubtitle =>
-      'Appearance, display, security and other app preferences';
-
-  @override
   String get configImportExportTitle => 'Config Import/Export';
 
   @override

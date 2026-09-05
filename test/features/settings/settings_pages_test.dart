@@ -1,5 +1,4 @@
-﻿// 设置类二级页面测试：语言、外观（主题/支出配色/语言导航）、应用锁、
-// 提醒设置、日志中心。
+// 设置类二级页面测试：语言、应用锁、提醒设置、日志中心。
 //
 // 用 ProviderContainer + 真实 SharedPreferences mock，验证页面渲染、交互后
 // provider 状态与持久化落盘，以及页面间导航。
@@ -21,11 +20,9 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/router/app_router.dart';
 import 'package:sesame_notes/features/auth/presentation/pin_setup_page.dart';
 import 'package:sesame_notes/features/settings/presentation/app_lock_settings_page.dart';
-import 'package:sesame_notes/features/settings/presentation/appearance_settings_page.dart';
 import 'package:sesame_notes/features/settings/presentation/config_import_export_page.dart';
 import 'package:sesame_notes/features/settings/presentation/language_settings_page.dart';
 import 'package:sesame_notes/features/settings/presentation/reminder_settings_page.dart';
-import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/settings/application/reminder_providers.dart';
 import 'package:sesame_notes/shared/providers/language_provider.dart';
@@ -167,53 +164,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(container.read(languageProvider), isNull);
       expect(prefs.getString('selected_language'), isNull);
-    });
-  });
-
-  group('AppearanceSettingsPage', () {
-    testWidgets('渲染外观项；切换支出配色方案并持久化', (tester) async {
-      await pumpPage(tester, const AppearanceSettingsPage());
-      // 激活持久化监听（真实应用中由 app 根节点 watch 该 init provider）
-      container.read(expenseColorSchemeInitProvider);
-
-      // 默认红色方案
-      expect(container.read(expenseColorSchemeProvider), 'red');
-
-      // 打开配色对话框并选绿色
-      await tester.tap(find.text('支出颜色'));
-      await tester.pumpAndSettle();
-      expect(find.byType(Dialog), findsOneWidget);
-      await tester.tap(find.text('绿色表示支出'));
-      await tester.pump();
-      await tester.tap(find.text('保存'));
-      // 保存后 1s 弱化 loading + toast，推进时间落定
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 2));
-      await tester.pump(const Duration(seconds: 1));
-
-      expect(container.read(expenseColorSchemeProvider), 'green');
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('expenseColorScheme'), 'green');
-    });
-
-    testWidgets('主题模式对话框：切到深色', (tester) async {
-      await pumpPage(tester, const AppearanceSettingsPage());
-
-      expect(container.read(themeModeProvider), ThemeMode.system);
-      await tester.tap(find.text('深色模式'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('暗黑模式'));
-      await tester.pumpAndSettle();
-
-      expect(container.read(themeModeProvider), ThemeMode.dark);
-    });
-
-    testWidgets('点击「应用语言」导航到语言设置页', (tester) async {
-      await pumpPage(tester, const AppearanceSettingsPage());
-
-      await tester.tap(find.text('应用语言'));
-      await tester.pumpAndSettle();
-      expect(find.byType(LanguageSettingsPage), findsOneWidget);
     });
   });
 

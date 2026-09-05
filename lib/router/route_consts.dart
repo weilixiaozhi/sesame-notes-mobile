@@ -79,9 +79,6 @@ class Routes {
   /// 通知设置页
   static const String reminderSettings = '/settings/reminder';
 
-  /// 外观设置页
-  static const String appearanceSettings = '/settings/appearance';
-
   /// 语言设置页
   static const String languageSettings = '/settings/language';
 
@@ -136,7 +133,6 @@ class Routes {
     recurringTransactionEdit,
     categoryDetail,
     reminderSettings,
-    appearanceSettings,
     languageSettings,
     appLockSettings,
     pinSetup,

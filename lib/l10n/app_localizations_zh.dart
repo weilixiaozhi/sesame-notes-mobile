@@ -1726,15 +1726,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get welcomeCurrencyDescription => '选择您常用的货币，之后可以随时在设置中更改';
 
   @override
-  String get appearanceSettings => '偏好调节';
-
-  @override
-  String get appearanceSettingsPageTitle => '偏好调节';
-
-  @override
-  String get appearanceSettingsPageSubtitle => '外观、显示、安全等应用偏好';
-
-  @override
   String get configImportExportTitle => '配置导入导出';
 
   @override
@@ -4799,15 +4790,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get welcomeCurrencyDescription => '選擇您常用的貨幣，之後可以隨時在設定中更改';
-
-  @override
-  String get appearanceSettings => '偏好調節';
-
-  @override
-  String get appearanceSettingsPageTitle => '偏好調節';
-
-  @override
-  String get appearanceSettingsPageSubtitle => '外觀、顯示、安全等應用偏好';
 
   @override
   String get configImportExportTitle => '配置匯入匯出';

@@ -25,7 +25,8 @@ class AppListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleStyle = AppTextTokens.title(
+    // 标题走 body 14px：设置行主标题比通用列表标题小一档，更紧凑
+    final titleStyle = AppTextTokens.body(
       context,
     ).copyWith(color: AppTokens.textPrimary(context)); // ⭐ 使用 Token
     final subStyle = AppTextTokens.label(
@@ -48,6 +49,7 @@ class AppListTile extends StatelessWidget {
                 ),
                 child: Icon(
                   leading,
+                  size: AppDimens.icon22,
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ),
@@ -77,6 +79,7 @@ class AppListTile extends StatelessWidget {
           else if (enabled)
             Icon(
               AppIcons.chevronRight,
+              size: AppDimens.icon20,
               color: AppTokens.iconTertiary(context),
             ), // ⭐ 使用 Token
         ],
