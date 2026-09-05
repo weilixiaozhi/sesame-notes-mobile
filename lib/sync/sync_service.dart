@@ -1152,6 +1152,19 @@ class SyncService {
         if (parsed != null) data[key] = normalizeDecimal(parsed);
       }
     }
+    // 指定分摊行金额同口径规范化（历史填充数据同样可能带尾零）。
+    final splits = data['splits'];
+    if (splits is List) {
+      for (final split in splits) {
+        if (split is Map<String, dynamic>) {
+          final amount = split['amount'];
+          if (amount is String) {
+            final parsed = Decimal.tryParse(amount);
+            if (parsed != null) split['amount'] = normalizeDecimal(parsed);
+          }
+        }
+      }
+    }
     return jsonEncode(data);
   }
 

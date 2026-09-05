@@ -209,8 +209,13 @@ void main() {
               'native_amount': '857.00',
               'recurring_id': null,
               'payer_member_id': null,
-              'aa_mode': null,
-              'splits': null,
+              'aa_mode': '2',
+              'splits': [
+                {
+                  'member_id': '1527ffc3-6087-5b6b-99c6-c6837a5db1b6',
+                  'amount': '50.00',
+                },
+              ],
               'last_edited_at': null,
             }),
             updatedAt: updatedAt,
@@ -258,5 +263,7 @@ void main() {
     final payload = wire['payload'] as Map<String, dynamic>;
     expect(payload['amount'], '857');
     expect(payload['native_amount'], '857');
+    final splits = payload['splits'] as List<dynamic>;
+    expect((splits.single as Map<String, dynamic>)['amount'], '50');
   });
 }
