@@ -56,6 +56,9 @@ class LocalMemberAvatarStorage {
   }
 
   /// 保存成员头像字节流并登记版本号，返回完整路径。
+  ///
+  /// 文件名按 userId + version 键控：版本变化写新文件路径，避免 Flutter
+  /// 图片缓存按旧路径命中旧图导致换头像后界面无反应；旧版本文件随后清理。
   Future<String> save({
     required String userId,
     required int version,
@@ -72,14 +75,27 @@ class LocalMemberAvatarStorage {
       if (!await dir.exists()) {
         await dir.create(recursive: true);
       }
-      final fileName = '$key$extension';
+      final fileName = '$key-v$version$extension';
       final target = File(p.join(dir.path, fileName));
       await target.writeAsBytes(bytes, flush: true);
 
       final prefs = await SharedPreferences.getInstance();
+      final relativePath = '$_dirName/$fileName';
+      final previousRelative = prefs.getString('$_pathKeyPrefix$key');
       // 存相对路径（同本人头像），避免 iOS 应用更新后 Documents UUID 变化失效。
-      await prefs.setString('$_pathKeyPrefix$key', '$_dirName/$fileName');
+      await prefs.setString('$_pathKeyPrefix$key', relativePath);
       await prefs.setInt('$_versionKeyPrefix$key', version);
+      // 清理被替换的旧版本文件：失败只记日志，不影响新头像已生效的结果。
+      if (previousRelative != null && previousRelative != relativePath) {
+        try {
+          final previous = File(p.join(appDir.path, previousRelative));
+          if (await previous.exists()) {
+            await previous.delete();
+          }
+        } catch (e, st) {
+          logger.warning('MemberAvatarCache', '旧头像文件清理失败: $e', st);
+        }
+      }
       return target.path;
     } catch (e, st) {
       logger.error('MemberAvatarCache', 'save 落盘失败: $e', st);

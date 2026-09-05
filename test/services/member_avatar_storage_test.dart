@@ -83,6 +83,38 @@ void main() {
     });
   });
 
+  group('版本化文件名（换头像即时生效）', () {
+    test('同用户不同版本写入不同文件，旧版本文件被清理', () async {
+      final v1 = await memberAvatarStorage.save(
+        userId: 'user-1',
+        version: 1,
+        bytes: Uint8List.fromList([1, 2, 3]),
+      );
+      final v2 = await memberAvatarStorage.save(
+        userId: 'user-1',
+        version: 2,
+        bytes: Uint8List.fromList([4, 5, 6]),
+      );
+
+      expect(
+        p.normalize(v2),
+        isNot(p.normalize(v1)),
+        reason: '版本变化必须写入新文件路径，否则 Flutter 图片缓存按旧路径命中旧图，界面上换头像无反应',
+      );
+      expect(await File(v1).exists(), isFalse, reason: '旧版本文件应在替换后清理，避免磁盘残留');
+      expect(
+        p.normalize(
+          (await memberAvatarStorage.getPath(userId: 'user-1', version: 2))!,
+        ),
+        p.normalize(v2),
+      );
+      expect(
+        await memberAvatarStorage.getPath(userId: 'user-1', version: 1),
+        isNull,
+      );
+    });
+  });
+
   group('remove 幂等清理', () {
     test('删除文件并清除路径与版本登记', () async {
       final path = await memberAvatarStorage.save(
