@@ -3,7 +3,8 @@
 /// 入口（本机快照点击 / 从文件恢复 / 从云端恢复）必然携带 .snbak 文件路径：
 /// 进入页面即明文解帧打开并预览备份内容（零写入）。内容页按「本地账本 /
 /// 云端账本」分区展示，账本卡片点击勾选恢复策略（默认全选），底部
-/// 「立即恢复」单事务应用，任一步失败整体回滚；成功后展示逐账本结果。
+/// 「立即恢复」单事务应用，任一步失败整体回滚；结果一律 toast 提示，
+/// 成功自动退出页面，失败留在页面可重试。
 library;
 
 import 'dart:async';
@@ -17,8 +18,6 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/widgets/currency_flag.dart';
 import 'package:sesame_notes/shared/widgets/format_money.dart';
-import 'package:sesame_notes/shared/widgets/primary_header.dart';
-import 'package:sesame_notes/shared/widgets/section_card.dart';
 import 'package:sesame_notes/shared/widgets/toast.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
@@ -83,10 +82,7 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
     final flow = ref.watch(backupRestoreFlowProvider);
     final l10n = AppLocalizations.of(context);
     final Widget body;
-    if (flow.report != null) {
-      // 完成态：逐账本展示恢复结果，AppBar 返回退出。
-      body = _buildDone(context, flow);
-    } else if (flow.session == null) {
+    if (flow.session == null) {
       // 打开中 / 打开失败
       body = _buildOpening(context, flow);
     } else {
@@ -94,11 +90,7 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
       body = _buildContent(context, flow);
     }
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          flow.report != null ? l10n.restoreDone : l10n.restoreStep2Title,
-        ),
-      ),
+      appBar: AppBar(title: Text(l10n.restoreStep2Title)),
       body: SafeArea(child: body),
     );
   }
@@ -107,6 +99,7 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
   // 打开中 / 打开失败
   // ---------------------------------------------------------------
 
+  /// 打开中展示加载转圈；打开失败展示错误文案与「返回」按钮。
   Widget _buildOpening(BuildContext context, BackupRestoreFlowState flow) {
     final l10n = AppLocalizations.of(context);
     final errorText = _errorText(context, flow.error);
@@ -139,6 +132,8 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
   // 备份内容：本地账本 / 云端账本 双分区 + 勾选恢复策略
   // ---------------------------------------------------------------
 
+  /// 内容主体：按分区渲染账本卡片（点击切换勾选），底部「立即恢复」按钮，
+  /// 应用失败的错误文案展示在顶部。
   Widget _buildContent(BuildContext context, BackupRestoreFlowState flow) {
     final l10n = AppLocalizations.of(context);
     final currentAccountId = ref.watch(authSessionProvider)?.userId;
@@ -203,13 +198,25 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
           ),
         const SizedBox(height: AppDimens.p16),
         FilledButton(
-          onPressed: flow.loading
-              ? null
-              : () => ref.read(backupRestoreFlowProvider.notifier).apply(),
+          onPressed: flow.loading ? null : _applyRestore,
           child: Text(flow.loading ? l10n.restoreApplying : l10n.restoreApply),
         ),
       ],
     );
+  }
+
+  /// 「立即恢复」：成功 toast「恢复完成」并退出页面；失败 toast 错误文案
+  /// （单事务已整体回滚），停留在页面可重试或返回退出。
+  Future<void> _applyRestore() async {
+    final l10n = AppLocalizations.of(context);
+    final ok = await _notifier.apply();
+    if (!mounted) return;
+    if (ok) {
+      showToast(context, l10n.restoreDone);
+      Navigator.of(context).maybePop();
+    } else {
+      showToast(context, l10n.restoreApplyFailed);
+    }
   }
 
   /// 分区标题（图标 + 文案），与账本管理页双分区标题同一视觉。
@@ -251,44 +258,7 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
         .setDecision(item.ledgerBackupId, next);
   }
 
-  // ---------------------------------------------------------------
-  // 完成态：逐账本展示恢复结果
-  // ---------------------------------------------------------------
-
-  Widget _buildDone(BuildContext context, BackupRestoreFlowState flow) {
-    final l10n = AppLocalizations.of(context);
-    return ListView(
-      padding: const EdgeInsets.all(AppDimens.p16),
-      children: [
-        PrimaryHeader(title: l10n.restoreDone),
-        for (final entry in flow.report!.entries)
-          SectionCard(
-            margin: const EdgeInsets.only(bottom: AppDimens.p12),
-            child: ListTile(
-              leading: const Icon(Icons.check_circle_outline),
-              title: Text(entry.name),
-              subtitle: Text(_resultLabel(context, entry)),
-            ),
-          ),
-      ],
-    );
-  }
-
-  String _resultLabel(BuildContext context, RestoreApplyEntry entry) {
-    final l10n = AppLocalizations.of(context);
-    if (!entry.success) return l10n.restoreDecisionSkip;
-    return switch (entry.decision) {
-      RestoreDecision.restoreLocal =>
-        l10n.restoreDecisionRestoreLocal +
-            (entry.detail == 'conflict_fork'
-                ? '（${l10n.restoreDecisionFork}）'
-                : ''),
-      RestoreDecision.forkCloudToLocal => l10n.restoreDecisionFork,
-      RestoreDecision.reconnect => l10n.restoreDecisionReconnect,
-      RestoreDecision.skip => l10n.restoreDecisionSkip,
-    };
-  }
-
+  /// 错误分类 → 用户可读文案（无错误返回 null）。
   String? _errorText(BuildContext context, RestoreFlowError error) {
     if (error == RestoreFlowError.none) return null;
     final l10n = AppLocalizations.of(context);
@@ -362,7 +332,8 @@ class _RestoreLedgerCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppDimens.radius12),
           child: Stack(
             children: [
-              // 右上角勾选标签：选中即贴角标证明已勾选
+              // 右上角勾选标签：选中即贴角标证明已勾选。
+              // 角标左下圆弧与卡片右上圆角同半径（radius12），两弧重合只露一条边。
               if (selected)
                 Positioned(
                   top: 0,
@@ -373,7 +344,7 @@ class _RestoreLedgerCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: primary,
                       borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(AppDimens.radius8),
+                        bottomLeft: Radius.circular(AppDimens.radius12),
                       ),
                     ),
                     child: Icon(
@@ -410,10 +381,12 @@ class _RestoreLedgerCard extends StatelessWidget {
                         if (accountNickname != null &&
                             accountNickname!.isNotEmpty) ...[
                           const SizedBox(width: AppDimens.p8),
+                          // tight 撑满分配空间，textAlign 右对齐才生效：
+                          // 昵称紧贴行尾图标，各卡片图标右缘对齐
                           Flexible(
+                            fit: FlexFit.tight,
                             child: Text(
                               accountNickname!,
-                              // 昵称在行内右对齐，紧贴卡片右缘
                               textAlign: TextAlign.right,
                               style: AppTextTokens.label(context).copyWith(
                                 color: AppTokens.textSecondary(context),

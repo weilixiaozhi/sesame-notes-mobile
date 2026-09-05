@@ -120,28 +120,6 @@ bool shouldReconnectAfterApply({
   );
 }
 
-/// 单个账本的恢复结果展示项。
-class RestoreApplyEntry {
-  const RestoreApplyEntry({
-    required this.name,
-    required this.decision,
-    required this.success,
-    this.detail,
-  });
-
-  final String name;
-  final RestoreDecision decision;
-  final bool success;
-  final String? detail;
-}
-
-/// 恢复结果展示报告。
-class RestoreApplyReport {
-  const RestoreApplyReport(this.entries);
-
-  final List<RestoreApplyEntry> entries;
-}
-
 /// 恢复流程状态（不可变快照）。
 class BackupRestoreFlowState {
   const BackupRestoreFlowState({
@@ -150,7 +128,6 @@ class BackupRestoreFlowState {
     this.session,
     this.items = const [],
     this.decisions = const {},
-    this.report,
   });
 
   /// 是否忙（打开备份/应用恢复中）。
@@ -168,9 +145,8 @@ class BackupRestoreFlowState {
   /// 每账本恢复决策（默认全选预填；未决策 = skip）。
   final Map<String, RestoreDecision> decisions;
 
-  /// 应用恢复结果（完成后展示逐账本结果）。
-  final RestoreApplyReport? report;
-
+  /// 不可变快照复制：[clearSession] 为 true 时显式清空会话（nullable 字段
+  /// 无法用 null 区分「不修改」与「置空」）。
   BackupRestoreFlowState copyWith({
     bool? loading,
     RestoreFlowError? error,
@@ -178,7 +154,6 @@ class BackupRestoreFlowState {
     bool clearSession = false,
     List<RestoreLedgerItem>? items,
     Map<String, RestoreDecision>? decisions,
-    RestoreApplyReport? report,
   }) {
     return BackupRestoreFlowState(
       loading: loading ?? this.loading,
@@ -186,7 +161,6 @@ class BackupRestoreFlowState {
       session: clearSession ? null : (session ?? this.session),
       items: items ?? this.items,
       decisions: decisions ?? this.decisions,
-      report: report ?? this.report,
     );
   }
 }
@@ -286,11 +260,12 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
 
   /// 应用恢复：单事务写入 live DB，任一步失败整体回滚。
   ///
-  /// 成功后关闭会话（释放临时文件）并停留在完成态展示逐账本结果；
-  /// 失败保留会话，用户可直接重试。
-  Future<void> apply() async {
+  /// 返回是否成功。成功后页面立即 toast 并退出，会话由页面 dispose 的
+  /// [closeSession] 统一释放；失败保留会话，用户可直接重试。
+  /// 结果提示由页面按返回值弹 toast。
+  Future<bool> apply() async {
     final session = state.session;
-    if (session == null) return;
+    if (session == null) return false;
     state = state.copyWith(loading: true, error: RestoreFlowError.none);
     try {
       // 决策的唯一来源是流程状态；应用前同步进会话（apply 只读 session.decisions）
@@ -305,7 +280,7 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
       final localSelfId = await ref.read(localSelfIdProvider.future);
       // 当前认证账号（账号匹配时 self 指向原 REGISTERED 成员）
       final currentAccountId = ref.read(authSessionProvider)?.userId;
-      final rawReport = await _import.apply(
+      await _import.apply(
         session: session,
         liveDb: db,
         localSelfId: localSelfId,
@@ -320,40 +295,31 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
       )) {
         unawaited(_reconnectAfterApply());
       }
-      final report = RestoreApplyReport(
-        rawReport.entries
-            .map(
-              (entry) => RestoreApplyEntry(
-                name: entry.name,
-                decision: _toDisplayDecision(entry.decision),
-                success: entry.success,
-                detail: entry.detail,
-              ),
-            )
-            .toList(growable: false),
-      );
-      await session.close();
-      _session = null;
-      state = state.copyWith(
-        loading: false,
-        report: report,
-        clearSession: true,
-      );
+      // 会话保留到页面退出再关闭：成功后页面立即 toast 退出，
+      // 临时文件由页面 dispose 的 closeSession 统一释放。
+      state = state.copyWith(loading: false);
+      return true;
     } catch (e, st) {
       logger.error('RestoreFlow', '应用恢复失败（已回滚）', e, st);
       state = state.copyWith(
         loading: false,
         error: RestoreFlowError.applyFailed,
       );
+      return false;
     }
   }
 
   /// 关闭恢复会话并清理临时文件（页面退出/应用完成后调用；幂等）。
+  ///
+  /// 页面 dispose 时容器可能已先行销毁：状态写入前判 ref.mounted，
+  /// 临时文件清理不依赖状态照常执行。
   Future<void> closeSession() async {
     final session = _session;
     if (session == null) return;
     _session = null;
-    state = state.copyWith(clearSession: true);
+    if (ref.mounted) {
+      state = state.copyWith(clearSession: true);
+    }
     await session.close();
   }
 
@@ -364,15 +330,6 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
         RestoreDecision.forkCloudToLocal => RecoveryDecision.forkCloudToLocal,
         RestoreDecision.reconnect => RecoveryDecision.reconnect,
         RestoreDecision.skip => RecoveryDecision.skip,
-      };
-
-  /// 把恢复引擎结果转换为页面决策。
-  RestoreDecision _toDisplayDecision(RecoveryDecision decision) =>
-      switch (decision) {
-        RecoveryDecision.restoreLocal => RestoreDecision.restoreLocal,
-        RecoveryDecision.forkCloudToLocal => RestoreDecision.forkCloudToLocal,
-        RecoveryDecision.reconnect => RestoreDecision.reconnect,
-        RecoveryDecision.skip => RestoreDecision.skip,
       };
 
   /// 应用恢复后触发 Reconnect v1：收敛云端账本并刷新账本列表。

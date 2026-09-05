@@ -49,6 +49,21 @@ class _StubAccountNotifier extends AccountStateNotifier {
   AccountState build() => accountState;
 }
 
+/// apply 固定失败的导入服务桩：模拟 live DB 写入异常（验证整体回滚路径）。
+class _FailApplyImportService extends BackupImportService {
+  _FailApplyImportService({required super.tempDirOverride});
+
+  @override
+  Future<BackupApplyReport> apply({
+    required RecoverySession session,
+    required SesameDatabase liveDb,
+    required String localSelfId,
+    String? currentAccountId,
+  }) async {
+    throw StateError('模拟写入失败');
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() {
@@ -130,6 +145,7 @@ void main() {
     AuthSession? session,
     AccountState? accountState,
     bool settle = true,
+    bool failApply = false,
   }) async {
     // 临时目录与解压目录创建含真实文件 IO，须在 runAsync 中驱动
     final tmp = (await tester.runAsync(
@@ -137,7 +153,12 @@ void main() {
     ))!;
     addTearDown(() => tmp.delete(recursive: true));
     final liveDb = SesameDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(liveDb.close);
+    // 失败路径测试会提前关闭 liveDb，teardown 重复关闭需容错
+    addTearDown(() async {
+      try {
+        await liveDb.close();
+      } catch (_) {}
+    });
     final extractDir = Directory(p.join(tmp.path, 'extract'));
     await tester.runAsync(() => extractDir.create(recursive: true));
     final container = ProviderContainer(
@@ -150,7 +171,9 @@ void main() {
           ),
         backupRestoreFlowProvider.overrideWith(
           () => BackupRestoreFlowNotifier(
-            importService: BackupImportService(tempDirOverride: extractDir),
+            importService: failApply
+                ? _FailApplyImportService(tempDirOverride: extractDir)
+                : BackupImportService(tempDirOverride: extractDir),
           ),
         ),
       ],
@@ -222,9 +245,12 @@ void main() {
       await tester.tap(find.text('立即恢复'));
       await settleAsync(tester);
 
-      // 完成态（AppBar 与正文均显示「恢复完成」）
-      expect(find.text('恢复完成'), findsWidgets);
-      expect(find.text('家庭账本'), findsOneWidget);
+      // 成功：仅 toast「恢复完成」提示（无完成态页面），页面自动退出
+      expect(find.text('恢复完成'), findsOneWidget);
+      expect(find.text('备份内容'), findsOneWidget, reason: 'AppBar 标题不再切换为恢复完成');
+      // 等待 toast 自动消失，避免遗留挂起定时器
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
 
       // live DB 落库断言：仅云端账本 Fork 恢复（本地账本被跳过）
       final ledgers = await liveDb.select(liveDb.ledgers).get();
@@ -241,6 +267,30 @@ void main() {
     },
     timeout: const Timeout(Duration(minutes: 3)),
   );
+
+  testWidgets('应用恢复失败：toast 提示已回滚并留在页面可重试', (tester) async {
+    final tmp = (await tester.runAsync(
+      () => Directory.systemTemp.createTemp('restore_src_fail_'),
+    ))!;
+    addTearDown(() => tmp.delete(recursive: true));
+    final backup = (await tester.runAsync(() => createFixtureBackup(tmp)))!;
+    // failApply 桩：apply 固定抛异常，验证整体回滚后的失败提示路径
+    await pumpPage(tester, backup.path, failApply: true);
+    await tester.ensureVisible(find.text('立即恢复'));
+    await tester.tap(find.text('立即恢复'));
+    await settleAsync(tester);
+
+    // 失败：toast + 页内错误文案（同一文案两处），页面停留且按钮可重试
+    expect(find.text('恢复失败，未做任何更改（已整体回滚）'), findsWidgets);
+    expect(find.text('备份内容'), findsOneWidget, reason: '失败后仍停留在内容页');
+    final retryButton = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, '立即恢复'),
+    );
+    expect(retryButton.onPressed, isNotNull, reason: '失败后可重试');
+    // 等待 toast 与日志落盘定时器过期，避免遗留挂起定时器
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+  });
 
   testWidgets('登录账号匹配：云端账本入云端分区并展示账号昵称', (tester) async {
     final tmp = (await tester.runAsync(
@@ -269,6 +319,21 @@ void main() {
     expect(
       tester.widget<Text>(find.text('昵称Alice')).textAlign,
       TextAlign.right,
+    );
+    // 有昵称的云账本图标右缘与本地账本图标右缘对齐（无右侧多余空白）。
+    // 分区标题也使用同类图标，finder 需限定在账本名称行内。
+    final cloudIcon = find.descendant(
+      of: find.ancestor(of: find.text('昵称Alice'), matching: find.byType(Row)),
+      matching: find.byIcon(AppIcons.cloudQueue),
+    );
+    final localIcon = find.descendant(
+      of: find.ancestor(of: find.text('私人账本'), matching: find.byType(Row)),
+      matching: find.byIcon(AppIcons.localStorage),
+    );
+    expect(
+      tester.getTopRight(cloudIcon).dx,
+      tester.getTopRight(localIcon).dx,
+      reason: '云账本与本地账本卡片图标右缘应对齐',
     );
     expect(
       find.text('这是云账本，但不是当前账号，将恢复为本地副本'),
@@ -306,5 +371,8 @@ void main() {
 
     expect(find.text('无法打开备份：文件已损坏或不是备份文件'), findsOneWidget);
     expect(find.text('返回'), findsOneWidget);
+    // 错误日志的落盘定时器需在测试内过期，避免遗留挂起定时器
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
   });
 }
