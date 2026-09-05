@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_api_client/sesame_api_client.dart';
@@ -32,7 +33,11 @@ void main() {
       final adapter = _RecordingAdapter();
       client.dio.httpClientAdapter = adapter;
 
-      expect(client.dio.options.baseUrl, 'https://api.9100300.xyz');
+      // debug 构建默认直连本机验收后端，release 默认线上
+      expect(
+        client.dio.options.baseUrl,
+        kDebugMode ? 'http://192.168.5.5:8080' : 'https://api.9100300.xyz',
+      );
       expect(client.dio.options.connectTimeout, const Duration(seconds: 5));
       expect(client.dio.options.receiveTimeout, const Duration(seconds: 3));
 
