@@ -76,6 +76,29 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
               margin: EdgeInsets.zero,
               child: Column(
                 children: [
+                  // 自动备份到云端开关：置于区块最顶部
+                  // （本地模式无云端概念，隐藏）。
+                  if (!isLocal)
+                    Consumer(
+                      builder: (ctx, r, _) {
+                        final autoSync = r.watch(autoSyncValueProvider);
+                        final setter = r.read(autoSyncSetterProvider);
+                        final value = autoSync.asData?.value ?? true;
+                        return Column(
+                          children: [
+                            SwitchListTile(
+                              title: Text(l10n.cloudBackupAutoSyncTitle),
+                              subtitle: Text(l10n.cloudBackupAutoSyncSubtitle),
+                              value: value,
+                              onChanged: (v) async {
+                                await setter.set(v);
+                              },
+                            ),
+                            AppTokens.cardDivider(context),
+                          ],
+                        );
+                      },
+                    ),
                   // 备份状态：点击查看详情（成功时间/提供方/失败时间）。
                   AppListTile(
                     leading: statusIcon,
@@ -119,28 +142,6 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
                         ? null
                         : _downloadRestore,
                   ),
-                  // 自动备份到云端开关（本地模式无云端概念，隐藏）。
-                  if (!isLocal)
-                    Consumer(
-                      builder: (ctx, r, _) {
-                        final autoSync = r.watch(autoSyncValueProvider);
-                        final setter = r.read(autoSyncSetterProvider);
-                        final value = autoSync.asData?.value ?? true;
-                        return Column(
-                          children: [
-                            AppTokens.cardDivider(context),
-                            SwitchListTile(
-                              title: Text(l10n.cloudBackupAutoSyncTitle),
-                              subtitle: Text(l10n.cloudBackupAutoSyncSubtitle),
-                              value: value,
-                              onChanged: (v) async {
-                                await setter.set(v);
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    ),
                 ],
               ),
             ),
