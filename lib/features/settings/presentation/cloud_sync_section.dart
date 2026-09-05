@@ -26,6 +26,7 @@ import 'package:sesame_notes/shared/widgets/toast.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
+import 'package:sesame_notes/theme/typography.dart';
 
 /// 备份同步操作区块（上传 / 下载 / 自动同步开关 / 状态）。
 ///
@@ -87,19 +88,53 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
                         final value = autoSync.asData?.value ?? true;
                         return Column(
                           children: [
-                            // 紧凑密度 + 与 AppListTile 相同的水平内边距，
-                            // 压缩开关行的上下留白，使区块上下边距对称。
-                            SwitchListTile(
-                              title: Text(l10n.cloudBackupAutoSyncTitle),
-                              subtitle: Text(l10n.cloudBackupAutoSyncSubtitle),
-                              value: value,
-                              onChanged: (v) async {
-                                await setter.set(v);
-                              },
-                              contentPadding: const EdgeInsets.symmetric(
+                            // 与区块内其他行同高的紧凑行：SwitchListTile
+                            // 双行默认高度约 72px，顶部会留大片空白；
+                            // 改用普通行布局并把开关缩小到 0.8 倍。
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
                                 horizontal: AppDimens.p16,
+                                vertical: AppDimens.p4,
                               ),
-                              visualDensity: VisualDensity.compact,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          l10n.cloudBackupAutoSyncTitle,
+                                          style: AppTextTokens.title(context)
+                                              .copyWith(
+                                                color: AppTokens.textPrimary(
+                                                  context,
+                                                ),
+                                              ),
+                                        ),
+                                        Text(
+                                          l10n.cloudBackupAutoSyncSubtitle,
+                                          style: AppTextTokens.label(context)
+                                              .copyWith(
+                                                color: AppTokens.textSecondary(
+                                                  context,
+                                                ),
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Transform.scale(
+                                    scale: 0.8,
+                                    child: Switch(
+                                      value: value,
+                                      onChanged: (v) async {
+                                        await setter.set(v);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                             AppTokens.cardDivider(context),
                           ],
