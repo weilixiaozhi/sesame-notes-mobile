@@ -291,7 +291,7 @@ void main() {
     );
   });
 
-  test('moveToCloud：本地域分类克隆到账号 scope，交易引用重写且其他本地账本不受影响', () async {
+  test('moveToCloud：被引用分类同一行迁入账号 scope，id 不变且其他本地账本引用不受影响', () async {
     final id = await seedLocalLedger('分类账本');
     // 建一个本地域分类并让本账本交易引用它
     final categoryId = 'local-cat-1';
@@ -325,42 +325,34 @@ void main() {
 
     await actions.moveToCloud(id);
 
-    // 原分类保留在本地域（其他账本继续引用），新分类克隆到账号 scope
-    final original = await (db.select(
-      db.categories,
-    )..where((c) => c.id.equals(categoryId))).getSingleOrNull();
-    expect(original, isNotNull, reason: '其他本地账本仍在引用，原分类不得改动');
-    expect(original!.scopeAccountId, isNull);
-    final clones = await (db.select(
-      db.categories,
-    )..where((c) => c.scopeAccountId.equals(testUserId))).get();
-    expect(clones, hasLength(1));
-    expect(clones.single.id, isNot(categoryId), reason: '克隆必须使用新 UUID');
-    expect(clones.single.name, '餐饮');
-    // 本账本交易引用指向克隆
+    // 分类恒一行：原行 scope 直接迁入账号域，id 即实体身份不得克隆新行
+    final cats = await db.select(db.categories).get();
+    expect(cats, hasLength(1), reason: '分类是全库唯一实体，禁止克隆出第二行');
+    expect(cats.single.id, categoryId, reason: '迁域不得改 id');
+    expect(cats.single.scopeAccountId, testUserId, reason: '被云账本引用后归属账号域');
+    // 两个账本的交易都继续引用同一行
     final txRows = await (db.select(
       db.transactions,
     )..where((t) => t.ledgerId.equals(id))).get();
     expect(
-      txRows.any((t) => t.categoryId == clones.single.id),
+      txRows.any((t) => t.categoryId == categoryId),
       isTrue,
-      reason: '转换账本交易必须引用账号域克隆分类',
+      reason: '转换账本交易引用不变',
     );
-    // 其他本地账本交易仍引用原分类
     final otherTxs = await (db.select(
       db.transactions,
     )..where((t) => t.ledgerId.equals(otherId))).get();
     expect(otherTxs.any((t) => t.categoryId == categoryId), isTrue);
-    // 克隆分类必须登记 user-global upsert（服务端按序应用，交易分类必须已存在）
+    // 迁域分类必须登记 user-global upsert（服务端按 id 幂等收敛）
     final categoryChanges = await (db.select(
       db.syncChanges,
     )..where((c) => c.entityType.equals('category'))).get();
     expect(categoryChanges, hasLength(1));
-    expect(categoryChanges.single.entityId, clones.single.id);
+    expect(categoryChanges.single.entityId, categoryId);
     expect(categoryChanges.single.accountId, testUserId);
   });
 
-  test('moveToCloud：backfill 交易 payload 的 category_id 必须是克隆后的账号域 id', () async {
+  test('moveToCloud：backfill 交易 payload 的 category_id 保持原分类 id', () async {
     final id = await seedLocalLedger('payload账本');
     const categoryId = 'local-cat-payload';
     await db
@@ -384,24 +376,26 @@ void main() {
 
     await actions.moveToCloud(id);
 
-    final clone = await (db.select(
+    // 分类迁域不改 id：账号域行与交易引用仍是原 id
+    final cat = await (db.select(
       db.categories,
     )..where((c) => c.scopeAccountId.equals(testUserId))).getSingle();
+    expect(cat.id, categoryId, reason: '迁域不得克隆新 id');
     final txChanges = await (db.select(
       db.syncChanges,
     )..where((c) => c.entityType.equals('transaction'))).get();
     expect(txChanges, hasLength(3));
-    for (final c in txChanges) {
-      expect(
-        c.payload,
-        isNot(contains(categoryId)),
-        reason: 'payload 不得携带重写前的本地域分类 id（云端不存在该分类）',
-      );
-    }
+    // 带分类的交易 payload 必须携带同一分类原 id（云端按 id 幂等收敛）
+    final withCategory =
+        await (db.select(db.transactions)..where(
+              (t) => t.ledgerId.equals(id) & t.categoryId.equals(categoryId),
+            ))
+            .getSingle();
+    final change = txChanges.singleWhere((c) => c.entityId == withCategory.id);
     expect(
-      txChanges.map((c) => c.payload).join(),
-      contains(clone.id),
-      reason: '带分类的交易 payload 必须引用账号域克隆分类 id',
+      change.payload,
+      contains(categoryId),
+      reason: '交易 payload 必须携带同一分类原 id（云端按 id 幂等收敛）',
     );
   });
 
@@ -449,7 +443,7 @@ void main() {
     },
   );
 
-  test('moveToCloud：两个本地账本共享同一本地分类，先后迁云账号域只保留一个克隆', () async {
+  test('moveToCloud：两个本地账本共享同一本地分类，先后迁云仍只有一行分类', () async {
     final first = await seedLocalLedger('第一本');
     final second = await seedLocalLedger('第二本', localSelfId: 'second-self');
     const categoryId = 'shared-cat';
@@ -477,23 +471,24 @@ void main() {
     await actions.moveToCloud(first);
     await actions.moveToCloud(second);
 
-    final clones = await (db.select(
-      db.categories,
-    )..where((c) => c.scopeAccountId.equals(testUserId))).get();
-    expect(clones, hasLength(1), reason: '同一分类在账号域只应存在一个克隆，重复克隆会产生重复分类');
+    // 分类是全库唯一实体：两次迁云也不得新增行
+    final cats = await db.select(db.categories).get();
+    expect(cats, hasLength(1), reason: '同一分类任何迁域操作都不制造第二行');
+    expect(cats.single.id, categoryId);
+    expect(cats.single.scopeAccountId, testUserId);
     final secondTxs = await (db.select(
       db.transactions,
     )..where((t) => t.ledgerId.equals(second))).get();
     expect(
       secondTxs.every(
-        (t) => t.categoryId == null || t.categoryId == clones.single.id,
+        (t) => t.categoryId == null || t.categoryId == categoryId,
       ),
       isTrue,
-      reason: '第二本账本的交易必须复用首个克隆',
+      reason: '第二本账本的交易仍引用同一行',
     );
   });
 
-  test('moveToCloud：本地域 v5 确定性种子分类复用原 id 上云，不克隆新实体', () async {
+  test('moveToCloud：本地域 v5 确定性种子分类迁入账号域，不克隆新实体', () async {
     final id = await seedLocalLedger('种子分类账本');
     // v5 确定性种子 id：任何设备/账号域中同一 key 生成同一 id，即同一实体
     final seedCatId = SeedService.deterministicCategorySyncId(
@@ -522,10 +517,11 @@ void main() {
 
     await actions.moveToCloud(id);
 
-    // 分类表不变：确定性 id 在账号域就是同一个实体，克隆新 id 只会制造云端重复
+    // 分类表不变：同一行迁入账号域，克隆新 id 只会制造云端重复
     final cats = await db.select(db.categories).get();
-    expect(cats, hasLength(1), reason: 'v5 种子分类必须复用原 id，不得克隆新实体');
+    expect(cats, hasLength(1), reason: 'v5 种子分类必须保持原 id，不得克隆新实体');
     expect(cats.single.id, seedCatId);
+    expect(cats.single.scopeAccountId, testUserId, reason: '迁域后归属账号域');
     // 本账本交易继续引用原 id
     final txs = await (db.select(
       db.transactions,

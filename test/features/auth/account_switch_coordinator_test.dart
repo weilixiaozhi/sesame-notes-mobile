@@ -486,5 +486,82 @@ void main() {
         reason: 'null scope 分类保留',
       );
     });
+
+    test('登出：被本地账本引用的账号域分类迁移回本地域，无引用分类照旧删除', () async {
+      await seedAccountA(withPending: false);
+      when(() => auth.revokeServerSession(any())).thenAnswer((_) async {});
+      // 本地账本 + 交易引用账号域子分类（父链同属账号域）
+      final localId = await repo.createLedger(
+        name: '本地账本',
+        storageMode: 'local',
+        localSelfId: 'self-x',
+      );
+      final now = DateTime.now().toUtc();
+      await db.batch((b) {
+        b.insertAll(db.categories, [
+          CategoriesCompanion.insert(
+            id: 'acct-parent',
+            name: '购物',
+            kind: 'expense',
+            level: 1,
+            scopeAccountId: d.Value(userA),
+            updatedAt: now,
+          ),
+          CategoriesCompanion.insert(
+            id: 'acct-child',
+            name: '服装',
+            kind: 'expense',
+            level: 2,
+            parentId: d.Value('acct-parent'),
+            scopeAccountId: d.Value(userA),
+            updatedAt: now,
+          ),
+          CategoriesCompanion.insert(
+            id: 'acct-unused',
+            name: '无引用',
+            kind: 'expense',
+            level: 1,
+            scopeAccountId: d.Value(userA),
+            updatedAt: now,
+          ),
+        ]);
+      });
+      await repo.addTransaction(
+        ledgerId: localId,
+        type: 'expense',
+        amount: '1.00',
+        happenedAt: DateTime(2026, 7, 5),
+        categoryId: 'acct-child',
+      );
+
+      await container.read(accountSwitchCoordinatorProvider).logout();
+
+      // 被本地账本引用的分类连同父链保留，scope 迁回本地域（同一行不克隆）
+      final child = await (db.select(
+        db.categories,
+      )..where((c) => c.id.equals('acct-child'))).getSingle();
+      expect(
+        child.scopeAccountId,
+        isNull,
+        reason: '本地账本引用的账号域分类登出后迁回本地域，交易引用不悬空',
+      );
+      final parent = await (db.select(
+        db.categories,
+      )..where((c) => c.id.equals('acct-parent'))).getSingle();
+      expect(parent.scopeAccountId, isNull, reason: '父链随子分类一并保留，避免父级悬空');
+      // 无引用的账号域分类照旧删除（账号隔离）
+      expect(
+        await (db.select(
+          db.categories,
+        )..where((c) => c.id.equals('acct-unused'))).getSingleOrNull(),
+        isNull,
+        reason: '无本地引用的账号域分类随登出清除',
+      );
+      // 本地账本交易引用完好
+      final tx = await (db.select(
+        db.transactions,
+      )..where((t) => t.ledgerId.equals(localId))).getSingle();
+      expect(tx.categoryId, 'acct-child', reason: '交易分类引用在登出后仍有效');
+    });
   });
 }

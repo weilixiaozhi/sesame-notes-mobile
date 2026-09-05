@@ -29,7 +29,6 @@ import 'package:sesame_notes/data/repositories/local/local_recurring_transaction
 import 'package:sesame_notes/data/repositories/local/local_transaction_repository.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
-import 'package:sesame_notes/shared/services/seed_service.dart';
 import 'package:sesame_notes/utils/member_id.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
 
@@ -205,8 +204,9 @@ class LedgerStorageActions {
         ),
       );
 
-      // ---- 8. 克隆账本实际引用的本地域分类到账号 scope（含父链），
-      // 原子重写该账本交易与周期模板的 category_id；其他本地账本继续引用原分类 ----
+      // ---- 8. 被引用分类的归属随账本翻云：同一行 scope 直接置为账号域
+      // （id 不变，全库恒一行，云端按 id 幂等收敛）。交易/周期模板引用
+      // 无需重写；登出 purge 会把仍被本地账本引用的行迁回本地域 ----
       final referencedCategoryIds = <String>{};
       final txs =
           await (db.select(db.transactions)..where(
@@ -224,48 +224,22 @@ class LedgerStorageActions {
       for (final r in recs) {
         if (r.categoryId != null) referencedCategoryIds.add(r.categoryId!);
       }
-      final categoryIdMap = <String, String>{};
+      final rescopedCategoryIds = <String>{};
       for (final cid in referencedCategoryIds) {
-        await _cloneCategoryToAccountScope(
+        await _rescaleCategoryToAccountScope(
           db: db,
           categoryId: cid,
           accountId: userId,
-          map: categoryIdMap,
-          now: now,
+          touched: rescopedCategoryIds,
         );
       }
-      if (categoryIdMap.isNotEmpty) {
-        for (final tx in txs) {
-          final mapped = tx.categoryId == null
-              ? null
-              : categoryIdMap[tx.categoryId!];
-          if (mapped != null) {
-            await (db.update(db.transactions)..where((x) => x.id.equals(tx.id)))
-                .write(TransactionsCompanion(categoryId: d.Value(mapped)));
-          }
-        }
-        for (final r in recs) {
-          final mapped = r.categoryId == null
-              ? null
-              : categoryIdMap[r.categoryId!];
-          if (mapped != null) {
-            await (db.update(
-              db.recurringTransactions,
-            )..where((x) => x.id.equals(r.id))).write(
-              RecurringTransactionsCompanion(categoryId: d.Value(mapped)),
-            );
-          }
-        }
-      }
 
-      // ---- 9. backfill：分类克隆先登记（服务端按序应用，交易分类必须已存在），
-      // 随后账本/交易/虚拟用户/周期模板全部 upsert。
-      // 交易/周期模板的 category_id 刚被步骤 8 重写，必须重新读取再构造
-      // payload，否则 payload 携带重写前的本地域分类 id（云端不存在该分类）----
-      if (categoryIdMap.isNotEmpty) {
+      // ---- 9. backfill：迁域分类先登记（服务端按序应用，交易分类必须已存在），
+      // 随后账本/交易/虚拟用户/周期模板全部 upsert。----
+      if (rescopedCategoryIds.isNotEmpty) {
         final categoryRows = await (db.select(
           db.categories,
-        )..where((c) => c.id.isIn(categoryIdMap.values.toSet()))).get();
+        )..where((c) => c.id.isIn(rescopedCategoryIds))).get();
         await tracker.recordUserGlobalChanges(
           changes: [
             for (final c in categoryRows)
@@ -513,79 +487,31 @@ final ledgerStorageActionsProvider = Provider<LedgerStorageActions>(
   (ref) => LedgerStorageActions(ref),
 );
 
-/// 把 [categoryId] 及其父分类链克隆为账号 scope（scopeAccountId=accountId）副本：
-/// 新 UUID 写 [map]，重复引用复用同一副本；已属本账号域的分类直接映射自身；
-/// 账号域已存在同名同类同父分类时复用既有副本，不重复克隆。
-Future<void> _cloneCategoryToAccountScope({
+/// 把 [categoryId] 及其父分类链的归属置为账号 scope（id 不变，全库恒一行）：
+/// 已属本账号域的分类跳过；重复引用幂等。迁移行记录在 [touched] 供 backfill 登记。
+Future<void> _rescaleCategoryToAccountScope({
   required SesameDatabase db,
   required String categoryId,
   required String accountId,
-  required Map<String, String> map,
-  required DateTime now,
+  required Set<String> touched,
 }) async {
-  if (map.containsKey(categoryId)) return;
+  if (touched.contains(categoryId)) return;
   final category =
       await (db.select(db.categories)
             ..where((c) => c.id.equals(categoryId) & c.deletedAt.isNull()))
           .getSingleOrNull();
   if (category == null) return;
-  // 父链优先克隆：子分类的 parent_id 必须指向账号域副本
+  // 父链优先迁移：子分类的 parent_id 在账号域同样有效
   if (category.parentId != null) {
-    await _cloneCategoryToAccountScope(
+    await _rescaleCategoryToAccountScope(
       db: db,
       categoryId: category.parentId!,
       accountId: accountId,
-      map: map,
-      now: now,
+      touched: touched,
     );
   }
-  final mappedParent = category.parentId == null
-      ? null
-      : (map[category.parentId!] ?? category.parentId);
-  // 已属本账号域：无需克隆，引用直接指向自身
-  if (category.scopeAccountId == accountId) {
-    map[category.id] = category.id;
-    return;
-  }
-  // v5 确定性种子分类在账号域 id 恒等于自身：父链保持原 id 时直接复用原 id
-  // 上云，服务端按 id 幂等收敛——克隆新 id 会把同名种子分类在云端造出重复。
-  if (mappedParent == category.parentId &&
-      SeedService.isDeterministicCategoryId(category.id)) {
-    map[category.id] = category.id;
-    return;
-  }
-  // 去重：账号域已有同名同类同父分类时复用，避免重复克隆
-  final existing =
-      await (db.select(db.categories)..where(
-            (c) =>
-                c.scopeAccountId.equals(accountId) &
-                c.name.equals(category.name) &
-                c.kind.equals(category.kind) &
-                c.deletedAt.isNull() &
-                (mappedParent == null
-                    ? c.parentId.isNull()
-                    : c.parentId.equals(mappedParent)),
-          ))
-          .getSingleOrNull();
-  if (existing != null) {
-    map[category.id] = existing.id;
-    return;
-  }
-  final newId = _uuid.v4();
-  map[category.id] = newId;
-  await db
-      .into(db.categories)
-      .insert(
-        CategoriesCompanion.insert(
-          id: newId,
-          name: category.name,
-          kind: category.kind,
-          level: category.level,
-          sortOrder: d.Value(category.sortOrder),
-          icon: d.Value(category.icon),
-          parentId: d.Value(mappedParent),
-          scopeAccountId: d.Value(accountId),
-          updatedAt: now,
-        ),
-      );
+  if (category.scopeAccountId == accountId) return;
+  await (db.update(db.categories)..where((c) => c.id.equals(category.id)))
+      .write(CategoriesCompanion(scopeAccountId: d.Value(accountId)));
+  touched.add(category.id);
 }

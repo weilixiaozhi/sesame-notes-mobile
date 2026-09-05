@@ -54,13 +54,6 @@ class SeedService {
     required String key,
   }) => _seedUuid.v5(_seedSyncNamespace, 'cat:$kind:$level:$key');
 
-  /// 判断分类 id 是否为确定性种子 UUID（uuid v5，版本位为 '5'）。
-  ///
-  /// 确定性 id 在任何设备、任何账号域都指向同一实体，跨域克隆时
-  /// 可直接复用原 id（服务端按 id 幂等收敛），无需另造新 UUID。
-  static bool isDeterministicCategoryId(String id) =>
-      id.length == 36 && id.substring(14, 15) == '5';
-
   // ========== 一级/二级默认分类 key ==========
 
   /// 默认支出分类 key 列表（一级分类模式）。

@@ -798,7 +798,7 @@ void main() {
     expect(forkTx.categoryId, localCatId, reason: '交易继续引用原本地域分类，不做无意义重写');
   });
 
-  test('云转本地隐藏 Fork：本地域已有同名分类时复用，不为账号域分类再造副本', () async {
+  test('云转本地隐藏 Fork：不克隆分类，交易保持引用账号域原分类', () async {
     const localCatId = 'local-cat-2';
     const cloudCatId = 'cloud-cat-2';
     final now = DateTime.utc(2026, 8, 1);
@@ -834,18 +834,27 @@ void main() {
       originSyncId: 'sync-cat',
     );
 
+    // 分类表一行不多：Fork 不克隆、不改写引用
     expect(
       await db.select(db.categories).get(),
       hasLength(2),
-      reason: '本地域已有同名分类，账号域分类不得再克隆出新的本地副本',
+      reason: 'Fork 不得克隆任何分类行',
     );
     final forkTx = await (db.select(
       db.transactions,
     )..where((t) => t.ledgerId.equals('fork-2'))).getSingle();
-    expect(forkTx.categoryId, localCatId, reason: '交易引用复用本地域同名分类');
+    expect(
+      forkTx.categoryId,
+      cloudCatId,
+      reason: '交易保持引用原账号域分类（登出时由 purge 迁回本地域）',
+    );
+    final cloudCat = await (db.select(
+      db.categories,
+    )..where((c) => c.id.equals(cloudCatId))).getSingle();
+    expect(cloudCat.scopeAccountId, 'acc-1', reason: '账号域原分类仍在原域');
   });
 
-  test('云转本地隐藏 Fork：源账本引用两个同名账号域分类时只生成一个本地副本', () async {
+  test('云转本地隐藏 Fork：源账本引用两个同名账号域分类时不新增任何分类行', () async {
     final now = DateTime.utc(2026, 8, 1);
     await db.batch((b) {
       b.insertAll(db.categories, [
@@ -883,16 +892,194 @@ void main() {
       originSyncId: 'sync-cat',
     );
 
-    // 历史同名重复不得被 Fork 原样复制：两笔交易收敛到唯一本地副本
+    // Fork 不得制造任何本地域副本：历史同名行保持原样
     final localCats = await (db.select(
       db.categories,
     )..where((c) => c.scopeAccountId.isNull())).get();
-    expect(localCats, hasLength(1), reason: '同名账号域分类必须合并复用同一个本地副本，逐个克隆会把重复翻倍');
+    expect(localCats, isEmpty, reason: 'Fork 不得新增本地域分类行');
     final forkTxs = await (db.select(
       db.transactions,
     )..where((t) => t.ledgerId.equals('fork-3'))).get();
     expect(forkTxs.map((t) => t.categoryId).toSet(), {
-      localCats.single.id,
-    }, reason: '两笔交易都指向唯一本地副本');
+      'cloud-cat-a',
+      'cloud-cat-b',
+    }, reason: '两笔交易保持各自原引用');
+  });
+
+  test('本地账本恢复：目标库缺失的被引用分类按原 id 从备份导入本地域', () async {
+    final sourceId = '55555555-5555-4555-8555-555555555555';
+    final now = DateTime.utc(2026, 8, 1);
+    // 备份源：本地账本 + 父子分类 + 交易引用子分类
+    final sourceDb = SesameDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(sourceDb.close);
+    await sourceDb
+        .into(sourceDb.ledgers)
+        .insert(
+          LedgersCompanion.insert(
+            id: sourceId,
+            name: '备份账本',
+            storageMode: const d.Value('local'),
+            updatedAt: now,
+          ),
+        );
+    await sourceDb.batch((b) {
+      b.insertAll(sourceDb.categories, [
+        CategoriesCompanion.insert(
+          id: 'bk-parent',
+          name: '购物',
+          kind: 'expense',
+          level: 1,
+          updatedAt: now,
+        ),
+        CategoriesCompanion.insert(
+          id: 'bk-child',
+          name: '服装',
+          kind: 'expense',
+          level: 2,
+          parentId: d.Value('bk-parent'),
+          updatedAt: now,
+        ),
+      ]);
+    });
+    await sourceDb
+        .into(sourceDb.transactions)
+        .insert(
+          TransactionsCompanion.insert(
+            id: 'bk-tx',
+            ledgerId: sourceId,
+            txType: 'expense',
+            amount: '10',
+            happenedAt: now,
+            currencyCode: 'CNY',
+            nativeAmount: '10',
+            categoryId: d.Value('bk-child'),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+
+    await repo.restoreLocalLedger(
+      sourceLedgerId: sourceId,
+      targetLedgerId: sourceId,
+      localSelfId: 'self-device-1',
+      originBackupId: 'backup-1',
+      sourceDb: sourceDb,
+    );
+
+    // 缺失分类按原 id 导入本地域（父子链完整），不另造新 id
+    final child = await (db.select(
+      db.categories,
+    )..where((c) => c.id.equals('bk-child'))).getSingle();
+    expect(child.scopeAccountId, isNull, reason: '恢复导入的分类落本地域');
+    expect(child.parentId, 'bk-parent', reason: '父链按原 id 一并导入');
+    expect(
+      await (db.select(
+        db.categories,
+      )..where((c) => c.id.equals('bk-parent'))).getSingleOrNull(),
+      isNotNull,
+    );
+    expect(
+      await db.select(db.categories).get(),
+      hasLength(2),
+      reason: '导入恒按原 id，不制造额外行',
+    );
+    // 恢复交易引用原 id
+    final tx = await (db.select(
+      db.transactions,
+    )..where((t) => t.ledgerId.equals(sourceId))).getSingle();
+    expect(tx.categoryId, 'bk-child', reason: '恢复交易分类引用不悬空');
+  });
+
+  test('本地账本恢复：目标库已有同 id 分类时不重复导入', () async {
+    final sourceId = '66666666-6666-4666-8666-666666666666';
+    final now = DateTime.utc(2026, 8, 1);
+    // 目标库已有同 id 父子分类（账号域）
+    await db.batch((b) {
+      b.insertAll(db.categories, [
+        CategoriesCompanion.insert(
+          id: 'bk-parent-2',
+          name: '购物',
+          kind: 'expense',
+          level: 1,
+          scopeAccountId: const d.Value('acc-1'),
+          updatedAt: now,
+        ),
+        CategoriesCompanion.insert(
+          id: 'bk-child-2',
+          name: '服装',
+          kind: 'expense',
+          level: 2,
+          parentId: d.Value('bk-parent-2'),
+          scopeAccountId: const d.Value('acc-1'),
+          updatedAt: now,
+        ),
+      ]);
+    });
+    final sourceDb = SesameDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(sourceDb.close);
+    await sourceDb
+        .into(sourceDb.ledgers)
+        .insert(
+          LedgersCompanion.insert(
+            id: sourceId,
+            name: '备份账本',
+            storageMode: const d.Value('local'),
+            updatedAt: now,
+          ),
+        );
+    await sourceDb.batch((b) {
+      b.insertAll(sourceDb.categories, [
+        CategoriesCompanion.insert(
+          id: 'bk-parent-2',
+          name: '购物',
+          kind: 'expense',
+          level: 1,
+          updatedAt: now,
+        ),
+        CategoriesCompanion.insert(
+          id: 'bk-child-2',
+          name: '服装',
+          kind: 'expense',
+          level: 2,
+          parentId: d.Value('bk-parent-2'),
+          updatedAt: now,
+        ),
+      ]);
+    });
+    await sourceDb
+        .into(sourceDb.transactions)
+        .insert(
+          TransactionsCompanion.insert(
+            id: 'bk-tx-2',
+            ledgerId: sourceId,
+            txType: 'expense',
+            amount: '10',
+            happenedAt: now,
+            currencyCode: 'CNY',
+            nativeAmount: '10',
+            categoryId: d.Value('bk-child-2'),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+
+    await repo.restoreLocalLedger(
+      sourceLedgerId: sourceId,
+      targetLedgerId: sourceId,
+      localSelfId: 'self-device-1',
+      originBackupId: 'backup-2',
+      sourceDb: sourceDb,
+    );
+
+    // 同 id 即同实体：不导入、不覆盖、不新增
+    expect(
+      await db.select(db.categories).get(),
+      hasLength(2),
+      reason: '目标库已有同 id 分类，不得重复导入',
+    );
+    final kept = await (db.select(
+      db.categories,
+    )..where((c) => c.id.equals('bk-child-2'))).getSingle();
+    expect(kept.scopeAccountId, 'acc-1', reason: '既有行保持原域');
   });
 }

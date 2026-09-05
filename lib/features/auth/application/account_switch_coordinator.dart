@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:sesame_notes/core/api/api_client_provider.dart';
+import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/core/api/auth_session.dart';
 import 'package:sesame_notes/core/api/secure_account_store.dart';
@@ -288,7 +289,10 @@ class AccountSwitchCoordinator {
   }
 
   /// 单事务清理当前账号域：云账本（级联子表）、账号域分类/汇率、
-  /// 该账号 mutation 队列与当前设备 sync_state；null scope 本地数据一律保留。
+  /// 该账号 mutation 队列与当前设备 sync_state。
+  ///
+  /// 分类例外：仍被本地账本交易/周期模板引用的行迁回本地域保留（同一行
+  /// 不克隆），其余账号域分类照旧删除；null scope 本地数据一律保留。
   Future<void> _purgeAccountDomain({
     required String userId,
     required String deviceId,
@@ -309,10 +313,45 @@ class AccountSwitchCoordinator {
                 .toList();
         // 云账本整本删除（交易/编辑历史/成员/共享分类镜像/待推送变更级联）
         await ref.read(repositoryProvider).purgeAllCloudLedgers();
-        // 账号域 user-global 数据：分类与手工汇率各账号一份
-        await (db.delete(
+        // 账号域分类：云账本已清，剩余交易/周期模板全部属于本地账本——
+        // 仍被引用的行迁移回本地域保留（同一行不克隆，本地账本分类引用
+        // 不悬空）；无引用的照旧删除（账号隔离）。
+        final accountCats = await (db.select(
           db.categories,
-        )..where((c) => c.scopeAccountId.equals(userId))).go();
+        )..where((c) => c.scopeAccountId.equals(userId))).get();
+        if (accountCats.isNotEmpty) {
+          final localTxRows = await (db.select(
+            db.transactions,
+          )..where((t) => t.categoryId.isNotNull())).get();
+          final localRecRows = await (db.select(
+            db.recurringTransactions,
+          )..where((r) => r.categoryId.isNotNull())).get();
+          final referencedIds = <String>{
+            for (final t in localTxRows) t.categoryId!,
+            for (final r in localRecRows) r.categoryId!,
+          };
+          // 父链一并保留：被引用的子分类父级不得悬空
+          final parentById = {for (final c in accountCats) c.id: c.parentId};
+          final keepIds = {...referencedIds};
+          final stack = referencedIds.toList();
+          while (stack.isNotEmpty) {
+            final parentId = parentById[stack.removeLast()];
+            if (parentId != null && keepIds.add(parentId)) {
+              stack.add(parentId);
+            }
+          }
+          if (keepIds.isNotEmpty) {
+            await (db.update(db.categories)..where(
+                  (c) => c.scopeAccountId.equals(userId) & c.id.isIn(keepIds),
+                ))
+                .write(
+                  CategoriesCompanion(scopeAccountId: const d.Value(null)),
+                );
+          }
+          await (db.delete(
+            db.categories,
+          )..where((c) => c.scopeAccountId.equals(userId))).go();
+        }
         await (db.delete(
           db.exchangeRateOverrides,
         )..where((r) => r.scopeAccountId.equals(userId))).go();

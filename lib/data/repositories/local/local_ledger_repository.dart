@@ -560,8 +560,8 @@ class LocalLedgerRepository {
         copyLocalMembers: copyLocalMembers,
         localSelfMemberId: localizeSelf ? selfMemberId : null,
         currentAccountId: localizeSelf ? currentAccountId : null,
-        // 云转本地隐藏 Fork 同时复制周期模板与本地域分类副本
-        copyRecurringAndCategories: localizeSelf,
+        // 云转本地隐藏 Fork 同时复制有效周期模板
+        copyRecurring: localizeSelf,
       );
       return targetLedgerId;
     });
@@ -579,8 +579,8 @@ class LocalLedgerRepository {
     /// localize 模式识别源 self 的当前账号 id
     String? currentAccountId,
 
-    /// 复制周期模板并把源引用的账号域分类克隆到本地域（隐藏 Fork 专用）
-    bool copyRecurringAndCategories = false,
+    /// 复制有效周期模板到目标账本（隐藏 Fork 专用）
+    bool copyRecurring = false,
   }) async {
     // 跨账本数据搬运:先搬成员、再搬交易及其编辑历史。
     // [sourceDb] 为恢复场景的只读备份源（RecoverySession 的 backup.sqlite）；
@@ -785,72 +785,28 @@ class LocalLedgerRepository {
         }
       }
 
-      // 隐藏 Fork（云转本地）：复制有效周期模板，并把源引用的账号域分类
-      // 克隆到本地域（新 UUID + 重写交易/模板 category id；已删除模板不复制，
+      // 目标库缺失的被引用分类按原 id 从源库导入（落本地域）：恢复/复制副本
+      // 的分类引用不悬空；id 即实体身份，导入与云端 pull 按 id 收敛互不冲突，
+      // 绝不克隆新 UUID 制造同名重复。
+      final srcRecs =
+          await (src.select(src.recurringTransactions)..where(
+                (r) => r.ledgerId.equals(sourceLedgerId) & r.deletedAt.isNull(),
+              ))
+              .get();
+      final referencedCategoryIds = <String>{
+        for (final t in srcTxs)
+          if (t.categoryId != null) t.categoryId!,
+        if (copyRecurring)
+          for (final r in srcRecs)
+            if (r.categoryId != null) r.categoryId!,
+      };
+      for (final cid in referencedCategoryIds) {
+        await _ensureCategoryImported(src: src, db: db, categoryId: cid);
+      }
+
+      // 隐藏 Fork（云转本地）：复制有效周期模板（已删除模板不复制，
       // 禁止复活已删除实体）。
-      if (copyRecurringAndCategories) {
-        // 收集源账本交易/周期模板实际引用的分类（含父链），克隆为本地域副本
-        final categoryIds = <String>{};
-        final srcTxsAll =
-            await (src.select(src.transactions)..where(
-                  (t) =>
-                      t.ledgerId.equals(sourceLedgerId) & t.deletedAt.isNull(),
-                ))
-                .get();
-        for (final t in srcTxsAll) {
-          if (t.categoryId != null) categoryIds.add(t.categoryId!);
-        }
-        final srcRecs =
-            await (src.select(src.recurringTransactions)..where(
-                  (r) =>
-                      r.ledgerId.equals(sourceLedgerId) & r.deletedAt.isNull(),
-                ))
-                .get();
-        for (final r in srcRecs) {
-          if (r.categoryId != null) categoryIds.add(r.categoryId!);
-        }
-        final categoryIdMap = <String, String>{};
-        for (final cid in categoryIds) {
-          await _cloneCategoryToLocal(
-            src: src,
-            db: db,
-            categoryId: cid,
-            map: categoryIdMap,
-            now: now,
-          );
-        }
-        // 重写目标交易与周期模板的分类引用（新分类只属于本地域）
-        if (categoryIdMap.isNotEmpty) {
-          final targetTxRows = await (db.select(
-            db.transactions,
-          )..where((t) => t.ledgerId.equals(targetLedgerId))).get();
-          for (final t in targetTxRows) {
-            final mapped = t.categoryId == null
-                ? null
-                : categoryIdMap[t.categoryId!];
-            if (mapped != null) {
-              await (db.update(db.transactions)
-                    ..where((x) => x.id.equals(t.id)))
-                  .write(TransactionsCompanion(categoryId: d.Value(mapped)));
-            }
-          }
-          final targetRecRows = await (db.select(
-            db.recurringTransactions,
-          )..where((r) => r.ledgerId.equals(targetLedgerId))).get();
-          for (final r in targetRecRows) {
-            final mapped = r.categoryId == null
-                ? null
-                : categoryIdMap[r.categoryId!];
-            if (mapped != null) {
-              await (db.update(
-                db.recurringTransactions,
-              )..where((x) => x.id.equals(r.id))).write(
-                RecurringTransactionsCompanion(categoryId: d.Value(mapped)),
-              );
-            }
-          }
-        }
-        // 复制有效周期模板（含重映射后的分类引用）
+      if (copyRecurring) {
         for (final r in srcRecs) {
           await db
               .into(db.recurringTransactions)
@@ -861,11 +817,7 @@ class LocalLedgerRepository {
                   txType: r.txType,
                   amount: r.amount,
                   currencyCode: r.currencyCode,
-                  categoryId: d.Value(
-                    r.categoryId == null
-                        ? null
-                        : (categoryIdMap[r.categoryId!] ?? r.categoryId),
-                  ),
+                  categoryId: d.Value(r.categoryId),
                   note: d.Value(r.note),
                   frequency: r.frequency,
                   interval: d.Value(r.interval),
@@ -885,75 +837,45 @@ class LocalLedgerRepository {
     });
   }
 
-  /// 把 [categoryId] 及其父分类链克隆为本地域（scopeAccountId=null）副本：
-  /// 新 UUID 写 [map]，重复引用复用同一副本；已克隆/本地域分类跳过。
+  /// 目标库缺失的分类按原 id 从源库导入（含父链，落本地域）。
   ///
-  /// 去重契约：源分类已属本地域且父链保持原 id 时直接复用自身；
-  /// 本地域已有同名同类同父分类时复用既有副本——克隆制造新实体会
-  /// 把同名分类逐次翻倍，云端与本地都会越积越多。
-  Future<void> _cloneCategoryToLocal({
+  /// id 即实体身份：导入行与云端 pull 按 id 收敛为同一行，不克隆新 UUID，
+  /// 恢复/复制路径因此天然不会制造同名重复分类。已存在同 id 行时零操作。
+  Future<void> _ensureCategoryImported({
     required SesameDatabase src,
     required SesameDatabase db,
     required String categoryId,
-    required Map<String, String> map,
-    required DateTime now,
   }) async {
-    if (map.containsKey(categoryId)) return;
+    final exists = await (db.select(
+      db.categories,
+    )..where((c) => c.id.equals(categoryId))).getSingleOrNull();
+    if (exists != null) return;
     final category =
         await (src.select(src.categories)
               ..where((c) => c.id.equals(categoryId) & c.deletedAt.isNull()))
             .getSingleOrNull();
     if (category == null) return;
-    // 父链优先克隆：子分类的 parent_id 必须指向本地域副本
+    // 父链优先导入：子分类的 parent_id 必须指向已存在的父行（外键约束）
     if (category.parentId != null) {
-      await _cloneCategoryToLocal(
+      await _ensureCategoryImported(
         src: src,
         db: db,
         categoryId: category.parentId!,
-        map: map,
-        now: now,
       );
     }
-    // 父分类在本地域的映射 id（父已属本地域时为原 id，父被克隆时为克隆 id）
-    final mappedParent = category.parentId == null
-        ? null
-        : (map[category.parentId!] ?? category.parentId);
-    // 源分类已属本地域且父链保持原 id：引用直接指向自身，无需克隆
-    if (category.scopeAccountId == null && mappedParent == category.parentId) {
-      map[category.id] = category.id;
-      return;
-    }
-    // 去重：本地域已有同名同类同父分类时复用既有副本，避免重复克隆
-    final existing =
-        await (db.select(db.categories)..where(
-              (c) =>
-                  c.scopeAccountId.isNull() &
-                  c.name.equals(category.name) &
-                  c.kind.equals(category.kind) &
-                  c.deletedAt.isNull() &
-                  (mappedParent == null
-                      ? c.parentId.isNull()
-                      : c.parentId.equals(mappedParent)),
-            ))
-            .getSingleOrNull();
-    if (existing != null) {
-      map[category.id] = existing.id;
-      return;
-    }
-    final newId = _uuid.v4();
-    map[category.id] = newId;
     await db
         .into(db.categories)
         .insert(
           CategoriesCompanion.insert(
-            id: newId,
+            id: category.id,
             name: category.name,
             kind: category.kind,
             level: category.level,
             sortOrder: d.Value(category.sortOrder),
             icon: d.Value(category.icon),
-            parentId: d.Value(mappedParent),
-            updatedAt: now,
+            parentId: d.Value(category.parentId),
+            // 恢复导入落本地域；重登后由 pull 按 id 收敛回账号域
+            updatedAt: category.updatedAt,
           ),
         );
   }
