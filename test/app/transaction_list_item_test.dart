@@ -14,7 +14,7 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/widgets/amount_text.dart';
 import 'package:sesame_notes/shared/widgets/collaborator_avatar.dart';
-import 'package:sesame_notes/shared/widgets/person_avatar.dart';
+import 'package:sesame_notes/shared/widgets/member_avatar.dart';
 import 'package:sesame_notes/features/transactions/presentation/widgets/transaction/transaction_list_item.dart';
 
 import '../helpers/test_isolation.dart';
@@ -128,7 +128,7 @@ void main() {
     expect(find.byType(CollaboratorAvatarGroup), findsOneWidget);
   });
 
-  testWidgets('共享账本成员表未加载时协作头像用 PersonAvatar 占位而非纯色圆', (tester) async {
+  testWidgets('共享账本成员表未加载时协作头像用默认头像资产占位而非纯色圆', (tester) async {
     await _pump(
       tester,
       TransactionListItem(
@@ -149,8 +149,17 @@ void main() {
     final group = find.byType(CollaboratorAvatarGroup);
     expect(group, findsOneWidget);
     expect(
-      find.descendant(of: group, matching: find.byType(PersonAvatar)),
+      find.descendant(
+        of: group,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is Image &&
+              widget.image is AssetImage &&
+              (widget.image as AssetImage).assetName == kDefaultAvatarAsset,
+        ),
+      ),
       findsOneWidget,
+      reason: '成员表未加载时统一用全局默认头像资产占位,不再渲染 person 图标',
     );
     expect(
       find.descendant(of: group, matching: find.byType(CircleAvatar)),

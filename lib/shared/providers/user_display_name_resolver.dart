@@ -1,17 +1,17 @@
 import 'package:sesame_notes/data/models/ledger_member_display.dart';
-import 'package:sesame_notes/l10n/app_localizations.dart';
 
-/// 用户展示名统一解析器。
+/// 用户展示名统一解析器 —— 全项目唯一一套昵称解析链。
 ///
 /// 解析优先级:
 /// 1. 共享账本成员表(成员目录缓存,昵称恒非空——账号注册即分配昵称)
-/// 2. 本人(selfMemberId,按账本归属分口径:
+/// 2. 本人(按账本归属分口径:
 ///    本地账本恒显固定本地身份「单机芝麻仔」;云账本显当前云 Profile 昵称)
 /// 3. 虚拟用户名(由调用方传入)
 /// 4. 无法解析返回空串,由 UI 统一映射「未知」——绝不裸显 member id / user id。
 ///
-/// 「我」的判定以 self member id 为权威:登录/退出只改成员绑定不改 id,
-/// 因此同一账本的本人恒为同一个成员,展示判定不随账号切换漂移。
+/// 「我」的判定:以 self member id 为权威;LOCAL 成员恒为本人;REGISTERED
+/// 成员绑定当前云账号(linked_account_id == cloudSelfUserId)也视为本人,
+/// 覆盖 self_member_id 回写缺失的历史脏数据,与成员管理模块口径一致。
 class UserDisplayNameResolver {
   final Map<String, LedgerMemberDisplay> memberDisplayMap;
 
@@ -32,7 +32,6 @@ class UserDisplayNameResolver {
   final String? cloudSelfDisplayName;
 
   final Map<String, String> virtualNames;
-  final AppLocalizations l10n;
 
   UserDisplayNameResolver({
     required this.memberDisplayMap,
@@ -41,11 +40,10 @@ class UserDisplayNameResolver {
     this.cloudSelfUserId,
     this.cloudSelfDisplayName,
     required this.virtualNames,
-    required this.l10n,
   });
 
   /// 解析 member id 为展示名。返回空串表示「无法解析」,
-  /// 调用方按既有口径映射为「未知」(aaUnknownUser)。
+  /// 调用方统一映射为「未知」(aaUnknownUser)。
   String resolve(String? memberId) {
     if (memberId == null || memberId.isEmpty) return '';
 
@@ -54,20 +52,15 @@ class UserDisplayNameResolver {
     if (member != null) {
       // 本人按账本归属分口径:本地账本 LOCAL 成员恒显固定本地身份,
       // 云账本 REGISTERED 本人(绑定当前登录账号)显当前云 Profile 昵称。
-      if (memberId == selfMemberId) {
+      if (isSelf(memberId)) {
         if (member.memberType == 'LOCAL') return localSelfDisplayName;
-        final bound =
-            cloudSelfUserId != null &&
-            member.linkedAccountId == cloudSelfUserId;
-        if (bound) {
-          final cloudName = cloudSelfDisplayName?.trim() ?? '';
-          if (cloudName.isNotEmpty) return cloudName;
-        }
+        final cloudName = cloudSelfDisplayName?.trim() ?? '';
+        if (cloudName.isNotEmpty) return cloudName;
       }
       final dn = member.displayName.trim();
       if (dn.isNotEmpty) return dn;
       // 昵称为空的防御兜底(正常不会发生:账号注册即分配昵称)。
-      return l10n.aaUnknownUser;
+      return '';
     }
 
     // 2. 本人但成员行缺失(历史脏数据):云账本用云昵称兜底,否则固定本地身份。
@@ -85,9 +78,15 @@ class UserDisplayNameResolver {
     return '';
   }
 
-  /// 判断 member id 是否为当前账本本人(self member id)。
+  /// 判断 member id 是否为当前账本本人:
+  /// self member id 权威 / LOCAL 成员恒为本人 / 绑定当前云账号的成员。
   bool isSelf(String? memberId) {
     if (memberId == null || memberId.isEmpty) return false;
-    return memberId == selfMemberId;
+    if (memberId == selfMemberId) return true;
+    final member = memberDisplayMap[memberId];
+    if (member == null) return false;
+    if (member.memberType == 'LOCAL') return true;
+    final uid = cloudSelfUserId;
+    return uid != null && uid.isNotEmpty && member.linkedAccountId == uid;
   }
 }

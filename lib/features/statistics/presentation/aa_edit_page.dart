@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
+import 'package:sesame_notes/shared/providers/ledger_identity_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/shared/aa/aa_decimal_util.dart';
 import 'package:sesame_notes/shared/aa/aa_edit_models.dart';
@@ -18,6 +18,7 @@ import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/shared/presentation/category_utils.dart';
 import 'package:sesame_notes/utils/currency/currencies.dart';
 import 'package:sesame_notes/shared/widgets/aa_mode_toggle.dart';
+import 'package:sesame_notes/shared/widgets/aa_participant_avatar.dart';
 import 'package:sesame_notes/shared/widgets/me_suffix.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/features/transactions/presentation/widgets/transaction/aa_payer_picker_sheet.dart';
@@ -166,11 +167,13 @@ class _AaEditPageState extends ConsumerState<AaEditPage> {
   /// 本地账本恒显固定本地身份「单机芝麻仔」;云账本显当前云 Profile 昵称
   /// (正常恒非空,注册即分配),缓存未就绪时防御性回退固定本地身份。
   String _selfDisplayName(AppLocalizations l10n) {
-    final ledger = ref.watch(currentLedgerDisplayProvider).asData?.value;
-    if (ledger?.storageMode == 'cloud') {
-      final cloud =
-          ref.watch(accountStateProvider).profile?.displayName?.trim() ?? '';
-      if (cloud.isNotEmpty) return cloud;
+    // 展示名统一走账本身份上下文:本地账本固定「单机芝麻仔」,
+    // 云/共享账本显云昵称(缓存未就绪时回退成员行昵称/本地身份)。
+    final identity = ref
+        .watch(ledgerIdentityProvider(widget.args.ledgerId))
+        .value;
+    if (identity != null && identity.selfMemberId.isNotEmpty) {
+      return identity.displayNameOf(identity.selfMemberId);
     }
     return l10n.mineLocalName;
   }
@@ -610,6 +613,7 @@ class _AaEditPageState extends ConsumerState<AaEditPage> {
       onTap: () async {
         final picked = await showAaPayerPickerSheet(
           context,
+          ledgerId: widget.args.ledgerId,
           options: options,
           selectedId: _paidById,
         );
@@ -704,7 +708,6 @@ class _AaEditPageState extends ConsumerState<AaEditPage> {
     final selected = _participantIds == null
         ? true
         : _participantIds!.contains(option.id);
-    final primary = Theme.of(context).colorScheme.primary;
     final disabledColor = Theme.of(context).disabledColor;
 
     // 人均分摊:按勾选人数实时均摊,已勾选行只读展示人均值。
@@ -731,11 +734,16 @@ class _AaEditPageState extends ConsumerState<AaEditPage> {
             onTap: isPayer ? null : () => _toggleParticipant(option.id),
           ),
           const SizedBox(width: AppDimens.p8),
-          // icon + 名称(支出人/未勾选置灰)
-          Icon(
-            AppIcons.person,
-            size: AppDimens.icon16,
-            color: (isPayer || !selected) ? disabledColor : primary,
+          // 参与人头像:统一走 AaParticipantAvatar(全局默认头像资产/云头像缓存),
+          // 支出人/未勾选用透明度置灰,与名称置灰口径一致。
+          Opacity(
+            opacity: (isPayer || !selected) ? 0.4 : 1,
+            child: AaParticipantAvatar(
+              ledgerId: widget.args.ledgerId,
+              participantId: option.id,
+              isSelf: option.isSelf,
+              size: AppDimens.icon16,
+            ),
           ),
           const SizedBox(width: AppDimens.p8),
           Expanded(

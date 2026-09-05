@@ -16,7 +16,7 @@ import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
 import 'package:sesame_notes/core/api/sharing_service.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
-import 'package:sesame_notes/data/db.dart' show LedgerMember;
+import 'package:sesame_notes/data/db.dart' as db;
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
@@ -35,11 +35,11 @@ class _CloudAccountNotifier extends AccountStateNotifier {
 }
 
 /// 构造成员桩数据 — 只填测试关心的字段,其余给固定值。
-LedgerMember _member({
+db.LedgerMember _member({
   required String userId,
   required String role,
   required bool isSelf,
-}) => LedgerMember(
+}) => db.LedgerMember(
   id: 'member-$userId',
   ledgerId: 'ledger-1',
   displayName: '成员-$userId',
@@ -55,7 +55,7 @@ LedgerMember _member({
 
 void main() {
   testWidgets('虚拟用户行编辑输入在父级重建后保留', (tester) async {
-    final vu = LedgerMember(
+    final vu = db.LedgerMember(
       id: 'vu-1',
       ledgerId: 'ledger-1',
       displayName: '虚拟用户1',
@@ -75,7 +75,7 @@ void main() {
       ProviderScope(
         overrides: [
           ledgerVirtualUsersProvider.overrideWith(
-            (ref, ledgerId) => Stream<List<LedgerMember>>.value([vu]),
+            (ref, ledgerId) => Stream<List<db.LedgerMember>>.value([vu]),
           ),
           ledgerMembersProvider.overrideWith(
             (ref, ledgerId) async => [
@@ -276,26 +276,45 @@ void main() {
   });
 
   testWidgets('云账本本人行快照昵称为空:显示云昵称（我）而非「未知」', (tester) async {
+    // 成员行快照昵称为空(历史/迁移数据):本人行必须兜底当前云 Profile 昵称。
+    final selfRow = db.LedgerMember(
+      id: 'member-user-1',
+      ledgerId: 'ledger-1',
+      displayName: '',
+      memberType: 'REGISTERED',
+      linkedAccountId: 'user-1',
+      role: 'owner',
+      avatarVersion: 0,
+      status: 'ACTIVE',
+      joinedAt: DateTime.utc(2026, 1, 1),
+      createdAt: DateTime.utc(2026, 1, 1),
+      updatedAt: DateTime.utc(2026, 1, 1),
+    );
+    // 账本身份上下文经 repository 读取账本与成员行,此处提供同源桩。
+    final mockRepo = _MockRepo();
+    when(() => mockRepo.getLedgerById('ledger-1')).thenAnswer(
+      (_) async => db.Ledger(
+        id: 'ledger-1',
+        name: '云账本',
+        currency: 'CNY',
+        role: 'owner',
+        memberCount: 2,
+        monthStartDay: 1,
+        storageMode: 'cloud',
+        aaEnabled: false,
+        createdAt: DateTime.utc(2026, 1, 1),
+        updatedAt: DateTime.utc(2026, 1, 1),
+      ),
+    );
+    when(
+      () => mockRepo.getMembersByLedger('ledger-1'),
+    ).thenAnswer((_) async => [selfRow]);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          repositoryProvider.overrideWith((ref) => mockRepo),
           ledgerMembersProvider.overrideWith(
-            (ref, ledgerId) async => [
-              // 成员行快照昵称为空(历史/迁移数据):本人行必须兜底当前云 Profile 昵称。
-              LedgerMember(
-                id: 'member-user-1',
-                ledgerId: 'ledger-1',
-                displayName: '',
-                memberType: 'REGISTERED',
-                linkedAccountId: 'user-1',
-                role: 'owner',
-                avatarVersion: 0,
-                status: 'ACTIVE',
-                joinedAt: DateTime.utc(2026, 1, 1),
-                createdAt: DateTime.utc(2026, 1, 1),
-                updatedAt: DateTime.utc(2026, 1, 1),
-              ),
-            ],
+            (ref, ledgerId) async => [selfRow],
           ),
           authSessionProvider.overrideWith(
             () => _AuthSessionNotifier(
@@ -375,7 +394,7 @@ void main() {
     // 云账本成员镜像若混入 LOCAL 行或 PLACEHOLDER 行,
     // 真实成员区只渲染 REGISTERED,虚拟用户由专用区块渲染,本人不会
     // 同时出现「单机芝麻仔」与云昵称两行。
-    final legacyLocal = LedgerMember(
+    final legacyLocal = db.LedgerMember(
       id: 'member-local',
       ledgerId: 'ledger-1',
       displayName: '',
@@ -388,14 +407,32 @@ void main() {
       createdAt: DateTime.utc(2026, 1, 1),
       updatedAt: DateTime.utc(2026, 1, 1),
     );
+    final selfRow = _member(userId: 'user-1', role: 'owner', isSelf: true);
+    // 账本身份上下文经 repository 读取账本与成员行,此处提供同源桩。
+    final mockRepo = _MockRepo();
+    when(() => mockRepo.getLedgerById('ledger-1')).thenAnswer(
+      (_) async => db.Ledger(
+        id: 'ledger-1',
+        name: '云账本',
+        currency: 'CNY',
+        role: 'owner',
+        memberCount: 2,
+        monthStartDay: 1,
+        storageMode: 'cloud',
+        aaEnabled: false,
+        createdAt: DateTime.utc(2026, 1, 1),
+        updatedAt: DateTime.utc(2026, 1, 1),
+      ),
+    );
+    when(
+      () => mockRepo.getMembersByLedger('ledger-1'),
+    ).thenAnswer((_) async => [selfRow, legacyLocal]);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          repositoryProvider.overrideWith((ref) => mockRepo),
           ledgerMembersProvider.overrideWith(
-            (ref, ledgerId) async => [
-              _member(userId: 'user-1', role: 'owner', isSelf: true),
-              legacyLocal,
-            ],
+            (ref, ledgerId) async => [selfRow, legacyLocal],
           ),
           authSessionProvider.overrideWith(
             () => _AuthSessionNotifier(

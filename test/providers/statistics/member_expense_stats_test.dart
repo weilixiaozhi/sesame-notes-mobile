@@ -14,6 +14,7 @@ import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
+import 'package:sesame_notes/shared/providers/read_provider_future.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
@@ -108,7 +109,8 @@ void main() {
     await seedExpense(amount: '25', payerMemberId: 'u1');
     await seedExpense(amount: '5', payerMemberId: 'u2');
 
-    final stats = await container.read(
+    final stats = await readProviderFutureFromContainer(
+      container,
       memberExpenseStatsProvider(ledgerId).future,
     );
 
@@ -143,7 +145,8 @@ void main() {
         );
     await seedExpense(amount: '10', payerMemberId: 'u1');
 
-    final stats = await container.read(
+    final stats = await readProviderFutureFromContainer(
+      container,
       memberExpenseStatsProvider(ledgerId).future,
     );
 
@@ -158,7 +161,10 @@ void main() {
     final selfMemberId = localSelfMemberId(ledgerId, 'local-self');
     await seedExpense(amount: '10', payerMemberId: selfMemberId);
 
-    final stats = await c.read(memberExpenseStatsProvider(ledgerId).future);
+    final stats = await readProviderFutureFromContainer(
+      c,
+      memberExpenseStatsProvider(ledgerId).future,
+    );
     final row = stats.single;
     expect(row.displayName, '单机芝麻仔', reason: '本地账本本人必须显示固定本地身份，不得出现裸 id');
     expect(row.isSelf, isTrue, reason: 'self member 必须标记为本人');
@@ -168,7 +174,10 @@ void main() {
     final c = buildContainer();
     await seedExpense(amount: '10', payerMemberId: 'foreign-id');
 
-    final stats = await c.read(memberExpenseStatsProvider(ledgerId).future);
+    final stats = await readProviderFutureFromContainer(
+      c,
+      memberExpenseStatsProvider(ledgerId).future,
+    );
     final row = stats.single;
     expect(row.participantId, 'foreign-id');
     expect(row.displayName, '未知', reason: '未知 id 不得张冠李戴成固定本地身份，也不得裸显 id');
@@ -188,7 +197,8 @@ void main() {
       TransactionsCompanion(ledgerId: Value(cloudLedgerId)),
     );
 
-    final stats = await c.read(
+    final stats = await readProviderFutureFromContainer(
+      c,
       memberExpenseStatsProvider(cloudLedgerId).future,
     );
     final row = stats.single;

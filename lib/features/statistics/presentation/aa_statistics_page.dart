@@ -17,9 +17,10 @@ import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/shared/presentation/category_utils.dart';
+import 'package:sesame_notes/shared/providers/ledger_identity_providers.dart';
+import 'package:sesame_notes/shared/widgets/aa_participant_avatar.dart';
 import 'package:sesame_notes/shared/widgets/me_suffix.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
-import 'package:sesame_notes/features/statistics/presentation/widgets/aa_participant_avatar.dart';
 import 'package:sesame_notes/features/transactions/presentation/widgets/transaction/transaction_list_item.dart';
 
 /// AA 分摊统计页。
@@ -107,13 +108,13 @@ class AaStatisticsPage extends ConsumerWidget {
     final totalPaidAllOf = <String, double>{
       for (final s in memberStats) s.participantId: s.expenseTotal,
     };
-    // 首页同款协作头像成员表：共享账本与首页同源 ledgerMembersProvider
-    // （同一套磁盘缓存）；本地账本为空映射 → 不渲染头像。
-    final avatarCtx = ref
-        .watch(aaParticipantAvatarContextProvider(ledgerId))
-        .value;
-    final memberMap = avatarCtx?.members ?? const {};
-    final isShared = memberMap.isNotEmpty;
+    // 协作头像成员表:统一走账本身份上下文(与成员支出/成员管理同源,
+    // 同一套磁盘缓存);仅共享账本渲染协作头像,本地账本为空映射。
+    final identity = ref.watch(ledgerIdentityProvider(ledgerId)).value;
+    final isShared = identity?.isShared ?? false;
+    final memberMap = isShared
+        ? (identity?.memberMap ?? const <String, LedgerMemberDisplay>{})
+        : const <String, LedgerMemberDisplay>{};
 
     // 只展示有实际分摊活动的参与人(全零成员无信息量)。
     final active = statistics.participants

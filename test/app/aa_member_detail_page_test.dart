@@ -1,4 +1,4 @@
-﻿/// 成员账单详情页组件测试。
+/// 成员账单详情页组件测试。
 ///
 /// 需求锚点（设计稿）：
 /// - 头部：成员名 + 账本名；
@@ -19,6 +19,7 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/features/statistics/presentation/aa_member_detail_page.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
+import 'package:sesame_notes/shared/providers/ledger_identity_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_member_detail_models.dart';
 import 'package:sesame_notes/shared/aa/aa_statistics_service.dart';
 
@@ -83,8 +84,12 @@ void main() {
         overrides: [
           aaMemberDetailProvider.overrideWith((ref, args) async => data),
           currentLedgerProvider.overrideWith((ref) => Stream.value(null)),
-          aaParticipantAvatarContextProvider.overrideWith(
-            (ref, ledgerId) async => const AaParticipantAvatarContext(),
+          ledgerIdentityProvider.overrideWith(
+            (ref, ledgerId) async => const LedgerIdentity(
+              selfMemberId: '',
+              localSelfName: '单机芝麻仔',
+              unknownName: '未知',
+            ),
           ),
         ],
         child: MaterialApp(

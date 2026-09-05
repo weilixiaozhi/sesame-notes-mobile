@@ -6,7 +6,6 @@ import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/router/route_consts.dart';
 import 'package:sesame_notes/shared/widgets/member_avatar.dart';
-import 'package:sesame_notes/shared/widgets/person_avatar.dart';
 import 'package:sesame_notes/shared/widgets/section_card.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
@@ -28,7 +27,7 @@ class MinePageHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(accountStateProvider);
     if (state.isAuthenticated) {
-      return _AuthenticatedHeader(profileAvatarUrl: state.profile?.avatarUrl);
+      return const _AuthenticatedHeader();
     }
     return const _LocalHeader();
   }
@@ -52,10 +51,8 @@ class _LocalHeader extends StatelessWidget {
               // 身份、说明与主操作保持在同一视觉层级，便于用户先确认当前状态再登录。
               Row(
                 children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundImage: AssetImage(kDefaultAvatarAsset),
-                  ),
+                  // 未登录恒显全局默认头像资产,与已登录头像同一渲染入口。
+                  const SelfAvatar(size: 60),
                   const SizedBox(width: AppDimens.p12),
                   Expanded(
                     child: Column(
@@ -126,9 +123,7 @@ class _LocalHeader extends StatelessWidget {
 
 /// 已登录头部：云头像（磁盘缓存，离线可用）或默认头像 + 云昵称 + 芝麻号 + 进入箭头；整卡可点击。
 class _AuthenticatedHeader extends ConsumerWidget {
-  final String? profileAvatarUrl;
-
-  const _AuthenticatedHeader({this.profileAvatarUrl});
+  const _AuthenticatedHeader();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -148,17 +143,9 @@ class _AuthenticatedHeader extends ConsumerWidget {
               padding: const EdgeInsets.all(AppDimens.p20),
               child: Row(
                 children: [
-                  // 云头像走成员头像磁盘缓存（未上传/下载失败回退正式默认头像 60×60）；
-                  // 整张卡片共用个人资料入口。
-                  MemberAvatar(
-                    userId: profile?.userId,
-                    version: profile?.avatarVersion ?? 0,
-                    hasAvatar:
-                        profileAvatarUrl != null &&
-                        profileAvatarUrl!.trim().isNotEmpty,
-                    size: 60,
-                    iconSize: 27,
-                  ),
+                  // 本人头像统一走 SelfAvatar:磁盘缓存离线可用,
+                  // 未上传/下载失败回退全局默认头像资产 60×60。
+                  const SelfAvatar(size: 60),
                   const SizedBox(width: AppDimens.p16),
                   Expanded(
                     child: Column(

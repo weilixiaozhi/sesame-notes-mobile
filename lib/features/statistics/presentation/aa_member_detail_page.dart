@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/core/logging/logger_service.dart';
@@ -15,7 +15,7 @@ import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/shared/presentation/category_utils.dart';
 import 'package:sesame_notes/shared/widgets/me_suffix.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
-import 'package:sesame_notes/features/statistics/presentation/widgets/aa_participant_avatar.dart';
+import 'package:sesame_notes/shared/widgets/aa_participant_avatar.dart';
 
 /// 成员账单详情页（按支出人维度汇总）。
 ///

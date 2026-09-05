@@ -6,7 +6,7 @@ import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
 import 'package:sesame_notes/features/auth/presentation/avatar_preview_page.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
-import 'package:sesame_notes/shared/widgets/person_avatar.dart';
+import 'package:sesame_notes/shared/widgets/member_avatar.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
 class _AuthenticatedAccountStateNotifier extends AccountStateNotifier {

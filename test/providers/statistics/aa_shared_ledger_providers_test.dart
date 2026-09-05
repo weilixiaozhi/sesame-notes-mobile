@@ -5,7 +5,7 @@
 //     真实成员 + 虚拟用户，昵称恒非空(注册即分配),空昵称防御性回退「未知」；
 //   - aaStatisticsProvider：共享账本按成员表 + 虚拟用户组装参与人名册；
 //   - aaMemberExpenseStatsProvider：共享账本成员头像/显示名映射；
-//   - aaParticipantAvatarContextProvider：共享账本返回成员头像上下文。
+//   - ledgerIdentityProvider：共享账本返回全量成员上下文。
 library;
 
 import 'package:drift/drift.dart' as d;
@@ -20,6 +20,7 @@ import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/shared/providers/language_provider.dart';
+import 'package:sesame_notes/shared/providers/ledger_identity_providers.dart';
 import 'package:sesame_notes/shared/providers/read_provider_future.dart';
 
 import '../../helpers/test_isolation.dart';
@@ -128,7 +129,8 @@ void main() {
   }
 
   test('aaParticipantOptionsProvider：共享账本成员 + 虚拟用户', () async {
-    final options = await container.read(
+    final options = await readProviderFutureFromContainer(
+      container,
       aaParticipantOptionsProvider('led-shared-aa').future,
     );
     final byId = {for (final o in options) o.id: o};
@@ -146,7 +148,8 @@ void main() {
   });
 
   test('aaStatisticsProvider：共享账本统计包含成员与虚拟用户', () async {
-    final stats = await container.read(
+    final stats = await readProviderFutureFromContainer(
+      container,
       aaStatisticsProvider('led-shared-aa').future,
     );
     final ids = stats.participants.map((p) => p.participantId).toSet();
@@ -159,7 +162,8 @@ void main() {
   });
 
   test('aaMemberExpenseStatsProvider：成员头像/显示名映射', () async {
-    final items = await container.read(
+    final items = await readProviderFutureFromContainer(
+      container,
       memberExpenseStatsProvider('led-shared-aa').future,
     );
     expect(items.single.participantId, 'u-owner');
@@ -167,12 +171,13 @@ void main() {
     expect(items.single.isSelf, isTrue);
   });
 
-  test('aaParticipantAvatarContextProvider：共享账本返回成员上下文', () async {
-    final ctx = await container.read(
-      aaParticipantAvatarContextProvider('led-shared-aa').future,
+  test('ledgerIdentityProvider：共享账本返回全量成员上下文', () async {
+    final identity = await readProviderFutureFromContainer(
+      container,
+      ledgerIdentityProvider('led-shared-aa').future,
     );
-    expect(ctx.members, contains('u-owner'));
-    expect(ctx.members, contains('u-editor'));
+    expect(identity.memberMap, contains('u-owner'));
+    expect(identity.memberMap, contains('u-editor'));
   });
 
   test('ledgerMembersProvider：成员表写入后自动返回新名册', () async {
@@ -282,7 +287,8 @@ void main() {
     );
     expect(virtualUsers.map((member) => member.id), ['vu-1']);
 
-    final options = await container.read(
+    final options = await readProviderFutureFromContainer(
+      container,
       aaParticipantOptionsProvider('led-shared-aa').future,
     );
     expect(
@@ -293,7 +299,8 @@ void main() {
     expect(options.map((option) => option.id), isNot(contains('u-editor')));
     expect(options.map((option) => option.id), isNot(contains('vu-deleted')));
 
-    final aaStats = await container.read(
+    final aaStats = await readProviderFutureFromContainer(
+      container,
       aaStatisticsProvider('led-shared-aa').future,
     );
     final removedSummary = aaStats.participants.singleWhere(
@@ -306,7 +313,8 @@ void main() {
       isNot(contains('vu-deleted')),
     );
 
-    final expenseStats = await container.read(
+    final expenseStats = await readProviderFutureFromContainer(
+      container,
       memberExpenseStatsProvider('led-shared-aa').future,
     );
     final removedExpense = expenseStats.singleWhere(
@@ -315,10 +323,11 @@ void main() {
     expect(removedExpense.displayName, '已退出成员');
     expect(removedExpense.expenseTotal, 30.0);
 
-    final avatarContext = await container.read(
-      aaParticipantAvatarContextProvider('led-shared-aa').future,
+    final identity = await readProviderFutureFromContainer(
+      container,
+      ledgerIdentityProvider('led-shared-aa').future,
     );
-    expect(avatarContext.members, contains('u-editor'));
-    expect(avatarContext.members, isNot(contains('vu-deleted')));
+    expect(identity.memberMap, contains('u-editor'));
+    expect(identity.memberMap, isNot(contains('vu-deleted')));
   });
 }

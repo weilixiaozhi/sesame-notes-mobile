@@ -213,7 +213,7 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
 
   /// 模块标题 — 页面统一采用「标题在外 + 内容卡片」的版块结构。
   ///
-  /// 左侧 3px 主题色条 + 加粗标题,与「备份与云同步配置」等页面的模块标题
+  /// 左侧 3px 主题色条 + 加粗标题,与「备份与云同步」等页面的模块标题
   /// 风格一致,让编辑页各模块(账本名称 / 币种 / 每月起始日 / 成员管理 /
   /// 成员收支 / 存储位置)在长列表中区分更明显;水平内缩与 Card 默认
   /// margin(all: 4) 对齐;[disabled] 时色条与文字整行置灰,与只读内容的
@@ -531,11 +531,10 @@ class _LedgerEditPageState extends ConsumerState<LedgerEditPage> {
           // 成员管理模块自带标题行（色条 + "成员管理"），AA 开启时
           // 标题右侧显示"添加虚拟用户"文字链，无需外部再渲染标题。
           MemberManagementSection(
-            // 云账本按账本 UUID 走成员镜像表(含进入页面的目录刷新);
+            // 云端/共享账本按账本 UUID 走成员镜像表(含进入页面的目录刷新);
             // 本地账本/新建态置空,展示固定「所有者(我)」行。
-            ledgerExternalId: ledger?.storageMode == 'cloud'
-                ? ledger?.id
-                : null,
+            // 归属判定走统一谓词:共享账本即使 storageMode 未回填也按云口径。
+            ledgerExternalId: ledger?.isCloudLedger == true ? ledger?.id : null,
             ledgerName: ledgerName,
             ledgerId: ledger?.id,
             aaEnabled: _aaEnabled,

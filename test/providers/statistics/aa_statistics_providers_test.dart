@@ -10,6 +10,7 @@
 //   6. aaParticipantAvatarContextProvider：本地账本返回空上下文；
 //   7. aaMemberDetailProvider：非 AA 或成员缺失返回 null。
 
+import 'package:drift/drift.dart' show TableUpdate;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,7 +25,15 @@ import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/shared/providers/read_provider_future.dart';
+import 'package:sesame_notes/shared/providers/ledger_identity_providers.dart';
+import 'package:sesame_notes/shared/providers/language_provider.dart';
 import 'package:sesame_notes/utils/member_id.dart';
+
+/// 固定中文语言环境,展示名断言不随系统语言漂移。
+class _ZhLanguageNotifier extends LanguageNotifier {
+  @override
+  Locale? build() => const Locale('zh');
+}
 
 class _MockRepo extends Mock implements LocalRepository {}
 
@@ -53,6 +62,8 @@ void main() {
         repositoryProvider.overrideWithValue(repo),
         // 单人账本 owner 即本人：localSelfId 置为 'u-owner'，保持参与人断言成立。
         localSelfIdProvider.overrideWith((ref) async => 'u-owner'),
+        // 固定中文环境,展示名断言不随系统语言漂移。
+        languageProvider.overrideWith(_ZhLanguageNotifier.new),
         currentLedgerIdProvider.overrideWithBuild((ref, notifier) => ledgerId),
       ],
     );
@@ -119,7 +130,8 @@ void main() {
 
   test('aaParticipantOptionsProvider：单人账本含 owner 与虚拟用户', () async {
     await repo.createPlaceholderMember(ledgerId: ledgerId, name: '虚拟A');
-    final options = await container.read(
+    final options = await readProviderFutureFromContainer(
+      container,
       aaParticipantOptionsProvider(ledgerId).future,
     );
 
@@ -135,25 +147,37 @@ void main() {
   });
 
   test('aaStatisticsProvider：AA 关闭返回空汇总，开启后含参与人', () async {
-    final empty = await container.read(aaStatisticsProvider(ledgerId).future);
+    final empty = await readProviderFutureFromContainer(
+      container,
+      aaStatisticsProvider(ledgerId).future,
+    );
     expect(empty.participants, isNotEmpty, reason: '开启 AA 且含 owner');
 
     await repo.updateLedger(id: ledgerId, aaEnabled: false);
     container.invalidate(aaStatisticsProvider(ledgerId));
-    final closed = await container.read(aaStatisticsProvider(ledgerId).future);
+    final closed = await readProviderFutureFromContainer(
+      container,
+      aaStatisticsProvider(ledgerId).future,
+    );
     expect(closed.participants, isEmpty);
   });
 
-  test('aaParticipantAvatarContextProvider：本地账本空上下文', () async {
-    final ctx = await container.read(
-      aaParticipantAvatarContextProvider(ledgerId).future,
+  test('ledgerIdentityProvider：本地账本含 LOCAL self 成员(供参与人头像解析)', () async {
+    final identity = await readProviderFutureFromContainer(
+      container,
+      ledgerIdentityProvider(ledgerId).future,
     );
-    expect(ctx.members, isEmpty);
+    expect(
+      identity.memberMap,
+      contains(localSelfMemberId(ledgerId, 'u-owner')),
+    );
+    expect(identity.displayNameOf(identity.selfMemberId), '单机芝麻仔');
   });
 
   test('aaMemberDetailProvider：非 AA 账本返回 null', () async {
     await repo.updateLedger(id: ledgerId, aaEnabled: false);
-    final detail = await container.read(
+    final detail = await readProviderFutureFromContainer(
+      container,
       aaMemberDetailProvider((
         ledgerId: ledgerId,
         participantId: 'u-owner',
@@ -206,6 +230,9 @@ void main() {
       ),
     );
     when(
+      () => mock.getMembersByLedger('ledger-1'),
+    ).thenAnswer((_) async => const []);
+    when(
       () => mock.ensureLocalSelfMember(
         ledgerId: any(named: 'ledgerId'),
         localSelfId: any(named: 'localSelfId'),
@@ -216,6 +243,10 @@ void main() {
       overrides: [
         repositoryProvider.overrideWithValue(mock),
         localSelfIdProvider.overrideWith((ref) async => 'local-self'),
+        // 身份上下文监听统一数据变更信号;mock 仓储无真实数据库,给出空流。
+        dataChangeSignalProvider.overrideWith(
+          (ref) => const Stream<Set<TableUpdate>>.empty(),
+        ),
       ],
     );
     addTearDown(c2.dispose);

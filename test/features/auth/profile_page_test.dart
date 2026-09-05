@@ -9,6 +9,7 @@ import 'package:sesame_notes/features/auth/presentation/profile_page.dart';
 import 'package:sesame_notes/features/auth/application/auth_actions.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
+import 'package:sesame_notes/shared/widgets/member_avatar.dart';
 import 'package:sesame_notes/shared/widgets/section_card.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 
@@ -86,7 +87,7 @@ void main() {
     final nicknameStyle = tester.widget<Text>(find.text('昵称')).style;
     expect(nicknameStyle!.fontSize, basicInfoStyle!.fontSize);
 
-    final avatarRect = tester.getRect(find.byType(CircleAvatar));
+    final avatarRect = tester.getRect(find.byType(SelfAvatar));
     final basicInfoRect = tester.getRect(find.text('基本资料'));
     final nicknameRect = tester.getRect(find.text('昵称'));
     final nicknameValueRect = tester.getRect(find.text('芝麻仔382716'));

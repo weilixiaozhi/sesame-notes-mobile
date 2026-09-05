@@ -1,4 +1,4 @@
-﻿// AA 结算统计页共享「(我)」后缀渲染测试：
+// AA 结算统计页共享「(我)」后缀渲染测试：
 // 验证分摊明细行与转账方案卡基于 isSelf / fromIsSelf / toIsSelf 追加
 // 统一后缀（含前导空格），非本人保持纯名不拼接。
 library;
@@ -21,6 +21,7 @@ import 'package:sesame_notes/features/statistics/presentation/aa_statistics_page
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
+import 'package:sesame_notes/shared/providers/ledger_identity_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_member_detail_models.dart';
 import 'package:sesame_notes/shared/aa/aa_statistics_service.dart';
 
@@ -105,9 +106,13 @@ void main() {
           }),
           // 固定统计数据，不依赖真实账本/交易查询。
           aaStatisticsProvider.overrideWith((ref, ledgerId) async => stats),
-          // 空头像上下文：全部参与人走占位头像。
-          aaParticipantAvatarContextProvider.overrideWith(
-            (ref, ledgerId) async => const AaParticipantAvatarContext(),
+          // 空身份上下文:全部参与人回退全局默认头像资产。
+          ledgerIdentityProvider.overrideWith(
+            (ref, ledgerId) async => const LedgerIdentity(
+              selfMemberId: '',
+              localSelfName: '单机芝麻仔',
+              unknownName: '未知',
+            ),
           ),
         ],
         child: MaterialApp.router(
@@ -461,9 +466,8 @@ void main() {
           localSelfIdProvider.overrideWith((ref) async => 'local-self'),
           dataChangeSignalProvider.overrideWith((ref) => dataSignal.stream),
           currentLedgerProvider.overrideWith((ref) => Stream.value(null)),
-          aaParticipantAvatarContextProvider.overrideWith(
-            (ref, ledgerId) async => const AaParticipantAvatarContext(),
-          ),
+          // 参与人名册走真实账本身份上下文(成员镜像 u1),
+          // 保证 AA 统计能聚合出分摊详情行。
         ],
         child: MaterialApp(
           locale: const Locale('zh'),

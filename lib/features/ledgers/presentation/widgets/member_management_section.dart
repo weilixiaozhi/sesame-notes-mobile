@@ -26,13 +26,12 @@ import 'package:sesame_notes/shared/widgets/me_suffix.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/features/ledgers/application/member_directory_providers.dart';
-import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/data/models.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/shared/widgets/app_dialog.dart';
 import 'package:sesame_notes/shared/widgets/member_avatar.dart';
-import 'package:sesame_notes/shared/widgets/person_avatar.dart';
+import 'package:sesame_notes/shared/providers/ledger_identity_providers.dart';
 import 'package:sesame_notes/utils/member_id.dart';
 import 'package:sesame_notes/shared/widgets/section_card.dart';
 import 'package:sesame_notes/shared/widgets/toast.dart';
@@ -744,6 +743,7 @@ class _MemberManagementSectionState
           // —— 真实成员行 ——
           for (final m in members) ...[
             _MemberTile(
+              ledgerId: widget.ledgerId,
               member: m,
               onRemove:
                   isCurrentOwner &&
@@ -865,7 +865,14 @@ class _MemberManagementSectionState
 /// 只展示一行标题(昵称优先、无昵称回退账号),不展示账号副标题,
 /// 避免与昵称重复占用行高。
 class _MemberTile extends ConsumerWidget {
-  const _MemberTile({required this.member, this.onRemove});
+  const _MemberTile({
+    required this.ledgerId,
+    required this.member,
+    this.onRemove,
+  });
+
+  /// 所属账本 id(供统一身份解析);null = 新建态。
+  final String? ledgerId;
 
   final LedgerMemberDisplay member;
 
@@ -876,34 +883,30 @@ class _MemberTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final isOwner = member.role == 'owner';
-    // 本人判定:本地账本 LOCAL 成员恒为本人;共享账本成员绑定当前账号
-    // （linked_account_id == 当前登录 userId）即本人。
-    final sessionUserId = ref.watch(currentLedgerAccountIdProvider) ?? '';
+    // 昵称与本人判定统一走账本身份上下文,与成员支出/AA 分摊同一套解析链;
+    // 身份未就绪时回退成员行快照,避免闪烁「未知」。
+    final identity = ref.watch(ledgerIdentityProvider(ledgerId ?? '')).value;
     final isSelf =
-        member.memberType == 'LOCAL' ||
-        (member.linkedAccountId != null &&
-            member.linkedAccountId!.isNotEmpty &&
-            member.linkedAccountId == sessionUserId);
-    // 标题按身份口径解析:本人优先当前云 Profile 昵称/固定本地身份,
-    // 即使成员行快照为空也不落「未知」;他人用成员目录昵称(注册即分配,
-    // 恒非空),空昵称的防御兜底才用「未知」。
-    final hasDisplayName = member.displayName.isNotEmpty;
-    String displayName;
-    if (isSelf && member.memberType == 'REGISTERED') {
-      // 云昵称优先,资料缓存未就绪时回退成员行快照(正常恒非空)。
-      final cloudName =
-          ref.watch(accountStateProvider).profile?.displayName?.trim() ?? '';
-      displayName = cloudName.isNotEmpty
-          ? cloudName
-          : (hasDisplayName ? member.displayName : l10n.aaUnknownUser);
-    } else if (isSelf && member.memberType == 'LOCAL') {
-      displayName = l10n.mineLocalName;
-    } else {
-      displayName = hasDisplayName ? member.displayName : l10n.aaUnknownUser;
-    }
+        identity?.isSelfOf(member.id) ?? member.memberType == 'LOCAL';
+    final displayName =
+        identity?.displayNameOf(member.id) ??
+        (member.displayName.isNotEmpty
+            ? member.displayName
+            : l10n.aaUnknownUser);
     return ListTile(
       dense: true,
-      leading: _MemberAvatar(member: member),
+      leading: isSelf
+          ? const SelfAvatar(size: AppDimens.icon40)
+          : MemberAvatar(
+              userId: member.linkedAccountId,
+              version: member.avatarVersion,
+              hasAvatar:
+                  member.linkedAccountId != null &&
+                  member.linkedAccountId!.isNotEmpty &&
+                  member.avatarUrl != null &&
+                  member.avatarUrl!.trim().isNotEmpty,
+              size: AppDimens.icon40,
+            ),
       title: Row(
         children: [
           Flexible(child: Text(displayName, overflow: TextOverflow.ellipsis)),
@@ -960,62 +963,7 @@ class _SkeletonBar extends StatelessWidget {
   }
 }
 
-/// 成员头像 — 本人优先用本地头像文件，其他成员走磁盘缓存；
-/// 都没有或加载失败才回退 person 图标。
-class _MemberAvatar extends ConsumerWidget {
-  const _MemberAvatar({required this.member});
-
-  final LedgerMemberDisplay member;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // 本人判定:本地账本 LOCAL 成员恒为本人;共享账本成员绑定当前账号即本人。
-    final sessionUserId = ref.watch(currentLedgerAccountIdProvider) ?? '';
-    final isSelf =
-        member.memberType == 'LOCAL' ||
-        (member.linkedAccountId != null &&
-            member.linkedAccountId!.isNotEmpty &&
-            member.linkedAccountId == sessionUserId);
-    // 本人头像：云已登录且有云头像走成员缓存（上传后即时生效、离线可用）；
-    // 本地本人/云无头像统一回退正式默认头像。
-    if (isSelf) {
-      final account = ref.read(accountStateProvider);
-      final profile = account.profile;
-      if (account.isAuthenticated && profile != null) {
-        return MemberAvatar(
-          userId: profile.userId,
-          version: profile.avatarVersion,
-          hasAvatar: profile.avatarUrl != null,
-          size: AppDimens.icon40,
-          iconSize: AppDimens.icon16,
-        );
-      }
-      return const ClipOval(
-        child: Image(
-          image: AssetImage(kDefaultAvatarAsset),
-          width: AppDimens.icon40,
-          height: AppDimens.icon40,
-          fit: BoxFit.cover,
-        ),
-      );
-    }
-
-    // 非本人真实成员:统一走磁盘缓存(断网可用),未配置头像/加载失败回退正式默认头像。
-    return MemberAvatar(
-      userId: member.linkedAccountId,
-      // schema v1 无头像版本列,恒为 0,仅作本地缓存键兼容。
-      version: 0,
-      hasAvatar:
-          member.linkedAccountId != null &&
-          member.avatarUrl != null &&
-          member.avatarUrl!.trim().isNotEmpty,
-      size: AppDimens.icon40,
-      iconSize: AppDimens.icon16,
-    );
-  }
-}
-
-/// 单个虚拟用户行:头像(person 图标)+ 可编辑名称 + 移除 icon。
+/// 单个虚拟用户行:全局默认头像 + 可编辑名称 + 移除 icon。
 ///
 /// 名称行内编辑,不弹窗。
 class _VirtualUserTile extends StatefulWidget {
@@ -1090,19 +1038,8 @@ class _VirtualUserTileState extends State<_VirtualUserTile> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppTokens.surfaceSecondary(context),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              AppIcons.person,
-              size: AppDimens.icon16,
-              color: AppTokens.iconSecondary(context),
-            ),
-          ),
+          // 虚拟用户头像与全项目无头像场景一致:全局默认头像资产。
+          const MemberAvatar(userId: null, size: 40),
           const SizedBox(width: AppDimens.p12),
           // 固定宽度,仅容纳短昵称(如「虚拟用户1」),避免色块过宽。
           SizedBox(

@@ -49,4 +49,4 @@ export 'category_rank_row.dart';
 
 // ===== 账号 / 登录 / 安全 =====
 export 'mine_page_header.dart';
-export 'person_avatar.dart';
+export 'member_avatar.dart';

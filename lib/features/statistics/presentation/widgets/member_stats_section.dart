@@ -7,17 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/typography.dart';
+import 'package:sesame_notes/shared/widgets/aa_participant_avatar.dart';
 import 'package:sesame_notes/shared/widgets/format_money.dart';
-import 'package:sesame_notes/shared/widgets/member_avatar.dart';
 import 'package:sesame_notes/shared/widgets/me_suffix.dart';
-import 'package:sesame_notes/shared/widgets/person_avatar.dart';
 import 'package:sesame_notes/shared/widgets/section_card.dart';
 
 /// 成员支出模块
@@ -61,7 +59,7 @@ class MemberStatsSection extends ConsumerWidget {
             padding: const EdgeInsets.all(AppDimens.p16),
             child: Text('${l10n.commonError}: $e', textAlign: TextAlign.center),
           ),
-          data: (stats) => _buildMemberList(context, stats, l10n),
+          data: (stats) => _buildMemberList(context, stats, l10n, id),
         ),
       ],
     );
@@ -137,6 +135,7 @@ class MemberStatsSection extends ConsumerWidget {
     BuildContext context,
     List<MemberExpenseStatItem> stats,
     AppLocalizations l10n,
+    String? ledgerId,
   ) {
     if (stats.isEmpty) {
       return Padding(
@@ -154,7 +153,11 @@ class MemberStatsSection extends ConsumerWidget {
       child: Column(
         children: [
           for (final s in stats) ...[
-            _MemberStatTile(stat: s, totalExpense: totalExpense),
+            _MemberStatTile(
+              ledgerId: ledgerId,
+              stat: s,
+              totalExpense: totalExpense,
+            ),
             if (s != stats.last) const Divider(height: 1),
           ],
         ],
@@ -164,7 +167,14 @@ class MemberStatsSection extends ConsumerWidget {
 }
 
 class _MemberStatTile extends ConsumerWidget {
-  const _MemberStatTile({required this.stat, required this.totalExpense});
+  const _MemberStatTile({
+    required this.ledgerId,
+    required this.stat,
+    required this.totalExpense,
+  });
+
+  /// 所属账本 id(供参与人头像统一解析)。
+  final String? ledgerId;
 
   final MemberExpenseStatItem stat;
   final double totalExpense;
@@ -177,7 +187,12 @@ class _MemberStatTile extends ConsumerWidget {
         ? (stat.expenseTotal / totalExpense * 100).clamp(0, 100)
         : 0;
     return ListTile(
-      leading: _StatsAvatar(stat: stat),
+      leading: AaParticipantAvatar(
+        ledgerId: ledgerId ?? '',
+        participantId: stat.participantId,
+        isSelf: stat.isSelf,
+        size: AppDimens.icon40,
+      ),
       // 标题行与成员管理模块一致:本人「(我)」后缀统一走共享 MeSuffix,
       // 字号/颜色/字重相同,保证两模块本人展示统一。
       title: Row(
@@ -219,58 +234,6 @@ class _MemberStatTile extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// 成员支出头像 — 本人优先用本地头像文件，真实成员走磁盘缓存，
-/// 都没有或加载失败才回退 person 图标。
-class _StatsAvatar extends ConsumerWidget {
-  const _StatsAvatar({required this.stat});
-
-  final MemberExpenseStatItem stat;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // 虚拟用户：person 占位图标。
-    if (stat.isVirtual) {
-      return const PersonAvatar(
-        size: AppDimens.icon40,
-        iconSize: AppDimens.icon16,
-      );
-    }
-
-    // 本人头像：云已登录且有云头像走成员缓存（上传后即时生效、离线可用），
-    // 本地本人/云无头像统一回退正式默认头像。
-    if (stat.isSelf) {
-      final account = ref.read(accountStateProvider);
-      final profile = account.profile;
-      if (account.isAuthenticated && profile != null) {
-        return MemberAvatar(
-          userId: profile.userId,
-          version: profile.avatarVersion,
-          hasAvatar: profile.avatarUrl != null,
-          size: AppDimens.icon40,
-          iconSize: AppDimens.icon16,
-        );
-      }
-      return const ClipOval(
-        child: Image(
-          image: AssetImage(kDefaultAvatarAsset),
-          width: AppDimens.icon40,
-          height: AppDimens.icon40,
-          fit: BoxFit.cover,
-        ),
-      );
-    }
-
-    // 非本人真实成员:统一走磁盘缓存(断网可用),未配置头像/加载失败回退正式默认头像。
-    return MemberAvatar(
-      userId: stat.participantId,
-      version: stat.avatarVersion,
-      hasAvatar: stat.avatarUrl != null && stat.avatarUrl!.trim().isNotEmpty,
-      size: AppDimens.icon40,
-      iconSize: AppDimens.icon16,
     );
   }
 }

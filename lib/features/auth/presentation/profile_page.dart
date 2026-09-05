@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/features/auth/application/account_providers.dart';
 import 'package:sesame_notes/features/auth/application/auth_actions.dart';
 import 'package:sesame_notes/features/auth/presentation/account_logout_flow.dart';
@@ -28,9 +27,6 @@ class ProfilePage extends ConsumerStatefulWidget {
 }
 
 class _ProfilePageState extends ConsumerState<ProfilePage> {
-  /// 云头像加载失败时记录的 URL；换头像后 URL 变化会重新加载。
-  String? _failedAvatarUrl;
-
   @override
   void initState() {
     super.initState();
@@ -51,9 +47,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(accountStateProvider);
     final profile = state.profile;
-    final avatarUrl = profile?.avatarUrl;
-    // 云头像接口要求鉴权：ImageProvider 需显式携带当前访问令牌
-    final token = ref.read(authSessionProvider)?.accessToken;
 
     return Scaffold(
       backgroundColor: AppTokens.scaffoldBackground(context),
@@ -79,34 +72,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       height: AppDimens.p40 * 2,
                       child: Stack(
                         children: [
+                          // 本人头像统一走 SelfAvatar:磁盘缓存离线可用,
+                          // 与我的页/成员管理/AA 分摊页同一套头像逻辑。
                           Positioned.fill(
-                            child: CircleAvatar(
-                              radius: AppDimens.p40,
-                              backgroundColor: AppTokens.surfaceSecondary(
-                                context,
-                              ),
-                              // 默认头像始终作为背景，云头像前景加载失败时自然回退
-                              backgroundImage: const AssetImage(
-                                kDefaultAvatarAsset,
-                              ),
-                              foregroundImage:
-                                  avatarUrl == null ||
-                                      avatarUrl == _failedAvatarUrl
-                                  ? null
-                                  : NetworkImage(
-                                      avatarUrl,
-                                      headers: token == null
-                                          ? null
-                                          : {'Authorization': 'Bearer $token'},
-                                    ),
-                              onForegroundImageError:
-                                  avatarUrl != null &&
-                                      avatarUrl != _failedAvatarUrl
-                                  ? (_, _) => setState(
-                                      () => _failedAvatarUrl = avatarUrl,
-                                    )
-                                  : null,
-                            ),
+                            child: SelfAvatar(size: AppDimens.p40 * 2),
                           ),
                           Positioned(
                             right: 0,

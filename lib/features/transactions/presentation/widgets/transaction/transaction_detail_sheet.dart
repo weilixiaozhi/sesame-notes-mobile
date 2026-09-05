@@ -122,8 +122,9 @@ class _TransactionDetailBody extends ConsumerWidget {
     // watch 而非 read:身份 provider 在冷启动可能尚未解析,解析完成后自动重建。
     final ledger = ref.watch(currentLedgerDisplayProvider).asData?.value;
     final localSelfId = ref.watch(localSelfIdProvider).asData?.value ?? '';
-    final isCloudLedger = ledger?.storageMode == 'cloud';
+    // 归属判定走统一谓词(storageMode=='cloud' || 共享账本):
     // 云/共享账本才注入云账号身份;本地账本本人恒显固定本地身份。
+    final isCloudLedger = ledger?.isCloudLedger ?? false;
     final account = isCloudLedger ? ref.watch(accountStateProvider) : null;
     final storedSelf = ledger?.selfMemberId;
     final selfMemberId = (storedSelf != null && storedSelf.isNotEmpty)
@@ -136,7 +137,6 @@ class _TransactionDetailBody extends ConsumerWidget {
       cloudSelfUserId: account?.profile?.userId,
       cloudSelfDisplayName: account?.profile?.displayName,
       virtualNames: virtualNames,
-      l10n: l10n,
     );
   }
 

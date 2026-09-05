@@ -38,7 +38,6 @@ void main() {
       cloudSelfUserId: cloudSelfUserId,
       cloudSelfDisplayName: cloudSelfDisplayName,
       virtualNames: virtualNames,
-      l10n: l10n,
     );
   }
 
@@ -70,11 +69,12 @@ void main() {
       expect(r.resolve('u1'), 'Alice');
     });
 
-    test('1b. 成员表昵称为空时防御性回退「未知」,不回退原始 id', () {
+    test('1b. 成员表昵称为空时返回空串,由调用方统一映射「未知」,不回退原始 id', () {
       final r = buildResolver(
         memberDisplayMap: {'u1': mkMember(id: 'u1', displayName: null)},
       );
-      expect(r.resolve('u1'), l10n.aaUnknownUser);
+      // 解析器契约:无法解析返回空串,调用方(UI/身份上下文)统一映射「未知」。
+      expect(r.resolve('u1'), '');
       expect(r.resolve('u1'), isNot('u1'));
     });
 

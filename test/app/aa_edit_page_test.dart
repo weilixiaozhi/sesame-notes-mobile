@@ -19,6 +19,7 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
+import 'package:sesame_notes/shared/providers/language_provider.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/shared/aa/aa_edit_models.dart';
@@ -72,6 +73,12 @@ class _CloudAccountStateNotifier extends AccountStateNotifier {
   );
 }
 
+/// 固定中文语言环境:身份上下文的展示名与页面强制 zh 一致。
+class _ZhLanguageNotifier extends LanguageNotifier {
+  @override
+  Locale? build() => const Locale('zh');
+}
+
 /// 用 Navigator push 触发页路由,结果存入 [result] 槽位。
 ///
 /// [localSelfId] 用于桩操作者身份:默认不传时走真实 UUID(不在名册,
@@ -88,6 +95,10 @@ Future<void> _openAaEdit(
   when(
     () => repo.getLedgerById(any()),
   ).thenAnswer((_) async => cloudLedger ? _cloudLedger() : _localLedger());
+  // 账本身份上下文读取成员表:测试桩无成员行,返回空列表。
+  when(
+    () => repo.getMembersByLedger(any()),
+  ).thenAnswer((_) async => const <db.LedgerMember>[]);
   // 操作者 self 成员解析：桩返回与名册一致的成员 id（= 传入的 localSelfId），
   // 使「我」行锁定口径与生产一致——操作者 = ensureLocalSelfMember 返回的
   // self 成员 id，再与参与人名册匹配；不在名册时放弃锁定。
@@ -125,6 +136,7 @@ Future<void> _openAaEdit(
           accountStateProvider.overrideWith(_CloudAccountStateNotifier.new),
         if (localSelfId != null)
           localSelfIdProvider.overrideWith((ref) async => localSelfId),
+        languageProvider.overrideWith(_ZhLanguageNotifier.new),
       ],
       child: MaterialApp.router(
         locale: const Locale('zh'),
