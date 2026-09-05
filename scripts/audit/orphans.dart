@@ -70,11 +70,7 @@ void main() {
   final deadRoutes = <String>[];
   for (final e in routeNames.entries) {
     if (e.key == 'all') continue;
-    final refs = countRefs(
-      'Routes.${e.key}',
-      allLib,
-      excludeSelf: routeFile,
-    );
+    final refs = countRefs('Routes.${e.key}', allLib, excludeSelf: routeFile);
     if (refs == 0) deadRoutes.add('${e.key} (${e.value})');
   }
   report('死路由:Routes 常量在路由文件之外零引用', deadRoutes);
@@ -112,7 +108,9 @@ void main() {
   // ---- 4. 未用公共方法 ----
   // 只扫数据/编排层的类:这些类的公共方法若全库无人调用,大概率是
   // 「有实现有测试、生产从不接线」的死代码(如未接线的 purge 编排)。
-  final targetClassRe = RegExp(r'class \w+(Repository|Service|Actions|Coordinator)\s');
+  final targetClassRe = RegExp(
+    r'class \w+(Repository|Service|Actions|Coordinator)\s',
+  );
   final methodRe = RegExp(
     r'^\s{2}(?:static\s+)?(?:Future<\S+>|Future|void|bool|String|int|double|File|Uint8List|Stream<\S+>)\s+(\w+)\s*\(',
     multiLine: true,
@@ -131,7 +129,10 @@ void main() {
       if (refs <= 1) deadMethods.add('$name ($f)');
     }
   }
-  report('未用公共方法:Repository/Service/Actions/Coordinator 方法在自身文件外零引用', deadMethods);
+  report(
+    '未用公共方法:Repository/Service/Actions/Coordinator 方法在自身文件外零引用',
+    deadMethods,
+  );
 
   print('');
   print('提示:以上均为候选,请人工确认。误报常见原因:动态路由拼接、测试专用注入、接口动态分发、字符串键。');

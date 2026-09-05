@@ -295,10 +295,7 @@ void main() {
     );
     final file = await writePlainBackup('old_schema.snbak', manifest);
     expect(
-      () => importService.openBackup(
-        backupFile: file,
-        currentSchemaVersion: 1,
-      ),
+      () => importService.openBackup(backupFile: file, currentSchemaVersion: 1),
       throwsA(
         isA<BackupFormatException>().having(
           (e) => e.reason,
@@ -321,10 +318,7 @@ void main() {
     );
     final file = await writePlainBackup('new_schema.snbak', manifest);
     expect(
-      () => importService.openBackup(
-        backupFile: file,
-        currentSchemaVersion: 1,
-      ),
+      () => importService.openBackup(backupFile: file, currentSchemaVersion: 1),
       throwsA(
         isA<BackupFormatException>().having(
           (e) => e.reason,
@@ -335,34 +329,28 @@ void main() {
     );
   });
 
-  test(
-    'openBackup：Manifest format_version 不受支持 → invalidManifest',
-    () async {
-      final manifest = BackupManifest(
-        formatVersion: 999,
-        dbSchemaVersion: 1,
-        createdAt: DateTime.utc(2026, 8, 1),
-        deviceId: 'd',
-        appVersion: 'v',
-        ledgers: const [],
-        accounts: const [],
-      );
-      final file = await writePlainBackup('mismatch.snbak', manifest);
-      expect(
-        () => importService.openBackup(
-          backupFile: file,
-          currentSchemaVersion: 1,
+  test('openBackup：Manifest format_version 不受支持 → invalidManifest', () async {
+    final manifest = BackupManifest(
+      formatVersion: 999,
+      dbSchemaVersion: 1,
+      createdAt: DateTime.utc(2026, 8, 1),
+      deviceId: 'd',
+      appVersion: 'v',
+      ledgers: const [],
+      accounts: const [],
+    );
+    final file = await writePlainBackup('mismatch.snbak', manifest);
+    expect(
+      () => importService.openBackup(backupFile: file, currentSchemaVersion: 1),
+      throwsA(
+        isA<BackupFormatException>().having(
+          (e) => e.reason,
+          'reason',
+          BackupOpenError.invalidManifest,
         ),
-        throwsA(
-          isA<BackupFormatException>().having(
-            (e) => e.reason,
-            'reason',
-            BackupOpenError.invalidManifest,
-          ),
-        ),
-      );
-    },
-  );
+      ),
+    );
+  });
 
   test('apply：本地无冲突原 identity + 云端永远 Fork + skip 不写 + recovery_log', () async {
     final (srcDb, backup) = await seedBackupSource();

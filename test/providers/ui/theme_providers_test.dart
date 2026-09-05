@@ -65,5 +65,4 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('expenseColorScheme'), 'red');
   });
-
 }

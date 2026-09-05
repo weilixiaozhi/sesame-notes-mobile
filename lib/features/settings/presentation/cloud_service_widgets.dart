@@ -97,9 +97,9 @@ Widget buildCloudServiceStatusHeader({
                   const SizedBox(width: AppDimens.p4),
                   Text(
                     statusText,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: statusColor,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelSmall?.copyWith(color: statusColor),
                   ),
                 ],
               ),
@@ -206,10 +206,7 @@ Widget buildCloudServiceSectionHeader(
   // 未传入副标题时，复用单行标题布局。
   if (subtitle == null) {
     return Padding(
-      padding: const EdgeInsets.only(
-        top: AppDimens.p4,
-        bottom: AppDimens.p8,
-      ),
+      padding: const EdgeInsets.only(top: AppDimens.p4, bottom: AppDimens.p8),
       child: titleRow,
     );
   }
@@ -258,9 +255,7 @@ Widget buildCloudServiceCard({
         // 选中/未选中均保留 2px 边框占位（未选中为透明），确保固定高度下
         // 所有卡片高度完全一致。
         border: Border.all(
-          color: isSelected
-              ? AppTokens.success(context)
-              : Colors.transparent,
+          color: isSelected ? AppTokens.success(context) : Colors.transparent,
           width: 2,
         ),
         borderRadius: BorderRadius.circular(AppDimens.radius12),
@@ -292,7 +287,9 @@ Widget buildCloudServiceCard({
                         height: 36,
                         decoration: BoxDecoration(
                           color: iconColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(AppDimens.radius8),
+                          borderRadius: BorderRadius.circular(
+                            AppDimens.radius8,
+                          ),
                         ),
                         child: Icon(
                           icon,
@@ -317,9 +314,7 @@ Widget buildCloudServiceCard({
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                        ?.copyWith(fontWeight: FontWeight.w600),
                                   ),
                                 ),
                                 if (isDisabled)
@@ -338,11 +333,14 @@ Widget buildCloudServiceCard({
                                     ),
                                     child: Text(
                                       '不可用',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.labelSmall?.copyWith(
-                                        color: AppTokens.textTertiary(context),
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            color: AppTokens.textTertiary(
+                                              context,
+                                            ),
+                                          ),
                                     ),
                                   ),
                               ],

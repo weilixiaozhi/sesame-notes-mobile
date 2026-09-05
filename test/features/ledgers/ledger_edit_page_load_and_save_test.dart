@@ -133,18 +133,8 @@ void main() {
           ),
         );
     for (final m in [
-      (
-        id: 'member-me',
-        name: '我的昵称',
-        account: 'user-1',
-        role: 'owner',
-      ),
-      (
-        id: 'member-other',
-        name: '他人昵称',
-        account: 'user-2',
-        role: 'editor',
-      ),
+      (id: 'member-me', name: '我的昵称', account: 'user-1', role: 'owner'),
+      (id: 'member-other', name: '他人昵称', account: 'user-2', role: 'editor'),
     ]) {
       await db
           .into(db.ledgerMembers)

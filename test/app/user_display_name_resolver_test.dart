@@ -65,18 +65,14 @@ void main() {
   group('resolve 优先级', () {
     test('1. 成员表昵称优先(其他 REGISTERED 成员)', () {
       final r = buildResolver(
-        memberDisplayMap: {
-          'u1': mkMember(id: 'u1', displayName: 'Alice'),
-        },
+        memberDisplayMap: {'u1': mkMember(id: 'u1', displayName: 'Alice')},
       );
       expect(r.resolve('u1'), 'Alice');
     });
 
     test('1b. 成员表昵称为空时防御性回退「未知」,不回退原始 id', () {
       final r = buildResolver(
-        memberDisplayMap: {
-          'u1': mkMember(id: 'u1', displayName: null),
-        },
+        memberDisplayMap: {'u1': mkMember(id: 'u1', displayName: null)},
       );
       expect(r.resolve('u1'), l10n.aaUnknownUser);
       expect(r.resolve('u1'), isNot('u1'));
@@ -157,7 +153,6 @@ void main() {
       expect(r.resolve(null), '');
       expect(r.resolve(''), '');
     });
-
   });
 
   group('isSelf 本人判定', () {

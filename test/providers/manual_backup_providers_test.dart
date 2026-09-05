@@ -34,47 +34,52 @@ class _MemoryDeviceIdStore implements DeviceIdStore {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('performManualBackup：生成 .snbak 快照并记录成功状态', () async {
-    SharedPreferences.setMockInitialValues({});
-    final tmp = await Directory.systemTemp.createTemp('manual_bk_');
-    addTearDown(() => tmp.delete(recursive: true));
-    final dbFile = File(p.join(tmp.path, 'live.sqlite'));
-    final db = SesameDatabase.forTesting(NativeDatabase(dbFile));
-    addTearDown(db.close);
-    final backupDir = Directory(p.join(tmp.path, 'backups'));
-    final container = ProviderContainer(
-      overrides: [
-        databaseProvider.overrideWithValue(db),
-        deviceIdentityProvider.overrideWithValue(DeviceIdentity(_MemoryDeviceIdStore())),
-        localBackupServiceProvider.overrideWithValue(
-          LocalBackupService(backupDir: backupDir, databaseFile: dbFile),
+  test(
+    'performManualBackup：生成 .snbak 快照并记录成功状态',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final tmp = await Directory.systemTemp.createTemp('manual_bk_');
+      addTearDown(() => tmp.delete(recursive: true));
+      final dbFile = File(p.join(tmp.path, 'live.sqlite'));
+      final db = SesameDatabase.forTesting(NativeDatabase(dbFile));
+      addTearDown(db.close);
+      final backupDir = Directory(p.join(tmp.path, 'backups'));
+      final container = ProviderContainer(
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+          deviceIdentityProvider.overrideWithValue(
+            DeviceIdentity(_MemoryDeviceIdStore()),
+          ),
+          localBackupServiceProvider.overrideWithValue(
+            LocalBackupService(backupDir: backupDir, databaseFile: dbFile),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await performManualBackup(read: container.read);
+
+      // 备份文件落盘
+      expect(
+        backupDir.listSync().whereType<File>().where(
+          (f) => f.path.endsWith(LocalBackupService.backupExtension),
         ),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    await performManualBackup(read: container.read);
-
-    // 备份文件落盘
-    expect(
-      backupDir
-          .listSync()
-          .whereType<File>()
-          .where((f) => f.path.endsWith(LocalBackupService.backupExtension)),
-      isNotEmpty,
-    );
-    // 成功状态落库（未配置第三方时 currentProvider 为 null）
-    final row = await (db.select(
-      db.backupState,
-    )..where((b) => b.id.equals(0))).getSingleOrNull();
-    expect(row?.lastSuccessAt, isNotNull);
-    // 当天去重标记
-    final prefs = await SharedPreferences.getInstance();
-    expect(
-      prefs.getString(LocalBackupService.prefsKeyLastBackupDate),
-      LocalBackupService.todayString(),
-    );
-  }, timeout: const Timeout(Duration(minutes: 2)));
+        isNotEmpty,
+      );
+      // 成功状态落库（未配置第三方时 currentProvider 为 null）
+      final row = await (db.select(
+        db.backupState,
+      )..where((b) => b.id.equals(0))).getSingleOrNull();
+      expect(row?.lastSuccessAt, isNotNull);
+      // 当天去重标记
+      final prefs = await SharedPreferences.getInstance();
+      expect(
+        prefs.getString(LocalBackupService.prefsKeyLastBackupDate),
+        LocalBackupService.todayString(),
+      );
+    },
+    timeout: const Timeout(Duration(minutes: 2)),
+  );
 
   test('auto_sync 关闭时自动路径跳过云端上传（手动上传不受开关限制）', () async {
     SharedPreferences.setMockInitialValues({

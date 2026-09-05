@@ -151,9 +151,7 @@ void main() {
     resetGlobalTestState();
   });
 
-  testWidgets('本地账本:self member id 恒显固定本地身份「单机芝麻仔（我）」,而非裸 id', (
-    tester,
-  ) async {
+  testWidgets('本地账本:self member id 恒显固定本地身份「单机芝麻仔（我）」,而非裸 id', (tester) async {
     // 真实语义:成员 id(uuidV5 派生)与设备 localSelfId 是不同的值,
     // 「我」= ledger.selfMemberId,与设备 id 无关。
     await _openSheet(
@@ -179,10 +177,7 @@ void main() {
     );
 
     // 固定本地身份出现两次(创建人 + 编辑人),均带「(我)」后缀;成员 id 不应裸显示
-    expect(
-      find.textContaining('单机芝麻仔', findRichText: true),
-      findsNWidgets(2),
-    );
+    expect(find.textContaining('单机芝麻仔', findRichText: true), findsNWidgets(2));
     expect(find.textContaining('(我)', findRichText: true), findsNWidgets(2));
     expect(find.text('self-member-1'), findsNothing);
     expect(find.textContaining('未设置昵称', findRichText: true), findsNothing);
@@ -215,10 +210,7 @@ void main() {
     );
 
     // 派生成员 id 被识别为本人 → 显示固定本地身份,不裸显 uuid
-    expect(
-      find.textContaining('单机芝麻仔', findRichText: true),
-      findsNWidgets(2),
-    );
+    expect(find.textContaining('单机芝麻仔', findRichText: true), findsNWidgets(2));
     expect(find.text(derivedSelf), findsNothing);
   });
 

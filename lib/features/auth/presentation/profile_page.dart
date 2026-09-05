@@ -89,25 +89,23 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               backgroundImage: const AssetImage(
                                 kDefaultAvatarAsset,
                               ),
-                              foregroundImage: avatarUrl == null ||
+                              foregroundImage:
+                                  avatarUrl == null ||
                                       avatarUrl == _failedAvatarUrl
                                   ? null
                                   : NetworkImage(
                                       avatarUrl,
                                       headers: token == null
                                           ? null
-                                          : {
-                                              'Authorization':
-                                                  'Bearer $token',
-                                            },
+                                          : {'Authorization': 'Bearer $token'},
                                     ),
                               onForegroundImageError:
                                   avatarUrl != null &&
-                                          avatarUrl != _failedAvatarUrl
-                                      ? (_, _) => setState(
-                                          () => _failedAvatarUrl = avatarUrl,
-                                        )
-                                      : null,
+                                      avatarUrl != _failedAvatarUrl
+                                  ? (_, _) => setState(
+                                      () => _failedAvatarUrl = avatarUrl,
+                                    )
+                                  : null,
                             ),
                           ),
                           Positioned(
@@ -120,9 +118,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                 shape: BoxShape.circle,
                                 color: AppTokens.primary(context),
                                 border: Border.all(
-                                  color: AppTokens.scaffoldBackground(
-                                    context,
-                                  ),
+                                  color: AppTokens.scaffoldBackground(context),
                                   width: 2,
                                 ),
                               ),

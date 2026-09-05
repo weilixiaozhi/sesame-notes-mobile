@@ -194,7 +194,10 @@ Future<File> createLocalBackupNow({required CloudReadFn read}) async {
 }
 
 /// 记录成功：写入 backup_state 单例行 + 当天去重标记。
-Future<void> markBackupSuccess({required CloudReadFn read, required DateTime at}) async {
+Future<void> markBackupSuccess({
+  required CloudReadFn read,
+  required DateTime at,
+}) async {
   final providerName = await loadActiveCloudBackupProviderName();
   final db = read(databaseProvider);
   await db

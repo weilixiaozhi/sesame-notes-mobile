@@ -20,9 +20,9 @@ final memberDirectoryServiceProvider = Provider<MemberDirectoryService>((ref) {
 });
 
 /// 各账本最近一次成员目录 REST 刷新时间(进程内防抖)。
-final _memberDirectoryRefreshedAtProvider = Provider<Map<String, DateTime>>((
-  ref,
-) => <String, DateTime>{});
+final _memberDirectoryRefreshedAtProvider = Provider<Map<String, DateTime>>(
+  (ref) => <String, DateTime>{},
+);
 
 /// 成员目录刷新防抖窗口:窗口内的重复触发直接跳过。
 const Duration _memberDirectoryRefreshInterval = Duration(seconds: 30);

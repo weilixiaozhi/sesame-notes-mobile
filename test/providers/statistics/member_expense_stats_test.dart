@@ -160,11 +160,7 @@ void main() {
 
     final stats = await c.read(memberExpenseStatsProvider(ledgerId).future);
     final row = stats.single;
-    expect(
-      row.displayName,
-      '单机芝麻仔',
-      reason: '本地账本本人必须显示固定本地身份，不得出现裸 id',
-    );
+    expect(row.displayName, '单机芝麻仔', reason: '本地账本本人必须显示固定本地身份，不得出现裸 id');
     expect(row.isSelf, isTrue, reason: 'self member 必须标记为本人');
   });
 

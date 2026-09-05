@@ -75,9 +75,9 @@ void main() {
     ).thenAnswer((_) => txsStreamFactory());
     when(() => repo.getAllLedgers()).thenAnswer((_) async => <Ledger>[]);
     // 成员展示映射（作者头像位）：默认空成员表，避免未 stub 触发 provider 错误日志。
-    when(() => repo.getMembersByLedger(any())).thenAnswer(
-      (_) async => <LedgerMember>[],
-    );
+    when(
+      () => repo.getMembersByLedger(any()),
+    ).thenAnswer((_) async => <LedgerMember>[]);
     // 作者身份按账本归属解析需要账本行；默认本地账本。
     when(() => repo.getLedgerById(any())).thenAnswer((_) async => testLedger);
     when(

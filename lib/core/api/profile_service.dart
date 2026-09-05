@@ -37,7 +37,9 @@ class ProfileService {
     if (url == null || url.isEmpty) return null;
     final uri = Uri.tryParse(url);
     if (uri == null || uri.hasScheme) return url;
-    return Uri.parse(client.dio.options.baseUrl).resolve(uri.toString()).toString();
+    return Uri.parse(
+      client.dio.options.baseUrl,
+    ).resolve(uri.toString()).toString();
   }
 
   /// 更新昵称（trim 后 1-64，服务端校验换行与控制字符）。
@@ -92,7 +94,10 @@ class ProfileService {
           );
       final data = resp.data;
       if (data == null) throw const FormatException('头像上传响应为空');
-      return (url: _absoluteAvatarUrl(data.avatarUrl)!, version: data.avatarVersion);
+      return (
+        url: _absoluteAvatarUrl(data.avatarUrl)!,
+        version: data.avatarVersion,
+      );
     } catch (error, stackTrace) {
       logger.error('ProfileService', '上传头像失败', error, stackTrace);
       rethrow;

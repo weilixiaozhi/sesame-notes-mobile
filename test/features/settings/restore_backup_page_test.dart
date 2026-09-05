@@ -148,9 +148,7 @@ void main() {
       // Step 1→2：打开备份（文件 IO 在 runAsync 中驱动）
       final backups = container.read(backupRestoreFlowProvider).backups;
       expect(backups, hasLength(1));
-      await tester.runAsync(
-        () => notifier.openBackup(file: backups.single),
-      );
+      await tester.runAsync(() => notifier.openBackup(file: backups.single));
       await tester.pumpAndSettle();
 
       // Step 2：内容分域展示

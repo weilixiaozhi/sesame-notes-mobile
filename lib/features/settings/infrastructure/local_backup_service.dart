@@ -557,10 +557,7 @@ class LocalBackupService {
       await tmpSqlite.writeAsBytes(sqliteBytes, flush: true);
       final check = await validateBackup(tmpSqlite, db.schemaVersion);
       if (check != null) return RestoreResult(check);
-      final result = await restoreFromBackup(
-        db: db,
-        backupFile: tmpSqlite,
-      );
+      final result = await restoreFromBackup(db: db, backupFile: tmpSqlite);
       if (!result.success) return result;
       // 3) 覆盖成功：强制未同步状态（云端账本 sync_id 失效 + STALE_BINDING，
       //    清除 pending/conflict/cursor——备份里的同步状态绝不复活）

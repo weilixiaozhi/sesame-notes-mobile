@@ -138,9 +138,7 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
     BuildContext context,
     RestoreBackupFile backup,
   ) async {
-    await ref
-        .read(backupRestoreFlowProvider.notifier)
-        .openBackup(file: backup);
+    await ref.read(backupRestoreFlowProvider.notifier).openBackup(file: backup);
   }
 
   // ---------------------------------------------------------------
@@ -318,11 +316,7 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
                   ),
                 ),
                 // 拦截原因提示（仅云端账本的「登录原账号」被拦截时展示）。
-                if (_reconnectBlockedHint(
-                      context,
-                      item,
-                      currentAccountId,
-                    ) !=
+                if (_reconnectBlockedHint(context, item, currentAccountId) !=
                     null)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(
@@ -341,7 +335,7 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
               ],
             ),
           ),
-          ],
+        ],
         Padding(
           padding: const EdgeInsets.only(top: AppDimens.p12),
           child: FilledButton(

@@ -157,11 +157,7 @@ void main() {
         databaseProvider.overrideWithValue(db),
         authSessionProvider.overrideWith(
           () => _StubAuthNotifier(
-            const AuthSession(
-              accessToken: 't',
-              userId: 'acc-2',
-              deviceId: 'd',
-            ),
+            const AuthSession(accessToken: 't', userId: 'acc-2', deviceId: 'd'),
           ),
         ),
       ],
@@ -205,11 +201,7 @@ void main() {
         databaseProvider.overrideWithValue(db),
         authSessionProvider.overrideWith(
           () => _StubAuthNotifier(
-            const AuthSession(
-              accessToken: 't',
-              userId: 'acc-1',
-              deviceId: 'd',
-            ),
+            const AuthSession(accessToken: 't', userId: 'acc-1', deviceId: 'd'),
           ),
         ),
       ],

@@ -156,10 +156,7 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
     // 本人展示由详情 sheet 按账本归属解析,这里无需传本地昵称。
     final ledger = ref.watch(currentLedgerDisplayProvider).asData?.value;
     final memberMap = (ledger != null && _isSharedLedger(ledger))
-        ? ref
-                  .watch(ledgerMemberDisplayMapProvider(ledger.id))
-                  .asData
-                  ?.value ??
+        ? ref.watch(ledgerMemberDisplayMapProvider(ledger.id)).asData?.value ??
               const <String, LedgerMemberDisplay>{}
         : const <String, LedgerMemberDisplay>{};
 

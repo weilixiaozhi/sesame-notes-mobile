@@ -109,7 +109,10 @@ void main() {
         lastSuccessAt: DateTime(2026, 8, 1, 8, 0),
         dirtySince: DateTime(2026, 8, 2, 8, 0),
       );
-      expect(cloudBackupStatusOf(overview), CloudBackupStatusKind.activeNoSuccess);
+      expect(
+        cloudBackupStatusOf(overview),
+        CloudBackupStatusKind.activeNoSuccess,
+      );
       expect(cloudBackupStatusOf(dirtyOverview), CloudBackupStatusKind.failed);
     });
   });

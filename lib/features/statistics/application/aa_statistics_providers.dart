@@ -63,8 +63,7 @@ Future<String> authorMemberIdForLedger(WidgetRef ref, String ledgerId) async {
         // 本地身份展示名固定为「单机芝麻仔」纯名。
         displayName: _localSelfName(
           lookupAppLocalizations(
-            ref.read(languageProvider) ??
-                ui.PlatformDispatcher.instance.locale,
+            ref.read(languageProvider) ?? ui.PlatformDispatcher.instance.locale,
           ),
         ),
       );
@@ -100,8 +99,7 @@ Future<String> _selfMemberIdFor(
       localSelfId: localSelfId,
       displayName: _localSelfName(
         lookupAppLocalizations(
-          ref.read(languageProvider) ??
-              ui.PlatformDispatcher.instance.locale,
+          ref.read(languageProvider) ?? ui.PlatformDispatcher.instance.locale,
         ),
       ),
     );

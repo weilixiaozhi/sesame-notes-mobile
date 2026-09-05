@@ -95,10 +95,7 @@ void main() {
         bytes: [1, 2, 3],
       );
 
-      expect(
-        result.url,
-        'http://test.local/api/v1/profile/avatar/user-1?v=3',
-      );
+      expect(result.url, 'http://test.local/api/v1/profile/avatar/user-1?v=3');
     });
   });
 }

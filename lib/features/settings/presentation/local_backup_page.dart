@@ -192,15 +192,15 @@ class _LocalBackupPageState extends ConsumerState<LocalBackupPage>
                       child: SwitchListTile(
                         title: Text(
                           l10n.localBackupAutoTitle,
-                          style: AppTextTokens.title(context).copyWith(
-                            color: AppTokens.textPrimary(context),
-                          ),
+                          style: AppTextTokens.title(
+                            context,
+                          ).copyWith(color: AppTokens.textPrimary(context)),
                         ),
                         subtitle: Text(
                           l10n.localBackupAutoSubtitle,
-                          style: AppTextTokens.caption(context).copyWith(
-                            color: AppTokens.textSecondary(context),
-                          ),
+                          style: AppTextTokens.caption(
+                            context,
+                          ).copyWith(color: AppTokens.textSecondary(context)),
                         ),
                         // 默认 true（零干预兜底）；加载期间也按 true 展示避免闪烁
                         value: autoBackup.value ?? true,
@@ -217,9 +217,9 @@ class _LocalBackupPageState extends ConsumerState<LocalBackupPage>
                     ),
                     child: Text(
                       l10n.localBackupListHint,
-                      style: AppTextTokens.body(context).copyWith(
-                        color: AppTokens.textSecondary(context),
-                      ),
+                      style: AppTextTokens.body(
+                        context,
+                      ).copyWith(color: AppTokens.textSecondary(context)),
                     ),
                   ),
                   const SizedBox(height: AppDimens.p4),
@@ -229,9 +229,9 @@ class _LocalBackupPageState extends ConsumerState<LocalBackupPage>
                     ),
                     child: Text(
                       l10n.localBackupRestoreHint,
-                      style: AppTextTokens.caption(context).copyWith(
-                        color: AppTokens.textTertiary(context),
-                      ),
+                      style: AppTextTokens.caption(
+                        context,
+                      ).copyWith(color: AppTokens.textTertiary(context)),
                     ),
                   ),
                   const SizedBox(height: AppDimens.p8),
@@ -332,15 +332,15 @@ class _LocalBackupPageState extends ConsumerState<LocalBackupPage>
         child: ListTile(
           title: Text(
             backup.fileName,
-            style: AppTextTokens.title(context).copyWith(
-              color: AppTokens.textPrimary(context),
-            ),
+            style: AppTextTokens.title(
+              context,
+            ).copyWith(color: AppTokens.textPrimary(context)),
           ),
           subtitle: Text(
             backup.sizeLabel,
-            style: AppTextTokens.label(context).copyWith(
-              color: AppTokens.textSecondary(context),
-            ),
+            style: AppTextTokens.label(
+              context,
+            ).copyWith(color: AppTokens.textSecondary(context)),
           ),
           onTap: () => _restoreFile(backup),
         ),

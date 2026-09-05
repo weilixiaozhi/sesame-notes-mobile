@@ -7,7 +7,6 @@ import 'package:sesame_notes/core/api/profile_service.dart';
 import 'package:sesame_notes/core/storage/member_avatar_storage.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 
-
 /// 成员头像缓存请求键：userId + 服务端版本号 + 是否有头像 URL。
 typedef MemberAvatarKey = ({String userId, int version, bool hasAvatar});
 
@@ -47,4 +46,3 @@ final memberAvatarPathProvider =
         return null;
       }
     });
-

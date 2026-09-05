@@ -724,36 +724,36 @@ void main() {
     );
 
     // 全量成员目录(含本人与他人),由首页经 ledgerMemberDisplayMapProvider 读取。
-    when(
-      () => repo.getMembersByLedger('ledger-1'),
-    ).thenAnswer((_) async => <LedgerMember>[
-      LedgerMember(
-        id: 'self-member-1',
-        ledgerId: 'ledger-1',
-        displayName: '我的昵称',
-        memberType: 'REGISTERED',
-        linkedAccountId: 'cloud-user-1',
-        role: 'owner',
-        avatarVersion: 0,
-        status: 'ACTIVE',
-        joinedAt: DateTime(2024, 1, 1),
-        createdAt: DateTime(2024, 1, 1),
-        updatedAt: DateTime(2024, 1, 1),
-      ),
-      LedgerMember(
-        id: 'other-member-1',
-        ledgerId: 'ledger-1',
-        displayName: '他人昵称',
-        memberType: 'REGISTERED',
-        linkedAccountId: 'other-cloud-1',
-        role: 'editor',
-        avatarVersion: 0,
-        status: 'ACTIVE',
-        joinedAt: DateTime(2024, 1, 2),
-        createdAt: DateTime(2024, 1, 2),
-        updatedAt: DateTime(2024, 1, 2),
-      ),
-    ]);
+    when(() => repo.getMembersByLedger('ledger-1')).thenAnswer(
+      (_) async => <LedgerMember>[
+        LedgerMember(
+          id: 'self-member-1',
+          ledgerId: 'ledger-1',
+          displayName: '我的昵称',
+          memberType: 'REGISTERED',
+          linkedAccountId: 'cloud-user-1',
+          role: 'owner',
+          avatarVersion: 0,
+          status: 'ACTIVE',
+          joinedAt: DateTime(2024, 1, 1),
+          createdAt: DateTime(2024, 1, 1),
+          updatedAt: DateTime(2024, 1, 1),
+        ),
+        LedgerMember(
+          id: 'other-member-1',
+          ledgerId: 'ledger-1',
+          displayName: '他人昵称',
+          memberType: 'REGISTERED',
+          linkedAccountId: 'other-cloud-1',
+          role: 'editor',
+          avatarVersion: 0,
+          status: 'ACTIVE',
+          joinedAt: DateTime(2024, 1, 2),
+          createdAt: DateTime(2024, 1, 2),
+          updatedAt: DateTime(2024, 1, 2),
+        ),
+      ],
+    );
     // 他人创建/编辑的交易:创建者/编辑者裸显 member id 即回归。
     registerTxsStream(
       () => Stream<List<_TxItem>>.value([

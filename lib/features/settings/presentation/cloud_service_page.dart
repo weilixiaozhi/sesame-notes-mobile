@@ -63,14 +63,10 @@ class _CloudServicePageState extends ConsumerState<CloudServicePage> {
       body: Column(
         children: [
           overviewAsync.when(
-            loading: () => PrimaryHeader(
-              title: l10n.mineCloudService,
-              showBack: true,
-            ),
-            error: (e, _) => PrimaryHeader(
-              title: l10n.mineCloudService,
-              showBack: true,
-            ),
+            loading: () =>
+                PrimaryHeader(title: l10n.mineCloudService, showBack: true),
+            error: (e, _) =>
+                PrimaryHeader(title: l10n.mineCloudService, showBack: true),
             data: (overview) {
               final active = overview.active;
               final isLocal = active.isLocal;
@@ -117,9 +113,7 @@ class _CloudServicePageState extends ConsumerState<CloudServicePage> {
           Expanded(
             child: overviewAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Text(l10n.commonOperationFailed),
-              ),
+              error: (e, _) => Center(child: Text(l10n.commonOperationFailed)),
               data: (overview) {
                 // 单列表展示：按 离线模式 / 备份同步 分组，主标题下依次平铺
                 // 该分组内的服务卡片。选中卡片正下方嵌入备份同步操作区块。
@@ -229,10 +223,9 @@ class _CloudServicePageState extends ConsumerState<CloudServicePage> {
 
   /// 激活配置是否通过后端校验（决定「测试连接」可否点击）。
   bool _isValidConfig(CloudServiceConfig config) {
-    return ref.read(cloudBackupActionsProvider).isValid(
-      config.backendId,
-      config.settings,
-    );
+    return ref
+        .read(cloudBackupActionsProvider)
+        .isValid(config.backendId, config.settings);
   }
 
   /// 切回本地存储（带二次确认）。
@@ -284,7 +277,9 @@ class _CloudServicePageState extends ConsumerState<CloudServicePage> {
   Future<void> _activateBackend(CloudBackupBackendDisplay backend) async {
     final l10n = AppLocalizations.of(context);
     try {
-      final ok = await ref.read(cloudBackupActionsProvider).activate(backend.id);
+      final ok = await ref
+          .read(cloudBackupActionsProvider)
+          .activate(backend.id);
       if (!ok) {
         if (mounted) {
           await AppDialog.error(

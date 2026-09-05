@@ -54,8 +54,9 @@ void main() {
           routerConfig: createAppRouter(
             home: () => const CloudServicePage(),
             stubs: {
-              '/backup/local': (_) =>
-                  const Scaffold(body: Center(child: Text('LOCAL_BACKUP_STUB'))),
+              '/backup/local': (_) => const Scaffold(
+                body: Center(child: Text('LOCAL_BACKUP_STUB')),
+              ),
             },
           ),
         ),

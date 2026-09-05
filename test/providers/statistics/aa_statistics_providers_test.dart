@@ -187,7 +187,9 @@ void main() {
     await logger.clear();
   });
 
-  testWidgets('authorMemberIdForLedger:成员行创建失败仍返回派生成员 id,不裸写设备 id', (tester) async {
+  testWidgets('authorMemberIdForLedger:成员行创建失败仍返回派生成员 id,不裸写设备 id', (
+    tester,
+  ) async {
     final mock = _MockRepo();
     when(() => mock.getLedgerById('ledger-1')).thenAnswer(
       (_) async => Ledger(

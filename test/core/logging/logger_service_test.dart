@@ -106,7 +106,6 @@ void main() {
   });
 
   group('LoggerService 行为', () {
-
     test('debug/info/warning/error 入队且带数据拼接', () async {
       logger.debug('T', 'd');
       logger.info('T', 'i', {'k': 1});
@@ -120,7 +119,6 @@ void main() {
       expect(logger.logs[3].error, isNotNull);
       await logger.clear();
     });
-
 
     test('超长 tag/message/error 被截断', () async {
       logger.error(

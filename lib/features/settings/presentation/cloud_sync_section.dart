@@ -89,10 +89,7 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
                     leading: AppIcons.cloudUpload,
                     title: l10n.cloudBackupUploadNow,
                     subtitle: _uploadBusy ? l10n.cloudBackupUploading : null,
-                    enabled:
-                        !isLocal &&
-                        !_uploadBusy &&
-                        !_downloadBusy,
+                    enabled: !isLocal && !_uploadBusy && !_downloadBusy,
                     trailing: _uploadBusy
                         ? const SizedBox(
                             width: 20,
@@ -110,10 +107,7 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
                     subtitle: _downloadBusy
                         ? l10n.cloudBackupDownloading
                         : (isLocal ? l10n.cloudBackupNotConfigured : null),
-                    enabled:
-                        !isLocal &&
-                        !_uploadBusy &&
-                        !_downloadBusy,
+                    enabled: !isLocal && !_uploadBusy && !_downloadBusy,
                     trailing: _downloadBusy
                         ? const SizedBox(
                             width: 20,
@@ -121,8 +115,9 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : null,
-                    onTap:
-                        _uploadBusy || _downloadBusy ? null : _downloadRestore,
+                    onTap: _uploadBusy || _downloadBusy
+                        ? null
+                        : _downloadRestore,
                   ),
                   // 自动备份到云端开关（本地模式无云端概念，隐藏）。
                   if (!isLocal)
