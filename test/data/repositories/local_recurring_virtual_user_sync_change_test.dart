@@ -389,7 +389,7 @@ void main() {
     });
   });
 
-  test('登记后 push 可消费：recurring_transaction 变更可反序列化', () async {
+  test('登记后 push 可消费：首创账本先行，绑定后 recurring_transaction 变更可反序列化', () async {
     await repo.addRecurringTransaction(
       ledgerId: cloudLedgerId,
       type: 'expense',
@@ -404,13 +404,41 @@ void main() {
       () => mockApi.postSyncPush(
         postSyncPushRequest: any(named: 'postSyncPushRequest'),
       ),
-    ).thenAnswer(
-      (_) async => Response(
+    ).thenAnswer((invocation) async {
+      final req =
+          invocation.namedArguments[#postSyncPushRequest]
+              as PostSyncPushRequest;
+      // 首创账本批返回 accepted + sync_id 建立绑定；其余批返回空 outcome
+      // （本测试只关心请求载荷与反序列化）。
+      final outcomes = <PostSyncPush200ResponseOutcomesInner>[];
+      for (final change in req.changes) {
+        final variant = (change.anyOf as dynamic).value.anyOf.value as dynamic;
+        if (variant.entityType.name == 'ledger') {
+          outcomes.add(
+            PostSyncPush200ResponseOutcomesInner(
+              (b) => b
+                ..mutationId = variant.mutationId
+                ..entityId = variant.entityId
+                ..status =
+                    PostSyncPush200ResponseOutcomesInnerStatusEnum.accepted
+                ..changeId = '1'
+                ..syncId = 'S-BOUND',
+            ),
+          );
+        }
+      }
+      return Response(
         requestOptions: RequestOptions(path: '/sync/push'),
-        data: PostSyncPush200Response((b) => b..serverCursor = '100'),
+        data: PostSyncPush200Response(
+          (b) => b
+            ..outcomes = BuiltList<PostSyncPush200ResponseOutcomesInner>(
+              outcomes,
+            ).toBuilder()
+            ..serverCursor = '100',
+        ),
         statusCode: 200,
-      ),
-    );
+      );
+    });
     final service = SyncService(
       client: SesameApiClient(),
       db: db,
@@ -424,7 +452,9 @@ void main() {
         postSyncPushRequest: captureAny(named: 'postSyncPushRequest'),
       ),
     ).captured;
-    final req = captured.single as PostSyncPushRequest;
+    // 未绑定账本首创先行单独成批，绑定建立后周期模板随后推送
+    expect(captured, hasLength(2));
+    final req = captured.last as PostSyncPushRequest;
     final recurring = req.changes
         .map((c) => (c.anyOf as dynamic).value.anyOf.value as dynamic)
         .where((v) => v.entityType.name == 'recurringTransaction')

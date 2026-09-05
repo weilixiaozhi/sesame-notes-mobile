@@ -196,7 +196,7 @@ void main() {
     );
   });
 
-  test('未注入账号上下文（旧行为）：推送全部待同步变更', () async {
+  test('未注入账号上下文（旧行为）：未绑定账本首创先行单独成批，其余变更绑定后推送', () async {
     await recordChange(accountId: null);
     await recordChange(accountId: 'user-b');
     mockPushOk();
@@ -207,8 +207,16 @@ void main() {
         postSyncPushRequest: captureAny(named: 'postSyncPushRequest'),
       ),
     ).captured;
+    // 同一账本的首创只推首行（同批第二个会因账本已存在被服务端 412）；
+    // mock 未返回 sync_id（未建立绑定）时其余行保持 pending 等待绑定
+    expect(captured, hasLength(1));
     final request = captured.single as PostSyncPushRequest;
-    expect(request.changes, hasLength(2));
+    expect(request.changes, hasLength(1));
+    final pending = await (db.select(
+      db.syncChanges,
+    )..where((c) => c.pushedAt.isNull())).get();
+    // mock 返回空 outcome 列表（不确认推送），两行均保持 pending
+    expect(pending, hasLength(2));
   });
 
   test('pull：各类远端 upsert 必须在当前账号域复活 tombstone', () async {

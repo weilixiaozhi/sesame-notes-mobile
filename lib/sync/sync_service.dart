@@ -155,12 +155,54 @@ class SyncService {
       }
       return a.id.compareTo(b.id);
     });
-    final ordered = [
-      ...userGlobal,
-      ...sendable.where((change) => change.ledgerId != null),
+    final ledgerScoped = sendable
+        .where((change) => change.ledgerId != null)
+        .toList();
+
+    // 无绑定账本的首创 upsert 必须单独先行推送：服务端按请求数组顺序逐条
+    // 应用并逐条校验 sync_id，首创账本（可缺省 sync_id）与引用它的交易/成员
+    // 同批时，服务端创建账本后批内其余变更因缺少 sync_id 整批 412 拒绝，
+    // 首创 outcome 携带的 sync_id 永远无法落库，绑定形成死循环。
+    final syncIds = await _syncIdsForLedgers(
+      ledgerScoped.map((c) => c.ledgerId),
+    );
+    bool isUnboundCreation(SyncChange change) =>
+        change.entityType == 'ledger' &&
+        change.action == 'upsert' &&
+        !syncIds.containsKey(change.ledgerId);
+    // 同一账本多行首创只推首行：同批第二个会因账本已存在而 412 污染整批
+    final seenCreationLedger = <String>{};
+    final unboundCreations = [
+      for (final change in ledgerScoped)
+        if (isUnboundCreation(change) &&
+            seenCreationLedger.add(change.ledgerId!))
+          change,
     ];
 
-    for (final batch in _chunks(ordered, 500)) {
+    for (final batch in _chunks(unboundCreations, 500)) {
+      final outcomes = await _pushBatch(batch);
+      logger.info(
+        'SyncService',
+        '首创账本推送完成 ${batch.length} 条, cursor=${outcomes.$2}',
+      );
+    }
+
+    // 首创批完成后重新读取绑定：outcome 返回的 sync_id 已落库，引用新账本的
+    // 变更此刻才可携带同步身份推送；绑定未建立的账本级变更保持 pending
+    // （fail-closed）：缺 sync_id 发出必然 412。
+    final boundSyncIds = await _syncIdsForLedgers(
+      ledgerScoped.map((c) => c.ledgerId),
+    );
+    final followUps = [
+      ...userGlobal,
+      ...ledgerScoped.where(
+        (change) =>
+            !isUnboundCreation(change) &&
+            (boundSyncIds.containsKey(change.ledgerId) ||
+                change.entityType == 'ledger'),
+      ),
+    ];
+    for (final batch in _chunks(followUps, 500)) {
       final outcomes = await _pushBatch(batch);
       logger.info(
         'SyncService',
@@ -319,22 +361,30 @@ class SyncService {
     return mine?.status.name;
   }
 
+  /// 预读账本级变更涉及账本的同步身份映射；未建立绑定的账本不在映射中。
+  Future<Map<String, String>> _syncIdsForLedgers(
+    Iterable<String?> ledgerIds,
+  ) async {
+    final ids = ledgerIds.whereType<String>().toSet();
+    if (ids.isEmpty) return const {};
+    final rows = await (db.select(
+      db.ledgers,
+    )..where((l) => l.id.isIn(ids))).get();
+    return {
+      for (final row in rows)
+        if (row.syncId != null) row.id: row.syncId!,
+    };
+  }
+
   /// 推送一批变更并应用 per-mutation 结果；返回 outcome 列表与最新服务端游标。
   Future<(BuiltList<PostSyncPush200ResponseOutcomesInner>, String)> _pushBatch(
     List<SyncChange> batch,
   ) async {
     // 预加载本批涉及账本的同步身份（一次查询）：账本级变更必须携带 sync_id，
     // 首次上云（本地尚未持有 sync_id）则缺省，由服务端创建账本后经 outcome 返回。
-    final ledgerIds = batch.map((c) => c.ledgerId).whereType<String>().toSet();
-    final syncIdByLedger = <String, String>{};
-    if (ledgerIds.isNotEmpty) {
-      final rows = await (db.select(
-        db.ledgers,
-      )..where((l) => l.id.isIn(ledgerIds))).get();
-      for (final row in rows) {
-        if (row.syncId != null) syncIdByLedger[row.id] = row.syncId!;
-      }
-    }
+    final syncIdByLedger = await _syncIdsForLedgers(
+      batch.map((c) => c.ledgerId),
+    );
     final req = PostSyncPushRequest(
       (b) => b
         ..deviceId = deviceId

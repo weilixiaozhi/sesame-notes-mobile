@@ -190,25 +190,52 @@ void main() {
         );
   }
 
-  PostSyncPush200Response pushOk({String? outcomeSyncId}) =>
-      PostSyncPush200Response(
-        (b) => b
-          ..outcomes = BuiltList<PostSyncPush200ResponseOutcomesInner>([
-            PostSyncPush200ResponseOutcomesInner(
-              (b) => b
-                // per-mutation 协议：outcome 必须携带 mutation_id 与队列行对应
-                ..mutationId = 'm-tx-1'
-                ..entityId = 'led-1'
-                ..status =
-                    PostSyncPush200ResponseOutcomesInnerStatusEnum.accepted
-                ..changeId = '1'
-                ..syncId = outcomeSyncId,
-            ),
-          ]).toBuilder()
-          ..serverCursor = '1',
-      );
+  Future<void> seedPendingLedgerUpsertChange(String ledgerId) async {
+    await db
+        .into(db.syncChanges)
+        .insert(
+          SyncChangesCompanion.insert(
+            entityType: 'ledger',
+            entityId: ledgerId,
+            ledgerId: d.Value(ledgerId),
+            action: 'upsert',
+            payload: jsonEncode({
+              'name': '新云账本',
+              'currency': 'CNY',
+              'month_start_day': 1,
+              'aa_enabled': false,
+            }),
+            updatedAt: DateTime.utc(2026, 8, 22, 10),
+            mutationId: 'm-led-1',
+          ),
+        );
+  }
 
-  void mockPushOk({String? outcomeSyncId}) {
+  PostSyncPush200Response pushOk({
+    String? outcomeSyncId,
+    String mutationId = 'm-tx-1',
+    String entityId = 'led-1',
+  }) => PostSyncPush200Response(
+    (b) => b
+      ..outcomes = BuiltList<PostSyncPush200ResponseOutcomesInner>([
+        PostSyncPush200ResponseOutcomesInner(
+          (b) => b
+            // per-mutation 协议：outcome 必须携带 mutation_id 与队列行对应
+            ..mutationId = mutationId
+            ..entityId = entityId
+            ..status = PostSyncPush200ResponseOutcomesInnerStatusEnum.accepted
+            ..changeId = '1'
+            ..syncId = outcomeSyncId,
+        ),
+      ]).toBuilder()
+      ..serverCursor = '1',
+  );
+
+  void mockPushOk({
+    String? outcomeSyncId,
+    String mutationId = 'm-tx-1',
+    String entityId = 'led-1',
+  }) {
     when(
       () => mockApi.postSyncPush(
         postSyncPushRequest: any(named: 'postSyncPushRequest'),
@@ -216,7 +243,11 @@ void main() {
     ).thenAnswer(
       (_) async => Response(
         requestOptions: RequestOptions(path: '/sync/push'),
-        data: pushOk(outcomeSyncId: outcomeSyncId),
+        data: pushOk(
+          outcomeSyncId: outcomeSyncId,
+          mutationId: mutationId,
+          entityId: entityId,
+        ),
         statusCode: 200,
       ),
     );
@@ -238,10 +269,10 @@ void main() {
     expect(_firstChangeSyncId(req), 'S100');
   });
 
-  test('push：首次上云（无 sync_id）请求缺省，outcome 返回后落库建立绑定', () async {
+  test('push：首次上云账本 upsert 缺省 sync_id，outcome 返回后落库建立绑定', () async {
     await seedCloudLedger('led-1'); // sync_id 为 NULL
-    await seedPendingTxChange('led-1');
-    mockPushOk(outcomeSyncId: 'S-NEW');
+    await seedPendingLedgerUpsertChange('led-1');
+    mockPushOk(outcomeSyncId: 'S-NEW', mutationId: 'm-led-1');
 
     await service.push();
 
