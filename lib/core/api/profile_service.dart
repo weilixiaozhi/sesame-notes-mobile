@@ -120,9 +120,19 @@ class ProfileService {
     try {
       // 二进制响应无法用生成客户端表达（生成器只支持 JSON 模型），
       // 由 core 层以 bytes 模式直取原始字节。
+      // 手动 Dio 调用必须显式声明与生成方法一致的 bearerAuth 认证标记：
+      // BearerAuthInterceptor 只对带 secure 标记的请求附带 Authorization 头，
+      // 缺失标记的请求会以无凭证形式发出并被服务端 401 拒绝。
       final resp = await client.dio.get<List<int>>(
         '/api/v1/profile/avatar/$userId',
-        options: Options(responseType: ResponseType.bytes),
+        options: Options(
+          responseType: ResponseType.bytes,
+          extra: {
+            'secure': [
+              {'type': 'http', 'scheme': 'bearer', 'name': 'bearerAuth'},
+            ],
+          },
+        ),
       );
       return resp.data;
     } on DioException catch (error) {
