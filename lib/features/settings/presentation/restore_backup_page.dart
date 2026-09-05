@@ -318,29 +318,12 @@ class _RestoreLedgerCard extends StatelessWidget {
                   ),
                 ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppDimens.radius12),
-          child: Stack(
-            children: [
-              // 右上角勾选标签：直角方块贴在角上，左下角被外层 ClipRRect
-              // 沿卡片自身的圆弧裁剪——只露卡片边框这一条弧线，两弧不再打架。
-              if (selected)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    width: 20,
-                    height: 20,
-                    color: primary,
-                    child: Icon(
-                      AppIcons.check,
-                      size: AppDimens.icon12,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                  ),
-                ),
+        child: Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppDimens.radius12),
               // 顶部预留角标高度，避免名称行与角标重叠
-              Padding(
+              child: Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppDimens.p16,
                   AppDimens.p20,
@@ -464,8 +447,30 @@ class _RestoreLedgerCard extends StatelessWidget {
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+            // 右上角勾选标签：位于裁剪层之外覆盖在边框之上，向外偏移 1px，
+            // 实心色块直接遮住边框线，只露标签自身一条弧线。
+            if (selected)
+              Positioned(
+                top: -1,
+                right: -1,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: primary,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(AppDimens.radius12),
+                    ),
+                  ),
+                  child: Icon(
+                    AppIcons.check,
+                    size: AppDimens.icon12,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
