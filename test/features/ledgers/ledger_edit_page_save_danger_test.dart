@@ -170,26 +170,29 @@ void main() {
   /// 展开右上角「更多」菜单并点击指定项。
   Future<void> tapMoreAction(WidgetTester tester, String label) async {
     await tester.tap(find.byType(PopupMenuButton<String>));
-    await tester.pumpAndSettle();
+    await tester.runAsync(() => tester.pumpAndSettle());
     await tester.tap(find.text(label));
-    await tester.pumpAndSettle();
+    await tester.runAsync(() => tester.pumpAndSettle());
   }
 
   /// 在确认对话框点「确定」。
   Future<void> confirmDialog(WidgetTester tester) async {
     await tester.tap(find.widgetWithText(FilledButton, '确定'));
-    await tester.pumpAndSettle();
+    await tester.runAsync(() => tester.pumpAndSettle());
   }
 
   group('保存流', () {
     testWidgets('新建：名称必填校验，不填不落库', (tester) async {
       final l10n = await pump(tester);
       await tester.tap(find.text(l10n.ledgersCreate));
-      await tester.pumpAndSettle();
+      await tester.runAsync(() => tester.pumpAndSettle());
 
       // 校验失败提示 = 名称标签文本，且页面仍在。
       expect(find.text(l10n.ledgerNameLabel), findsWidgets);
-      final ledgers = await db.select(db.ledgers).get();
+      // drift 真实异步查询统一收进 runAsync，避免 FakeAsync 区等待隔离区响应
+      final ledgers = (await tester.runAsync(
+        () => db.select(db.ledgers).get(),
+      ))!;
       expect(ledgers, isEmpty);
     });
 
@@ -198,10 +201,10 @@ void main() {
 
       // 开启 AA 开关（TextStateSwitch 轨道点击切换）。
       await tester.tap(find.byType(TextStateSwitch));
-      await tester.pumpAndSettle();
+      await tester.runAsync(() => tester.pumpAndSettle());
       // 添加一个虚拟用户（自动命名）。
       await tester.tap(find.text('添加虚拟用户'));
-      await tester.pumpAndSettle();
+      await tester.runAsync(() => tester.pumpAndSettle());
 
       await tester.enterText(find.byType(TextFormField).first, '新账本');
       await tester.tap(find.text(l10n.ledgersCreate));
@@ -209,13 +212,17 @@ void main() {
         await tester.pumpAndSettle();
       });
 
-      final ledgers = await db.select(db.ledgers).get();
+      final ledgers = (await tester.runAsync(
+        () => db.select(db.ledgers).get(),
+      ))!;
       expect(ledgers, hasLength(1));
       expect(ledgers.single.name, '新账本');
       expect(ledgers.single.aaEnabled, isTrue);
-      final vus = await (db.select(
-        db.ledgerMembers,
-      )..where((m) => m.memberType.equals('PLACEHOLDER'))).get();
+      final vus = (await tester.runAsync(
+        () => (db.select(
+          db.ledgerMembers,
+        )..where((m) => m.memberType.equals('PLACEHOLDER'))).get(),
+      ))!;
       expect(vus, hasLength(1));
       // 新建成功 toast。
       expect(find.text(l10n.ledgersCreateSuccess), findsOneWidget);
@@ -228,14 +235,14 @@ void main() {
 
       await tester.enterText(find.byType(TextFormField).first, '改名后');
       await tester.tap(find.byType(TextStateSwitch));
-      await tester.pumpAndSettle();
+      await tester.runAsync(() => tester.pumpAndSettle());
       await tester.tap(find.text(l10n.commonSave));
       await tester.runAsync(() async {
         await tester.pumpAndSettle();
       });
 
-      final row = await repo.getLedgerById(ledger.id);
-      expect(row!.name, '改名后');
+      final row = (await tester.runAsync(() => repo.getLedgerById(ledger.id)))!;
+      expect(row.name, '改名后');
       expect(row.aaEnabled, isTrue);
       await tester.pump(const Duration(seconds: 2));
     });
@@ -248,8 +255,8 @@ void main() {
       await tester.runAsync(() async {
         await tester.pumpAndSettle();
       });
-      final row = await repo.getLedgerById(ledger.id);
-      expect(row!.name, '测试账本');
+      final row = (await tester.runAsync(() => repo.getLedgerById(ledger.id)))!;
+      expect(row.name, '测试账本');
       await tester.pump(const Duration(seconds: 2));
     });
 
@@ -272,8 +279,8 @@ void main() {
       await tester.runAsync(() async {
         await tester.pumpAndSettle();
       });
-      final row = await repo.getLedgerById(ledger.id);
-      expect(row!.currency, 'USD');
+      final row = (await tester.runAsync(() => repo.getLedgerById(ledger.id)))!;
+      expect(row.currency, 'USD');
       await tester.pump(const Duration(seconds: 2));
     });
 
@@ -283,21 +290,21 @@ void main() {
 
       // 点击月起始日行打开 28 宫格选择器。
       await tester.tap(find.text(l10n.ledgersMonthStartDayNatural));
-      await tester.pumpAndSettle();
+      await tester.runAsync(() => tester.pumpAndSettle());
       expect(
         find.byType(SheetGrabHandle),
         findsOneWidget,
         reason: '底部弹层应有统一拖拽条',
       );
       await tester.tap(find.text('15'));
-      await tester.pumpAndSettle();
+      await tester.runAsync(() => tester.pumpAndSettle());
 
       await tester.tap(find.text(l10n.commonSave));
       await tester.runAsync(() async {
         await tester.pumpAndSettle();
       });
-      final row = await repo.getLedgerById(ledger.id);
-      expect(row!.monthStartDay, 15);
+      final row = (await tester.runAsync(() => repo.getLedgerById(ledger.id)))!;
+      expect(row.monthStartDay, 15);
       await tester.pump(const Duration(seconds: 2));
     });
   });
@@ -306,7 +313,10 @@ void main() {
     testWidgets('账本行缺失：错误态 + 重试恢复', (tester) async {
       final ledger = await seed();
       // 先删掉账本行模拟加载失败。
-      await (db.delete(db.ledgers)..where((l) => l.id.equals(ledger.id))).go();
+      await tester.runAsync(
+        () =>
+            (db.delete(db.ledgers)..where((l) => l.id.equals(ledger.id))).go(),
+      );
       final l10n = await pump(tester, ledger: ledger);
 
       expect(find.text(l10n.categoryDetailLoadFailed), findsOneWidget);
@@ -314,16 +324,18 @@ void main() {
       expect(find.text(l10n.commonSave), findsNothing);
 
       // 恢复账本行后重试 → 正常加载。
-      await db
-          .into(db.ledgers)
-          .insert(
-            LedgersCompanion.insert(
-              id: ledger.id,
-              name: ledger.name,
-              currency: const Value('CNY'),
-              updatedAt: DateTime.utc(2026, 1, 1),
+      await tester.runAsync(
+        () => db
+            .into(db.ledgers)
+            .insert(
+              LedgersCompanion.insert(
+                id: ledger.id,
+                name: ledger.name,
+                currency: const Value('CNY'),
+                updatedAt: DateTime.utc(2026, 1, 1),
+              ),
             ),
-          );
+      );
       await tester.tap(find.text(l10n.analyticsRetry));
       await tester.runAsync(() async {
         await tester.pumpAndSettle();
@@ -338,29 +350,33 @@ void main() {
     testWidgets('清空账本：确认后清空交易并 toast', (tester) async {
       final ledger = await seed();
       // 预置一笔交易。
-      await db
-          .into(db.transactions)
-          .insert(
-            TransactionsCompanion.insert(
-              id: 'tx-1',
-              ledgerId: ledger.id,
-              txType: 'expense',
-              amount: '100',
-              happenedAt: DateTime.now(),
-              currencyCode: 'CNY',
-              nativeAmount: '100',
-              createdAt: DateTime.utc(2026, 1, 1),
-              updatedAt: DateTime.utc(2026, 1, 1),
+      await tester.runAsync(
+        () => db
+            .into(db.transactions)
+            .insert(
+              TransactionsCompanion.insert(
+                id: 'tx-1',
+                ledgerId: ledger.id,
+                txType: 'expense',
+                amount: '100',
+                happenedAt: DateTime.now(),
+                currencyCode: 'CNY',
+                nativeAmount: '100',
+                createdAt: DateTime.utc(2026, 1, 1),
+                updatedAt: DateTime.utc(2026, 1, 1),
+              ),
             ),
-          );
+      );
       final l10n = await pump(tester, ledger: ledger);
 
       await tapMoreAction(tester, l10n.ledgersClear);
       await confirmDialog(tester);
 
-      final txs = await (db.select(
-        db.transactions,
-      )..where((t) => t.ledgerId.equals(ledger.id))).get();
+      final txs = (await tester.runAsync(
+        () => (db.select(
+          db.transactions,
+        )..where((t) => t.ledgerId.equals(ledger.id))).get(),
+      ))!;
       expect(txs, isEmpty);
       expect(find.text(l10n.ledgersClearSuccess), findsOneWidget);
       await tester.pump(const Duration(seconds: 2));
@@ -376,7 +392,7 @@ void main() {
         await tester.pumpAndSettle();
       });
 
-      final rows = await db.select(db.ledgers).get();
+      final rows = (await tester.runAsync(() => db.select(db.ledgers).get()))!;
       expect(rows, isEmpty, reason: '删除走 repo.deleteLedger 本地删行');
       expect(find.text(l10n.ledgersDeleted), findsOneWidget);
       expect(find.byType(LedgerEditPage), findsNothing, reason: '删除成功应返回上一页');
@@ -389,9 +405,9 @@ void main() {
 
       await tapMoreAction(tester, l10n.ledgersDelete);
       await tester.tap(find.widgetWithText(OutlinedButton, '取消'));
-      await tester.pumpAndSettle();
+      await tester.runAsync(() => tester.pumpAndSettle());
 
-      final rows = await db.select(db.ledgers).get();
+      final rows = (await tester.runAsync(() => db.select(db.ledgers).get()))!;
       expect(rows, hasLength(1), reason: '取消确认不得删行');
     });
 
@@ -407,7 +423,7 @@ void main() {
       });
 
       // 当前账本被删后列表只留 B，且页面已 pop。
-      final rows = await db.select(db.ledgers).get();
+      final rows = (await tester.runAsync(() => db.select(db.ledgers).get()))!;
       expect(rows.map((r) => r.id), ['ledger-b']);
       expect(
         find.byType(LedgerEditPage),
@@ -511,7 +527,7 @@ void main() {
 
       await tapMoreAction(tester, l10n.ledgersDeleteShared);
       await tester.tap(find.widgetWithText(OutlinedButton, '取消'));
-      await tester.pumpAndSettle();
+      await tester.runAsync(() => tester.pumpAndSettle());
 
       verifyNever(() => actions.deleteSharedAsOwner(any()));
       expect(find.byType(LedgerEditPage), findsOneWidget);

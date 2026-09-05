@@ -224,7 +224,8 @@ void main() {
       findsWidgets,
       reason: '空名称应触发表单校验提示',
     );
-    final rows = await db.select(db.ledgers).get();
+    // drift 真实异步查询统一收进 runAsync，避免 FakeAsync 区等待隔离区响应
+    final rows = await tester.runAsync(() => db.select(db.ledgers).get());
     expect(rows, isEmpty, reason: '校验失败不得创建账本');
   });
 
