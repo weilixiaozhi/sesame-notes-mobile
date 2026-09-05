@@ -142,9 +142,21 @@ class SyncService {
     if (sendable.isEmpty) return;
 
     // user 级变更（分类/汇率）置前：服务端按请求数组顺序逐条应用，
-    // 分类必须早于引用它的账本级变更落库。
+    // 分类必须早于引用它的账本级变更落库；分类内部按层级排序，
+    // 一级父分类先于二级子分类（历史队列中子分类 id 可能更小）。
+    final userGlobal = sendable
+        .where((change) => change.ledgerId == null)
+        .toList();
+    userGlobal.sort((a, b) {
+      if (a.entityType == 'category' && b.entityType == 'category') {
+        final levelA = _categoryLevelOf(a.payload);
+        final levelB = _categoryLevelOf(b.payload);
+        if (levelA != levelB) return levelA.compareTo(levelB);
+      }
+      return a.id.compareTo(b.id);
+    });
     final ordered = [
-      ...sendable.where((change) => change.ledgerId == null),
+      ...userGlobal,
       ...sendable.where((change) => change.ledgerId != null),
     ];
 
@@ -155,6 +167,19 @@ class SyncService {
         'push 完成 ${batch.length} 条, cursor=${outcomes.$2}',
       );
     }
+  }
+
+  /// 读取分类变更 payload 的层级（'1'/'2' 或整数）；解析失败排到最后。
+  int _categoryLevelOf(String rawPayload) {
+    try {
+      final data = jsonDecode(rawPayload) as Map<String, dynamic>;
+      final level = data['level'];
+      if (level is int) return level;
+      if (level is String) return int.tryParse(level) ?? 99;
+    } catch (_) {
+      // 载荷解析失败不影响推送主流程，按最低优先级处理
+    }
+    return 99;
   }
 
   /// 把账本级待推变更引用的未登记分类补登记为 user 级 upsert 变更。

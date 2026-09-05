@@ -309,6 +309,28 @@ void main() {
             updatedAt: updatedAt,
           ),
         );
+    // 模拟历史队列：二级子分类的变更早已入队（id 更小），
+    // 一级父分类尚未登记——push 批次必须把父分类重排到子分类之前。
+    await db
+        .into(db.syncChanges)
+        .insert(
+          SyncChangesCompanion.insert(
+            entityType: 'category',
+            entityId: childId,
+            action: 'upsert',
+            payload: jsonEncode({
+              'name': '早餐',
+              'kind': 'expense',
+              'level': '2',
+              'sort_order': 1,
+              'icon': null,
+              'parent_id': parentId,
+            }),
+            updatedAt: updatedAt,
+            mutationId: 'm-cat-child',
+            accountId: const d.Value('user-a'),
+          ),
+        );
     // 交易只引用二级子分类：父分类也必须一并先导登记
     await db
         .into(db.syncChanges)
