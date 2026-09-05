@@ -469,6 +469,11 @@ class _HomePageState extends ConsumerState<HomePage>
                     ],
                   ),
                 ),
+                // 汇总卡与下方内容间距：AA 关闭(或无账本)时卡片之下直接衔接
+                // 交易明细列表，需补 8 上留白；AA 开启时该位置由「分摊统计」
+                // 入口承接（入口自带 8 上留白），不重复叠加。
+                if (ledger == null || !ledger.aaEnabled)
+                  const SizedBox(height: AppDimens.p8),
                 // 分摊统计入口：当前账本开启 AA 分摊时显示，
                 // 位于汇总卡下方、交易列表上方，样式与编辑页原入口保持一致。
                 if (ledger != null && ledger.aaEnabled) ...[
