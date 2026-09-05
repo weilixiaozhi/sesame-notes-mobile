@@ -326,7 +326,7 @@ class _RestoreLedgerCard extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppDimens.p16,
-                  AppDimens.p20,
+                  AppDimens.p24,
                   AppDimens.p16,
                   AppDimens.p16,
                 ),
@@ -448,25 +448,31 @@ class _RestoreLedgerCard extends StatelessWidget {
                 ),
               ),
             ),
-            // 右上角勾选标签：位于裁剪层之外覆盖在边框之上，向外偏移 1px，
-            // 实心色块直接遮住边框线，只露标签自身一条弧线。
+            // 右上角勾选标签：位于裁剪层之外覆盖在边框之上。
+            // 外移量取边框宽度 1.5px——顶边/右边与边框外沿齐平，边框线被
+            // 实心色块完全遮住；右上圆角与卡片外角同半径（r12），且外移
+            // 1.5px 后两弧圆心重合，只露卡片自身这一条弧线。
             if (selected)
               Positioned(
-                top: -1,
-                right: -1,
+                top: -1.5,
+                right: -1.5,
                 child: Container(
-                  width: 20,
-                  height: 20,
+                  width: 24,
+                  height: 24,
                   decoration: BoxDecoration(
                     color: primary,
                     borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(AppDimens.radius12),
+                      topRight: Radius.circular(AppDimens.radius12),
                     ),
                   ),
-                  child: Icon(
-                    AppIcons.check,
-                    size: AppDimens.icon12,
-                    color: Theme.of(context).colorScheme.onPrimary,
+                  // 勾号放左下角：右上圆角 r12 会裁掉右上象限，居中会被切掉
+                  child: Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Icon(
+                      AppIcons.check,
+                      size: AppDimens.icon12,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
                   ),
                 ),
               ),
