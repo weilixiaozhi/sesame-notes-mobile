@@ -4,4 +4,7 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- 实机验收：允许 debug 构建直连本机后端（配合 adb reverse 隧道），release 不受影响 -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>
