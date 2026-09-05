@@ -31,212 +31,186 @@ class MinePage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppTokens.scaffoldBackground(context), // ⭐ 使用 Token
-      body: Column(
+      body: ListView(
+        padding: EdgeInsets.zero,
+        physics: const AlwaysScrollableScrollPhysics(),
         children: [
+          // 个人资料区并入滚动列表，与下方分组整体滚动，不常驻置顶。
           PrimaryHeader(
             showBack: false,
             title: l10n.mineTitle,
             showTitleSection: false,
             content: const MinePageHeader(),
           ),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              physics: const AlwaysScrollableScrollPhysics(),
+          // 分组之间留 12px 呼吸距；组内行间距由 cardDivider 呼吸距
+          // 与 AppListTile 行内边距统一为约 16px，首末行与中间行视觉一致。
+          SizedBox(height: AppDimens.p12),
+          // 记账设置分组：与记账行为直接相关的低频设置，避免挤占高频入口。
+          SectionCard(
+            margin: EdgeInsets.fromLTRB(AppDimens.p12, 0, AppDimens.p12, 0),
+            child: Column(
               children: [
-                // 分组之间留 12px 呼吸距；组内行间距由 cardDivider 呼吸距
-                // 与 AppListTile 行内边距统一为约 16px，首末行与中间行视觉一致。
-                SizedBox(height: AppDimens.p12),
-                // 记账设置分组：与记账行为直接相关的低频设置，避免挤占高频入口。
-                SectionCard(
-                  margin: EdgeInsets.fromLTRB(
-                    AppDimens.p12,
-                    0,
-                    AppDimens.p12,
-                    0,
+                // 分类管理
+                AppListTile(
+                  leading: AppIcons.category,
+                  title: l10n.mineCategoryManagement,
+                  trailing: Icon(
+                    AppIcons.chevronRight,
+                    color: AppTokens.iconTertiary(context),
+                    size: AppDimens.icon20,
                   ),
-                  child: Column(
-                    children: [
-                      // 分类管理
-                      AppListTile(
-                        leading: AppIcons.category,
-                        title: l10n.mineCategoryManagement,
-                        trailing: Icon(
-                          AppIcons.chevronRight,
-                          color: AppTokens.iconTertiary(context),
-                          size: AppDimens.icon20,
-                        ),
-                        // 按路由名跳转分类管理页，由 go_router 统一解析
-                        onTap: () => context.pushNamed(Routes.categoryManage),
-                      ),
-                      AppTokens.cardDivider(context),
-                      // 汇率管理
-                      AppListTile(
-                        leading: AppIcons.currencyExchange,
-                        title: l10n.exchangeRatePageTitle,
-                        trailing: Icon(
-                          AppIcons.chevronRight,
-                          color: AppTokens.iconTertiary(context),
-                          size: AppDimens.icon20,
-                        ),
-                        onTap: () => context.pushNamed(Routes.exchangeRate),
-                      ),
-                      AppTokens.cardDivider(context),
-                      // 周期账单
-                      AppListTile(
-                        leading: AppIcons.repeat,
-                        title: l10n.mineRecurringTransactions,
-                        trailing: Icon(
-                          AppIcons.chevronRight,
-                          color: AppTokens.iconTertiary(context),
-                          size: AppDimens.icon20,
-                        ),
-                        onTap: () =>
-                            context.pushNamed(Routes.recurringTransaction),
-                      ),
-                      AppTokens.cardDivider(context),
-                      // 支出颜色（影响列表 / 搜索 / 详情等支出金额的着色）
-                      AppListTile(
-                        leading: AppIcons.theme,
-                        title: l10n.appearanceExpenseColorScheme,
-                        // 圆点放进与右侧箭头同高的图标槽位，
-                        // 保证圆点中心与各行右箭头中心对齐。
-                        trailing: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: Center(
-                            child: Container(
-                              width: 14,
-                              height: 14,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color:
-                                    ref.watch(expenseColorSchemeProvider) ==
-                                        'green'
-                                    ? AppTokens.success(context)
-                                    : AppTokens.error(context),
-                              ),
-                            ),
-                          ),
-                        ),
-                        onTap: () =>
-                            _showExpenseColorSchemeDialog(context, ref, l10n),
-                      ),
-                    ],
-                  ),
+                  // 按路由名跳转分类管理页，由 go_router 统一解析
+                  onTap: () => context.pushNamed(Routes.categoryManage),
                 ),
-                SizedBox(height: AppDimens.p12),
-                // 通用设置分组：语言、主题、通知、应用锁、数据迁移与云同步等通用能力。
-                SectionCard(
-                  margin: EdgeInsets.fromLTRB(
-                    AppDimens.p12,
-                    0,
-                    AppDimens.p12,
-                    0,
+                AppTokens.cardDivider(context),
+                // 汇率管理
+                AppListTile(
+                  leading: AppIcons.currencyExchange,
+                  title: l10n.exchangeRatePageTitle,
+                  trailing: Icon(
+                    AppIcons.chevronRight,
+                    color: AppTokens.iconTertiary(context),
+                    size: AppDimens.icon20,
                   ),
-                  child: Column(
-                    children: [
-                      // 应用语言
-                      AppListTile(
-                        leading: AppIcons.language,
-                        title: l10n.mineLanguageSettings,
-                        onTap: () => context.pushNamed(Routes.languageSettings),
-                      ),
-                      AppTokens.cardDivider(context),
-                      // 深色模式
-                      AppListTile(
-                        leading: AppIcons.themeAuto,
-                        title: l10n.appearanceThemeMode,
-                        onTap: () => _showThemeModeDialog(context, ref, l10n),
-                      ),
-                      AppTokens.cardDivider(context),
-                      // 通知设置
-                      AppListTile(
-                        leading: AppIcons.notifications,
-                        title: l10n.mineReminderSettings,
-                        trailing: Icon(
-                          AppIcons.chevronRight,
-                          color: AppTokens.iconTertiary(context),
-                          size: AppDimens.icon20,
-                        ),
-                        onTap: () => context.pushNamed(Routes.reminderSettings),
-                      ),
-                      AppTokens.cardDivider(context),
-                      // 应用上锁 —— 直接进入应用锁设置页配置。
-                      AppListTile(
-                        leading: AppIcons.lock,
-                        title: l10n.appLockTitle,
-                        trailing: Icon(
-                          AppIcons.chevronRight,
-                          color: AppTokens.iconTertiary(context),
-                          size: AppDimens.icon20,
-                        ),
-                        onTap: () => context.pushNamed(Routes.appLockSettings),
-                      ),
-                      AppTokens.cardDivider(context),
-                      // 数据导入导出统一进入数据迁移页面。
-                      AppListTile(
-                        leading: AppIcons.currencyExchange,
-                        title: l10n.detailImportExportTitle,
-                        trailing: Icon(
-                          AppIcons.chevronRight,
-                          color: AppTokens.iconTertiary(context),
-                          size: AppDimens.icon20,
-                        ),
-                        onTap: () =>
-                            context.pushNamed(Routes.detailImportExport),
-                      ),
-                      AppTokens.cardDivider(context),
-                      // 配置导入导出
-                      AppListTile(
-                        leading: AppIcons.backupRestore,
-                        title: l10n.configImportExportTitle,
-                        trailing: Icon(
-                          AppIcons.chevronRight,
-                          color: AppTokens.iconTertiary(context),
-                          size: AppDimens.icon20,
-                        ),
-                        onTap: () =>
-                            context.pushNamed(Routes.configImportExport),
-                      ),
-                      AppTokens.cardDivider(context),
-                      // 备份与云同步 —— 统一入口：图标按备份状态切换，
-                      // 点击统一进入 CloudServicePage（不按后端类型路由分叉）。
-                      CloudServiceEntryTile(
-                        onTap: () => _openCloudService(context),
-                      ),
-                    ],
-                  ),
+                  onTap: () => context.pushNamed(Routes.exchangeRate),
                 ),
-                SizedBox(height: AppDimens.p12),
-                // 检查更新分组：单独成组，放在页面最后。
-                SectionCard(
-                  margin: EdgeInsets.fromLTRB(
-                    AppDimens.p12,
-                    0,
-                    AppDimens.p12,
-                    0,
+                AppTokens.cardDivider(context),
+                // 周期账单
+                AppListTile(
+                  leading: AppIcons.repeat,
+                  title: l10n.mineRecurringTransactions,
+                  trailing: Icon(
+                    AppIcons.chevronRight,
+                    color: AppTokens.iconTertiary(context),
+                    size: AppDimens.icon20,
                   ),
-                  child: Column(
-                    children: [
-                      // 应用内检查更新。
-                      AppListTile(
-                        leading: AppIcons.download,
-                        title: l10n.mineCheckUpdate,
-                        trailing: Icon(
-                          AppIcons.chevronRight,
-                          color: AppTokens.iconTertiary(context),
-                          size: AppDimens.icon20,
-                        ),
-                        onTap: () => _checkUpdate(context),
-                      ),
-                    ],
-                  ),
+                  onTap: () => context.pushNamed(Routes.recurringTransaction),
                 ),
-                SizedBox(height: AppDimens.p16),
+                AppTokens.cardDivider(context),
+                // 支出颜色（影响列表 / 搜索 / 详情等支出金额的着色）
+                AppListTile(
+                  leading: AppIcons.theme,
+                  title: l10n.appearanceExpenseColorScheme,
+                  // 圆点放进与右侧箭头同高的图标槽位，
+                  // 保证圆点中心与各行右箭头中心对齐。
+                  trailing: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: Center(
+                      child: Container(
+                        width: 14,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color:
+                              ref.watch(expenseColorSchemeProvider) == 'green'
+                              ? AppTokens.success(context)
+                              : AppTokens.error(context),
+                        ),
+                      ),
+                    ),
+                  ),
+                  onTap: () =>
+                      _showExpenseColorSchemeDialog(context, ref, l10n),
+                ),
               ],
             ),
           ),
+          SizedBox(height: AppDimens.p12),
+          // 通用设置分组：语言、主题、通知、应用锁、数据迁移与云同步等通用能力。
+          SectionCard(
+            margin: EdgeInsets.fromLTRB(AppDimens.p12, 0, AppDimens.p12, 0),
+            child: Column(
+              children: [
+                // 应用语言
+                AppListTile(
+                  leading: AppIcons.language,
+                  title: l10n.mineLanguageSettings,
+                  onTap: () => context.pushNamed(Routes.languageSettings),
+                ),
+                AppTokens.cardDivider(context),
+                // 深色模式
+                AppListTile(
+                  leading: AppIcons.themeAuto,
+                  title: l10n.appearanceThemeMode,
+                  onTap: () => _showThemeModeDialog(context, ref, l10n),
+                ),
+                AppTokens.cardDivider(context),
+                // 通知设置
+                AppListTile(
+                  leading: AppIcons.notifications,
+                  title: l10n.mineReminderSettings,
+                  trailing: Icon(
+                    AppIcons.chevronRight,
+                    color: AppTokens.iconTertiary(context),
+                    size: AppDimens.icon20,
+                  ),
+                  onTap: () => context.pushNamed(Routes.reminderSettings),
+                ),
+                AppTokens.cardDivider(context),
+                // 应用上锁 —— 直接进入应用锁设置页配置。
+                AppListTile(
+                  leading: AppIcons.lock,
+                  title: l10n.appLockTitle,
+                  trailing: Icon(
+                    AppIcons.chevronRight,
+                    color: AppTokens.iconTertiary(context),
+                    size: AppDimens.icon20,
+                  ),
+                  onTap: () => context.pushNamed(Routes.appLockSettings),
+                ),
+                AppTokens.cardDivider(context),
+                // 数据导入导出统一进入数据迁移页面。
+                AppListTile(
+                  leading: AppIcons.currencyExchange,
+                  title: l10n.detailImportExportTitle,
+                  trailing: Icon(
+                    AppIcons.chevronRight,
+                    color: AppTokens.iconTertiary(context),
+                    size: AppDimens.icon20,
+                  ),
+                  onTap: () => context.pushNamed(Routes.detailImportExport),
+                ),
+                AppTokens.cardDivider(context),
+                // 配置导入导出
+                AppListTile(
+                  leading: AppIcons.backupRestore,
+                  title: l10n.configImportExportTitle,
+                  trailing: Icon(
+                    AppIcons.chevronRight,
+                    color: AppTokens.iconTertiary(context),
+                    size: AppDimens.icon20,
+                  ),
+                  onTap: () => context.pushNamed(Routes.configImportExport),
+                ),
+                AppTokens.cardDivider(context),
+                // 备份与云同步 —— 统一入口：图标按备份状态切换，
+                // 点击统一进入 CloudServicePage（不按后端类型路由分叉）。
+                CloudServiceEntryTile(onTap: () => _openCloudService(context)),
+              ],
+            ),
+          ),
+          SizedBox(height: AppDimens.p12),
+          // 检查更新分组：单独成组，放在页面最后。
+          SectionCard(
+            margin: EdgeInsets.fromLTRB(AppDimens.p12, 0, AppDimens.p12, 0),
+            child: Column(
+              children: [
+                // 应用内检查更新。
+                AppListTile(
+                  leading: AppIcons.download,
+                  title: l10n.mineCheckUpdate,
+                  trailing: Icon(
+                    AppIcons.chevronRight,
+                    color: AppTokens.iconTertiary(context),
+                    size: AppDimens.icon20,
+                  ),
+                  onTap: () => _checkUpdate(context),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: AppDimens.p16),
         ],
       ),
     );
