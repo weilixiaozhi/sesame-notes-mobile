@@ -811,7 +811,7 @@ abstract class AppLocalizations {
   /// No description provided for @ledgersSectionCloudSignInHint.
   ///
   /// In en, this message translates to:
-  /// **'Sign in to Sesame Notes Cloud to use cloud ledgers'**
+  /// **'Sign in to the cloud to use cloud ledgers'**
   String get ledgersSectionCloudSignInHint;
 
   /// No description provided for @ledgersStorageLocation.
@@ -829,7 +829,7 @@ abstract class AppLocalizations {
   /// No description provided for @ledgersStorageCloudHint.
   ///
   /// In en, this message translates to:
-  /// **'Uploaded to Sesame Notes Cloud and synced across your devices'**
+  /// **'Uploaded to the cloud and synced across your devices'**
   String get ledgersStorageCloudHint;
 
   /// No description provided for @joinSharedTitle.
@@ -931,7 +931,7 @@ abstract class AppLocalizations {
   /// No description provided for @ledgersActionMoveToCloud.
   ///
   /// In en, this message translates to:
-  /// **'Move to Sesame Notes Cloud'**
+  /// **'Move to the Cloud'**
   String get ledgersActionMoveToCloud;
 
   /// No description provided for @ledgersActionMoveToLocal.
@@ -949,13 +949,13 @@ abstract class AppLocalizations {
   /// No description provided for @ledgersMoveToCloudMessage.
   ///
   /// In en, this message translates to:
-  /// **'Ledger \"{name}\" will be uploaded to Sesame Notes Cloud and synced across your devices.'**
+  /// **'Ledger \"{name}\" will be uploaded to the cloud and synced across your devices.'**
   String ledgersMoveToCloudMessage(String name);
 
   /// No description provided for @ledgersMoveToLocalMessage.
   ///
   /// In en, this message translates to:
-  /// **'Ledger \"{name}\" will be deleted from Sesame Notes Cloud and kept on this device only. Other devices will no longer see it.'**
+  /// **'Ledger \"{name}\" will be deleted from the cloud and kept on this device only. Other devices will no longer see it.'**
   String ledgersMoveToLocalMessage(String name);
 
   /// No description provided for @ledgersCopyToLocalMessage.
@@ -967,7 +967,7 @@ abstract class AppLocalizations {
   /// No description provided for @ledgersMoveToCloudSuccess.
   ///
   /// In en, this message translates to:
-  /// **'Moved to Sesame Notes Cloud'**
+  /// **'Moved to the Cloud'**
   String get ledgersMoveToCloudSuccess;
 
   /// No description provided for @ledgersMoveToLocalSuccess.
@@ -3433,7 +3433,7 @@ abstract class AppLocalizations {
   /// No description provided for @configIncludeCloud.
   ///
   /// In en, this message translates to:
-  /// **'Sesame Notes Cloud service config'**
+  /// **'Cloud service config'**
   String get configIncludeCloud;
 
   /// No description provided for @configIncludeAppSettings.

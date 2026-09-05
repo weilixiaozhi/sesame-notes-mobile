@@ -388,7 +388,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ledgersSectionCloudEmpty => '暂无云端账本，云端账本会在各设备间同步';
 
   @override
-  String get ledgersSectionCloudSignInHint => '登录 Sesame Notes Cloud 后即可使用云端账本';
+  String get ledgersSectionCloudSignInHint => '登录云端后即可使用云端账本';
 
   @override
   String get ledgersStorageLocation => '存储位置';
@@ -397,7 +397,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ledgersStorageLocalHint => '只保存在这台设备上，不会上传到云端';
 
   @override
-  String get ledgersStorageCloudHint => '数据会上传到 Sesame Notes Cloud，并在各设备间同步';
+  String get ledgersStorageCloudHint => '数据会上传到云端，并在各设备间同步';
 
   @override
   String get joinSharedTitle => '加入共享账本';
@@ -450,7 +450,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateOk => '知道了';
 
   @override
-  String get ledgersActionMoveToCloud => '移动到 Sesame Notes Cloud';
+  String get ledgersActionMoveToCloud => '移动到云端';
 
   @override
   String get ledgersActionMoveToLocal => '移动到本地';
@@ -460,12 +460,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String ledgersMoveToCloudMessage(String name) {
-    return '账本\"$name\"的数据将上传到 Sesame Notes Cloud，并在各设备间同步。';
+    return '账本\"$name\"的数据将上传到云端，并在各设备间同步。';
   }
 
   @override
   String ledgersMoveToLocalMessage(String name) {
-    return '账本\"$name\"将从 Sesame Notes Cloud 删除，仅保留在这台设备上，其他设备将不再能看到它。';
+    return '账本\"$name\"将从云端删除，仅保留在这台设备上，其他设备将不再能看到它。';
   }
 
   @override
@@ -474,7 +474,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get ledgersMoveToCloudSuccess => '已移动到 Sesame Notes Cloud';
+  String get ledgersMoveToCloudSuccess => '已移动到云端';
 
   @override
   String get ledgersMoveToLocalSuccess => '已移动到本地';
@@ -1800,7 +1800,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get configIncludeS3 => 'S3 云服务配置';
 
   @override
-  String get configIncludeCloud => 'Sesame Notes Cloud 云服务配置';
+  String get configIncludeCloud => '云端服务配置';
 
   @override
   String get configIncludeAppSettings => '应用设置（提醒、语言、外观、字体、同步等）';
@@ -3454,7 +3454,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get ledgersSectionCloudEmpty => '暫無雲端帳本，雲端帳本會在各裝置間同步';
 
   @override
-  String get ledgersSectionCloudSignInHint => '登入 Sesame Notes Cloud 後即可使用雲端帳本';
+  String get ledgersSectionCloudSignInHint => '登入雲端後即可使用雲端帳本';
 
   @override
   String get ledgersStorageLocation => '儲存位置';
@@ -3463,7 +3463,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get ledgersStorageLocalHint => '只保存在這台裝置上，不會上傳到雲端';
 
   @override
-  String get ledgersStorageCloudHint => '資料會上傳到 Sesame Notes Cloud，並在各裝置間同步';
+  String get ledgersStorageCloudHint => '資料會上傳到雲端，並在各裝置間同步';
 
   @override
   String get joinSharedTitle => '加入共享帳本';
@@ -3516,7 +3516,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get updateOk => '知道了';
 
   @override
-  String get ledgersActionMoveToCloud => '移動到 Sesame Notes Cloud';
+  String get ledgersActionMoveToCloud => '移動到雲端';
 
   @override
   String get ledgersActionMoveToLocal => '移動到本機';
@@ -3526,12 +3526,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String ledgersMoveToCloudMessage(String name) {
-    return '帳本\"$name\"的資料將上傳到 Sesame Notes Cloud，並在各裝置間同步。';
+    return '帳本\"$name\"的資料將上傳到雲端，並在各裝置間同步。';
   }
 
   @override
   String ledgersMoveToLocalMessage(String name) {
-    return '帳本\"$name\"將從 Sesame Notes Cloud 刪除，僅保留在這台裝置上，其他裝置將不再看得到它。';
+    return '帳本\"$name\"將從雲端刪除，僅保留在這台裝置上，其他裝置將不再看得到它。';
   }
 
   @override
@@ -3540,7 +3540,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String get ledgersMoveToCloudSuccess => '已移動到 Sesame Notes Cloud';
+  String get ledgersMoveToCloudSuccess => '已移動到雲端';
 
   @override
   String get ledgersMoveToLocalSuccess => '已移動到本機';
@@ -4866,7 +4866,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get configIncludeS3 => 'S3 雲端服務配置';
 
   @override
-  String get configIncludeCloud => 'Sesame Notes Cloud 雲端服務配置';
+  String get configIncludeCloud => '雲端服務配置';
 
   @override
   String get configIncludeAppSettings => '應用程式設定（提醒、語言、外觀、字體、同步等）';

@@ -181,7 +181,7 @@ void main() {
     expect(find.text('本地账本'), findsOneWidget);
     expect(find.text('云端账本'), findsOneWidget);
     // 未登录时云端分区空提示给「去登录」引导，而非「暂无」。
-    expect(find.text('登录 Sesame Notes Cloud 后即可使用云端账本'), findsOneWidget);
+    expect(find.text('登录云端后即可使用云端账本'), findsOneWidget);
     expect(find.text('暂无云端账本，云端账本会在各设备间同步'), findsNothing);
   });
 
@@ -309,7 +309,7 @@ void main() {
 
     expect(find.byIcon(AppIcons.personAdd), findsNothing);
     expect(find.text('加入共享账本'), findsNothing);
-    expect(find.text('登录 Sesame Notes Cloud 后即可使用云端账本'), findsOneWidget);
+    expect(find.text('登录云端后即可使用云端账本'), findsOneWidget);
   });
 
   testWidgets('头部「添加账本」位于右上角 actions（标题右侧、贴近屏幕右缘）', (tester) async {

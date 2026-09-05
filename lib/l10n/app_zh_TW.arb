@@ -190,10 +190,10 @@
     "ledgersSectionCloud": "雲端帳本",
     "ledgersSectionLocalEmpty": "暫無本機帳本，本機帳本只保存在這台裝置上",
     "ledgersSectionCloudEmpty": "暫無雲端帳本，雲端帳本會在各裝置間同步",
-    "ledgersSectionCloudSignInHint": "登入 Sesame Notes Cloud 後即可使用雲端帳本",
+    "ledgersSectionCloudSignInHint": "登入雲端後即可使用雲端帳本",
     "ledgersStorageLocation": "儲存位置",
     "ledgersStorageLocalHint": "只保存在這台裝置上，不會上傳到雲端",
-    "ledgersStorageCloudHint": "資料會上傳到 Sesame Notes Cloud，並在各裝置間同步",
+    "ledgersStorageCloudHint": "資料會上傳到雲端，並在各裝置間同步",
     "joinSharedTitle": "加入共享帳本",
     "joinSharedCodeHint": "輸入邀請碼",
     "joinSharedQuery": "查詢",
@@ -210,10 +210,10 @@
     "updateUnknown": "無法自動檢查更新",
     "updateGoRelease": "前往發布頁",
     "updateOk": "知道了",
-    "ledgersActionMoveToCloud": "移動到 Sesame Notes Cloud",
+    "ledgersActionMoveToCloud": "移動到雲端",
     "ledgersActionMoveToLocal": "移動到本機",
     "ledgersActionCopyToLocal": "複製到本機",
-    "ledgersMoveToCloudMessage": "帳本\"{name}\"的資料將上傳到 Sesame Notes Cloud，並在各裝置間同步。",
+    "ledgersMoveToCloudMessage": "帳本\"{name}\"的資料將上傳到雲端，並在各裝置間同步。",
     "@ledgersMoveToCloudMessage": {
         "placeholders": {
             "name": {
@@ -221,7 +221,7 @@
             }
         }
     },
-    "ledgersMoveToLocalMessage": "帳本\"{name}\"將從 Sesame Notes Cloud 刪除，僅保留在這台裝置上，其他裝置將不再看得到它。",
+    "ledgersMoveToLocalMessage": "帳本\"{name}\"將從雲端刪除，僅保留在這台裝置上，其他裝置將不再看得到它。",
     "@ledgersMoveToLocalMessage": {
         "placeholders": {
             "name": {
@@ -237,7 +237,7 @@
             }
         }
     },
-    "ledgersMoveToCloudSuccess": "已移動到 Sesame Notes Cloud",
+    "ledgersMoveToCloudSuccess": "已移動到雲端",
     "ledgersMoveToLocalSuccess": "已移動到本機",
     "ledgersCopyToLocalSuccess": "已複製到本機",
     "ledgersSwitched": "已切換到帳本「{name}」",
@@ -795,7 +795,7 @@
     "configIncludeSupabase": "Supabase 雲端服務配置",
     "configIncludeWebdav": "WebDAV 雲端服務配置",
     "configIncludeS3": "S3 雲端服務配置",
-    "configIncludeCloud": "Sesame Notes Cloud 雲端服務配置",
+    "configIncludeCloud": "雲端服務配置",
     "configIncludeAppSettings": "應用程式設定（提醒、語言、外觀、字體、同步等）",
     "configIncludeRecurringTransactions": "週期帳單",
     "configIncludeCategories": "分類",

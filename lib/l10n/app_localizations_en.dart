@@ -396,7 +396,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ledgersSectionCloudSignInHint =>
-      'Sign in to Sesame Notes Cloud to use cloud ledgers';
+      'Sign in to the cloud to use cloud ledgers';
 
   @override
   String get ledgersStorageLocation => 'Storage location';
@@ -407,7 +407,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ledgersStorageCloudHint =>
-      'Uploaded to Sesame Notes Cloud and synced across your devices';
+      'Uploaded to the cloud and synced across your devices';
 
   @override
   String get joinSharedTitle => 'Join Shared Ledger';
@@ -461,7 +461,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateOk => 'OK';
 
   @override
-  String get ledgersActionMoveToCloud => 'Move to Sesame Notes Cloud';
+  String get ledgersActionMoveToCloud => 'Move to the Cloud';
 
   @override
   String get ledgersActionMoveToLocal => 'Move to local';
@@ -471,12 +471,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String ledgersMoveToCloudMessage(String name) {
-    return 'Ledger \"$name\" will be uploaded to Sesame Notes Cloud and synced across your devices.';
+    return 'Ledger \"$name\" will be uploaded to the cloud and synced across your devices.';
   }
 
   @override
   String ledgersMoveToLocalMessage(String name) {
-    return 'Ledger \"$name\" will be deleted from Sesame Notes Cloud and kept on this device only. Other devices will no longer see it.';
+    return 'Ledger \"$name\" will be deleted from the cloud and kept on this device only. Other devices will no longer see it.';
   }
 
   @override
@@ -485,7 +485,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get ledgersMoveToCloudSuccess => 'Moved to Sesame Notes Cloud';
+  String get ledgersMoveToCloudSuccess => 'Moved to the Cloud';
 
   @override
   String get ledgersMoveToLocalSuccess => 'Moved to local';
@@ -1878,7 +1878,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get configIncludeS3 => 'S3 cloud service config';
 
   @override
-  String get configIncludeCloud => 'Sesame Notes Cloud service config';
+  String get configIncludeCloud => 'Cloud service config';
 
   @override
   String get configIncludeAppSettings =>

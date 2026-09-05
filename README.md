@@ -8,7 +8,7 @@ Sesame Notes Mobile（芝麻记）是一款基于 Flutter 的离线优先记账�
 
 ## 项目简介
 
-- 本地账本与云端账本（Sesame Notes Cloud，OpenAPI + WebSocket 增量同步）
+- 本地账本与云端账本（云端同步，OpenAPI + WebSocket 增量同步）
 - 交易、分类、统计、日历、AA 分摊、周期账单、多币种
 - 共享账本、成员管理与邀请码（v1 仅手动输入邀请码，不配置 Deep Link）
 - 第三方云备份：Supabase Storage / WebDAV / S3（加密备份，独立于业务同步）

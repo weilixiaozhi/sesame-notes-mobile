@@ -507,7 +507,7 @@ class SyncChanges extends Table {
   IntColumn get baseRevision => integer().nullable()();
 }
 
-/// 同步状态表:单设备一行(仅 Sesame Notes Cloud 一个正式同步协议)。
+/// 同步状态表:单设备一行(仅云端一个正式同步协议)。
 class SyncState extends Table {
   TextColumn get deviceId => text()();
 

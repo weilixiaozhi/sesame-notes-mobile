@@ -190,10 +190,10 @@
     "ledgersSectionCloud": "云端账本",
     "ledgersSectionLocalEmpty": "暂无本地账本，本地账本只保存在这台设备上",
     "ledgersSectionCloudEmpty": "暂无云端账本，云端账本会在各设备间同步",
-    "ledgersSectionCloudSignInHint": "登录 Sesame Notes Cloud 后即可使用云端账本",
+    "ledgersSectionCloudSignInHint": "登录云端后即可使用云端账本",
     "ledgersStorageLocation": "存储位置",
     "ledgersStorageLocalHint": "只保存在这台设备上，不会上传到云端",
-    "ledgersStorageCloudHint": "数据会上传到 Sesame Notes Cloud，并在各设备间同步",
+    "ledgersStorageCloudHint": "数据会上传到云端，并在各设备间同步",
     "joinSharedTitle": "加入共享账本",
     "joinSharedCodeHint": "输入邀请码",
     "joinSharedQuery": "查询",
@@ -210,10 +210,10 @@
     "updateUnknown": "无法自动检查更新",
     "updateGoRelease": "前往发布页",
     "updateOk": "知道了",
-    "ledgersActionMoveToCloud": "移动到 Sesame Notes Cloud",
+    "ledgersActionMoveToCloud": "移动到云端",
     "ledgersActionMoveToLocal": "移动到本地",
     "ledgersActionCopyToLocal": "复制到本地",
-    "ledgersMoveToCloudMessage": "账本\"{name}\"的数据将上传到 Sesame Notes Cloud，并在各设备间同步。",
+    "ledgersMoveToCloudMessage": "账本\"{name}\"的数据将上传到云端，并在各设备间同步。",
     "@ledgersMoveToCloudMessage": {
         "placeholders": {
             "name": {
@@ -221,7 +221,7 @@
             }
         }
     },
-    "ledgersMoveToLocalMessage": "账本\"{name}\"将从 Sesame Notes Cloud 删除，仅保留在这台设备上，其他设备将不再能看到它。",
+    "ledgersMoveToLocalMessage": "账本\"{name}\"将从云端删除，仅保留在这台设备上，其他设备将不再能看到它。",
     "@ledgersMoveToLocalMessage": {
         "placeholders": {
             "name": {
@@ -237,7 +237,7 @@
             }
         }
     },
-    "ledgersMoveToCloudSuccess": "已移动到 Sesame Notes Cloud",
+    "ledgersMoveToCloudSuccess": "已移动到云端",
     "ledgersMoveToLocalSuccess": "已移动到本地",
     "ledgersCopyToLocalSuccess": "已复制到本地",
     "ledgersSwitched": "已切换到账本\"{name}\"",
@@ -795,7 +795,7 @@
     "configIncludeSupabase": "Supabase 云服务配置",
     "configIncludeWebdav": "WebDAV 云服务配置",
     "configIncludeS3": "S3 云服务配置",
-    "configIncludeCloud": "Sesame Notes Cloud 云服务配置",
+    "configIncludeCloud": "云端服务配置",
     "configIncludeAppSettings": "应用设置（提醒、语言、外观、字体、同步等）",
     "configIncludeRecurringTransactions": "周期账单",
     "configIncludeCategories": "分类",

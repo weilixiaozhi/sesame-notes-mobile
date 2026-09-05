@@ -330,7 +330,7 @@ void main() {
       expect(cols['ledger_id']!.requiredDuringInsert, isFalse);
     });
 
-    test('sync_state 无 provider_type（仅 Sesame Notes Cloud 一个同步协议）', () {
+    test('sync_state 无 provider_type（仅云端一个同步协议）', () {
       final cols = {for (final c in db.syncState.$columns) c.name: c};
       expect(cols.containsKey('provider_type'), isFalse);
       expect(cols['device_id']!.requiredDuringInsert, isTrue);

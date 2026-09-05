@@ -190,10 +190,10 @@
     "ledgersSectionCloud": "Cloud Ledgers",
     "ledgersSectionLocalEmpty": "No local ledgers. Local ledgers stay on this device only.",
     "ledgersSectionCloudEmpty": "No cloud ledgers. Cloud ledgers sync across your devices.",
-    "ledgersSectionCloudSignInHint": "Sign in to Sesame Notes Cloud to use cloud ledgers",
+    "ledgersSectionCloudSignInHint": "Sign in to the cloud to use cloud ledgers",
     "ledgersStorageLocation": "Storage location",
     "ledgersStorageLocalHint": "Stored on this device only, never uploaded",
-    "ledgersStorageCloudHint": "Uploaded to Sesame Notes Cloud and synced across your devices",
+    "ledgersStorageCloudHint": "Uploaded to the cloud and synced across your devices",
     "joinSharedTitle": "Join Shared Ledger",
     "joinSharedCodeHint": "Enter invite code",
     "joinSharedQuery": "Query",
@@ -210,10 +210,10 @@
     "updateUnknown": "Unable to check for updates automatically",
     "updateGoRelease": "Go to Releases",
     "updateOk": "OK",
-    "ledgersActionMoveToCloud": "Move to Sesame Notes Cloud",
+    "ledgersActionMoveToCloud": "Move to the Cloud",
     "ledgersActionMoveToLocal": "Move to local",
     "ledgersActionCopyToLocal": "Copy to local",
-    "ledgersMoveToCloudMessage": "Ledger \"{name}\" will be uploaded to Sesame Notes Cloud and synced across your devices.",
+    "ledgersMoveToCloudMessage": "Ledger \"{name}\" will be uploaded to the cloud and synced across your devices.",
     "@ledgersMoveToCloudMessage": {
         "placeholders": {
             "name": {
@@ -221,7 +221,7 @@
             }
         }
     },
-    "ledgersMoveToLocalMessage": "Ledger \"{name}\" will be deleted from Sesame Notes Cloud and kept on this device only. Other devices will no longer see it.",
+    "ledgersMoveToLocalMessage": "Ledger \"{name}\" will be deleted from the cloud and kept on this device only. Other devices will no longer see it.",
     "@ledgersMoveToLocalMessage": {
         "placeholders": {
             "name": {
@@ -237,7 +237,7 @@
             }
         }
     },
-    "ledgersMoveToCloudSuccess": "Moved to Sesame Notes Cloud",
+    "ledgersMoveToCloudSuccess": "Moved to the Cloud",
     "ledgersMoveToLocalSuccess": "Moved to local",
     "ledgersCopyToLocalSuccess": "Copied to local",
     "ledgersSwitched": "Switched to ledger \"{name}\"",
@@ -795,7 +795,7 @@
     "configIncludeSupabase": "Supabase cloud service config",
     "configIncludeWebdav": "WebDAV cloud service config",
     "configIncludeS3": "S3 cloud service config",
-    "configIncludeCloud": "Sesame Notes Cloud service config",
+    "configIncludeCloud": "Cloud service config",
     "configIncludeAppSettings": "App settings (reminder, language, appearance, font, sync, etc.)",
     "configIncludeRecurringTransactions": "Recurring transactions",
     "configIncludeCategories": "Categories",
