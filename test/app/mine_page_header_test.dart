@@ -95,7 +95,7 @@ void main() {
     expect(find.text('登录 / 注册'), findsOneWidget);
     expect(find.text('登录后可使用云账本和共享功能'), findsOneWidget);
     // 默认头像资产
-    expect(find.byType(CircleAvatar), findsOneWidget);
+    expect(find.byType(SelfAvatar), findsOneWidget);
   });
 
   testWidgets('未登录：身份与登录操作横向排布，功能提示独占下一行', (tester) async {
@@ -113,7 +113,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final avatarRect = tester.getRect(find.byType(CircleAvatar));
+    final avatarRect = tester.getRect(find.byType(SelfAvatar));
     final titleRect = tester.getRect(find.text('单机芝麻仔（我）'));
     final subtitleRect = tester.getRect(find.text('本地使用 · 未登录'));
     final loginRect = tester.getRect(
