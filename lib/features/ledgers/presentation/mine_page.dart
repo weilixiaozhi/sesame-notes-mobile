@@ -41,8 +41,8 @@ class MinePage extends StatelessWidget {
               padding: EdgeInsets.zero,
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
-                // 分组之间留 12px 呼吸距；组内行间距经 _groupDivider
-                // 与行内边距统一为约 16px，首末行与中间行视觉一致。
+                // 分组之间留 12px 呼吸距；组内行间距由 cardDivider 呼吸距
+                // 与 AppListTile 行内边距统一为约 16px，首末行与中间行视觉一致。
                 SizedBox(height: AppDimens.p12),
                 // 记账设置分组：与记账行为直接相关的低频设置，避免挤占高频入口。
                 SectionCard(
@@ -68,7 +68,7 @@ class MinePage extends StatelessWidget {
                         // 按路由名跳转分类管理页，由 go_router 统一解析
                         onTap: () => context.pushNamed(Routes.categoryManage),
                       ),
-                      _groupDivider(context),
+                      AppTokens.cardDivider(context),
                       // 汇率管理
                       AppListTile(
                         leading: AppIcons.currencyExchange,
@@ -82,7 +82,7 @@ class MinePage extends StatelessWidget {
                         ),
                         onTap: () => context.pushNamed(Routes.exchangeRate),
                       ),
-                      _groupDivider(context),
+                      AppTokens.cardDivider(context),
                       // 周期账单
                       AppListTile(
                         leading: AppIcons.repeat,
@@ -124,7 +124,7 @@ class MinePage extends StatelessWidget {
                         ),
                         onTap: () => context.pushNamed(Routes.reminderSettings),
                       ),
-                      _groupDivider(context),
+                      AppTokens.cardDivider(context),
                       // 偏好调节
                       AppListTile(
                         leading: AppIcons.theme,
@@ -137,13 +137,13 @@ class MinePage extends StatelessWidget {
                         onTap: () =>
                             context.pushNamed(Routes.appearanceSettings),
                       ),
-                      _groupDivider(context),
+                      AppTokens.cardDivider(context),
                       // 备份与云同步 —— 统一入口：图标按备份状态切换，
                       // 点击统一进入 CloudServicePage（不按后端类型路由分叉）。
                       CloudServiceEntryTile(
                         onTap: () => _openCloudService(context),
                       ),
-                      _groupDivider(context),
+                      AppTokens.cardDivider(context),
                       // 数据导入导出统一进入数据迁移页面。
                       AppListTile(
                         leading: AppIcons.currencyExchange,
@@ -158,7 +158,7 @@ class MinePage extends StatelessWidget {
                         onTap: () =>
                             context.pushNamed(Routes.detailImportExport),
                       ),
-                      _groupDivider(context),
+                      AppTokens.cardDivider(context),
                       // 配置导入导出
                       AppListTile(
                         leading: AppIcons.backupRestore,
@@ -173,7 +173,7 @@ class MinePage extends StatelessWidget {
                         onTap: () =>
                             context.pushNamed(Routes.configImportExport),
                       ),
-                      _groupDivider(context),
+                      AppTokens.cardDivider(context),
                       // 应用上锁 —— 直接进入应用锁设置页配置。
                       AppListTile(
                         leading: AppIcons.lock,
@@ -221,14 +221,6 @@ class MinePage extends StatelessWidget {
       ),
     );
   }
-
-  /// 分组内行间分隔线：上下各留 [AppDimens.p4] 呼吸距，
-  /// 与 AppListTile 自带的 p4 垂直内边距叠加后，
-  /// 中间行距（约 16px）与首行上方/末行下方到卡片边缘的距离保持统一。
-  static Widget _groupDivider(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: AppDimens.p4),
-    child: AppTokens.cardDivider(context),
-  );
 
   /// 检查更新：调服务对比版本，按三态弹窗引导；失败不硬报错（unknown 态）。
   Future<void> _checkUpdate(BuildContext context) async {

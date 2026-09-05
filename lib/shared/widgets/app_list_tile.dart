@@ -32,7 +32,8 @@ class AppListTile extends StatelessWidget {
       context,
     ).copyWith(color: AppTokens.textSecondary(context)); // ⭐ 使用 Token
     final tile = Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppDimens.p4),
+      // 行垂直内边距走行距体系 token，与分割线呼吸距共同决定行间距
+      padding: const EdgeInsets.symmetric(vertical: AppDimens.tileRowVertical),
       child: Row(
         children: [
           leadingWidget ??

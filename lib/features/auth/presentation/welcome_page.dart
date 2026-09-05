@@ -192,7 +192,12 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                       key: const Key('currencyListView'), // 供测试精准定位币种列表
                       itemCount: currencies.length,
                       separatorBuilder: (context, index) =>
-                          AppTokens.cardDivider(context, indent: 0),
+                          // 币种行自带紧凑间距，分割线不追加呼吸距
+                          AppTokens.cardDivider(
+                            context,
+                            indent: 0,
+                            verticalGap: 0,
+                          ),
                       itemBuilder: (context, index) {
                         final currency = currencies[index];
                         final isSelected = _selectedCurrency == currency.code;

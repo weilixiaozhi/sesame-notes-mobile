@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'dimens.dart';
+
 /// 全局色板唯一真相源。
 ///
 /// 设计意图：[AppTheme]（app_theme.dart）构造 [ThemeData] 与
@@ -323,16 +325,25 @@ class AppTokens {
       isDark(context) ? 0 : 1;
 
   /// 卡片内部分割线组件
-  /// 封装了 height、thickness、color 三个属性
-  /// 设置项分割线。默认左缩进 48(对齐 AppListTile 内容:icon 容器 36 + 间距 12),
-  /// 让线避开左侧 icon。section 顶部 / 卡片外等需要全宽的场景传 indent: 0。
-  static Widget cardDivider(BuildContext context, {double indent = 48}) =>
-      Divider(
-        height: cardInnerDividerHeight(context),
-        thickness: cardInnerDividerHeight(context),
-        color: cardInnerDividerColor(context),
-        indent: indent,
-      );
+  /// 封装了 height、thickness、color 三个属性。
+  /// 默认上下各留 [AppDimens.dividerVerticalGap] 呼吸距，与 AppListTile 的
+  /// [AppDimens.tileRowVertical] 行内边距叠加，使设置行间距统一为约 16px。
+  /// 默认左缩进 48(对齐 AppListTile 内容:icon 容器 36 + 间距 12),
+  /// 让线避开左侧 icon。section 顶部 / 卡片外等需要全宽的场景传 indent: 0;
+  /// 已自行留白的分隔场景传 verticalGap: 0。
+  static Widget cardDivider(
+    BuildContext context, {
+    double indent = 48,
+    double verticalGap = AppDimens.dividerVerticalGap,
+  }) => Padding(
+    padding: EdgeInsets.symmetric(vertical: verticalGap),
+    child: Divider(
+      height: cardInnerDividerHeight(context),
+      thickness: cardInnerDividerHeight(context),
+      color: cardInnerDividerColor(context),
+      indent: indent,
+    ),
+  );
 
   // ========== 主题色 Token (Theme) ==========
 

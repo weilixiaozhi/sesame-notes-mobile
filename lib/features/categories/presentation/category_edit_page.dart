@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -305,8 +305,12 @@ class _CategoryEditPageState extends ConsumerState<CategoryEditPage> {
                           // 当前图标预览
                           _buildCurrentIconPreview(context, primaryColor),
                           const SizedBox(height: AppDimens.p8),
-                          // 分割线
-                          AppTokens.cardDivider(context, indent: 0),
+                          // 分割线（上下已有显式留白，不追加呼吸距）
+                          AppTokens.cardDivider(
+                            context,
+                            indent: 0,
+                            verticalGap: 0,
+                          ),
                           const SizedBox(height: AppDimens.p8),
                           // Lucide 图标网格（限高滚动）
                           SizedBox(
