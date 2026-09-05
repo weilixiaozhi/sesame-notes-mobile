@@ -76,7 +76,7 @@ class Routes {
   /// 分类详情页（参数经 extra 传 (String, String) = (categoryId, categoryName)）
   static const String categoryDetail = '/category/detail';
 
-  /// 提醒设置页
+  /// 通知设置页
   static const String reminderSettings = '/settings/reminder';
 
   /// 外观设置页
@@ -91,7 +91,7 @@ class Routes {
   /// PIN 设置页
   static const String pinSetup = '/settings/pin';
 
-  /// 明细导入导出页
+  /// 数据导入导出页
   static const String detailImportExport = '/import-export/detail';
 
   /// 配置导入导出页

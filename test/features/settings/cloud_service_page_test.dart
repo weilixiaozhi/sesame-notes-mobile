@@ -1,4 +1,4 @@
-/// 云服务页（备份与云同步配置）测试。
+/// 云服务页（备份与云同步）测试。
 ///
 /// 需求锚点：
 /// - 页面不展示官方账号登录、同步或退出入口（官方云端协同不在本页管理）；
@@ -71,7 +71,7 @@ void main() {
 
     await pumpPage(tester, db);
 
-    expect(find.text('备份与云同步配置'), findsOneWidget);
+    expect(find.text('备份与云同步'), findsOneWidget);
     expect(find.text('离线模式'), findsOneWidget);
     expect(find.text('备份同步'), findsOneWidget);
     // 本地存储卡片 + 三个后端卡片。

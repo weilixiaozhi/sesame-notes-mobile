@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,7 +11,7 @@ import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
-/// 外观设置二级页面
+/// 偏好调节二级页面
 class AppearanceSettingsPage extends ConsumerWidget {
   const AppearanceSettingsPage({super.key});
 
@@ -64,7 +64,7 @@ class AppearanceSettingsPage extends ConsumerWidget {
               padding: const EdgeInsets.all(AppDimens.p16),
               children: [
                 // 所有偏好项合并为一个分组，不细分
-                // 排序：支出颜色 → 应用语言 → 深色模式 → 应用上锁
+                // 排序：支出颜色 → 应用语言 → 深色模式
                 SectionCard(
                   margin: EdgeInsets.zero,
                   child: Column(
@@ -115,14 +115,6 @@ class AppearanceSettingsPage extends ConsumerWidget {
                         title: l10n.appearanceThemeMode,
                         subtitle: themeModeDisplay,
                         onTap: () => _showThemeModeDialog(context, ref, l10n),
-                      ),
-                      AppTokens.cardDivider(context),
-                      // 应用上锁
-                      AppListTile(
-                        leading: AppIcons.lock,
-                        title: l10n.appLockTitle,
-                        subtitle: l10n.appLockDesc,
-                        onTap: () => context.pushNamed(Routes.appLockSettings),
                       ),
                     ],
                   ),

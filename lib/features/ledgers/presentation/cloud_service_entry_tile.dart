@@ -1,6 +1,6 @@
-/// Mine 页「备份与云同步配置」统一入口。
+/// Mine 页「备份与云同步」统一入口。
 ///
-/// 与 Spitout 的 CloudServiceEntryTile 同职责：图标与副标题按备份状态动态切换，
+/// 与 Spitout 的 CloudServiceEntryTile 同职责：图标按备份状态动态切换（不展示副标题），
 /// 点击统一进入 CloudServicePage（不按后端类型路由分叉）。本仓库的官方云同步
 /// 由个人资料区承载，故状态数据源为第三方备份总览 [CloudBackupOverview]
 /// （激活配置 + 最近成功/失败标记），非官方同步引擎的 SyncDiff。
@@ -16,9 +16,10 @@ import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
-/// Mine 页「备份与云同步配置」统一入口。
+/// Mine 页「备份与云同步」统一入口。
 ///
-/// 点击入口回调由 page 层注入导航逻辑（进入云服务页），widget 不感知具体页面。
+/// 图标按备份状态切换（仅本地 / 已配置未启用 / 已启用无成功 / 已启用有成功 /
+/// 失败待重试），点击回调由 page 层注入导航逻辑（进入云服务页），widget 不感知具体页面。
 class CloudServiceEntryTile extends ConsumerWidget {
   /// 点击入口回调，由 page 层注入导航逻辑（通常进入云服务配置页）。
   final VoidCallback onTap;
@@ -35,7 +36,6 @@ class CloudServiceEntryTile extends ConsumerWidget {
       return AppListTile(
         leading: AppIcons.cloudQueue,
         title: l10n.mineCloudService,
-        subtitle: l10n.mineCloudServiceLoading,
         trailing: const SizedBox(
           width: 20,
           height: 20,
@@ -47,11 +47,10 @@ class CloudServiceEntryTile extends ConsumerWidget {
 
     final overview = overviewAsync.value;
     if (overview == null) {
-      // 状态读取失败：入口仍可点，用错误态提示。
+      // 状态读取失败：入口仍可点，用错误态图标提示。
       return AppListTile(
         leading: AppIcons.error,
         title: l10n.mineCloudService,
-        subtitle: l10n.mineSyncError,
         onTap: onTap,
       );
     }
@@ -64,21 +63,10 @@ class CloudServiceEntryTile extends ConsumerWidget {
       CloudBackupStatusKind.success => AppIcons.verified,
       CloudBackupStatusKind.failed => AppIcons.error,
     };
-    final subtitle = switch (status) {
-      CloudBackupStatusKind.localOnly => l10n.cloudBackupEntryLocalOnly,
-      CloudBackupStatusKind.configuredInactive =>
-        l10n.cloudBackupConfiguredInactive,
-      CloudBackupStatusKind.activeNoSuccess => l10n.cloudBackupActiveNoSuccess,
-      CloudBackupStatusKind.success => l10n.cloudBackupActiveLastSuccess(
-        _formatTime(overview.lastSuccessAt!.toLocal()),
-      ),
-      CloudBackupStatusKind.failed => l10n.cloudBackupEntryFailed,
-    };
 
     return AppListTile(
       leading: icon,
       title: l10n.mineCloudService,
-      subtitle: subtitle,
       trailing: Icon(
         AppIcons.chevronRight,
         color: AppTokens.iconTertiary(context),
@@ -86,11 +74,5 @@ class CloudServiceEntryTile extends ConsumerWidget {
       ),
       onTap: onTap,
     );
-  }
-
-  /// 最近成功时间格式：yyyy-MM-dd HH:mm。
-  static String _formatTime(DateTime t) {
-    String two(int v) => v.toString().padLeft(2, '0');
-    return '${t.year}-${two(t.month)}-${two(t.day)} ${two(t.hour)}:${two(t.minute)}';
   }
 }

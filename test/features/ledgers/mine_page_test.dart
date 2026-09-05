@@ -1,7 +1,7 @@
 /// Mine 页入口测试。
 ///
 /// 官方账号登录/登出只由页面头部与个人资料页承载；功能列表中的云入口
-/// （备份与云同步配置）只用于备份配置，不根据官方账号会话改变文案或行为。
+/// （备份与云同步）只用于备份配置，不根据官方账号会话改变文案或行为。
 ///
 /// 测试栈：flutter_test + flutter_riverpod。Mine 页无官方同步 provider，
 /// 云入口状态来自第三方备份总览（CloudBackupOverview），测试注入内存数据库
@@ -70,16 +70,32 @@ void main() {
   });
   tearDown(() => unregisterBackends?.call());
 
-  testWidgets('Mine 页保留导入导出入口且不显示孤儿数据维护', (tester) async {
+  testWidgets('记账设置分组展示分类管理、汇率管理与周期账单', (tester) async {
     await _pumpMinePage(tester);
 
-    // 数据维护分组仅保留面向用户的导入导出能力。
-    expect(find.text('明细导入导出'), findsOneWidget);
-    expect(find.text('配置导入导出'), findsOneWidget);
-    expect(find.text('数据清理'), findsNothing);
+    expect(find.text('分类管理'), findsOneWidget);
+    expect(find.text('汇率管理'), findsOneWidget);
+    expect(find.text('周期账单'), findsOneWidget);
   });
 
-  testWidgets('展示应用内更新入口，点击弹三态弹窗（unknown 降级）', (tester) async {
+  testWidgets('通用设置分组展示通知/偏好/云同步/数据入口，应用上锁紧随配置导入导出', (tester) async {
+    await _pumpMinePage(tester);
+
+    expect(find.text('通知设置'), findsOneWidget);
+    expect(find.text('偏好调节'), findsOneWidget);
+    expect(find.text('备份与云同步'), findsOneWidget);
+    expect(find.text('数据导入导出'), findsOneWidget);
+    expect(find.text('配置导入导出'), findsOneWidget);
+    expect(find.text('数据清理'), findsNothing);
+
+    // 应用上锁已上提至通用设置，直接位于配置导入导出之下。
+    expect(find.text('应用上锁'), findsOneWidget);
+    final configY = tester.getTopLeft(find.text('配置导入导出')).dy;
+    final lockY = tester.getTopLeft(find.text('应用上锁')).dy;
+    expect(lockY, greaterThan(configY));
+  });
+
+  testWidgets('展示应用内更新入口且独立成组位于末尾，点击弹三态弹窗（unknown 降级）', (tester) async {
     // mock package_info 平台实现（测试环境无通道）；HTTP 在 flutter_test
     // 默认返回 400 → check 降级 unknown → 弹窗展示「无法自动检查更新」。
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -104,6 +120,11 @@ void main() {
     await _pumpMinePage(tester);
 
     expect(find.text('检查更新'), findsOneWidget, reason: 'P2 恢复应用内更新入口');
+    // 检查更新单独成组并放在页面最后（位于通用设置的应用上锁之下）。
+    final lockY = tester.getTopLeft(find.text('应用上锁')).dy;
+    final updateY = tester.getTopLeft(find.text('检查更新')).dy;
+    expect(updateY, greaterThan(lockY));
+
     await tester.tap(find.text('检查更新'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
@@ -114,13 +135,18 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
   });
 
-  testWidgets('功能列表展示「备份与云同步配置」统一入口（未配置时仅本地备份）', (tester) async {
+  testWidgets('我的页不展示任何副标题文案', (tester) async {
     await _pumpMinePage(tester);
 
-    expect(find.text('备份与云同步配置'), findsOneWidget);
-    // 无任何第三方配置 → 入口副标题为「仅本地备份」。
-    expect(find.text('仅本地备份'), findsOneWidget);
-    expect(find.text('仅在同步时需要'), findsNothing);
-    expect(find.text('点击可退出登录'), findsNothing);
+    // 各入口曾经的副标题与云入口状态副标题均不再出现在我的页。
+    expect(find.text('编辑自定义分类'), findsNothing);
+    expect(find.text('管理周期性账单'), findsNothing);
+    expect(find.text('设置每日记账提醒'), findsNothing);
+    expect(find.text('主题、字体、语言、应用锁等'), findsNothing);
+    expect(find.text('自动获取汇率，支持手动修正'), findsNothing);
+    expect(find.text('支出明细csv格式文件'), findsNothing);
+    expect(find.text('备份和恢复应用配置'), findsNothing);
+    expect(find.text('检测 GitHub 发布页是否有新版本'), findsNothing);
+    expect(find.text('仅本地备份'), findsNothing);
   });
 }

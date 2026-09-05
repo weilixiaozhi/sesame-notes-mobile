@@ -1,4 +1,4 @@
-// 明细导入导出页面 - 账本数据迁移提示说明测试
+// 数据导入导出页面 - 账本数据迁移提示说明测试
 //
 // 覆盖：在功能说明区新增「账本数据迁移」提示分节后，
 // 页面应正确渲染迁移提示的标题与说明文案，且原有功能说明文本保持不变。
@@ -125,8 +125,8 @@ void main() {
       await tester.pumpWidget(buildApp());
       await prime(tester);
 
-      // 头部标题仍为「明细导入导出」
-      expect(find.text('明细导入导出'), findsOneWidget, reason: '页面标题应为「明细导入导出」');
+      // 头部标题仍为「数据导入导出」
+      expect(find.text('数据导入导出'), findsOneWidget, reason: '页面标题应为「数据导入导出」');
       // 原有导入/导出说明标题与按钮文案仍存在（标题与按钮各一处，合计多处）
       expect(find.text('导入明细'), findsWidgets, reason: '应保留「导入明细」说明与按钮');
       expect(find.text('导出明细'), findsWidgets, reason: '应保留「导出明细」说明与按钮');
@@ -252,7 +252,7 @@ void main() {
       // 返回入口页
       await tester.tap(find.byIcon(AppIcons.back));
       await tester.pumpAndSettle();
-      expect(find.text('明细导入导出'), findsOneWidget);
+      expect(find.text('数据导入导出'), findsOneWidget);
     });
 
     testWidgets('XLSX 含公式单元格时提示另存为值', (tester) async {
@@ -344,7 +344,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 200));
 
       expect(find.text('确认映射'), findsNothing);
-      expect(find.text('明细导入导出'), findsOneWidget);
+      expect(find.text('数据导入导出'), findsOneWidget);
     });
   });
 }

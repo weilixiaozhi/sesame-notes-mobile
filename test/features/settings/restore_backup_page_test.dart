@@ -194,23 +194,28 @@ void main() {
         findsOneWidget,
         reason: '未登录时云端账本落入本地分区并提示恢复为本地副本',
       );
-      // 账本卡片展示账本管理同款字段：币种 / 笔数 / 支出 / 成员数
+      // 账本卡片展示账本管理同款字段：币种 / 笔数 / 支出
       expect(find.textContaining('币种：'), findsNWidgets(2));
       expect(find.textContaining('笔数：'), findsNWidgets(2));
       expect(find.textContaining('支出：'), findsNWidgets(2));
-      expect(find.textContaining('位成员'), findsNWidgets(2));
-      // 默认全选：两个卡片均勾选
-      expect(find.byIcon(AppIcons.radioChecked), findsNWidgets(2));
-      expect(find.byIcon(AppIcons.radioUnchecked), findsNothing);
+      // 成员数仅云端账本展示（本地账本无成员）
+      expect(find.textContaining('位成员'), findsOneWidget);
+      // 默认全选：两张卡片右上角均贴勾选角标
+      expect(find.byIcon(AppIcons.check), findsNWidgets(2));
+      // 本地分区排序：真本地账本在前，转本地的云端副本账本在后
+      expect(
+        tester.getTopLeft(find.text('私人账本')).dy,
+        lessThan(tester.getTopLeft(find.text('家庭账本')).dy),
+        reason: '本地账本应排在云端副本账本前面',
+      );
 
       // 打开/勾选阶段 live DB 零写入
       expect(await liveDb.select(liveDb.ledgers).get(), isEmpty);
 
-      // 取消勾选本地账本 → 暂不处理
+      // 取消勾选本地账本 → 暂不处理（角标只剩一个）
       await tester.tap(find.text('私人账本'));
       await tester.pumpAndSettle();
-      expect(find.byIcon(AppIcons.radioChecked), findsOneWidget);
-      expect(find.byIcon(AppIcons.radioUnchecked), findsOneWidget);
+      expect(find.byIcon(AppIcons.check), findsOneWidget);
 
       // 立即恢复（应用真实文件 IO 在 runAsync 窗口中驱动）
       await tester.ensureVisible(find.text('立即恢复'));
@@ -260,12 +265,18 @@ void main() {
     expect(find.text('本地账本'), findsOneWidget);
     expect(find.text('云端账本'), findsOneWidget);
     expect(find.text('昵称Alice'), findsOneWidget, reason: '云端账本展示账号昵称副标题');
+    // 昵称在账本名称行内右对齐
+    expect(
+      tester.widget<Text>(find.text('昵称Alice')).textAlign,
+      TextAlign.right,
+    );
     expect(
       find.text('这是云账本，但不是当前账号，将恢复为本地副本'),
       findsNothing,
       reason: '账号匹配的云端账本不再提示转本地副本',
     );
-    expect(find.byIcon(AppIcons.radioChecked), findsNWidgets(2));
+    // 默认全选：两张卡片右上角均贴勾选角标
+    expect(find.byIcon(AppIcons.check), findsNWidgets(2));
   });
 
   testWidgets('备份文件不存在：toast 提示', (tester) async {

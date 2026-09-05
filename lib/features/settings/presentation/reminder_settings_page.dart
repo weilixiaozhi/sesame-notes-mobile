@@ -12,6 +12,7 @@ import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
+/// 通知设置页：每日记账提醒开关与提醒时间配置。
 class ReminderSettingsPage extends ConsumerWidget {
   const ReminderSettingsPage({super.key});
 
@@ -26,7 +27,7 @@ class ReminderSettingsPage extends ConsumerWidget {
       body: Column(
         children: [
           PrimaryHeader(
-            title: AppLocalizations.of(context).reminderTitle,
+            title: AppLocalizations.of(context).mineReminderSettings,
             subtitle: AppLocalizations.of(context).reminderSubtitle,
             showBack: true,
           ),

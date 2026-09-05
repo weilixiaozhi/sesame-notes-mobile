@@ -1,4 +1,4 @@
-/// 云服务页（备份与云同步配置）。
+/// 云服务页（备份与云同步）。
 ///
 /// 按 Spitout CloudServicePage 的三段式布局恢复（结合本仓库实际）：
 /// - 头部：当前激活配置状态行 + 内联「测试连接」（结果/时间持久化到 SharedPreferences）；
@@ -30,7 +30,7 @@ import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
-/// 备份与云同步配置页。
+/// 备份与云同步页。
 class CloudServicePage extends ConsumerStatefulWidget {
   const CloudServicePage({super.key});
 

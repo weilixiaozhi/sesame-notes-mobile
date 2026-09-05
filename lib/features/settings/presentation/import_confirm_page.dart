@@ -745,8 +745,8 @@ class _ImportConfirmPageState extends ConsumerState<ImportConfirmPage> {
                   onPressed: () {
                     dialogOpen = false;
                     Navigator.of(dctx).pop();
-                    // 返回到明细导入导出页继续后台导入
-                    // 栈:明细导入导出页 -> ImportConfirmPage,仅需 pop 一次
+                    // 返回到数据导入导出页继续后台导入
+                    // 栈:数据导入导出页 -> ImportConfirmPage,仅需 pop 一次
                     if (mounted) {
                       Navigator.of(
                         currentContext,
@@ -980,8 +980,8 @@ class _ImportConfirmPageState extends ConsumerState<ImportConfirmPage> {
     if (fail == 0 && !hasSkipped) {
       // 完全成功: 使用toast,然后关闭页面
       showToast(currentContext, message);
-      // 关闭确认页 -> 返回到明细导入导出页
-      // 栈:明细导入导出页 -> ImportConfirmPage,仅需 pop 一次
+      // 关闭确认页 -> 返回到数据导入导出页
+      // 栈:数据导入导出页 -> ImportConfirmPage,仅需 pop 一次
       Navigator.of(currentContext).pop(); // Close ImportConfirmPage
     } else {
       // 有失败或跳过: 使用弹窗显示详细信息,等待用户确认后再关闭页面
@@ -1000,7 +1000,7 @@ class _ImportConfirmPageState extends ConsumerState<ImportConfirmPage> {
       );
 
       // 用户确认后再关闭页面
-      // 栈:明细导入导出页 -> ImportConfirmPage,仅需 pop 一次
+      // 栈:数据导入导出页 -> ImportConfirmPage,仅需 pop 一次
       if (currentContext.mounted) {
         Navigator.of(currentContext).pop(); // Close ImportConfirmPage
       }

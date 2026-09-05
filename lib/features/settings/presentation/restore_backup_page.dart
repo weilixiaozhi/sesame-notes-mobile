@@ -153,11 +153,18 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
           (i) => cloudSectionOf(item: i, currentAccountId: currentAccountId),
         )
         .toList();
-    final locals = flow.items
-        .where(
-          (i) => !cloudSectionOf(item: i, currentAccountId: currentAccountId),
-        )
-        .toList();
+    final locals =
+        flow.items
+            .where(
+              (i) =>
+                  !cloudSectionOf(item: i, currentAccountId: currentAccountId),
+            )
+            .toList()
+          // 本地分区内：真本地账本在前，转入本地的云端副本账本排在后面
+          ..sort((a, b) {
+            if (a.storageOrigin == b.storageOrigin) return 0;
+            return a.storageOrigin == LedgerStorageOrigin.local ? -1 : 1;
+          });
     final errorText = _errorText(context, flow.error);
     return ListView(
       padding: const EdgeInsets.all(AppDimens.p16),
@@ -332,9 +339,15 @@ class _RestoreLedgerCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTokens.surface(context),
           borderRadius: BorderRadius.circular(AppDimens.radius12),
-          border: AppTokens.isDark(context)
-              ? Border.all(color: AppTokens.border(context), width: 1)
-              : null,
+          // 选中态 = 边框变主题色；未选中浅色模式透明边框（保持尺寸一致）
+          border: Border.all(
+            color: selected
+                ? primary
+                : (AppTokens.isDark(context)
+                      ? AppTokens.border(context)
+                      : Colors.transparent),
+            width: 1.5,
+          ),
           boxShadow: AppTokens.isDark(context)
               ? null
               : [
@@ -349,25 +362,35 @@ class _RestoreLedgerCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppDimens.radius12),
           child: Stack(
             children: [
-              // 左侧色条：仅选中时显示（与账本管理页选中态同一视觉）
+              // 右上角勾选标签：选中即贴角标证明已勾选
               if (selected)
                 Positioned(
-                  left: 0,
                   top: 0,
-                  bottom: 0,
+                  right: 0,
                   child: Container(
-                    width: 4,
+                    width: 20,
+                    height: 20,
                     decoration: BoxDecoration(
                       color: primary,
                       borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(AppDimens.radius12),
-                        bottomLeft: Radius.circular(AppDimens.radius12),
+                        bottomLeft: Radius.circular(AppDimens.radius8),
                       ),
+                    ),
+                    child: Icon(
+                      AppIcons.check,
+                      size: AppDimens.icon12,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                 ),
+              // 顶部预留角标高度，避免名称行与角标重叠
               Padding(
-                padding: const EdgeInsets.all(AppDimens.p16),
+                padding: const EdgeInsets.fromLTRB(
+                  AppDimens.p16,
+                  AppDimens.p20,
+                  AppDimens.p16,
+                  AppDimens.p16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -390,6 +413,8 @@ class _RestoreLedgerCard extends StatelessWidget {
                           Flexible(
                             child: Text(
                               accountNickname!,
+                              // 昵称在行内右对齐，紧贴卡片右缘
+                              textAlign: TextAlign.right,
                               style: AppTextTokens.label(context).copyWith(
                                 color: AppTokens.textSecondary(context),
                               ),
@@ -405,16 +430,6 @@ class _RestoreLedgerCard extends StatelessWidget {
                           color: isCloud
                               ? AppTokens.statusOnline(context)
                               : AppTokens.brandLocal,
-                        ),
-                        const SizedBox(width: AppDimens.p4),
-                        Icon(
-                          selected
-                              ? AppIcons.radioChecked
-                              : AppIcons.radioUnchecked,
-                          size: AppDimens.icon20,
-                          color: selected
-                              ? primary
-                              : AppTokens.iconTertiary(context),
                         ),
                       ],
                     ),
@@ -456,14 +471,16 @@ class _RestoreLedgerCard extends StatelessWidget {
                         context,
                       ).copyWith(color: AppTokens.textPrimary(context)),
                     ),
-                    const SizedBox(height: AppDimens.p4),
-                    // 成员数 + 未同步改动/冲突警告
-                    Text(
-                      l10n.restoreMemberCount(item.memberCount),
-                      style: AppTextTokens.body(
-                        context,
-                      ).copyWith(color: AppTokens.textSecondary(context)),
-                    ),
+                    // 成员数仅云端账本展示（本地账本无成员概念）
+                    if (isCloud) ...[
+                      const SizedBox(height: AppDimens.p4),
+                      Text(
+                        l10n.restoreMemberCount(item.memberCount),
+                        style: AppTextTokens.body(
+                          context,
+                        ).copyWith(color: AppTokens.textSecondary(context)),
+                      ),
+                    ],
                     for (final warning in warnings)
                       Padding(
                         padding: const EdgeInsets.only(top: AppDimens.p4),

@@ -28,7 +28,7 @@ DateTimeRange buildDetailExportRange(DateTime startDay, DateTime endDay) {
   return DateTimeRange(start: start, end: end);
 }
 
-/// 导出明细页（二级页面，由「明细导入导出」页进入）
+/// 导出明细页（二级页面，由「数据导入导出」页进入）
 ///
 /// 页面能力：
 /// - 导出账本：下拉选择框，默认选中进入前的当前账本；

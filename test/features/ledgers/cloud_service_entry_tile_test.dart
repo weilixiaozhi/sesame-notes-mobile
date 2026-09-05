@@ -1,8 +1,8 @@
-/// Mine 页「备份与云同步配置」统一入口（CloudServiceEntryTile）状态映射测试。
+/// Mine 页「备份与云同步」统一入口（CloudServiceEntryTile）状态映射测试。
 ///
 /// 需求锚点：
-/// - 入口标题恒为「备份与云同步配置」；
-/// - 图标与副标题按备份状态切换：仅本地 / 已配置未启用 / 已启用无成功 /
+/// - 入口标题恒为「备份与云同步」，不展示副标题；
+/// - 图标按备份状态切换：仅本地 / 已配置未启用 / 已启用无成功 /
 ///   已启用有成功 / 失败待重试；
 /// - 状态计算为纯函数 [cloudBackupEntryStatusOf]，widget 只做渲染。
 library;
@@ -117,7 +117,7 @@ void main() {
     });
   });
 
-  testWidgets('入口标题为「备份与云同步配置」且点击回调触发', (tester) async {
+  testWidgets('入口标题为「备份与云同步」、不展示副标题且点击回调触发', (tester) async {
     final db = SesameDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
     final container = ProviderContainer(
@@ -139,8 +139,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('备份与云同步配置'), findsOneWidget);
-    await tester.tap(find.text('备份与云同步配置'));
+    expect(find.text('备份与云同步'), findsOneWidget);
+    // 入口不展示备份状态副标题（我的页统一去掉副标题）。
+    expect(find.text('仅本地备份'), findsNothing);
+    await tester.tap(find.text('备份与云同步'));
     expect(tapped, isTrue);
   });
 }

@@ -13,7 +13,13 @@ import 'package:sesame_notes/router/route_consts.dart';
 import 'package:sesame_notes/shared/services/app_update_service.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
-/// 展示个人设置、云同步与备份、数据维护入口。
+/// 展示记账设置、通用设置与检查更新等低频功能入口。
+///
+/// 分组结构（分组标题不展示，仅用卡片分隔）：
+/// - 记账设置：分类管理 / 汇率管理 / 周期账单；
+/// - 通用设置：通知设置 / 偏好调节 / 备份与云同步 /
+///   数据导入导出 / 配置导入导出 / 应用上锁；
+/// - 检查更新：单独成组，位于页面末尾。
 class MinePage extends StatelessWidget {
   const MinePage({super.key});
 
@@ -36,7 +42,7 @@ class MinePage extends StatelessWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
                 SizedBox(height: AppDimens.p8),
-                // 功能管理集中放置低频设置，避免挤占底部导航的高频入口。
+                // 记账设置分组：与记账行为直接相关的低频设置，避免挤占高频入口。
                 SectionCard(
                   margin: EdgeInsets.fromLTRB(
                     AppDimens.p12,
@@ -52,9 +58,6 @@ class MinePage extends StatelessWidget {
                         title: AppLocalizations.of(
                           context,
                         ).mineCategoryManagement,
-                        subtitle: AppLocalizations.of(
-                          context,
-                        ).mineCategoryManagementSubtitle,
                         trailing: Icon(
                           AppIcons.chevronRight,
                           color: AppTokens.iconTertiary(context),
@@ -70,9 +73,6 @@ class MinePage extends StatelessWidget {
                         title: AppLocalizations.of(
                           context,
                         ).exchangeRatePageTitle,
-                        subtitle: AppLocalizations.of(
-                          context,
-                        ).exchangeRateEntrySubtitle,
                         trailing: Icon(
                           AppIcons.chevronRight,
                           color: AppTokens.iconTertiary(context),
@@ -87,9 +87,6 @@ class MinePage extends StatelessWidget {
                         title: AppLocalizations.of(
                           context,
                         ).mineRecurringTransactions,
-                        subtitle: AppLocalizations.of(
-                          context,
-                        ).mineRecurringTransactionsSubtitle,
                         trailing: Icon(
                           AppIcons.chevronRight,
                           color: AppTokens.iconTertiary(context),
@@ -98,16 +95,26 @@ class MinePage extends StatelessWidget {
                         onTap: () =>
                             context.pushNamed(Routes.recurringTransaction),
                       ),
-                      AppTokens.cardDivider(context),
-                      // 记账提醒
+                    ],
+                  ),
+                ),
+                SizedBox(height: AppDimens.p8),
+                // 通用设置分组：通知、偏好、备份与云同步、数据迁移、应用锁等通用能力。
+                SectionCard(
+                  margin: EdgeInsets.fromLTRB(
+                    AppDimens.p12,
+                    0,
+                    AppDimens.p12,
+                    0,
+                  ),
+                  child: Column(
+                    children: [
+                      // 通知设置
                       AppListTile(
                         leading: AppIcons.notifications,
                         title: AppLocalizations.of(
                           context,
                         ).mineReminderSettings,
-                        subtitle: AppLocalizations.of(
-                          context,
-                        ).mineReminderSettingsSubtitle,
                         trailing: Icon(
                           AppIcons.chevronRight,
                           color: AppTokens.iconTertiary(context),
@@ -120,9 +127,6 @@ class MinePage extends StatelessWidget {
                       AppListTile(
                         leading: AppIcons.theme,
                         title: AppLocalizations.of(context).appearanceSettings,
-                        subtitle: AppLocalizations.of(
-                          context,
-                        ).appearanceSettingsDesc,
                         trailing: Icon(
                           AppIcons.chevronRight,
                           color: AppTokens.iconTertiary(context),
@@ -131,37 +135,19 @@ class MinePage extends StatelessWidget {
                         onTap: () =>
                             context.pushNamed(Routes.appearanceSettings),
                       ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: AppDimens.p8),
-                // 一级分组：云同步与备份
-                // 包含：备份与云同步配置 → 明细导入导出 → 配置导入导出 → 检查更新
-                // 云服务与同步状态统一经 CloudServiceEntryTile 进入。
-                SectionCard(
-                  margin: EdgeInsets.fromLTRB(
-                    AppDimens.p12,
-                    0,
-                    AppDimens.p12,
-                    0,
-                  ),
-                  child: Column(
-                    children: [
-                      // 备份与云同步配置 —— 统一入口：图标与文案按备份状态切换，
+                      AppTokens.cardDivider(context),
+                      // 备份与云同步 —— 统一入口：图标按备份状态切换，
                       // 点击统一进入 CloudServicePage（不按后端类型路由分叉）。
                       CloudServiceEntryTile(
                         onTap: () => _openCloudService(context),
                       ),
                       AppTokens.cardDivider(context),
-                      // 明细导入导出统一进入数据迁移页面。
+                      // 数据导入导出统一进入数据迁移页面。
                       AppListTile(
                         leading: AppIcons.currencyExchange,
                         title: AppLocalizations.of(
                           context,
                         ).detailImportExportTitle,
-                        subtitle: AppLocalizations.of(
-                          context,
-                        ).detailImportExportSubtitle,
                         trailing: Icon(
                           AppIcons.chevronRight,
                           color: AppTokens.iconTertiary(context),
@@ -177,9 +163,6 @@ class MinePage extends StatelessWidget {
                         title: AppLocalizations.of(
                           context,
                         ).configImportExportTitle,
-                        subtitle: AppLocalizations.of(
-                          context,
-                        ).configImportExportSubtitle,
                         trailing: Icon(
                           AppIcons.chevronRight,
                           color: AppTokens.iconTertiary(context),
@@ -189,13 +172,35 @@ class MinePage extends StatelessWidget {
                             context.pushNamed(Routes.configImportExport),
                       ),
                       AppTokens.cardDivider(context),
+                      // 应用上锁 —— 直接进入应用锁设置页配置。
+                      AppListTile(
+                        leading: AppIcons.lock,
+                        title: AppLocalizations.of(context).appLockTitle,
+                        trailing: Icon(
+                          AppIcons.chevronRight,
+                          color: AppTokens.iconTertiary(context),
+                          size: AppDimens.icon20,
+                        ),
+                        onTap: () => context.pushNamed(Routes.appLockSettings),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: AppDimens.p8),
+                // 检查更新分组：单独成组，放在页面最后。
+                SectionCard(
+                  margin: EdgeInsets.fromLTRB(
+                    AppDimens.p12,
+                    0,
+                    AppDimens.p12,
+                    0,
+                  ),
+                  child: Column(
+                    children: [
                       // 应用内检查更新。
                       AppListTile(
                         leading: AppIcons.download,
                         title: AppLocalizations.of(context).mineCheckUpdate,
-                        subtitle: AppLocalizations.of(
-                          context,
-                        ).mineCheckUpdateSubtitle,
                         trailing: Icon(
                           AppIcons.chevronRight,
                           color: AppTokens.iconTertiary(context),
@@ -254,7 +259,7 @@ class MinePage extends StatelessWidget {
     );
   }
 
-  /// 打开云服务页（备份与云同步配置）。
+  /// 打开云服务页（备份与云同步）。
   Future<void> _openCloudService(BuildContext context) async {
     await context.pushNamed(Routes.cloudService);
   }

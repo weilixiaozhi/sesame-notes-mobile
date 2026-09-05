@@ -16,7 +16,7 @@ import 'package:sesame_notes/features/ledgers/presentation/widgets/ledger_select
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
-/// 明细导入导出页
+/// 数据导入导出页
 ///
 /// 结构对齐配置导入导出页：
 /// - 头部「功能说明」卡片：整合导入差异说明、导出格式说明与模板列预览。
