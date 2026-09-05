@@ -221,6 +221,92 @@ void main() {
         reason: '有子分类的"购物"应显示右下角指示器',
       );
     });
+
+    // 窄屏（360x640 逻辑像素）下 4 列正方形卡片内高不足，
+    // 卡片内容不得溢出、图标圆形容器不得压住卡片边框线。
+    testWidgets('窄屏(360x640)下卡片内容不溢出且图标与边框留有空隙', (tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      // 收集布局溢出异常，避免被测试框架默认处理吞掉
+      final overflowErrors = <String>[];
+      final prevOnError = FlutterError.onError;
+      FlutterError.onError = (details) {
+        if (details.toString().contains('overflowed')) {
+          overflowErrors.add(details.toString());
+        }
+        prevOnError?.call(details);
+      };
+      addTearDown(() => FlutterError.onError = prevOnError);
+
+      await tester.pumpWidget(buildApp());
+      await prime(tester);
+
+      expect(overflowErrors, isEmpty, reason: '窄屏下卡片内容不得溢出');
+      final card = find.byKey(const ValueKey('cat-1')).last;
+      final cardRect = tester.getRect(card);
+      // 卡片内第一个圆形 BoxDecoration 容器即图标背景圆
+      Rect? iconRect;
+      for (final w in tester.widgetList<Container>(
+        find.descendant(of: card, matching: find.byType(Container)),
+      )) {
+        final d = w.decoration;
+        if (d is BoxDecoration && d.shape == BoxShape.circle) {
+          iconRect = tester.getRect(find.byWidget(w));
+          break;
+        }
+      }
+      expect(iconRect, isNotNull, reason: '应找到圆形图标容器');
+      // 图标圆顶与卡片顶（边框线位置）之间需大于边框宽度，
+      // 保证图标不压住边框线
+      expect(
+        iconRect!.top - cardRect.top,
+        greaterThan(2.5),
+        reason: '图标不得压住卡片边框线',
+      );
+    });
+
+    // 390 宽（iPhone 12-14 等常见机型）下卡片更高但内容仍可能贴边，
+    // 同样要求图标与边框线留有空隙。
+    testWidgets('窄屏(390x640)下图标与卡片边框留有空隙', (tester) async {
+      tester.view.physicalSize = const Size(390, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      final overflowErrors = <String>[];
+      final prevOnError = FlutterError.onError;
+      FlutterError.onError = (details) {
+        if (details.toString().contains('overflowed')) {
+          overflowErrors.add(details.toString());
+        }
+        prevOnError?.call(details);
+      };
+      addTearDown(() => FlutterError.onError = prevOnError);
+
+      await tester.pumpWidget(buildApp());
+      await prime(tester);
+
+      expect(overflowErrors, isEmpty, reason: '卡片内容不得溢出');
+      final card = find.byKey(const ValueKey('cat-1')).last;
+      final cardRect = tester.getRect(card);
+      Rect? iconRect;
+      for (final w in tester.widgetList<Container>(
+        find.descendant(of: card, matching: find.byType(Container)),
+      )) {
+        final d = w.decoration;
+        if (d is BoxDecoration && d.shape == BoxShape.circle) {
+          iconRect = tester.getRect(find.byWidget(w));
+          break;
+        }
+      }
+      expect(iconRect, isNotNull, reason: '应找到圆形图标容器');
+      expect(
+        iconRect!.top - cardRect.top,
+        greaterThan(2.5),
+        reason: '图标不得压住卡片边框线',
+      );
+    });
   });
 
   // ==================== 共享账本横幅 ====================

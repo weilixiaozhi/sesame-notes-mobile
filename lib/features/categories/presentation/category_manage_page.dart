@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
@@ -1332,63 +1332,77 @@ class _CategoryCard extends ConsumerWidget {
         child: Stack(
           children: [
             Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: item.isSubCategory ? 28 : 32,
-                    height: item.isSubCategory ? 28 : 32,
-                    decoration: BoxDecoration(
-                      color: item.isSubCategory
-                          ? AppTokens.warning(context).withValues(alpha: 0.2)
-                          : Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: CategoryIconWidget(
-                      category: item.category,
-                      size: item.isSubCategory ? 16.0 : 18.0,
-                      color: item.isSubCategory
-                          ? AppTokens.warning(context)
-                          : Theme.of(context).colorScheme.primary,
-                      circular: true,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimens.p8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimens.p4,
-                    ),
-                    child: Text(
-                      CategoryUtils.getDisplayName(item.category.name, context),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontSize: item.isSubCategory ? 10 : 12,
+              // 网格单元格为正方形，窄屏（约 360 逻辑宽）下内高不足，
+              // 内容超出时按比例缩小，避免图标圆形背景压住卡片边框线
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: item.isSubCategory ? 28 : 32,
+                      height: item.isSubCategory ? 28 : 32,
+                      decoration: BoxDecoration(
+                        color: item.isSubCategory
+                            ? AppTokens.warning(context).withValues(alpha: 0.2)
+                            : Theme.of(
+                                context,
+                              ).colorScheme.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: CategoryIconWidget(
+                        category: item.category,
+                        size: item.isSubCategory ? 16.0 : 18.0,
                         color: item.isSubCategory
                             ? AppTokens.warning(context)
-                            : null,
+                            : Theme.of(context).colorScheme.primary,
+                        circular: true,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimens.p4),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimens.p4,
+                      ),
+                      child: Text(
+                        CategoryUtils.getDisplayName(
+                          item.category.name,
+                          context,
+                        ),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontSize: item.isSubCategory ? 10 : 12,
+                          // 压缩行高：窄屏卡片内高有限，默认 1.45 行高会撑破内容区
+                          height: 1.2,
+                          color: item.isSubCategory
+                              ? AppTokens.warning(context)
+                              : null,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimens.p4),
+                    Text(
+                      AppLocalizations.of(
+                        context,
+                      ).categoryMigrationTransactionLabel(
+                        item.transactionCount,
+                      ),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: item.isSubCategory
+                            ? AppTokens.warning(context)
+                            : Theme.of(context).colorScheme.outline,
+                        fontSize: item.isSubCategory ? 9 : 10,
+                        // 与分类名一致压缩行高，避免卡片内容整体过高
+                        height: 1.2,
                       ),
                       textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(height: AppDimens.p4),
-                  Text(
-                    AppLocalizations.of(
-                      context,
-                    ).categoryMigrationTransactionLabel(item.transactionCount),
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: item.isSubCategory
-                          ? AppTokens.warning(context)
-                          : Theme.of(context).colorScheme.outline,
-                      fontSize: item.isSubCategory ? 9 : 10,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             // 删除模式：右上角复选框
