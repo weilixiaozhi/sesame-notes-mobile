@@ -11,7 +11,6 @@ import 'package:sesame_notes/features/transactions/presentation/widgets/transact
 import 'package:sesame_notes/features/transactions/presentation/widgets/transaction/transaction_edit_utils.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
-import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/ui_state_providers.dart';
 import 'package:sesame_notes/features/statistics/application/calendar_providers.dart';
@@ -436,9 +435,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 formatChartValueLabel(expense),
                 style: AppTextTokens.caption(context).copyWith(
                   fontWeight: FontWeight.w600,
-                  color: ref.watch(expenseColorSchemeProvider) == 'green'
-                      ? AppTokens.success(context)
-                      : AppTokens.error(context),
+                  color: AppTokens.error(context),
                   height: 1.1,
                 ),
                 maxLines: 1,

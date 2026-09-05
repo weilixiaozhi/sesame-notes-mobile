@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/shared/providers/simple_state_notifier.dart';
-import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/features/transactions/application/transaction_actions.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/statistics/application/statistics_providers.dart';
@@ -306,9 +305,7 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
                       ).categoryDetailTotalAmount,
                       value: summary.totalAmount,
                       isAmount: true,
-                      color: ref.watch(expenseColorSchemeProvider) == 'green'
-                          ? AppTokens.success(context)
-                          : AppTokens.error(context),
+                      color: AppTokens.error(context),
                     ),
                   ),
                   Expanded(

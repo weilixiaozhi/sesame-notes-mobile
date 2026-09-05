@@ -249,7 +249,7 @@ class _HomePageState extends ConsumerState<HomePage>
           .read(syncCoordinatorProvider)
           .refreshData(ledgerId: ledgerId);
 
-      // 无论云端是否可用，都刷新汇率、汇总、列表、个性化配色与补折算，
+      // 无论云端是否可用，都刷新汇率、汇总、列表与补折算，
       // 让离线用户至少看到当前数据库中的最新快照。
       await _runLocalRefresh();
       if (syncResult.ok) {
@@ -293,7 +293,7 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 
   /// 本地刷新（下拉刷新与云同步降级共用）。
-  /// 刷新汇率、重新汇总与列表、刷新当前账本与个性化配色设置，并补折算未折算外币交易。
+  /// 刷新汇率、重新汇总与列表、刷新当前账本与主题模式设置，并补折算未折算外币交易。
   /// 抽成独立方法供「未配置云同步」「云同步失败降级」「云同步成功」三条分支复用，
   /// 避免重复代码；保证只要在刷新/同步路径上就必定执行本地刷新。
   Future<void> _runLocalRefresh() async {
@@ -303,10 +303,8 @@ class _HomePageState extends ConsumerState<HomePage>
     // 汇总/统计重算由统一数据变更信号自动驱动（写库即触发）。
     ref.invalidate(monthlyTotalsProvider);
     ref.invalidate(currentLedgerProvider);
-    // 重新拉一次个性化设置（颜色方案 / 主题模式）以确保与磁盘一致。
+    // 重新拉一次个性化设置（主题模式）以确保与磁盘一致。
     await ref.read(themeModeInitProvider.future);
-    await ref.read(expenseColorSchemeInitProvider.future);
-    ref.invalidate(expenseColorSchemeProvider);
 
     // 补折算：检查是否有未折算的外币交易（如导入/同步进来的数据缺汇率），
     // 有则直接按开头已拉取的最新汇率折算，避免数据失真。非致命，失败仅告警。

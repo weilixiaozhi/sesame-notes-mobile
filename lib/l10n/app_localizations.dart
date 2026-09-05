@@ -1810,30 +1810,6 @@ abstract class AppLocalizations {
   /// **'Dark Mode'**
   String get appearanceThemeModeDark;
 
-  /// No description provided for @appearanceExpenseColorScheme.
-  ///
-  /// In en, this message translates to:
-  /// **'Expense Color'**
-  String get appearanceExpenseColorScheme;
-
-  /// No description provided for @appearanceExpenseColorRed.
-  ///
-  /// In en, this message translates to:
-  /// **'Red for expense'**
-  String get appearanceExpenseColorRed;
-
-  /// No description provided for @appearanceExpenseColorGreen.
-  ///
-  /// In en, this message translates to:
-  /// **'Green for expense'**
-  String get appearanceExpenseColorGreen;
-
-  /// No description provided for @appearanceExpenseColorApplied.
-  ///
-  /// In en, this message translates to:
-  /// **'Color scheme updated'**
-  String get appearanceExpenseColorApplied;
-
   /// No description provided for @reminderTitle.
   ///
   /// In en, this message translates to:

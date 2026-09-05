@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/theme/colors.dart';
@@ -106,11 +105,9 @@ class MemberStatsSection extends ConsumerWidget {
               padding: const EdgeInsets.only(right: AppDimens.p20),
               child: Text(
                 amount,
-                // 与成员条目金额统一：12 号字 + 主题色（红/绿，跟随支出语义）
+                // 与成员条目金额统一：12 号字 + 支出语义色（红色）。
                 style: AppTextTokens.label(context).copyWith(
-                  color: ref.watch(expenseColorSchemeProvider) == 'green'
-                      ? AppTokens.success(context)
-                      : AppTokens.error(context),
+                  color: AppTokens.error(context),
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
@@ -226,9 +223,7 @@ class _MemberStatTile extends ConsumerWidget {
               currencyCode: ref.watch(currentLedgerCurrencyProvider),
             ),
             style: AppTextTokens.label(context).copyWith(
-              color: ref.watch(expenseColorSchemeProvider) == 'green'
-                  ? AppTokens.success(context)
-                  : AppTokens.error(context),
+              color: AppTokens.error(context),
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),

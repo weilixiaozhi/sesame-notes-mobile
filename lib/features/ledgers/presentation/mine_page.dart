@@ -18,7 +18,7 @@ import 'package:sesame_notes/theme/icons/app_icons.dart';
 /// 展示记账设置、通用设置与检查更新等低频功能入口。
 ///
 /// 分组结构（分组标题不展示，仅用卡片分隔）：
-/// - 记账设置：分类管理 / 汇率管理 / 周期账单 / 支出颜色；
+/// - 记账设置：分类管理 / 汇率管理 / 周期账单；
 /// - 通用设置：应用语言 / 深色模式 / 通知设置 / 应用上锁 /
 ///   数据导入导出 / 配置导入导出 / 备份与云同步；
 /// - 检查更新：单独成组，位于页面末尾。
@@ -85,33 +85,6 @@ class MinePage extends ConsumerWidget {
                     size: AppDimens.icon20,
                   ),
                   onTap: () => context.pushNamed(Routes.recurringTransaction),
-                ),
-                AppTokens.cardDivider(context),
-                // 支出颜色（影响列表 / 搜索 / 详情等支出金额的着色）
-                AppListTile(
-                  leading: AppIcons.theme,
-                  title: l10n.appearanceExpenseColorScheme,
-                  // 圆点放进与右侧箭头同高的图标槽位，
-                  // 保证圆点中心与各行右箭头中心对齐。
-                  trailing: SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: Center(
-                      child: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color:
-                              ref.watch(expenseColorSchemeProvider) == 'green'
-                              ? AppTokens.success(context)
-                              : AppTokens.error(context),
-                        ),
-                      ),
-                    ),
-                  ),
-                  onTap: () =>
-                      _showExpenseColorSchemeDialog(context, ref, l10n),
                 ),
               ],
             ),
@@ -338,167 +311,6 @@ class MinePage extends ConsumerWidget {
         ref.read(themeModeProvider.notifier).set(value);
         Navigator.pop(context);
       },
-    );
-  }
-
-  /// 显示支出颜色方案选择对话框。选项直接展示「-100」示例数字（红/绿），
-  /// 让用户在切换前就能预览支出金额的着色效果。点击"保存"才写
-  /// expenseColorSchemeProvider（其 listener 会落盘并同步到云端）;
-  /// "取消"或弹窗外关闭则保持原值不变（本地副本自动丢弃，无需回退处理）。
-  ///
-  /// 保存后：颜色已在本地即时换好，关闭本弹窗后，居中展示 1s 弱化
-  /// loading（无遮罩、细线条、浅颜色），结束弹 toast「已更换」。不跳转首页。
-  void _showExpenseColorSchemeDialog(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations l10n,
-  ) {
-    final pageContext = context; // 我的页 context,用于在其上展示 loading 与 toast
-    // 本地副本记录对话框内当前选择,与 provider 分离;只有点"保存"才提交。
-    var selected = ref.read(expenseColorSchemeProvider);
-    final initialSelected = selected;
-    var saving = false;
-    final primaryColor = Theme.of(pageContext).colorScheme.primary;
-    showDialog(
-      context: pageContext,
-      builder: (dialogCtx) => StatefulBuilder(
-        builder: (dialogCtx, setDialogState) => AlertDialog(
-          backgroundColor: AppTokens.surfaceElevated(dialogCtx),
-          title: Text(
-            l10n.appearanceExpenseColorScheme,
-            style: TextStyle(color: AppTokens.textPrimary(dialogCtx)),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildExpenseColorSchemeOption(
-                context: dialogCtx,
-                title: l10n.appearanceExpenseColorRed,
-                value: 'red',
-                selected: selected,
-                exampleColor: AppTokens.error(dialogCtx),
-                primaryColor: primaryColor,
-                onTap: () {
-                  // 只更新本地副本,不写 provider。
-                  selected = 'red';
-                  setDialogState(() {});
-                },
-              ),
-              _buildExpenseColorSchemeOption(
-                context: dialogCtx,
-                title: l10n.appearanceExpenseColorGreen,
-                value: 'green',
-                selected: selected,
-                exampleColor: AppTokens.success(dialogCtx),
-                primaryColor: primaryColor,
-                onTap: () {
-                  selected = 'green';
-                  setDialogState(() {});
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: saving ? null : () => Navigator.of(dialogCtx).pop(),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: saving
-                  ? null
-                  : () async {
-                      // 显示 loading,避免重复点击;落盘 + 云同步由
-                      // expenseColorSchemeProvider 的 listener 在后台完成。
-                      setDialogState(() => saving = true);
-                      // 真正提交:有变更才落盘 + 同步云端,避免无谓写入。
-                      if (selected != initialSelected) {
-                        ref
-                            .read(expenseColorSchemeProvider.notifier)
-                            .set(selected);
-                      }
-                      if (!pageContext.mounted) return;
-                      // 仅关闭颜色选择弹窗,停留在我的页(不跳转首页)。
-                      Navigator.of(dialogCtx).pop();
-                      // 弱化 loading：无遮罩，仅居中展示细线条、浅颜色的
-                      // CircularProgressIndicator，1s 过渡反馈后弹 toast「已更换」。
-                      final overlayEntry = OverlayEntry(
-                        builder: (context) => Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.0,
-                            strokeCap: StrokeCap.round,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              AppTokens.iconTertiary(context),
-                            ),
-                          ),
-                        ),
-                      );
-                      Overlay.of(pageContext).insert(overlayEntry);
-                      try {
-                        await Future.delayed(
-                          const Duration(milliseconds: 1000),
-                        );
-                        if (pageContext.mounted) {
-                          showToast(
-                            pageContext,
-                            l10n.appearanceExpenseColorApplied,
-                          );
-                        }
-                      } finally {
-                        // 页面在等待期间被退出也要移除 overlay,
-                        // 避免根 Overlay 上残留全屏转圈指示器。
-                        if (overlayEntry.mounted) {
-                          overlayEntry.remove();
-                        }
-                      }
-                    },
-              child: saving
-                  ? SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppTokens.textOnPrimary(context),
-                        ),
-                      ),
-                    )
-                  : Text(l10n.commonSave),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 支出颜色方案单个选项：左侧选中圆圈 + 标题 + 右侧「-100」示例数字。
-  Widget _buildExpenseColorSchemeOption({
-    required BuildContext context,
-    required String title,
-    required String value,
-    required String selected,
-    required Color exampleColor,
-    required Color primaryColor,
-    required VoidCallback onTap,
-  }) {
-    final isSelected = value == selected;
-    return ListTile(
-      leading: Icon(
-        isSelected ? AppIcons.radioChecked : AppIcons.radioUnchecked,
-        color: isSelected ? primaryColor : AppTokens.iconSecondary(context),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isSelected ? primaryColor : AppTokens.textPrimary(context),
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      // 示例数字用方案对应颜色渲染,直观预览支出着色。
-      trailing: Text(
-        '-100',
-        style: TextStyle(color: exampleColor, fontWeight: FontWeight.w600),
-      ),
-      onTap: onTap,
     );
   }
 }

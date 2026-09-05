@@ -77,15 +77,14 @@ void main() {
   });
   tearDown(() => unregisterBackends?.call());
 
-  testWidgets('记账设置分组展示分类管理、汇率管理、周期账单与支出颜色', (tester) async {
+  testWidgets('记账设置分组展示分类管理、汇率管理与周期账单', (tester) async {
     await _pumpMinePage(tester);
 
     expect(find.text('分类管理'), findsOneWidget);
     expect(find.text('汇率管理'), findsOneWidget);
     expect(find.text('周期账单'), findsOneWidget);
-    // 支出颜色紧随周期账单（同组相邻两行）。
-    expect(find.text('支出颜色'), findsOneWidget);
-    expect(_yOf(tester, '支出颜色'), greaterThan(_yOf(tester, '周期账单')));
+    // 换色功能已移除，页面不再出现该入口。
+    expect(find.text('支出颜色'), findsNothing);
   });
 
   testWidgets('通用设置分组按序展示且不再包含偏好调节', (tester) async {
@@ -109,32 +108,6 @@ void main() {
     expect(_yOf(tester, '数据导入导出'), greaterThan(_yOf(tester, '应用上锁')));
     expect(_yOf(tester, '配置导入导出'), greaterThan(_yOf(tester, '数据导入导出')));
     expect(_yOf(tester, '备份与云同步'), greaterThan(_yOf(tester, '配置导入导出')));
-  });
-
-  testWidgets('支出颜色弹窗切换方案并持久化', (tester) async {
-    final container = await _pumpMinePage(tester);
-    // 激活持久化监听（真实应用中由 app 根节点 watch 该 init provider）
-    container.read(expenseColorSchemeInitProvider);
-
-    // 默认红色方案
-    expect(container.read(expenseColorSchemeProvider), 'red');
-
-    // 打开配色对话框并选绿色
-    await tester.tap(find.text('支出颜色'));
-    await tester.pumpAndSettle();
-    expect(find.byType(Dialog), findsOneWidget);
-    // 点选项行本体，避免命中文字下方的 ListTile 命中区域告警
-    await tester.tap(find.widgetWithText(ListTile, '绿色表示支出'));
-    await tester.pump();
-    await tester.tap(find.text('保存'));
-    // 保存后 1s 弱化 loading + toast，推进时间落定
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 2));
-    await tester.pump(const Duration(seconds: 1));
-
-    expect(container.read(expenseColorSchemeProvider), 'green');
-    final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('expenseColorScheme'), 'green');
   });
 
   testWidgets('深色模式弹窗切换到暗黑', (tester) async {

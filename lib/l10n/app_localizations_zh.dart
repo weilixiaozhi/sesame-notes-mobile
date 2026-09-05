@@ -946,18 +946,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appearanceThemeModeDark => '暗黑模式';
 
   @override
-  String get appearanceExpenseColorScheme => '支出颜色';
-
-  @override
-  String get appearanceExpenseColorRed => '红色表示支出';
-
-  @override
-  String get appearanceExpenseColorGreen => '绿色表示支出';
-
-  @override
-  String get appearanceExpenseColorApplied => '已更换';
-
-  @override
   String get reminderTitle => '记账提醒';
 
   @override
@@ -4010,18 +3998,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get appearanceThemeModeDark => '暗黑模式';
-
-  @override
-  String get appearanceExpenseColorScheme => '支出顏色';
-
-  @override
-  String get appearanceExpenseColorRed => '紅色表示支出';
-
-  @override
-  String get appearanceExpenseColorGreen => '綠色表示支出';
-
-  @override
-  String get appearanceExpenseColorApplied => '已更換';
 
   @override
   String get reminderTitle => '記帳提醒';

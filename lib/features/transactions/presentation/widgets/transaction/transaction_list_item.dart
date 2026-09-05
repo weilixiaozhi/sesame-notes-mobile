@@ -8,7 +8,6 @@ import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/shared/widgets/category_icon.dart';
 import 'package:sesame_notes/utils/currency/currencies.dart';
-import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/widgets/collaborator_avatar.dart';
 import 'package:sesame_notes/shared/widgets/amount_text.dart';
@@ -227,11 +226,9 @@ class TransactionListItem extends ConsumerWidget {
                     signed: true,
                     showCurrency: true,
                     currencyCode: currencyCode,
-                    style: AppTextTokens.label(context).copyWith(
-                      color: ref.watch(expenseColorSchemeProvider) == 'green'
-                          ? AppTokens.success(context)
-                          : AppTokens.error(context),
-                    ),
+                    style: AppTextTokens.label(
+                      context,
+                    ).copyWith(color: AppTokens.error(context)),
                   ),
                   // 副行:外币交易时显示折算到账本本位币的结果(≈ 本位币金额)。
                   // 仅当交易币种≠账本本位币且折算值≠原金额时展示(逻辑兜底:

@@ -60,9 +60,8 @@ class AmountText extends ConsumerWidget {
       );
     }
 
-    // 主数字保持中性色 textPrimary：支出着色由外部调用方自行
-    // ref.watch(expenseColorSchemeProvider) 取配色方案后显式传入，
-    // AmountText 本身不感知方案。
+    // 主数字保持中性色 textPrimary：支出着色由外部调用方
+    // 显式传入样式，AmountText 本身不感知配色。
     final baseStyle =
         style ??
         Theme.of(

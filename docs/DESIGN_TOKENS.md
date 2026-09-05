@@ -185,19 +185,8 @@ final color = AppTokens.success(context);
 
 > 统计页支出趋势折线图（`AnalyticsLineChart`）的数据线与数据点使用 `chartExpense`。
 > 折线是统计展示，不使用 error 语义色，避免与金额的支出语义色混淆。
-
-**方案感知的支出颜色**（非 Token，需订阅 `expenseColorSchemeProvider`）：
-
-```dart
-// import '../../providers/theme_providers.dart' show expenseColorSchemeProvider;
-// 必须用 ref.watch 订阅方案，切换红绿方案时金额颜色才会刷新
-final color = ref.watch(expenseColorSchemeProvider) == 'green'
-    ? AppTokens.success(context)
-    : AppTokens.error(context);
-```
-
-> `expenseColorSchemeProvider` 定义在 `lib/providers/theme_providers.dart`，取值 `'red'`（默认，支出为红色）或 `'green'`（支出为绿色）。
-> 若改用 `ref.read` 则不会订阅方案变化，开关切换后金额颜色不更新。
+>
+> 支出金额统一使用 error 语义色（`AppTokens.error(context)`）表达「支出」。
 
 ---
 
@@ -423,7 +412,7 @@ final isDark = AppTokens.isDark(context);
 - [ ] 图标颜色 → `iconPrimary` / `iconSecondary` / `iconTertiary` / `iconCategory`
 - [ ] 分割线 → 使用 `AppTokens.cardDivider(context)`
 - [ ] 状态颜色 → `success` / `warning` / `error` / `info`；在线/离线/待处理 → `statusOnline` / `statusOffline` / `statusPending`
-- [ ] 支出金额颜色 → 订阅 `expenseColorSchemeProvider`：`== 'green' ? AppTokens.success(context) : AppTokens.error(context)`（必须 `ref.watch`，`ref.read` 不生效）
+- [ ] 支出金额颜色 → `AppTokens.error(context)`
 - [ ] 品牌图标 → `brandLocal` / `brandSupabase` / `brandWebdav` / `brandS3` / `brandCloud`
 - [ ] 底部导航栏 → `AppTokens.tabBarBackground(context)`
 - [ ] 底部弹层拖拽条 → `AppTokens.grabHandleColor(context)`

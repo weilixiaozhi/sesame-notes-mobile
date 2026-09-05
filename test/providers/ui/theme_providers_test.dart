@@ -1,10 +1,7 @@
 // theme_providers 外观偏好持久化测试。
 //
-// 需求锚点：
-//   1. themeModeInit：读取 prefs 恢复 light/dark/system；非法值回退 system；
-//      后续变更即时落盘；
-//   2. expenseColorSchemeInit：读取并持久化支出配色；
-//   3. displayNameInit：读取并持久化显示名。
+// 需求锚点：themeModeInit 读取 prefs 恢复 light/dark/system；非法值回退 system；
+// 后续变更即时落盘。
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,22 +44,5 @@ void main() {
       themeModeInitProvider.future,
     );
     expect(container.read(themeModeProvider), ThemeMode.system);
-  });
-
-  test('expenseColorSchemeInit：读取并落盘', () async {
-    SharedPreferences.setMockInitialValues({'expenseColorScheme': 'green'});
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-
-    await readProviderFutureFromContainer(
-      container,
-      expenseColorSchemeInitProvider.future,
-    );
-    expect(container.read(expenseColorSchemeProvider), 'green');
-
-    container.read(expenseColorSchemeProvider.notifier).set('red');
-    await Future<void>.delayed(Duration.zero);
-    final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('expenseColorScheme'), 'red');
   });
 }

@@ -46,7 +46,6 @@ final appSplashInitProvider = FutureProvider<void>((ref) async {
     await Future.wait([
       ref.watch(themeModeInitProvider.future),
       ref.watch(appInitProvider.future),
-      ref.watch(expenseColorSchemeInitProvider.future),
       ref.watch(securityInitProvider.future),
       // 可见币种集合初始化(内部等待当前账本就绪后加载其专属集合,
       // 与此处并行安全)

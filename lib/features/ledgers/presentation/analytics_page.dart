@@ -1,10 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/features/ledgers/application/ledger_actions.dart';
 import 'package:sesame_notes/features/statistics/application/statistics_queries.dart';
 import 'package:sesame_notes/theme/colors.dart';
-import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/statistics/application/statistics_providers.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
@@ -641,13 +640,8 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
     Color primary,
   ) {
     final l10n = AppLocalizations.of(context);
-    final greenScheme = ref.watch(expenseColorSchemeProvider) == 'green';
-    final momUpColor = greenScheme
-        ? AppTokens.success(context)
-        : AppTokens.error(context);
-    final momDownColor = greenScheme
-        ? AppTokens.error(context)
-        : AppTokens.success(context);
+    final momUpColor = AppTokens.error(context);
+    final momDownColor = AppTokens.success(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -91,7 +91,6 @@ abstract final class AppIcons {
   static const autoAwesome = LucideIcons.sparkles;
 
   // ── 主题/外观 ───────────────────────────────────────────────────
-  static const theme = LucideIcons.palette;
   static const themeAuto = LucideIcons.sunMoon;
   static const darkMode = LucideIcons.moon;
   static const lightMode = LucideIcons.sun;

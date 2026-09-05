@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/features/transactions/application/transaction_actions.dart';
 import 'package:sesame_notes/data/models.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/shared/providers/user_display_name_resolver.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
@@ -526,11 +525,9 @@ class _TransactionDetailBody extends ConsumerWidget {
                 signed: true,
                 showCurrency: true,
                 currencyCode: t.currencyCode,
-                style: AppTextTokens.body(context).copyWith(
-                  color: ref.watch(expenseColorSchemeProvider) == 'green'
-                      ? AppTokens.success(context)
-                      : AppTokens.error(context),
-                ),
+                style: AppTextTokens.body(
+                  context,
+                ).copyWith(color: AppTokens.error(context)),
               ),
             ),
             if (t.currencyCode.isNotEmpty)

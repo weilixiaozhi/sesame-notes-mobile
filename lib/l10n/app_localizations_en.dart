@@ -983,18 +983,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appearanceThemeModeDark => 'Dark Mode';
 
   @override
-  String get appearanceExpenseColorScheme => 'Expense Color';
-
-  @override
-  String get appearanceExpenseColorRed => 'Red for expense';
-
-  @override
-  String get appearanceExpenseColorGreen => 'Green for expense';
-
-  @override
-  String get appearanceExpenseColorApplied => 'Color scheme updated';
-
-  @override
   String get reminderTitle => 'Recording Reminder';
 
   @override
