@@ -21,6 +21,7 @@ import 'package:sesame_notes/features/settings/presentation/cloud_service_page.d
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/router/app_router.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
+import 'package:sesame_notes/shared/widgets/app_list_tile.dart';
 
 import '../../helpers/cloud_backend_registration.dart';
 
@@ -130,6 +131,17 @@ void main() {
     expect(find.text('当前使用 · 上次成功 2026-09-01 08:30'), findsOneWidget);
     // WebDAV 用配置内凭据，无登录行。
     expect(find.text('登录'), findsNothing);
+    // 自动备份开关行与相邻行同高：开关装入固定 36dp 盒子（FittedBox 缩放），
+    // 行内容 36dp + 上下 p4 内边距 = 44dp，与 AppListTile 行一致。
+    final switchBox = tester.getSize(
+      find.byKey(const ValueKey('autoSyncSwitchBox')),
+    );
+    expect(switchBox.height, 36, reason: '开关固定盒高度应为 36dp');
+    final rowHeight = tester
+        .getSize(find.byKey(const ValueKey('autoSyncRow')))
+        .height;
+    final tileHeight = tester.getSize(find.byType(AppListTile).first).height;
+    expect(rowHeight, tileHeight, reason: '开关行与相邻行同高');
   });
 
   testWidgets('未配置后端点击打开配置弹窗，保存后立即切换即激活', (tester) async {

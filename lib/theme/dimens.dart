@@ -10,6 +10,7 @@ class AppDimens {
   static const double p16 = 16;
   static const double p20 = 20;
   static const double p32 = 32;
+  static const double p36 = 36;
   static const double p40 = 40;
   static const double radius4 = 4;
   static const double radius8 = 8;

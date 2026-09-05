@@ -92,6 +92,7 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
                             // 双行默认高度约 72px，顶部会留大片空白；
                             // 改用普通行布局并把开关缩小到 0.8 倍。
                             Padding(
+                              key: const ValueKey('autoSyncRow'),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: AppDimens.p16,
                                 vertical: AppDimens.p4,
@@ -105,7 +106,8 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
                                       children: [
                                         Text(
                                           l10n.cloudBackupAutoSyncTitle,
-                                          style: AppTextTokens.title(context)
+                                          // 与相邻 AppListTile 行标题同令牌（body 14/1.4）
+                                          style: AppTextTokens.body(context)
                                               .copyWith(
                                                 color: AppTokens.textPrimary(
                                                   context,
@@ -124,16 +126,23 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
                                       ],
                                     ),
                                   ),
-                                  Transform.scale(
-                                    scale: 0.8,
-                                    child: Switch(
-                                      value: value,
-                                      // 去掉 48dp 最小点击区，行高才与相邻行一致
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      onChanged: (v) async {
-                                        await setter.set(v);
-                                      },
+                                  // 开关自身布局约 46dp，直接把行撑高；装入固定
+                                  // 36dp 盒子用 FittedBox 缩放——与相邻行 36dp 图标
+                                  // 内容等高（行 = p4 + 36 + p4 = 44dp，与相邻行一致）。
+                                  SizedBox(
+                                    key: const ValueKey('autoSyncSwitchBox'),
+                                    height: AppDimens.p36,
+                                    child: FittedBox(
+                                      fit: BoxFit.contain,
+                                      alignment: Alignment.centerRight,
+                                      child: Switch(
+                                        value: value,
+                                        materialTapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        onChanged: (v) async {
+                                          await setter.set(v);
+                                        },
+                                      ),
                                     ),
                                   ),
                                 ],
