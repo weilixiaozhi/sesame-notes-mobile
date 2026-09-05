@@ -450,7 +450,8 @@ class _RestoreLedgerCard extends StatelessWidget {
             ),
             // 右上角勾选标签：位于裁剪层之外覆盖在边框之上。
             // 外移量取边框宽度 1.5px，顶边/右边与边框外沿齐平，
-            // 实心色块直接遮住边框线。
+            // 实心色块直接遮住边框线；右上圆角与卡片外角同半径（r12），
+            // 两弧圆心重合，角上只露一条弧线。
             if (selected)
               Positioned(
                 top: -1.5,
@@ -461,6 +462,7 @@ class _RestoreLedgerCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: primary,
                     borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(AppDimens.radius12),
                       bottomLeft: Radius.circular(AppDimens.radius12),
                     ),
                   ),
