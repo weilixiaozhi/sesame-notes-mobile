@@ -174,4 +174,89 @@ void main() {
     )..where((c) => c.id.equals(categoryId))).getSingle();
     expect(catRow.scopeAccountId, 'user-a');
   });
+
+  test('push 出口把交易金额规范化为契约格式（尾零剥离）', () async {
+    const ledgerId = 'b27e759f-c9eb-49c4-b9f7-dffcd95c6235';
+    const txnId = '3c0d0f14-04aa-4c11-bbf8-f0358ab1b9d7';
+    final updatedAt = DateTime.utc(2026, 9, 5, 8);
+    await db
+        .into(db.ledgers)
+        .insert(
+          LedgersCompanion.insert(
+            id: ledgerId,
+            name: '可乐',
+            storageMode: const d.Value('cloud'),
+            syncId: const d.Value('32479a53-fbb4-4155-9865-850aa191dcd4'),
+            updatedAt: updatedAt,
+          ),
+        );
+    await db
+        .into(db.syncChanges)
+        .insert(
+          SyncChangesCompanion.insert(
+            entityType: 'transaction',
+            entityId: txnId,
+            ledgerId: const d.Value(ledgerId),
+            action: 'upsert',
+            payload: jsonEncode({
+              'tx_type': 'expense',
+              'amount': '857.00',
+              'happened_at': '2026-09-05T08:00:00.000Z',
+              'note': '尾零金额',
+              'category_id': null,
+              'exclude_from_stats': false,
+              'currency_code': 'CNY',
+              'native_amount': '857.00',
+              'recurring_id': null,
+              'payer_member_id': null,
+              'aa_mode': null,
+              'splits': null,
+              'last_edited_at': null,
+            }),
+            updatedAt: updatedAt,
+            mutationId: 'm-tx-2',
+            accountId: const d.Value('user-a'),
+          ),
+        );
+
+    when(
+      () => api.postSyncPush(
+        postSyncPushRequest: any(named: 'postSyncPushRequest'),
+      ),
+    ).thenAnswer(
+      (_) async => Response(
+        requestOptions: RequestOptions(path: '/sync/push'),
+        statusCode: 200,
+        data: PostSyncPush200Response(
+          (b) => b
+            ..outcomes = BuiltList<PostSyncPush200ResponseOutcomesInner>(
+              [],
+            ).toBuilder()
+            ..serverCursor = '0',
+        ),
+      ),
+    );
+
+    await buildService().push();
+
+    final captured = verify(
+      () => api.postSyncPush(
+        postSyncPushRequest: captureAny(named: 'postSyncPushRequest'),
+      ),
+    ).captured;
+    final request = captured.single as PostSyncPushRequest;
+    final ch = request.changes.single;
+    final wire =
+        client.serializers.serialize(
+              ch.anyOf,
+              specifiedType: FullType(
+                AnyOf,
+                ch.anyOf.valueTypes.map((type) => FullType(type)).toList(),
+              ),
+            )!
+            as Map<String, dynamic>;
+    final payload = wire['payload'] as Map<String, dynamic>;
+    expect(payload['amount'], '857');
+    expect(payload['native_amount'], '857');
+  });
 }

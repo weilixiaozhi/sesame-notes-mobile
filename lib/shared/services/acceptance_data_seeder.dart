@@ -7,10 +7,13 @@ library;
 
 import 'dart:math';
 
+import 'package:decimal/decimal.dart';
+
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/data/repositories/local/local_transaction_repository.dart'
     show TransactionSplitInput;
+import 'package:sesame_notes/utils/currency/decimal_money.dart';
 
 /// 验收数据填充器。
 ///
@@ -247,10 +250,10 @@ class AcceptanceDataSeeder {
     return [created.id];
   }
 
-  /// 随机金额（10.00 ~ 999.99，规范化两位小数）。
+  /// 随机金额（10.00 ~ 999.99，输出服务端契约规范格式：尾零剥离）。
   String _randomAmount() {
     final yuan = 10 + _rand.nextInt(990);
     final cents = _rand.nextInt(100).toString().padLeft(2, '0');
-    return '$yuan.$cents';
+    return normalizeDecimal(Decimal.parse('$yuan.$cents'));
   }
 }

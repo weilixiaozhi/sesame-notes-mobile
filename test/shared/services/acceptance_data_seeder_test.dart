@@ -12,6 +12,7 @@ import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/shared/services/acceptance_data_seeder.dart';
 import 'package:sesame_notes/sync/change_recorder_impl.dart';
+import 'package:sesame_notes/utils/currency/decimal_money.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -89,9 +90,14 @@ void main() {
       final codes = txs.map((t) => t.currencyCode).toSet();
       expect(codes.length, greaterThanOrEqualTo(2));
 
-      // 金额均为规范化 decimal 字符串
+      // 金额均为契约规范化 decimal 字符串（无尾零/前导零，如 "857.00" 非法）
       for (final t in txs) {
         expect(double.tryParse(t.amount), isNotNull);
+        expect(
+          isNormalizedDecimal(t.amount),
+          isTrue,
+          reason: '金额 ${t.amount} 必须为服务端契约规范格式',
+        );
       }
 
       // 支出人统一归属账本成员（含虚拟用户），避免「支出人未知」失真

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:built_collection/built_collection.dart';
+import 'package:decimal/decimal.dart';
 import 'package:uuid/uuid.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart' as d;
@@ -10,6 +11,7 @@ import 'package:one_of/any_of.dart';
 import 'package:sesame_api_client/sesame_api_client.dart';
 
 import 'package:sesame_notes/core/logging/logger_service.dart';
+import 'package:sesame_notes/utils/currency/decimal_money.dart';
 import 'package:sesame_notes/sync/ledger_sync_state.dart';
 import 'package:sesame_notes/sync/lww_conflict.dart';
 import 'package:sesame_notes/data/repositories/local/local_ledger_repository.dart';
@@ -1065,6 +1067,9 @@ class SyncService {
     SyncChange ch,
     String? syncId,
   ) {
+    // 推送出口对齐服务端契约：amount/native_amount 必须为规范化 decimal
+    //（历史验收填充数据可能带尾零，如 "857.00"）。
+    final payload = _normalizeTransactionAmounts(ch.payload);
     if (ch.action == 'delete') {
       return PostSyncPushRequestChangesInner(
         (b) => b
@@ -1086,7 +1091,7 @@ class SyncService {
                           PostSyncPushRequestChangesInnerAnyOf1AnyOf1ActionEnum
                               .delete
                       ..updatedAt = ch.updatedAt.toUtc()
-                      ..payload = JsonObject(jsonDecode(ch.payload)),
+                      ..payload = JsonObject(jsonDecode(payload)),
                   ),
                 ),
             ),
@@ -1117,7 +1122,7 @@ class SyncService {
                         _deser<
                               PostSyncPushRequestChangesInnerAnyOf1AnyOfPayload
                             >(
-                              ch.payload,
+                              payload,
                               PostSyncPushRequestChangesInnerAnyOf1AnyOfPayload
                                   .serializer,
                             )
@@ -1127,6 +1132,27 @@ class SyncService {
           ),
         ),
     );
+  }
+
+  /// 把交易 payload 的金额字段规范化为契约格式（尾零剥离，如 "857.00" → "857"）。
+  ///
+  /// 服务端金额契约要求规范化 decimal；验收填充等历史数据可能带尾零，
+  /// 推送出口统一归一，避免整批因单条金额格式被 400 拒绝。
+  String _normalizeTransactionAmounts(String rawPayload) {
+    Map<String, dynamic> data;
+    try {
+      data = jsonDecode(rawPayload) as Map<String, dynamic>;
+    } catch (_) {
+      return rawPayload;
+    }
+    for (final key in const ['amount', 'native_amount']) {
+      final value = data[key];
+      if (value is String) {
+        final parsed = Decimal.tryParse(value);
+        if (parsed != null) data[key] = normalizeDecimal(parsed);
+      }
+    }
+    return jsonEncode(data);
   }
 
   PostSyncPushRequestChangesInner _categoryChange(SyncChange ch) {
