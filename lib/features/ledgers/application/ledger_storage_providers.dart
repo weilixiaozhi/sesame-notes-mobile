@@ -29,6 +29,7 @@ import 'package:sesame_notes/data/repositories/local/local_recurring_transaction
 import 'package:sesame_notes/data/repositories/local/local_transaction_repository.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
+import 'package:sesame_notes/shared/services/seed_service.dart';
 import 'package:sesame_notes/utils/member_id.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
 
@@ -543,6 +544,13 @@ Future<void> _cloneCategoryToAccountScope({
       : (map[category.parentId!] ?? category.parentId);
   // 已属本账号域：无需克隆，引用直接指向自身
   if (category.scopeAccountId == accountId) {
+    map[category.id] = category.id;
+    return;
+  }
+  // v5 确定性种子分类在账号域 id 恒等于自身：父链保持原 id 时直接复用原 id
+  // 上云，服务端按 id 幂等收敛——克隆新 id 会把同名种子分类在云端造出重复。
+  if (mappedParent == category.parentId &&
+      SeedService.isDeterministicCategoryId(category.id)) {
     map[category.id] = category.id;
     return;
   }

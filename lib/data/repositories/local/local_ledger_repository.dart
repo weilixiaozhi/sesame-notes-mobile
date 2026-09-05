@@ -887,6 +887,10 @@ class LocalLedgerRepository {
 
   /// 把 [categoryId] 及其父分类链克隆为本地域（scopeAccountId=null）副本：
   /// 新 UUID 写 [map]，重复引用复用同一副本；已克隆/本地域分类跳过。
+  ///
+  /// 去重契约：源分类已属本地域且父链保持原 id 时直接复用自身；
+  /// 本地域已有同名同类同父分类时复用既有副本——克隆制造新实体会
+  /// 把同名分类逐次翻倍，云端与本地都会越积越多。
   Future<void> _cloneCategoryToLocal({
     required SesameDatabase src,
     required SesameDatabase db,
@@ -910,6 +914,32 @@ class LocalLedgerRepository {
         now: now,
       );
     }
+    // 父分类在本地域的映射 id（父已属本地域时为原 id，父被克隆时为克隆 id）
+    final mappedParent = category.parentId == null
+        ? null
+        : (map[category.parentId!] ?? category.parentId);
+    // 源分类已属本地域且父链保持原 id：引用直接指向自身，无需克隆
+    if (category.scopeAccountId == null && mappedParent == category.parentId) {
+      map[category.id] = category.id;
+      return;
+    }
+    // 去重：本地域已有同名同类同父分类时复用既有副本，避免重复克隆
+    final existing =
+        await (db.select(db.categories)..where(
+              (c) =>
+                  c.scopeAccountId.isNull() &
+                  c.name.equals(category.name) &
+                  c.kind.equals(category.kind) &
+                  c.deletedAt.isNull() &
+                  (mappedParent == null
+                      ? c.parentId.isNull()
+                      : c.parentId.equals(mappedParent)),
+            ))
+            .getSingleOrNull();
+    if (existing != null) {
+      map[category.id] = existing.id;
+      return;
+    }
     final newId = _uuid.v4();
     map[category.id] = newId;
     await db
@@ -922,11 +952,7 @@ class LocalLedgerRepository {
             level: category.level,
             sortOrder: d.Value(category.sortOrder),
             icon: d.Value(category.icon),
-            parentId: d.Value(
-              category.parentId == null
-                  ? null
-                  : (map[category.parentId!] ?? category.parentId),
-            ),
+            parentId: d.Value(mappedParent),
             updatedAt: now,
           ),
         );

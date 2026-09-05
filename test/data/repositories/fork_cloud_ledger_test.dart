@@ -721,4 +721,178 @@ void main() {
             .getSingle();
     expect(existing.originType, isNull);
   });
+
+  /// 构造带分类引用的源云账本：账本(scope=acc-1) + 交易列表，每笔交易引用给定分类。
+  Future<String> seedCloudLedgerWithCategories(
+    String ledgerId, {
+    required List<({String txId, String categoryId})> txs,
+  }) async {
+    final now = DateTime.utc(2026, 8, 1);
+    await db
+        .into(db.ledgers)
+        .insert(
+          LedgersCompanion.insert(
+            id: ledgerId,
+            name: '分类源账本',
+            storageMode: const d.Value('cloud'),
+            scopeAccountId: const d.Value('acc-1'),
+            syncId: const d.Value('sync-cat'),
+            updatedAt: now,
+          ),
+        );
+    await db.batch((b) {
+      b.insertAll(db.transactions, [
+        for (final tx in txs)
+          TransactionsCompanion.insert(
+            id: tx.txId,
+            ledgerId: ledgerId,
+            txType: 'expense',
+            amount: '10',
+            happenedAt: now,
+            currencyCode: 'CNY',
+            nativeAmount: '10',
+            categoryId: d.Value(tx.categoryId),
+            createdAt: now,
+            updatedAt: now,
+          ),
+      ]);
+    });
+    return ledgerId;
+  }
+
+  test('云转本地隐藏 Fork：本地域分类直接复用原分类，不克隆新实体', () async {
+    const localCatId = 'local-cat-1';
+    await db
+        .into(db.categories)
+        .insert(
+          CategoriesCompanion.insert(
+            id: localCatId,
+            name: '餐饮',
+            kind: 'expense',
+            level: 1,
+            updatedAt: DateTime.utc(2026, 8, 1),
+          ),
+        );
+    final sourceId = await seedCloudLedgerWithCategories(
+      'cloud-src-1',
+      txs: [(txId: 'tx-1', categoryId: localCatId)],
+    );
+
+    await repo.forkCloudLedgerToLocalPendingMove(
+      sourceLedgerId: sourceId,
+      newLedgerId: 'fork-1',
+      localSelfId: 'self-device-1',
+      currentAccountId: 'acc-1',
+      originSyncId: 'sync-cat',
+    );
+
+    // 分类表不变：本地域分类被隐藏 Fork 直接复用，不生成任何克隆
+    expect(
+      await db.select(db.categories).get(),
+      hasLength(1),
+      reason: '本地域分类已满足本地账本的可见性，克隆只会制造同名重复',
+    );
+    final forkTx = await (db.select(
+      db.transactions,
+    )..where((t) => t.ledgerId.equals('fork-1'))).getSingle();
+    expect(forkTx.categoryId, localCatId, reason: '交易继续引用原本地域分类，不做无意义重写');
+  });
+
+  test('云转本地隐藏 Fork：本地域已有同名分类时复用，不为账号域分类再造副本', () async {
+    const localCatId = 'local-cat-2';
+    const cloudCatId = 'cloud-cat-2';
+    final now = DateTime.utc(2026, 8, 1);
+    await db.batch((b) {
+      b.insertAll(db.categories, [
+        CategoriesCompanion.insert(
+          id: localCatId,
+          name: '餐饮',
+          kind: 'expense',
+          level: 1,
+          updatedAt: now,
+        ),
+        CategoriesCompanion.insert(
+          id: cloudCatId,
+          name: '餐饮',
+          kind: 'expense',
+          level: 1,
+          scopeAccountId: const d.Value('acc-1'),
+          updatedAt: now,
+        ),
+      ]);
+    });
+    final sourceId = await seedCloudLedgerWithCategories(
+      'cloud-src-2',
+      txs: [(txId: 'tx-2', categoryId: cloudCatId)],
+    );
+
+    await repo.forkCloudLedgerToLocalPendingMove(
+      sourceLedgerId: sourceId,
+      newLedgerId: 'fork-2',
+      localSelfId: 'self-device-1',
+      currentAccountId: 'acc-1',
+      originSyncId: 'sync-cat',
+    );
+
+    expect(
+      await db.select(db.categories).get(),
+      hasLength(2),
+      reason: '本地域已有同名分类，账号域分类不得再克隆出新的本地副本',
+    );
+    final forkTx = await (db.select(
+      db.transactions,
+    )..where((t) => t.ledgerId.equals('fork-2'))).getSingle();
+    expect(forkTx.categoryId, localCatId, reason: '交易引用复用本地域同名分类');
+  });
+
+  test('云转本地隐藏 Fork：源账本引用两个同名账号域分类时只生成一个本地副本', () async {
+    final now = DateTime.utc(2026, 8, 1);
+    await db.batch((b) {
+      b.insertAll(db.categories, [
+        CategoriesCompanion.insert(
+          id: 'cloud-cat-a',
+          name: '餐饮',
+          kind: 'expense',
+          level: 1,
+          scopeAccountId: const d.Value('acc-1'),
+          updatedAt: now,
+        ),
+        CategoriesCompanion.insert(
+          id: 'cloud-cat-b',
+          name: '餐饮',
+          kind: 'expense',
+          level: 1,
+          scopeAccountId: const d.Value('acc-1'),
+          updatedAt: now,
+        ),
+      ]);
+    });
+    final sourceId = await seedCloudLedgerWithCategories(
+      'cloud-src-3',
+      txs: [
+        (txId: 'tx-a', categoryId: 'cloud-cat-a'),
+        (txId: 'tx-b', categoryId: 'cloud-cat-b'),
+      ],
+    );
+
+    await repo.forkCloudLedgerToLocalPendingMove(
+      sourceLedgerId: sourceId,
+      newLedgerId: 'fork-3',
+      localSelfId: 'self-device-1',
+      currentAccountId: 'acc-1',
+      originSyncId: 'sync-cat',
+    );
+
+    // 历史同名重复不得被 Fork 原样复制：两笔交易收敛到唯一本地副本
+    final localCats = await (db.select(
+      db.categories,
+    )..where((c) => c.scopeAccountId.isNull())).get();
+    expect(localCats, hasLength(1), reason: '同名账号域分类必须合并复用同一个本地副本，逐个克隆会把重复翻倍');
+    final forkTxs = await (db.select(
+      db.transactions,
+    )..where((t) => t.ledgerId.equals('fork-3'))).get();
+    expect(forkTxs.map((t) => t.categoryId).toSet(), {
+      localCats.single.id,
+    }, reason: '两笔交易都指向唯一本地副本');
+  });
 }

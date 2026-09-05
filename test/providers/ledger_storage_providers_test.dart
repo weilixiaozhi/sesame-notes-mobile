@@ -31,6 +31,7 @@ import 'package:sesame_notes/data/repositories/local/local_transaction_repositor
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/ledgers/application/ledger_storage_providers.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
+import 'package:sesame_notes/shared/services/seed_service.dart';
 import 'package:sesame_notes/utils/member_id.dart';
 
 import '../helpers/test_isolation.dart';
@@ -490,6 +491,56 @@ void main() {
       isTrue,
       reason: '第二本账本的交易必须复用首个克隆',
     );
+  });
+
+  test('moveToCloud：本地域 v5 确定性种子分类复用原 id 上云，不克隆新实体', () async {
+    final id = await seedLocalLedger('种子分类账本');
+    // v5 确定性种子 id：任何设备/账号域中同一 key 生成同一 id，即同一实体
+    final seedCatId = SeedService.deterministicCategorySyncId(
+      kind: 'expense',
+      level: 1,
+      key: 'dining',
+    );
+    await db
+        .into(db.categories)
+        .insert(
+          CategoriesCompanion.insert(
+            id: seedCatId,
+            name: '餐饮',
+            kind: 'expense',
+            level: 1,
+            updatedAt: DateTime.now().toUtc(),
+          ),
+        );
+    await repo.addTransaction(
+      ledgerId: id,
+      type: 'expense',
+      amount: '15.00',
+      happenedAt: DateTime(2026, 7, 8),
+      categoryId: seedCatId,
+    );
+
+    await actions.moveToCloud(id);
+
+    // 分类表不变：确定性 id 在账号域就是同一个实体，克隆新 id 只会制造云端重复
+    final cats = await db.select(db.categories).get();
+    expect(cats, hasLength(1), reason: 'v5 种子分类必须复用原 id，不得克隆新实体');
+    expect(cats.single.id, seedCatId);
+    // 本账本交易继续引用原 id
+    final txs = await (db.select(
+      db.transactions,
+    )..where((t) => t.ledgerId.equals(id))).get();
+    expect(
+      txs.any((t) => t.categoryId == seedCatId),
+      isTrue,
+      reason: '交易引用必须保持种子分类原 id',
+    );
+    // 登记的 category 变更携带原 id：服务端按 id 幂等收敛
+    final catChange = await (db.select(
+      db.syncChanges,
+    )..where((c) => c.entityType.equals('category'))).getSingle();
+    expect(catChange.entityId, seedCatId);
+    expect(catChange.accountId, testUserId);
   });
 
   test('moveToCloud 幂等：已是云端账本时零副作用', () async {
