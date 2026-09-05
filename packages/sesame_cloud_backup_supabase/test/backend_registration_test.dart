@@ -17,12 +17,14 @@ void main() {
 
     expect(backend, isNotNull);
     expect(backend!.displayName, 'Supabase');
-    expect(backend.fields.map((f) => f.key),
-        ['url', 'anonKey', 'bucket', 'account']);
+    expect(
+      backend.fields.map((f) => f.key),
+      ['url', 'anonKey', 'bucket', 'account', 'password'],
+    );
     expect(
       backend.fields.where((f) => f.isSecret).map((f) => f.key),
-      ['anonKey'],
-      reason: 'anonKey 属凭据，必须进安全存储',
+      ['anonKey', 'password'],
+      reason: 'anonKey 与 password 属凭据，必须进安全存储',
     );
   });
 
