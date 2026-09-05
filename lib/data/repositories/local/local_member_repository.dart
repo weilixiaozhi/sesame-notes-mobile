@@ -209,20 +209,6 @@ class LocalLedgerMemberRepository {
     }
   }
 
-  /// 退出登录解绑：本机全部 LOCAL 成员的绑定关系清除（身份保留）。
-  Future<void> unbindAllLocalMembers() async {
-    await (db.update(db.ledgerMembers)..where(
-          (member) =>
-              member.memberType.equals('LOCAL') & member.deletedAt.isNull(),
-        ))
-        .write(
-          LedgerMembersCompanion(
-            linkedAccountId: const d.Value(null),
-            updatedAt: d.Value(DateTime.now().toUtc()),
-          ),
-        );
-  }
-
   /// 成员状态迁移（LEFT/REMOVED）：历史账务保留，仅停止新权限语义。
   Future<void> updateStatus({
     required String ledgerId,

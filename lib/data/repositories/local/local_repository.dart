@@ -1564,8 +1564,6 @@ class LocalRepository {
 
   Future<bool> deleteMember(String id) => _memberRepo.delete(id);
 
-  Future<void> unbindAllLocalMembers() => _memberRepo.unbindAllLocalMembers();
-
   /// 本人更新云 Profile 后刷新同账号 REGISTERED 成员展示快照。
   Future<int> refreshMemberDisplayByAccount({
     required String userId,
