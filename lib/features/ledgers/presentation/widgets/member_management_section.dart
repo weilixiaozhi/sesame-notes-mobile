@@ -287,11 +287,11 @@ class _MemberManagementSectionState
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          // 外边距与账本管理页「加入共享账本」按钮一致(上 4 / 下 8 / 左右 16)
+          // 左右留白取 4,与下方成员卡片外边距一致,按钮边缘线与卡片边缘线左右对齐
           padding: const EdgeInsets.fromLTRB(
-            AppDimens.p16,
             AppDimens.p4,
-            AppDimens.p16,
+            AppDimens.p4,
+            AppDimens.p4,
             AppDimens.p8,
           ),
           child: OutlinedButton.icon(
