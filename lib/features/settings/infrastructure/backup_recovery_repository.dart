@@ -120,6 +120,7 @@ class BackupRecoveryRepository {
     }
   }
 
+  /// 执行 COUNT 聚合查询并返回计数值（查询失败抛 StateError）。
   int _count(String sql, String ledgerId) {
     try {
       final rows = _db.select(sql, [ledgerId]);
