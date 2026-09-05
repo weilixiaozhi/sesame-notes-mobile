@@ -883,16 +883,26 @@ class _MemberTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final isOwner = member.role == 'owner';
-    // 昵称与本人判定统一走账本身份上下文,与成员支出/AA 分摊同一套解析链;
-    // 身份未就绪时回退成员行快照,避免闪烁「未知」。
-    final identity = ref.watch(ledgerIdentityProvider(ledgerId ?? '')).value;
+    // 昵称与本人判定统一走账本身份上下文,与成员支出/AA 分摊同一套解析链。
+    // 本地身份行(LOCAL 成员,含新建态/本地账本的合成所有者)恒显固定本地
+    // 身份并标记本人——其 id 与身份上下文的 self 成员派生命名空间不同,
+    // 不能交给上下文解析,否则会落成「未知」;新建态(无账本 id)不查上下文。
+    final identity = (ledgerId != null && ledgerId!.isNotEmpty)
+        ? ref.watch(ledgerIdentityProvider(ledgerId!)).value
+        : null;
+    final sessionUserId = ref.watch(currentLedgerAccountIdProvider) ?? '';
     final isSelf =
-        identity?.isSelfOf(member.id) ?? member.memberType == 'LOCAL';
-    final displayName =
-        identity?.displayNameOf(member.id) ??
-        (member.displayName.isNotEmpty
-            ? member.displayName
-            : l10n.aaUnknownUser);
+        member.memberType == 'LOCAL' ||
+        (identity?.isSelfOf(member.id) ??
+            (member.linkedAccountId != null &&
+                member.linkedAccountId!.isNotEmpty &&
+                member.linkedAccountId == sessionUserId));
+    final displayName = member.memberType == 'LOCAL'
+        ? l10n.mineLocalName
+        : (identity?.displayNameOf(member.id) ??
+              (member.displayName.isNotEmpty
+                  ? member.displayName
+                  : l10n.aaUnknownUser));
     return ListTile(
       dense: true,
       leading: isSelf

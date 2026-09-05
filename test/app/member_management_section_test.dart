@@ -20,6 +20,8 @@ import 'package:sesame_notes/data/db.dart' as db;
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
+import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
+import 'package:sesame_notes/shared/widgets/member_avatar.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/features/ledgers/presentation/widgets/member_management_section.dart';
@@ -388,6 +390,130 @@ void main() {
     );
     expect(find.text('未知'), findsNothing);
     await tester.pump(const Duration(seconds: 3));
+  });
+
+  testWidgets('新建态(无账本行):所有者行显示固定本地身份「单机芝麻仔（我）」而非「未知」', (tester) async {
+    // 新建账本时 ledgerId 为空:身份上下文无账本行可查,
+    // 所有者行必须仍走固定本地身份口径,不得解析成「未知」。
+    final mockRepo = _MockRepo();
+    when(() => mockRepo.getLedgerById(any())).thenAnswer((_) async => null);
+    when(
+      () => mockRepo.getMembersByLedger(any()),
+    ).thenAnswer((_) async => const <db.LedgerMember>[]);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [repositoryProvider.overrideWith((ref) => mockRepo)],
+        child: MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: MemberManagementSection(
+                ledgerExternalId: null,
+                ledgerName: '测试账本',
+                ledgerId: null,
+                aaEnabled: false,
+                onAaChanged: (_) {},
+                isReadOnly: false,
+                pendingVirtualUsers: const [],
+                onPendingVirtualUsersChanged: (_) {},
+                showInviteEntry: false,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('单机芝麻仔', findRichText: true),
+      findsOneWidget,
+      reason: '新建态所有者行恒显固定本地身份,不得显示「未知」',
+    );
+    expect(find.text('未知'), findsNothing);
+    expect(find.byType(SelfAvatar), findsOneWidget);
+  });
+
+  testWidgets('已有本地账本(无成员镜像):所有者行仍显示固定本地身份「单机芝麻仔（我）」', (tester) async {
+    // 本地账本无成员镜像:合成所有者行的 id 与身份上下文的 self 成员
+    // 派生命名空间不同,所有者行仍必须按 LOCAL 身份显示,不得解析成「未知」。
+    final mockRepo = _MockRepo();
+    when(() => mockRepo.getLedgerById('ledger-1')).thenAnswer(
+      (_) async => db.Ledger(
+        id: 'ledger-1',
+        name: '本地账本',
+        currency: 'CNY',
+        role: 'owner',
+        memberCount: 1,
+        monthStartDay: 1,
+        storageMode: 'local',
+        aaEnabled: false,
+        createdAt: DateTime.utc(2026, 1, 1),
+        updatedAt: DateTime.utc(2026, 1, 1),
+      ),
+    );
+    when(
+      () => mockRepo.getMembersByLedger('ledger-1'),
+    ).thenAnswer((_) async => const <db.LedgerMember>[]);
+    when(
+      () => mockRepo.ensureLocalSelfMember(
+        ledgerId: any(named: 'ledgerId'),
+        localSelfId: any(named: 'localSelfId'),
+        displayName: any(named: 'displayName'),
+      ),
+    ).thenAnswer(
+      (inv) async => db.LedgerMember(
+        id: 'member-real-self',
+        ledgerId: inv.namedArguments[#ledgerId] as String,
+        displayName: '单机芝麻仔',
+        memberType: 'LOCAL',
+        role: 'owner',
+        avatarVersion: 0,
+        status: 'ACTIVE',
+        joinedAt: DateTime.utc(2026, 1, 1),
+        createdAt: DateTime.utc(2026, 1, 1),
+        updatedAt: DateTime.utc(2026, 1, 1),
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          repositoryProvider.overrideWith((ref) => mockRepo),
+          localSelfIdProvider.overrideWith((ref) async => 'local-self'),
+        ],
+        child: MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: MemberManagementSection(
+                ledgerExternalId: null,
+                ledgerName: '本地账本',
+                ledgerId: 'ledger-1',
+                aaEnabled: false,
+                onAaChanged: (_) {},
+                isReadOnly: false,
+                pendingVirtualUsers: const [],
+                onPendingVirtualUsersChanged: (_) {},
+                showInviteEntry: false,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('单机芝麻仔', findRichText: true),
+      findsOneWidget,
+      reason: '本地账本所有者行恒显固定本地身份,不得显示「未知」',
+    );
+    expect(find.text('未知'), findsNothing);
+    expect(find.byType(SelfAvatar), findsOneWidget);
   });
 
   testWidgets('云账本镜像模式:只渲染 REGISTERED 成员,遗留 LOCAL/占位行不出现', (tester) async {
