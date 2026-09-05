@@ -128,6 +128,9 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
                                     scale: 0.8,
                                     child: Switch(
                                       value: value,
+                                      // 去掉 48dp 最小点击区，行高才与相邻行一致
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
                                       onChanged: (v) async {
                                         await setter.set(v);
                                       },
