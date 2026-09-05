@@ -13,6 +13,9 @@ scripts/
 ├── audit/              # 孤儿/未接线扫描
 │   ├── orphans.dart    # 死路由 / 孤儿页面 / 未用 provider
 │   └── README.md
+├── git-hooks/          # Git 提交钩子
+│   ├── pre-commit      # 提交前 dart format 格式门禁
+│   └── README.md
 ├── i18n/               # 国际化翻译管理工具
 │   ├── align_arb.dart      # ARB 对齐（键序/元数据/缩进）
 │   ├── check_status.dart   # 检查与清理（翻译完整性 / 多余 keys / 未使用 keys）
@@ -47,6 +50,12 @@ scripts/
 
 详见 [audit/README.md](audit/README.md)。
 
+### 🪝 git-hooks — Git 提交钩子
+
+- **pre-commit** — 提交前对暂存区 Dart 文件执行 `dart format` 并重新暂存，保证入库代码与 CI 格式门禁一致
+
+详见 [git-hooks/README.md](git-hooks/README.md)。
+
 ### 📝 i18n — 国际化翻译管理
 
 - **align_arb.dart** — 对齐三个 ARB 文件：键顺序、`@` 元数据、`@@locale`、4 空格缩进
@@ -80,6 +89,9 @@ scripts/
 ## 🚀 快速开始
 
 ```bash
+# 安装提交前格式门禁（每个克隆只需一次）
+git config core.hooksPath scripts/git-hooks
+
 # 生成 Android 发布 keystore（Windows）
 powershell -ExecutionPolicy Bypass -File scripts/android_keystore/generate_android_keystore.ps1
 

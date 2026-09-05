@@ -1,0 +1,24 @@
+#!/bin/sh
+# 提交前格式门禁：对暂存区的新增/修改 Dart 文件执行 dart format（写模式），
+# 保证入库代码与 CI 的 dart format --set-exit-if-changed 门禁一致。
+# 对人工编辑与 AI 编码助手的提交同样生效。
+#
+# 安装（每个克隆只需一次）：
+#   git config core.hooksPath scripts/git-hooks
+
+set -e
+
+# 取本次提交涉及的新增/修改 Dart 文件（删除类变更无需格式化）
+files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.dart$' || true)
+if [ -z "$files" ]; then
+  exit 0
+fi
+
+if ! command -v dart >/dev/null 2>&1; then
+  echo "pre-commit: 未找到 dart 命令，无法执行格式门禁" >&2
+  exit 1
+fi
+
+# 写模式格式化后重新加入暂存区，提交内容即格式化后的版本
+printf '%s\n' "$files" | xargs dart format
+printf '%s\n' "$files" | xargs git add
