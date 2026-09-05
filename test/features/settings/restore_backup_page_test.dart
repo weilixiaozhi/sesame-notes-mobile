@@ -280,8 +280,8 @@ void main() {
     await tester.tap(find.text('立即恢复'));
     await settleAsync(tester);
 
-    // 失败：toast + 页内错误文案（同一文案两处），页面停留且按钮可重试
-    expect(find.text('恢复失败，未做任何更改（已整体回滚）'), findsWidgets);
+    // 失败：仅 toast 提示（页面不显示内联错误文案），停留且按钮可重试
+    expect(find.text('恢复失败，未做任何更改（已整体回滚）'), findsOneWidget);
     expect(find.text('备份内容'), findsOneWidget, reason: '失败后仍停留在内容页');
     final retryButton = tester.widget<FilledButton>(
       find.widgetWithText(FilledButton, '立即恢复'),

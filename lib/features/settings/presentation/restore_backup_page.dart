@@ -160,18 +160,9 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
             if (a.storageOrigin == b.storageOrigin) return 0;
             return a.storageOrigin == LedgerStorageOrigin.local ? -1 : 1;
           });
-    final errorText = _errorText(context, flow.error);
     return ListView(
       padding: const EdgeInsets.all(AppDimens.p16),
       children: [
-        if (errorText != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppDimens.p12),
-            child: Text(
-              errorText,
-              style: TextStyle(color: AppTokens.error(context)),
-            ),
-          ),
         _sectionHeader(
           context,
           AppIcons.localStorage,
