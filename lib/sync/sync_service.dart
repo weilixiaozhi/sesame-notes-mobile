@@ -94,7 +94,7 @@ class SyncService {
       logger.info('SyncService', '当前未登录，保留 pending mutation 并跳过 push');
       return;
     }
-    final pending =
+    var pending =
         await (db.select(db.syncChanges)
               ..where((t) {
                 final unpushed = t.pushedAt.isNull();
@@ -104,6 +104,25 @@ class SyncService {
               ..orderBy([(t) => d.OrderingTerm.asc(t.id)]))
             .get();
     if (pending.isEmpty) return;
+
+    // 分类先导登记：账本级变更引用的 user 级分类必须先于引用它的变更上云，
+    // 否则服务端按序应用时分类不存在，交易被判 invalid 永久丢弃。
+    final ensuredCategories = await _ensureReferencedCategoryRegistrations(
+      accountId,
+      pending,
+    );
+    if (ensuredCategories) {
+      // 重新读取以纳入刚登记的分类变更（新行 id 更大，批次内按下方重排置前）
+      pending =
+          await (db.select(db.syncChanges)
+                ..where((t) {
+                  final unpushed = t.pushedAt.isNull();
+                  if (accountId == null) return unpushed;
+                  return unpushed & t.accountId.equals(accountId);
+                })
+                ..orderBy([(t) => d.OrderingTerm.asc(t.id)]))
+              .get();
+    }
 
     // 有 OPEN 冲突的实体整组暂停（本地 pending 保留，解决后重推）
     final conflicted = await _openConflictEntityIds();
@@ -120,13 +139,103 @@ class SyncService {
         .toList();
     if (sendable.isEmpty) return;
 
-    for (final batch in _chunks(sendable, 500)) {
+    // user 级变更（分类/汇率）置前：服务端按请求数组顺序逐条应用，
+    // 分类必须早于引用它的账本级变更落库。
+    final ordered = [
+      ...sendable.where((change) => change.ledgerId == null),
+      ...sendable.where((change) => change.ledgerId != null),
+    ];
+
+    for (final batch in _chunks(ordered, 500)) {
       final outcomes = await _pushBatch(batch);
       logger.info(
         'SyncService',
         'push 完成 ${batch.length} 条, cursor=${outcomes.$2}',
       );
     }
+  }
+
+  /// 把账本级待推变更引用的未登记分类补登记为 user 级 upsert 变更。
+  ///
+  /// 种子默认分类是确定性 UUIDv5 且通常在无云上下文时创建，从未进过同步队列；
+  /// 云账本交易引用它们时必须在交易之前上云。返回是否登记了任何新变更。
+  Future<bool> _ensureReferencedCategoryRegistrations(
+    String? accountId,
+    List<SyncChange> changes,
+  ) async {
+    if (accountId == null || accountId.isEmpty) return false;
+    final referencedIds = <String>{};
+    for (final change in changes) {
+      if (change.entityType != 'transaction' &&
+          change.entityType != 'recurring_transaction') {
+        continue;
+      }
+      Map<String, dynamic> payload;
+      try {
+        payload = jsonDecode(change.payload) as Map<String, dynamic>;
+      } catch (_) {
+        continue;
+      }
+      final categoryId = payload['category_id'] as String?;
+      if (categoryId != null && categoryId.isNotEmpty) {
+        referencedIds.add(categoryId);
+      }
+    }
+    if (referencedIds.isEmpty) return false;
+
+    final rows = await (db.select(
+      db.categories,
+    )..where((c) => c.id.isIn(referencedIds) & c.deletedAt.isNull())).get();
+    if (rows.isEmpty) return false;
+    final pendingCategoryChanges =
+        await (db.select(db.syncChanges)..where(
+              (c) =>
+                  c.entityType.equals('category') &
+                  c.entityId.isIn(referencedIds) &
+                  c.accountId.equals(accountId) &
+                  c.pushedAt.isNull(),
+            ))
+            .get();
+    final pendingIds = {
+      for (final change in pendingCategoryChanges) change.entityId,
+    };
+    final toEnsure = rows
+        .where(
+          (row) =>
+              row.scopeAccountId != accountId && !pendingIds.contains(row.id),
+        )
+        .toList();
+    if (toEnsure.isEmpty) return false;
+
+    await db.transaction(() async {
+      for (final category in toEnsure) {
+        await db
+            .into(db.syncChanges)
+            .insert(
+              SyncChangesCompanion.insert(
+                entityType: 'category',
+                entityId: category.id,
+                action: 'upsert',
+                payload: jsonEncode({
+                  'name': category.name,
+                  'kind': category.kind,
+                  // wire 契约中 level 为字符串枚举（'1'/'2'）
+                  'level': category.level.toString(),
+                  'sort_order': category.sortOrder,
+                  'icon': category.icon,
+                  'parent_id': category.parentId,
+                }),
+                updatedAt: category.updatedAt,
+                mutationId: const Uuid().v4(),
+                accountId: d.Value(accountId),
+              ),
+            );
+        await (db.update(db.categories)..where((c) => c.id.equals(category.id)))
+            .write(CategoriesCompanion(scopeAccountId: d.Value(accountId)));
+      }
+    });
+    logger.info('SyncService', '已登记 ${toEnsure.length} 个未上云分类，先于引用它们的变更推送');
+    return true;
   }
 
   /// 权威查询源账本在服务端的存活状态（云转本地移动的 ignored 复核专用）：
