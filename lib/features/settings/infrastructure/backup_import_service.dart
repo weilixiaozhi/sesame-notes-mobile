@@ -1,12 +1,12 @@
 /// BackupImportService（Backup Inspector + Ledger Copier）与 RecoverySession。
 ///
 /// - **Inspector**：openBackup → validate → readManifest → listRecoveryItems，
-///   全程零写入（Step 1–3 不触碰 live DB）；
+///   全程零写入（打开与勾选阶段不触碰 live DB）；
 /// - **Copier**：用户决策后按策略复制账本——importLocalLedger（本地：ID 冲突
 ///   Fork / 无冲突原 identity）、forkCloudLedgerToLocal（永远
 ///   Fork）、reconnect（登录原账号下载云端最新，不复制数据）、
 ///   skip（无隐式 Merge）；
-/// - **Step 4**：单事务应用，任一步失败整体回滚，live DB 不变；
+/// - **应用**：单事务写入，任一步失败整体回滚，live DB 不变；
 /// - 每次恢复写入 recovery_log（审计，不依赖云端）。
 library;
 
@@ -24,7 +24,7 @@ import 'package:sesame_notes/data/repositories/local/local_ledger_repository.dar
 import 'package:sesame_notes/features/settings/domain/backup_manifest.dart';
 import 'package:sesame_notes/features/settings/infrastructure/backup_recovery_repository.dart';
 
-/// 每个账本的恢复决策（Step 3 三选一；无隐式 Merge）。
+/// 每个账本的恢复决策（勾选即恢复；无隐式 Merge）。
 enum RecoveryDecision {
   /// 恢复为本地账本（原 identity；ID 冲突时 Fork 新 ID）
   restoreLocal,
@@ -48,6 +48,8 @@ class RecoveryItem {
     required this.accountReference,
     required this.syncId,
     required this.ownerType,
+    required this.currency,
+    required this.expenseTotal,
     required this.memberCount,
     required this.transactionCount,
     required this.pendingCount,
@@ -71,6 +73,12 @@ class RecoveryItem {
 
   /// 归属类型（OWNER / MEMBER）。
   final String ownerType;
+
+  /// 账本本位币（ISO 大写），与账本管理页卡片同口径展示。
+  final String currency;
+
+  /// 账本累计支出总额（备份时快照），与账本管理页卡片同口径。
+  final double expenseTotal;
 
   /// 备份时成员数。
   final int memberCount;
@@ -106,7 +114,7 @@ class BackupApplyEntry {
   final String? detail;
 }
 
-/// 恢复应用结果报告（Step 4 确认页展示）。
+/// 恢复应用结果报告（完成态展示）。
 class BackupApplyReport {
   const BackupApplyReport({required this.entries});
 
@@ -230,7 +238,7 @@ class BackupImportService {
     }
   }
 
-  /// 产出恢复预览条目：Manifest 账本清单 + 只读仓库的成员/交易统计。
+  /// 产出恢复预览条目：Manifest 账本清单 + 只读仓库的成员/交易/支出统计。
   ///
   /// 全程零写入。统计字段仅展示与警告。
   Future<List<RecoveryItem>> listRecoveryItems(RecoverySession session) async {
@@ -248,11 +256,17 @@ class BackupImportService {
             ledgerBackupId: row.id,
             name: row.name,
             storageOrigin: byId[row.id]!.storageOrigin,
+            // 归属账号溯源：manifest 优先；旧备份 manifest 缺 original_account_id
+            // 时回退读账本行的 scope_account_id（快照经账号域过滤，兜底可信）。
             accountReference: byId[row.id]!.originalAccountId == null
-                ? null
+                ? (row.scopeAccountId == null
+                      ? null
+                      : accounts[row.scopeAccountId])
                 : accounts[byId[row.id]!.originalAccountId],
             syncId: row.syncId,
             ownerType: byId[row.id]!.ownerType,
+            currency: row.currency,
+            expenseTotal: session.recoveryRepository.sumLedgerExpense(row.id),
             memberCount: session.recoveryRepository.countMembers(row.id),
             transactionCount: session.recoveryRepository.countTransactions(
               row.id,
@@ -263,7 +277,7 @@ class BackupImportService {
     ];
   }
 
-  /// 应用恢复（Step 4）：按每账本决策在**单个事务**内写入 live DB；
+  /// 应用恢复：按每账本决策在**单个事务**内写入 live DB；
   /// 任一步失败 → 整体回滚，live DB 不变。
   ///
   /// 每次恢复写入 recovery_log（时间/来源备份/目标账本/动作/结果，审计）。

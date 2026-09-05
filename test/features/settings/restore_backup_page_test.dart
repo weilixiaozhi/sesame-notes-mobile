@@ -1,14 +1,11 @@
-/// 备份恢复页 4 步流程 widget 测试。
+/// 备份恢复页 widget 测试（单步流程：打开 → 勾选 → 立即恢复 → 完成态）。
 ///
-/// - Step 1 选择备份 + 明文解帧 → 打开（只读）；
-/// - Step 2 查看备份内容（本地/云端分域展示）；
-/// - Step 3 每账本选择恢复策略（显式三选一）；
-/// - Step 4 确认导入（明示不覆盖现有账本）→ 单事务应用；
-/// - Step 1–3 全程 live DB 0 mutation；
-/// - 应用后：云端账本 Fork（sync_id 恒 NULL）、recovery_log 落库。
-///
-/// 说明：文件 IO 是真实异步，FakeAsync 区不驱动它们——
-/// 所有 IO 步骤收进 runAsync，UI 步骤验证渲染与状态切换。
+/// - 入口传入 .snbak 路径，进入页面直接打开预览（零写入 live DB）；
+/// - 内容页按「本地账本 / 云端账本」分区；云端账本账号不符/未登录时落入
+///   本地分区并提示「恢复为本地副本」；账号匹配时入云端分区并显示账号昵称；
+/// - 账本卡片默认全选，点击切换勾选（未勾选 = 暂不处理）；
+/// - 「立即恢复」单事务应用；成功后完成态逐账本列结果；
+/// - 文件不存在 → toast 提示并退出；文件损坏 → 错误态。
 library;
 
 import 'dart:io';
@@ -21,15 +18,36 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:sesame_notes/core/api/api_client_provider.dart';
+import 'package:sesame_notes/core/api/auth_session.dart';
+import 'package:sesame_notes/core/api/cloud_profile_cache.dart';
 import 'package:sesame_notes/data/db.dart';
-import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/features/settings/application/backup_restore_providers.dart';
 import 'package:sesame_notes/features/settings/infrastructure/backup_import_service.dart';
 import 'package:sesame_notes/features/settings/infrastructure/local_backup_service.dart';
 import 'package:sesame_notes/features/settings/presentation/restore_backup_page.dart';
+import 'package:sesame_notes/l10n/app_localizations.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
+import 'package:sesame_notes/theme/icons/app_icons.dart';
 
 import '../../helpers/test_isolation.dart';
+
+/// 返回固定会话的认证桩。
+class _StubAuthNotifier extends AuthSessionNotifier {
+  _StubAuthNotifier(this.session);
+  final AuthSession? session;
+  @override
+  AuthSession? build() => session;
+}
+
+/// 返回固定账号状态的桩。
+class _StubAccountNotifier extends AccountStateNotifier {
+  _StubAccountNotifier(this.accountState);
+  final AccountState accountState;
+  @override
+  AccountState build() => accountState;
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -38,164 +56,244 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets(
-    '4 步流程：Step1-3 零写入，Step4 应用后 Fork 落库 + 审计日志',
-    (tester) async {
-      // ---- 真实备份源（全部 IO 在 runAsync 中执行）----
-      late final Directory tmp;
-      late final File srcFile;
-      late final Directory backupDir;
-      late final Directory extractDir;
-      late final SesameDatabase srcDb;
-      await tester.runAsync(() async {
-        tmp = await Directory.systemTemp.createTemp('restore_page_');
-        srcFile = File(p.join(tmp.path, 'src.sqlite'));
-        backupDir = Directory(p.join(tmp.path, 'backups'));
-        extractDir = Directory(p.join(tmp.path, 'extract'));
-        await extractDir.create(recursive: true);
-        srcDb = SesameDatabase.forTesting(NativeDatabase(srcFile));
-        final now = DateTime.utc(2026, 8, 1);
-        await srcDb
-            .into(srcDb.ledgers)
-            .insert(
-              LedgersCompanion.insert(
-                id: '11111111-1111-4111-8111-111111111111',
-                name: '私人账本',
-                storageMode: const d.Value('local'),
-                updatedAt: now,
-              ),
-            );
-        await srcDb
-            .into(srcDb.ledgers)
-            .insert(
-              LedgersCompanion.insert(
-                id: '22222222-2222-4222-8222-222222222222',
-                name: '家庭账本',
-                storageMode: const d.Value('cloud'),
-                syncId: const d.Value('sync-s1'),
-                updatedAt: now,
-              ),
-            );
-        await srcDb
-            .into(srcDb.ledgerMembers)
-            .insert(
-              LedgerMembersCompanion.insert(
-                id: 'member-acc1',
-                ledgerId: '22222222-2222-4222-8222-222222222222',
-                displayName: 'Alice',
-                memberType: 'REGISTERED',
-                linkedAccountId: const d.Value('acc-1'),
-                role: const d.Value('owner'),
-                updatedAt: now,
-              ),
-            );
-        await LocalBackupService(
-          backupDir: backupDir,
-          databaseFile: srcFile,
-        ).createBackup(db: srcDb);
-      });
-      addTearDown(() async {
-        try {
-          await srcDb.close();
-        } catch (_) {}
-        try {
-          await tmp.delete(recursive: true);
-        } catch (_) {}
-      });
-
-      // ---- live 库与依赖覆盖 ----
-      final liveDb = SesameDatabase.forTesting(NativeDatabase.memory());
-      addTearDown(liveDb.close);
-      final container = ProviderContainer(
-        overrides: [
-          databaseProvider.overrideWithValue(liveDb),
-          backupRestoreFlowProvider.overrideWith(
-            () => BackupRestoreFlowNotifier(
-              backupService: LocalBackupService(
-                backupDir: backupDir,
-                databaseFile: File(p.join(tmp.path, 'live.sqlite')),
-              ),
-              importService: BackupImportService(tempDirOverride: extractDir),
-            ),
+  /// 构造真实 .snbak：本地账本 + 当前账号域云端账本（owner 绑定 acc-1）。
+  Future<File> createFixtureBackup(Directory tmp) async {
+    final srcFile = File(p.join(tmp.path, 'src.sqlite'));
+    final backupDir = Directory(p.join(tmp.path, 'backups'));
+    final srcDb = SesameDatabase.forTesting(NativeDatabase(srcFile));
+    addTearDown(() async {
+      try {
+        await srcDb.close();
+      } catch (_) {}
+    });
+    final now = DateTime.utc(2026, 8, 1);
+    await srcDb
+        .into(srcDb.ledgers)
+        .insert(
+          LedgersCompanion.insert(
+            id: '11111111-1111-4111-8111-111111111111',
+            name: '私人账本',
+            storageMode: const d.Value('local'),
+            updatedAt: now,
           ),
-        ],
-      );
-      addTearDown(container.dispose);
-      final notifier = container.read(backupRestoreFlowProvider.notifier);
+        );
+    await srcDb
+        .into(srcDb.ledgers)
+        .insert(
+          LedgersCompanion.insert(
+            id: '22222222-2222-4222-8222-222222222222',
+            name: '家庭账本',
+            storageMode: const d.Value('cloud'),
+            syncId: const d.Value('sync-s1'),
+            scopeAccountId: const d.Value('acc-1'),
+            updatedAt: now,
+          ),
+        );
+    await srcDb
+        .into(srcDb.ledgerMembers)
+        .insert(
+          LedgerMembersCompanion.insert(
+            id: 'member-acc1',
+            ledgerId: '22222222-2222-4222-8222-222222222222',
+            displayName: 'Alice',
+            memberType: 'REGISTERED',
+            linkedAccountId: const d.Value('acc-1'),
+            role: const d.Value('owner'),
+            updatedAt: now,
+          ),
+        );
+    return LocalBackupService(
+      backupDir: backupDir,
+      databaseFile: srcFile,
+    ).createBackup(db: srcDb, currentAccountId: 'acc-1');
+  }
 
-      // Step 1：加载备份列表（IO 在 runAsync 中驱动）
-      await tester.runAsync(() => notifier.loadBackups());
-      await tester.binding.setSurfaceSize(const Size(800, 2400));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            locale: const Locale('zh'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: const RestoreBackupPage(),
+  /// 驱动 initState 触发的真实文件 IO：交替 runAsync（真实事件循环）与
+  /// pump（fake zone 微任务），直到打开/应用等异步链路全部完成。
+  Future<void> settleAsync(WidgetTester tester) async {
+    for (var i = 0; i < 10; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await tester.pumpAndSettle();
+  }
+
+  /// 挂载恢复页（注入 live 库 / 导入服务 / 认证与账号状态桩）。
+  ///
+  /// [settle] 为 false 时跳过自动 settle（供「文件不存在」等停留在
+  /// 加载态的场景手动驱动帧）。
+  Future<SesameDatabase> pumpPage(
+    WidgetTester tester,
+    String backupPath, {
+    AuthSession? session,
+    AccountState? accountState,
+    bool settle = true,
+  }) async {
+    // 临时目录与解压目录创建含真实文件 IO，须在 runAsync 中驱动
+    final tmp = (await tester.runAsync(
+      () => Directory.systemTemp.createTemp('restore_page_'),
+    ))!;
+    addTearDown(() => tmp.delete(recursive: true));
+    final liveDb = SesameDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(liveDb.close);
+    final extractDir = Directory(p.join(tmp.path, 'extract'));
+    await tester.runAsync(() => extractDir.create(recursive: true));
+    final container = ProviderContainer(
+      overrides: [
+        databaseProvider.overrideWithValue(liveDb),
+        authSessionProvider.overrideWith(() => _StubAuthNotifier(session)),
+        if (accountState != null)
+          accountStateProvider.overrideWith(
+            () => _StubAccountNotifier(accountState),
+          ),
+        backupRestoreFlowProvider.overrideWith(
+          () => BackupRestoreFlowNotifier(
+            importService: BackupImportService(tempDirOverride: extractDir),
           ),
         ),
-      );
-      await tester.pump();
-      expect(
-        find.textContaining(RegExp(r'\d+月\d+日')),
-        findsWidgets,
-        reason: 'Step 1 应展示时间戳备份列表',
-      );
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.binding.setSurfaceSize(const Size(800, 2400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: RestoreBackupPage(initialBackupPath: backupPath),
+        ),
+      ),
+    );
+    if (settle) await settleAsync(tester);
+    return liveDb;
+  }
 
-      // Step 1→2：打开备份（文件 IO 在 runAsync 中驱动）
-      final backups = container.read(backupRestoreFlowProvider).backups;
-      expect(backups, hasLength(1));
-      await tester.runAsync(() => notifier.openBackup(file: backups.single));
-      await tester.pumpAndSettle();
+  testWidgets(
+    '单步流程：直接打开 → 默认全选 → 取消勾选暂不处理 → 立即恢复 → 完成态',
+    (tester) async {
+      // 备份源构造含真实文件 IO，须在 runAsync 真实事件循环中驱动
+      final tmp = (await tester.runAsync(
+        () => Directory.systemTemp.createTemp('restore_src_'),
+      ))!;
+      addTearDown(() => tmp.delete(recursive: true));
+      final backup = (await tester.runAsync(() => createFixtureBackup(tmp)))!;
+      final liveDb = await pumpPage(tester, backup.path);
 
-      // Step 2：内容分域展示
+      // 进入即打开：双分区标题 + 两个账本卡片（云端账本账号不符 → 本地分区）
+      expect(find.text('本地账本'), findsOneWidget);
+      expect(find.text('云端账本'), findsOneWidget);
       expect(find.text('私人账本'), findsOneWidget);
       expect(find.text('家庭账本'), findsOneWidget);
-      expect(find.text('acc-1'), findsWidgets, reason: '云端账本按归属账号分域展示');
-
-      // Step 1–3 零写入
       expect(
-        await liveDb.select(liveDb.ledgers).get(),
-        isEmpty,
-        reason: '打开/预览阶段不得写入 live DB',
+        find.text('这是云账本，但不是当前账号，将恢复为本地副本'),
+        findsOneWidget,
+        reason: '未登录时云端账本落入本地分区并提示恢复为本地副本',
       );
+      // 账本卡片展示账本管理同款字段：币种 / 笔数 / 支出 / 成员数
+      expect(find.textContaining('币种：'), findsNWidgets(2));
+      expect(find.textContaining('笔数：'), findsNWidgets(2));
+      expect(find.textContaining('支出：'), findsNWidgets(2));
+      expect(find.textContaining('位成员'), findsNWidgets(2));
+      // 默认全选：两个卡片均勾选
+      expect(find.byIcon(AppIcons.radioChecked), findsNWidgets(2));
+      expect(find.byIcon(AppIcons.radioUnchecked), findsNothing);
 
-      // Step 3：策略选择（显式三选一，无隐式 Merge）
-      await tester.ensureVisible(find.text('选择恢复策略'));
-      await tester.tap(find.text('选择恢复策略'));
+      // 打开/勾选阶段 live DB 零写入
+      expect(await liveDb.select(liveDb.ledgers).get(), isEmpty);
+
+      // 取消勾选本地账本 → 暂不处理
+      await tester.tap(find.text('私人账本'));
       await tester.pumpAndSettle();
-      expect(find.text('恢复为本地账本'), findsWidgets);
-      expect(find.text('恢复为本地副本'), findsWidgets);
-      expect(find.text('登录原账号获取最新'), findsOneWidget);
+      expect(find.byIcon(AppIcons.radioChecked), findsOneWidget);
+      expect(find.byIcon(AppIcons.radioUnchecked), findsOneWidget);
 
-      // Step 4：确认页明示不覆盖
-      await tester.ensureVisible(find.text('确认导入结果'));
-      await tester.tap(find.text('确认导入结果'));
-      await tester.pumpAndSettle();
-      expect(find.text('恢复不会覆盖现有账本'), findsOneWidget);
+      // 立即恢复（应用真实文件 IO 在 runAsync 窗口中驱动）
+      await tester.ensureVisible(find.text('立即恢复'));
+      await tester.tap(find.text('立即恢复'));
+      await settleAsync(tester);
 
-      // Step 4 应用（drift 文件源经后台 isolate，runAsync 中驱动）
-      await tester.runAsync(() => notifier.apply());
-      await tester.pumpAndSettle();
-      expect(find.text('恢复完成'), findsOneWidget);
+      // 完成态（AppBar 与正文均显示「恢复完成」）
+      expect(find.text('恢复完成'), findsWidgets);
+      expect(find.text('家庭账本'), findsOneWidget);
 
-      // live DB 落库断言：2 本账本、云端 Fork 后 sync_id 恒 NULL
+      // live DB 落库断言：仅云端账本 Fork 恢复（本地账本被跳过）
       final ledgers = await liveDb.select(liveDb.ledgers).get();
-      expect(ledgers, hasLength(2));
-      expect(ledgers.every((l) => l.syncId == null), isTrue);
-      expect(ledgers.any((l) => l.originType == 'LOCAL_BACKUP'), isTrue);
-      expect(ledgers.any((l) => l.originType == 'CLOUD_BACKUP'), isTrue);
-      // 审计日志
+      expect(ledgers, hasLength(1));
+      expect(ledgers.single.syncId, isNull);
+      expect(ledgers.single.originType, 'CLOUD_BACKUP');
+      // 审计日志逐账本记录（skip 也留痕）：1 条 fork + 1 条 skip
       final logs = await liveDb.select(liveDb.recoveryLogs).get();
       expect(logs, hasLength(2));
       expect(
         logs.map((l) => l.action),
-        containsAll(['restore_local', 'fork_cloud_to_local']),
+        containsAll(['fork_cloud_to_local', 'skip']),
       );
     },
     timeout: const Timeout(Duration(minutes: 3)),
   );
+
+  testWidgets('登录账号匹配：云端账本入云端分区并展示账号昵称', (tester) async {
+    final tmp = (await tester.runAsync(
+      () => Directory.systemTemp.createTemp('restore_src_auth_'),
+    ))!;
+    addTearDown(() => tmp.delete(recursive: true));
+    final backup = (await tester.runAsync(() => createFixtureBackup(tmp)))!;
+    await pumpPage(
+      tester,
+      backup.path,
+      session: const AuthSession(
+        accessToken: 't',
+        userId: 'acc-1',
+        deviceId: 'd',
+      ),
+      accountState: const AccountState(
+        status: AccountStatus.authenticated,
+        profile: CloudProfile(userId: 'acc-1', displayName: '昵称Alice'),
+      ),
+    );
+
+    expect(find.text('本地账本'), findsOneWidget);
+    expect(find.text('云端账本'), findsOneWidget);
+    expect(find.text('昵称Alice'), findsOneWidget, reason: '云端账本展示账号昵称副标题');
+    expect(
+      find.text('这是云账本，但不是当前账号，将恢复为本地副本'),
+      findsNothing,
+      reason: '账号匹配的云端账本不再提示转本地副本',
+    );
+    expect(find.byIcon(AppIcons.radioChecked), findsNWidgets(2));
+  });
+
+  testWidgets('备份文件不存在：toast 提示', (tester) async {
+    await pumpPage(
+      tester,
+      p.join(Directory.systemTemp.path, 'definitely_missing.snbak'),
+      settle: false,
+    );
+    // 驱动 exists() 真实 IO 完成，再渲染 toast
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pump();
+    expect(find.text('备份文件不存在'), findsOneWidget);
+    // 等待 toast 自动消失，避免遗留挂起定时器
+    await tester.pump(const Duration(seconds: 2));
+  });
+
+  testWidgets('备份文件损坏：错误态展示可读文案', (tester) async {
+    final tmp = (await tester.runAsync(
+      () => Directory.systemTemp.createTemp('restore_bad_'),
+    ))!;
+    addTearDown(() => tmp.delete(recursive: true));
+    final bad = File(p.join(tmp.path, 'bad.snbak'));
+    await tester.runAsync(() => bad.writeAsBytes([1, 2, 3]));
+    await pumpPage(tester, bad.path);
+
+    expect(find.text('无法打开备份：文件已损坏或不是备份文件'), findsOneWidget);
+    expect(find.text('返回'), findsOneWidget);
+  });
 }

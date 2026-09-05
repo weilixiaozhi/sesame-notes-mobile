@@ -489,4 +489,88 @@ void main() {
       }
     });
   });
+
+  group('Manifest 账号溯源', () {
+    test(
+      'owner 成员缺绑定账号：original_account_id 兜底 currentAccountId 并写入昵称',
+      () async {
+        // 当前账号域的云端账本，owner 成员 REGISTERED 但未绑定账号
+        await db
+            .into(db.ledgers)
+            .insert(
+              LedgersCompanion.insert(
+                id: 'cloud-1',
+                name: '家庭账本',
+                storageMode: const d.Value('cloud'),
+                syncId: const d.Value('sync-1'),
+                scopeAccountId: const d.Value('user-mine'),
+                updatedAt: DateTime.utc(2026, 8, 1),
+              ),
+            );
+        await db
+            .into(db.ledgerMembers)
+            .insert(
+              LedgerMembersCompanion.insert(
+                id: 'member-1',
+                ledgerId: 'cloud-1',
+                displayName: 'Alice',
+                memberType: 'REGISTERED',
+                linkedAccountId: const d.Value(null),
+                role: const d.Value('owner'),
+                updatedAt: DateTime.utc(2026, 8, 1),
+              ),
+            );
+
+        final backup = await service.createBackup(
+          db: db,
+          currentAccountId: 'user-mine',
+          accountNames: const {'user-mine': '昵称Alice'},
+        );
+        final (manifest, _) = await openBackup(backup);
+        expect(
+          manifest.ledgers.single.originalAccountId,
+          'user-mine',
+          reason: 'owner 成员缺绑定账号时兜底当前账号（避免恢复页显示未知账号）',
+        );
+        expect(manifest.accounts, hasLength(1));
+        expect(manifest.accounts.single.accountId, 'user-mine');
+        expect(manifest.accounts.single.accountName, '昵称Alice');
+      },
+    );
+
+    test('owner 成员有绑定账号：original_account_id 优先取绑定账号', () async {
+      await db
+          .into(db.ledgers)
+          .insert(
+            LedgersCompanion.insert(
+              id: 'cloud-1',
+              name: '家庭账本',
+              storageMode: const d.Value('cloud'),
+              syncId: const d.Value('sync-1'),
+              scopeAccountId: const d.Value('user-mine'),
+              updatedAt: DateTime.utc(2026, 8, 1),
+            ),
+          );
+      await db
+          .into(db.ledgerMembers)
+          .insert(
+            LedgerMembersCompanion.insert(
+              id: 'member-1',
+              ledgerId: 'cloud-1',
+              displayName: 'Alice',
+              memberType: 'REGISTERED',
+              linkedAccountId: const d.Value('user-owner'),
+              role: const d.Value('owner'),
+              updatedAt: DateTime.utc(2026, 8, 1),
+            ),
+          );
+
+      final backup = await service.createBackup(
+        db: db,
+        currentAccountId: 'user-mine',
+      );
+      final (manifest, _) = await openBackup(backup);
+      expect(manifest.ledgers.single.originalAccountId, 'user-owner');
+    });
+  });
 }

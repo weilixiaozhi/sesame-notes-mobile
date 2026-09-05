@@ -430,9 +430,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mineCheckUpdate => '检查更新';
 
   @override
-  String get mineCheckUpdateSubtitle => '检测 GitHub 发布页是否有新版本';
-
-  @override
   String get updateDialogTitle => '检查更新';
 
   @override
@@ -699,7 +696,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mineAvatarUploadNew => '上传新头像';
 
   @override
-  String get mineCloudService => '备份与云同步配置';
+  String get mineCloudService => '备份与云同步';
 
   @override
   String get cloudBackupUrlLabel => '服务地址';
@@ -755,28 +752,13 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get mineCloudServiceLoading => '加载中…';
-
-  @override
-  String get mineSyncError => '状态获取失败';
-
-  @override
   String get mineCategoryManagement => '分类管理';
-
-  @override
-  String get mineCategoryManagementSubtitle => '编辑自定义分类';
 
   @override
   String get mineRecurringTransactions => '周期账单';
 
   @override
-  String get mineRecurringTransactionsSubtitle => '管理周期性账单';
-
-  @override
-  String get mineReminderSettings => '记账提醒';
-
-  @override
-  String get mineReminderSettingsSubtitle => '设置每日记账提醒';
+  String get mineReminderSettings => '通知设置';
 
   @override
   String get categoryEditTitle => '编辑分类';
@@ -1649,12 +1631,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cloudTabBackupSubtitle => '点击卡片切换备份方式，首次需要配置信息';
 
   @override
-  String get restoreOpenButton => '打开所选备份';
-
-  @override
-  String get restoreSelectHint => '点击列表选择要恢复的备份';
-
-  @override
   String get cloudBackupEntryLocalOnly => '仅本地备份';
 
   @override
@@ -1753,9 +1729,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appearanceSettings => '偏好调节';
 
   @override
-  String get appearanceSettingsDesc => '主题、字体、语言、应用锁等';
-
-  @override
   String get appearanceSettingsPageTitle => '偏好调节';
 
   @override
@@ -1772,7 +1745,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get configImportExportInfoMessage =>
-      '备份和恢复应用配置，用于跨设备迁移或恢复设置。导出为 YAML 格式，可查看和编辑。\n\n仅包含应用配置，不包含交易记录（交易数据请使用明细导入导出功能）。';
+      '备份和恢复应用配置，用于跨设备迁移或恢复设置。导出为 YAML 格式，可查看和编辑。\n\n仅包含应用配置，不包含交易记录（交易数据请使用数据导入导出功能）。';
 
   @override
   String get configImportExportWarning =>
@@ -1910,9 +1883,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get appLockTitle => '应用上锁';
-
-  @override
-  String get appLockDesc => 'PIN码与生物识别保护隐私';
 
   @override
   String get appLockEnable => '启用应用锁';
@@ -2127,9 +2097,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get exchangeRatePageTitle => '汇率管理';
-
-  @override
-  String get exchangeRateEntrySubtitle => '自动获取汇率，支持手动修正';
 
   @override
   String get rateSourceAuto => '自动';
@@ -2542,10 +2509,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get currencyMRU => '毛里塔尼亚乌吉亚';
 
   @override
-  String get detailImportExportTitle => '明细导入导出';
-
-  @override
-  String get detailImportExportSubtitle => '支出明细csv格式文件';
+  String get detailImportExportTitle => '数据导入导出';
 
   @override
   String get detailImportExportImportTitle => '导入明细';
@@ -2804,19 +2768,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get backupRestoreTitle => '备份与恢复';
 
   @override
-  String get restoreStep1Title => '选择备份';
-
-  @override
-  String get restoreStep1Subtitle => '选择要恢复的备份';
-
-  @override
-  String get restoreStep2Title => '查看备份内容';
-
-  @override
-  String get restoreStep3Title => '选择恢复策略';
-
-  @override
-  String get restoreStep4Title => '确认导入结果';
+  String get restoreStep2Title => '备份内容';
 
   @override
   String get restoreDecisionRestoreLocal => '恢复为本地账本';
@@ -2825,22 +2777,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restoreDecisionFork => '恢复为本地副本';
 
   @override
-  String get restoreDecisionReconnect => '登录原账号获取最新';
-
-  @override
-  String get restoreDecisionReconnectNeedLogin => '未登录，登录原账号后可用';
-
-  @override
-  String get restoreDecisionReconnectAccountMismatch => '当前账号不是该账本的原账号';
-
-  @override
-  String get restoreDecisionReconnectNoAccount => '备份缺少原账号信息，无法按原账号恢复';
+  String get restoreDecisionReconnect => '恢复为云账本';
 
   @override
   String get restoreDecisionSkip => '暂不处理';
 
   @override
-  String get restoreApply => '应用恢复';
+  String get restoreApply => '立即恢复';
 
   @override
   String get restoreApplying => '正在应用…';
@@ -2849,22 +2792,26 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restoreDone => '恢复完成';
 
   @override
-  String get restoreNoOverwrite => '恢复不会覆盖现有账本';
-
-  @override
-  String get restoreNoBackups => '暂无备份';
-
-  @override
   String get restoreOpenFailed => '无法打开备份：文件已损坏或不是备份文件';
+
+  @override
+  String get restoreApplyFailed => '恢复失败，未做任何更改（已整体回滚）';
+
+  @override
+  String get restoreCloudForkHint => '这是云账本，但不是当前账号，将恢复为本地副本';
+
+  @override
+  String get restoreFileNotFound => '备份文件不存在';
+
+  @override
+  String get restoreSectionLocal => '本地账本';
+
+  @override
+  String get restoreSectionCloud => '云端账本';
 
   @override
   String restoreMemberCount(int count) {
     return '$count 位成员';
-  }
-
-  @override
-  String restoreTxCount(int count) {
-    return '$count 笔记录';
   }
 
   @override
@@ -2875,11 +2822,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String restoreConflictWarning(int count) {
     return '有 $count 个未解决冲突（按备份时状态恢复）';
-  }
-
-  @override
-  String restoreAccountOf(String account) {
-    return '账号 $account';
   }
 
   @override
@@ -3568,9 +3510,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get mineCheckUpdate => '檢查更新';
 
   @override
-  String get mineCheckUpdateSubtitle => '偵測 GitHub 發布頁是否有新版本';
-
-  @override
   String get updateDialogTitle => '檢查更新';
 
   @override
@@ -3837,7 +3776,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get mineAvatarUploadNew => '上傳新頭像';
 
   @override
-  String get mineCloudService => '備份與雲端同步配置';
+  String get mineCloudService => '備份與雲端同步';
 
   @override
   String get cloudBackupUrlLabel => '服務地址';
@@ -3893,28 +3832,13 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String get mineCloudServiceLoading => '載入中…';
-
-  @override
-  String get mineSyncError => '狀態取得失敗';
-
-  @override
   String get mineCategoryManagement => '分類管理';
-
-  @override
-  String get mineCategoryManagementSubtitle => '編輯自訂分類';
 
   @override
   String get mineRecurringTransactions => '週期帳單';
 
   @override
-  String get mineRecurringTransactionsSubtitle => '管理週期性帳單';
-
-  @override
-  String get mineReminderSettings => '記帳提醒';
-
-  @override
-  String get mineReminderSettingsSubtitle => '設定每日記帳提醒';
+  String get mineReminderSettings => '通知設定';
 
   @override
   String get categoryEditTitle => '編輯分類';
@@ -4787,12 +4711,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get cloudTabBackupSubtitle => '點擊卡片切換備份方式，首次需要配置資訊';
 
   @override
-  String get restoreOpenButton => '開啟所選備份';
-
-  @override
-  String get restoreSelectHint => '點擊列表選擇要恢復的備份';
-
-  @override
   String get cloudBackupEntryLocalOnly => '僅本機備份';
 
   @override
@@ -4891,9 +4809,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get appearanceSettings => '偏好調節';
 
   @override
-  String get appearanceSettingsDesc => '主題、字體、語言、應用鎖等';
-
-  @override
   String get appearanceSettingsPageTitle => '偏好調節';
 
   @override
@@ -4910,7 +4825,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get configImportExportInfoMessage =>
-      '備份和恢復應用配置，用於跨裝置遷移或恢復設定。匯出為 YAML 格式，可檢視和編輯。\n\n僅包含應用配置，不包含交易記錄（交易資料請使用明細匯入匯出功能）。';
+      '備份和恢復應用配置，用於跨裝置遷移或恢復設定。匯出為 YAML 格式，可檢視和編輯。\n\n僅包含應用配置，不包含交易記錄（交易資料請使用資料匯入匯出功能）。';
 
   @override
   String get configImportExportWarning =>
@@ -5048,9 +4963,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get appLockTitle => '應用上鎖';
-
-  @override
-  String get appLockDesc => 'PIN碼與生物辨識保護隱私';
 
   @override
   String get appLockEnable => '啟用應用鎖';
@@ -5265,9 +5177,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get exchangeRatePageTitle => '匯率管理';
-
-  @override
-  String get exchangeRateEntrySubtitle => '自動取得匯率，支援手動修正';
 
   @override
   String get rateSourceAuto => '自動';
@@ -5680,10 +5589,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get currencyMRU => '毛里塔尼亞烏吉亞';
 
   @override
-  String get detailImportExportTitle => '明細匯入匯出';
-
-  @override
-  String get detailImportExportSubtitle => '支出明細csv格式檔案';
+  String get detailImportExportTitle => '資料匯入匯出';
 
   @override
   String get detailImportExportImportTitle => '匯入明細';
@@ -5942,19 +5848,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get backupRestoreTitle => '備份與還原';
 
   @override
-  String get restoreStep1Title => '選擇備份';
-
-  @override
-  String get restoreStep1Subtitle => '選擇要恢復的備份';
-
-  @override
-  String get restoreStep2Title => '檢視備份內容';
-
-  @override
-  String get restoreStep3Title => '選擇還原策略';
-
-  @override
-  String get restoreStep4Title => '確認匯入結果';
+  String get restoreStep2Title => '備份內容';
 
   @override
   String get restoreDecisionRestoreLocal => '還原為本機帳本';
@@ -5963,22 +5857,13 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get restoreDecisionFork => '還原為本機副本';
 
   @override
-  String get restoreDecisionReconnect => '登入原帳號取得最新';
-
-  @override
-  String get restoreDecisionReconnectNeedLogin => '未登入，登入原帳號後可用';
-
-  @override
-  String get restoreDecisionReconnectAccountMismatch => '目前帳號不是該帳本的原帳號';
-
-  @override
-  String get restoreDecisionReconnectNoAccount => '備份缺少原帳號資訊，無法按原帳號恢復';
+  String get restoreDecisionReconnect => '恢復為雲端帳本';
 
   @override
   String get restoreDecisionSkip => '暫不處理';
 
   @override
-  String get restoreApply => '套用還原';
+  String get restoreApply => '立即恢復';
 
   @override
   String get restoreApplying => '正在套用…';
@@ -5987,22 +5872,26 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get restoreDone => '還原完成';
 
   @override
-  String get restoreNoOverwrite => '還原不會覆蓋現有帳本';
-
-  @override
-  String get restoreNoBackups => '暫無備份';
-
-  @override
   String get restoreOpenFailed => '無法開啟備份：檔案已損壞或不是備份檔案';
+
+  @override
+  String get restoreApplyFailed => '恢復失敗，未做任何更改（已整體回滾）';
+
+  @override
+  String get restoreCloudForkHint => '這是雲端帳本，但不是當前帳號，將恢復為本地副本';
+
+  @override
+  String get restoreFileNotFound => '備份檔案不存在';
+
+  @override
+  String get restoreSectionLocal => '本機帳本';
+
+  @override
+  String get restoreSectionCloud => '雲端帳本';
 
   @override
   String restoreMemberCount(int count) {
     return '$count 位成員';
-  }
-
-  @override
-  String restoreTxCount(int count) {
-    return '$count 筆記錄';
   }
 
   @override
@@ -6013,11 +5902,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   @override
   String restoreConflictWarning(int count) {
     return '有 $count 個未解決衝突（依備份時狀態還原）';
-  }
-
-  @override
-  String restoreAccountOf(String account) {
-    return '帳號 $account';
   }
 
   @override

@@ -237,6 +237,7 @@ class LocalBackupService {
         deviceId: deviceId,
         appVersion: appVersion,
         accountNames: accountNames,
+        currentAccountId: currentAccountId,
       );
       // 导出快照按账号域过滤：只含本地域（null scope）与当前账号域；
       // 其他账号数据在切换时已清理，这里对崩溃残留做防御性兜底
@@ -355,6 +356,7 @@ class LocalBackupService {
     String? deviceId,
     String? appVersion,
     Map<String, String>? accountNames,
+    String? currentAccountId,
   }) async {
     final now = DateTime.now().toUtc();
     final ledgers = await (db.select(
@@ -382,6 +384,11 @@ class LocalBackupService {
           accountIds.add(m.linkedAccountId!);
         }
       }
+      // 当前账号兜底收录：owner 成员缺绑定账号时 original_account_id
+      // 会回退到当前账号，账号引用表必须包含它，否则恢复侧查无此人。
+      if (currentAccountId != null && currentAccountId.isNotEmpty) {
+        accountIds.add(currentAccountId);
+      }
       final pendingCount =
           await (db.select(db.syncChanges)..where(
                 (c) => c.ledgerId.equals(ledger.id) & c.pushedAt.isNull(),
@@ -405,7 +412,11 @@ class LocalBackupService {
           originalLocalLedgerId: isCloud ? null : ledger.id,
           cloudProvider: isCloud ? 'sesame_notes' : null,
           originalCloudLedgerId: isCloud ? ledger.id : null,
-          originalAccountId: isCloud ? ownerMember?.linkedAccountId : null,
+          // owner 成员缺绑定账号时兜底当前账号：快照经账号域过滤只含当前
+          // 账号域的云账本，兜底语义正确（避免恢复页显示「未知账号」）。
+          originalAccountId: isCloud
+              ? (ownerMember?.linkedAccountId ?? currentAccountId)
+              : null,
           ownerType:
               ledger.selfMemberId != null &&
                   ledgerMembers.any(

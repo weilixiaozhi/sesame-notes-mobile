@@ -1,42 +1,33 @@
-/// 恢复页「登录原账号获取最新」的账号身份拦截测试。
+/// 恢复页「云端账本分区判定 / 默认决策 / 恢复后重连」测试。
 ///
 /// 需求锚点：
-/// - 未登录：该选项不可用，提示登录原账号；
-/// - 已登录但当前账号 ≠ 备份记录的原账号：不可用，提示账号不符；
-/// - 备份缺少原账号信息：不可用（无从校验身份）；
-/// - 账号匹配：可用，且应用恢复后触发 Reconnect v1 下载云端最新。
+/// - 已登录且备份账本归属账号 == 当前账号 → 云端账本归「云端账本」分区，
+///   选中即「恢复为云账本」；
+/// - 未登录 / 账号不符 / 备份缺账号信息 → 云端账本归「本地账本」分区，
+///   选中即「恢复为本地副本」；
+/// - 本地账本恒归「本地账本」分区，选中即「恢复为本地账本」；
+/// - 默认全选（打开备份即预填决策）；
+/// - 应用恢复后仅当存在「恢复为云账本」且账号匹配的账本时触发 Reconnect v1。
 library;
 
-import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:sesame_notes/core/api/api_client_provider.dart';
-import 'package:sesame_notes/core/api/auth_session.dart';
-import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/features/settings/application/backup_restore_providers.dart';
 import 'package:sesame_notes/features/settings/domain/backup_manifest.dart';
-import 'package:sesame_notes/features/settings/presentation/restore_backup_page.dart';
-import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/shared/providers/database_providers.dart';
 
-/// 返回固定会话的认证桩。
-class _StubAuthNotifier extends AuthSessionNotifier {
-  _StubAuthNotifier(this.session);
-  final AuthSession? session;
-  @override
-  AuthSession? build() => session;
-}
-
-RestoreLedgerItem _cloudItem({String? accountId}) => RestoreLedgerItem(
-  ledgerBackupId: 'ledger-1',
-  name: '家庭账本',
-  storageOrigin: LedgerStorageOrigin.cloud,
+RestoreLedgerItem _item({
+  required LedgerStorageOrigin origin,
+  String? accountId,
+  String id = 'ledger-1',
+}) => RestoreLedgerItem(
+  ledgerBackupId: id,
+  name: '账本',
+  storageOrigin: origin,
   accountId: accountId,
-  accountName: 'Alice',
-  memberCount: 2,
-  transactionCount: 10,
+  currency: 'CNY',
+  expenseTotal: 0,
+  memberCount: 1,
+  transactionCount: 0,
   pendingCount: 0,
   conflictCount: 0,
 );
@@ -44,39 +35,103 @@ RestoreLedgerItem _cloudItem({String? accountId}) => RestoreLedgerItem(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('reconnectBlockerOf 纯函数', () {
-    test('未登录 → needLogin', () {
+  group('cloudSectionOf 纯函数', () {
+    test('云端账本且账号匹配 → 云端分区', () {
       expect(
-        reconnectBlockerOf(itemAccountId: 'acc-1', currentAccountId: null),
-        ReconnectBlocker.needLogin,
+        cloudSectionOf(
+          item: _item(origin: LedgerStorageOrigin.cloud, accountId: 'acc-1'),
+          currentAccountId: 'acc-1',
+        ),
+        isTrue,
       );
     });
 
-    test('账号不匹配 → accountMismatch', () {
+    test('未登录 → 本地分区', () {
       expect(
-        reconnectBlockerOf(itemAccountId: 'acc-1', currentAccountId: 'acc-2'),
-        ReconnectBlocker.accountMismatch,
+        cloudSectionOf(
+          item: _item(origin: LedgerStorageOrigin.cloud, accountId: 'acc-1'),
+          currentAccountId: null,
+        ),
+        isFalse,
       );
     });
 
-    test('备份缺少原账号 → noAccount', () {
+    test('账号不符 → 本地分区', () {
       expect(
-        reconnectBlockerOf(itemAccountId: null, currentAccountId: 'acc-1'),
-        ReconnectBlocker.noAccount,
+        cloudSectionOf(
+          item: _item(origin: LedgerStorageOrigin.cloud, accountId: 'acc-1'),
+          currentAccountId: 'acc-2',
+        ),
+        isFalse,
       );
     });
 
-    test('账号匹配 → none(可用)', () {
+    test('备份缺账号信息 → 本地分区', () {
       expect(
-        reconnectBlockerOf(itemAccountId: 'acc-1', currentAccountId: 'acc-1'),
-        ReconnectBlocker.none,
+        cloudSectionOf(
+          item: _item(origin: LedgerStorageOrigin.cloud, accountId: null),
+          currentAccountId: 'acc-1',
+        ),
+        isFalse,
+      );
+    });
+
+    test('本地账本 → 本地分区', () {
+      expect(
+        cloudSectionOf(
+          item: _item(origin: LedgerStorageOrigin.local, accountId: null),
+          currentAccountId: 'acc-1',
+        ),
+        isFalse,
+      );
+    });
+  });
+
+  group('defaultDecisionFor 纯函数', () {
+    test('本地账本 → 恢复为本地账本', () {
+      expect(
+        defaultDecisionFor(
+          item: _item(origin: LedgerStorageOrigin.local),
+          currentAccountId: 'acc-1',
+        ),
+        RestoreDecision.restoreLocal,
+      );
+    });
+
+    test('云端账本账号匹配 → 恢复为云账本', () {
+      expect(
+        defaultDecisionFor(
+          item: _item(origin: LedgerStorageOrigin.cloud, accountId: 'acc-1'),
+          currentAccountId: 'acc-1',
+        ),
+        RestoreDecision.reconnect,
+      );
+    });
+
+    test('云端账本账号不符 → 恢复为本地副本', () {
+      expect(
+        defaultDecisionFor(
+          item: _item(origin: LedgerStorageOrigin.cloud, accountId: 'acc-1'),
+          currentAccountId: 'acc-2',
+        ),
+        RestoreDecision.forkCloudToLocal,
+      );
+    });
+
+    test('云端账本未登录 → 恢复为本地副本', () {
+      expect(
+        defaultDecisionFor(
+          item: _item(origin: LedgerStorageOrigin.cloud, accountId: 'acc-1'),
+          currentAccountId: null,
+        ),
+        RestoreDecision.forkCloudToLocal,
       );
     });
   });
 
   group('shouldReconnectAfterApply 纯函数', () {
     test('有匹配账号的 reconnect 决策 → true', () {
-      final item = _cloudItem(accountId: 'acc-1');
+      final item = _item(origin: LedgerStorageOrigin.cloud, accountId: 'acc-1');
       expect(
         shouldReconnectAfterApply(
           items: [item],
@@ -88,7 +143,7 @@ void main() {
     });
 
     test('未登录或账号不匹配 → false', () {
-      final item = _cloudItem(accountId: 'acc-1');
+      final item = _item(origin: LedgerStorageOrigin.cloud, accountId: 'acc-1');
       expect(
         shouldReconnectAfterApply(
           items: [item],
@@ -106,135 +161,5 @@ void main() {
         isFalse,
       );
     });
-  });
-
-  testWidgets('Step 3：未登录时「登录原账号」不可选并提示登录', (tester) async {
-    final db = SesameDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(db.close);
-    final container = ProviderContainer(
-      overrides: [
-        databaseProvider.overrideWithValue(db),
-        authSessionProvider.overrideWith(() => _StubAuthNotifier(null)),
-      ],
-    );
-    addTearDown(container.dispose);
-    final notifier = container.read(backupRestoreFlowProvider.notifier);
-    notifier.state = BackupRestoreFlowState(
-      step: 3,
-      items: [_cloudItem(accountId: 'acc-1')],
-    );
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          locale: const Locale('zh'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const RestoreBackupPage(),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('未登录，登录原账号后可用'), findsOneWidget);
-    // reconnect 单选项处于禁用态。
-    final radios = tester
-        .widgetList<RadioListTile<RestoreDecision>>(
-          find.byType(RadioListTile<RestoreDecision>),
-        )
-        .toList();
-    final reconnect = radios.firstWhere(
-      (r) => r.value == RestoreDecision.reconnect,
-    );
-    expect(reconnect.enabled, isFalse, reason: '未登录时该选项必须禁用');
-  });
-
-  testWidgets('Step 3：账号不匹配时提示账号不符并禁用', (tester) async {
-    final db = SesameDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(db.close);
-    final container = ProviderContainer(
-      overrides: [
-        databaseProvider.overrideWithValue(db),
-        authSessionProvider.overrideWith(
-          () => _StubAuthNotifier(
-            const AuthSession(accessToken: 't', userId: 'acc-2', deviceId: 'd'),
-          ),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-    final notifier = container.read(backupRestoreFlowProvider.notifier);
-    notifier.state = BackupRestoreFlowState(
-      step: 3,
-      items: [_cloudItem(accountId: 'acc-1')],
-    );
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          locale: const Locale('zh'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const RestoreBackupPage(),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('当前账号不是该账本的原账号'), findsOneWidget);
-    final radios = tester
-        .widgetList<RadioListTile<RestoreDecision>>(
-          find.byType(RadioListTile<RestoreDecision>),
-        )
-        .toList();
-    final reconnect = radios.firstWhere(
-      (r) => r.value == RestoreDecision.reconnect,
-    );
-    expect(reconnect.enabled, isFalse);
-  });
-
-  testWidgets('Step 3：账号匹配时「登录原账号」可选且无拦截提示', (tester) async {
-    final db = SesameDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(db.close);
-    final container = ProviderContainer(
-      overrides: [
-        databaseProvider.overrideWithValue(db),
-        authSessionProvider.overrideWith(
-          () => _StubAuthNotifier(
-            const AuthSession(accessToken: 't', userId: 'acc-1', deviceId: 'd'),
-          ),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-    final notifier = container.read(backupRestoreFlowProvider.notifier);
-    notifier.state = BackupRestoreFlowState(
-      step: 3,
-      items: [_cloudItem(accountId: 'acc-1')],
-    );
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          locale: const Locale('zh'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const RestoreBackupPage(),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('未登录，登录原账号后可用'), findsNothing);
-    expect(find.text('当前账号不是该账本的原账号'), findsNothing);
-    final radios = tester
-        .widgetList<RadioListTile<RestoreDecision>>(
-          find.byType(RadioListTile<RestoreDecision>),
-        )
-        .toList();
-    final reconnect = radios.firstWhere(
-      (r) => r.value == RestoreDecision.reconnect,
-    );
-    expect(reconnect.enabled, isTrue, reason: '账号匹配时选项必须可用');
   });
 }

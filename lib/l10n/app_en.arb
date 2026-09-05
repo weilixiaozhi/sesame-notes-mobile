@@ -204,7 +204,6 @@
     "joinSharedNeedLogin": "Login required to join a shared ledger",
     "joinSharedPreviewTitle": "Invite Details",
     "mineCheckUpdate": "Check for Updates",
-    "mineCheckUpdateSubtitle": "Check GitHub releases for new versions",
     "updateDialogTitle": "Check for Updates",
     "updateFound": "New version {version} available",
     "updateLatest": "You are on the latest version",
@@ -346,14 +345,9 @@
             }
         }
     },
-    "mineCloudServiceLoading": "Loading...",
-    "mineSyncError": "Failed to get status",
     "mineCategoryManagement": "Category Management",
-    "mineCategoryManagementSubtitle": "Edit custom categories",
     "mineRecurringTransactions": "Recurring Bills",
-    "mineRecurringTransactionsSubtitle": "Manage recurring bills",
-    "mineReminderSettings": "Reminder Settings",
-    "mineReminderSettingsSubtitle": "Set daily recording reminders",
+    "mineReminderSettings": "Notification Settings",
     "categoryEditTitle": "Edit Category",
     "categoryNewTitle": "New Category",
     "categoryDetailTooltip": "Category Summary",
@@ -739,8 +733,6 @@
     "cloudTabOffline": "Offline",
     "cloudTabBackup": "Backup",
     "cloudTabBackupSubtitle": "Tap a card to switch backup methods. The first setup requires configuration.",
-    "restoreOpenButton": "Open Selected Backup",
-    "restoreSelectHint": "Tap a backup to select it",
     "cloudBackupEntryLocalOnly": "Local backup only",
     "cloudBackupEntryFailed": "Last backup failed — will retry automatically",
     "cloudBackupStatusTitle": "Backup status",
@@ -780,13 +772,12 @@
     "welcomeSelectCurrencyTitle": "Select Accounting Currency",
     "welcomeCurrencyDescription": "Choose your preferred currency, you can change it anytime in settings",
     "appearanceSettings": "Preferences",
-    "appearanceSettingsDesc": "Theme, font, language, app lock, etc.",
     "appearanceSettingsPageTitle": "Preferences",
     "appearanceSettingsPageSubtitle": "Appearance, display, security and other app preferences",
     "configImportExportTitle": "Config Import/Export",
     "configImportExportSubtitle": "Backup and restore app configurations",
     "configImportExportInfoTitle": "Feature Description",
-    "configImportExportInfoMessage": "Back up and restore app configurations for cross-device migration or settings recovery. Exports as YAML format, viewable and editable.\n\nOnly includes app configurations, not transaction records (use Detail Import/Export for transaction data).",
+    "configImportExportInfoMessage": "Back up and restore app configurations for cross-device migration or settings recovery. Exports as YAML format, viewable and editable.\n\nOnly includes app configurations, not transaction records (use Data Import/Export for transaction data).",
     "configImportExportWarning": "The config file contains sensitive information such as cloud service keys and passwords. Keep it safe. Importing overwrites existing configurations with the same name—back up first.",
     "configExportTitle": "Export Config",
     "configExportSubtitle": "Export current config to YAML file",
@@ -845,7 +836,6 @@
     "calendarAddTransaction": "Add entry on this day",
     "commonUncategorized": "Uncategorized",
     "appLockTitle": "Lock App",
-    "appLockDesc": "PIN & biometric to protect privacy",
     "appLockEnable": "Enable App Lock",
     "appLockEnableDesc": "Require authentication on launch and resume",
     "appLockSetPin": "Set PIN",
@@ -999,7 +989,6 @@
         }
     },
     "exchangeRatePageTitle": "Exchange Rates",
-    "exchangeRateEntrySubtitle": "Auto-fetched rates with manual override",
     "rateSourceAuto": "Auto",
     "rateSourceManual": "Manual",
     "rateUpdatedAt": "Updated {date}",
@@ -1168,8 +1157,7 @@
     "currencySZL": "Swazi Lilangeni",
     "currencyMGA": "Malagasy Ariary",
     "currencyMRU": "Mauritanian Ouguiya",
-    "detailImportExportTitle": "Detail Import/Export",
-    "detailImportExportSubtitle": "Expense CSV file",
+    "detailImportExportTitle": "Data Import/Export",
     "detailImportExportImportTitle": "Import Details",
     "detailImportExportImportSubtitle": "Supports CSV/TSV/XLSX and Alipay/WeChat bills",
     "detailImportExportExportTitle": "Export Details",
@@ -1280,34 +1268,22 @@
     "aaNoParticipants": "Add participants first",
     "aaSplitAmountIncomplete": "Enter an amount for every participant",
     "backupRestoreTitle": "Backup & Restore",
-    "restoreStep1Title": "Choose Backup",
-    "restoreStep1Subtitle": "Select a backup to restore",
     "restoreStep2Title": "Backup Contents",
-    "restoreStep3Title": "Choose Recovery Strategy",
-    "restoreStep4Title": "Confirm Import",
     "restoreDecisionRestoreLocal": "Restore as local ledger",
     "restoreDecisionFork": "Restore as local copy",
-    "restoreDecisionReconnect": "Sign in to original account for latest",
-    "restoreDecisionReconnectNeedLogin": "Not signed in — sign in to the original account first",
-    "restoreDecisionReconnectAccountMismatch": "The current account is not the original account of this ledger",
-    "restoreDecisionReconnectNoAccount": "The backup lacks original account info and cannot restore by account",
+    "restoreDecisionReconnect": "Restore as cloud ledger",
     "restoreDecisionSkip": "Skip",
-    "restoreApply": "Apply Restore",
+    "restoreApply": "Restore Now",
     "restoreApplying": "Applying...",
     "restoreDone": "Restore Complete",
-    "restoreNoOverwrite": "Restore will not overwrite existing ledgers",
-    "restoreNoBackups": "No backups yet",
     "restoreOpenFailed": "Cannot open backup: file is corrupted or not a backup",
+    "restoreApplyFailed": "Restore failed; nothing was changed (rolled back)",
+    "restoreCloudForkHint": "This is a cloud ledger from a different account; it will be restored as a local copy",
+    "restoreFileNotFound": "Backup file not found",
+    "restoreSectionLocal": "Local Ledgers",
+    "restoreSectionCloud": "Cloud Ledgers",
     "restoreMemberCount": "{count} members",
     "@restoreMemberCount": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "restoreTxCount": "{count} records",
-    "@restoreTxCount": {
         "placeholders": {
             "count": {
                 "type": "int"
@@ -1327,14 +1303,6 @@
         "placeholders": {
             "count": {
                 "type": "int"
-            }
-        }
-    },
-    "restoreAccountOf": "Account {account}",
-    "@restoreAccountOf": {
-        "placeholders": {
-            "account": {
-                "type": "String"
             }
         }
     },

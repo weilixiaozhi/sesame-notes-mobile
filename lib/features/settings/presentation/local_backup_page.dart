@@ -1,7 +1,7 @@
 /// 本机备份页（本地存储）：自动本地备份开关 + 手动备份 + 备份快照列表。
 ///
-/// - 备份文件是 .snbak 加密快照，保存在应用私有目录；
-/// - 恢复进入 4 步恢复页 RestoreBackupPage（按账本选择策略，Step 1–3 零写入），
+/// - 备份文件是 .snbak 明文分帧快照，保存在应用私有目录；
+/// - 恢复进入单步恢复页 RestoreBackupPage（打开即预览、勾选账本、立即恢复），
 ///   列表点击 / 从文件恢复均跳转过去；
 /// - 备份文件不写公共 Download 目录，外部备份经「从文件恢复」兜底；
 /// - 自动备份开关（autoBackupValueProvider）控制冷启动/回前台的自动快照。
@@ -104,12 +104,12 @@ class _LocalBackupPageState extends ConsumerState<LocalBackupPage>
     }
   }
 
-  /// 点击快照 → 进入 4 步恢复页（该文件预选，直接打开）。
+  /// 点击快照 → 进入恢复页（该文件直接打开预览）。
   Future<void> _restoreFile(LocalBackupFile file) async {
     await context.pushNamed(Routes.backupRestore, extra: file.file.path);
   }
 
-  /// 从文件恢复：从系统文件选择器挑一个 .snbak 备份，同样进入 4 步恢复页。
+  /// 从文件恢复：从系统文件选择器挑一个 .snbak 备份，同样进入恢复页。
   ///
   /// 设计意图：卸载重装/换机后，历史备份可能不在恢复列表（保存在外部目录），
   /// 给用户一个手动指定文件的兜底入口，避免「备份明明还在却恢复不了」。

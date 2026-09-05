@@ -204,7 +204,6 @@
     "joinSharedNeedLogin": "加入共享账本需先登录",
     "joinSharedPreviewTitle": "邀请详情",
     "mineCheckUpdate": "检查更新",
-    "mineCheckUpdateSubtitle": "检测 GitHub 发布页是否有新版本",
     "updateDialogTitle": "检查更新",
     "updateFound": "发现新版本 {version}",
     "updateLatest": "当前已是最新版本",
@@ -321,7 +320,7 @@
     "languageSystemDefault": "跟随系统",
     "mineAvatarDelete": "删除头像",
     "mineAvatarUploadNew": "上传新头像",
-    "mineCloudService": "备份与云同步配置",
+    "mineCloudService": "备份与云同步",
     "cloudBackupUrlLabel": "服务地址",
     "cloudBackupAnonKeyLabel": "Anon Key",
     "cloudBackupBucketLabel": "存储桶",
@@ -346,14 +345,9 @@
             }
         }
     },
-    "mineCloudServiceLoading": "加载中…",
-    "mineSyncError": "状态获取失败",
     "mineCategoryManagement": "分类管理",
-    "mineCategoryManagementSubtitle": "编辑自定义分类",
     "mineRecurringTransactions": "周期账单",
-    "mineRecurringTransactionsSubtitle": "管理周期性账单",
-    "mineReminderSettings": "记账提醒",
-    "mineReminderSettingsSubtitle": "设置每日记账提醒",
+    "mineReminderSettings": "通知设置",
     "categoryEditTitle": "编辑分类",
     "categoryNewTitle": "新建分类",
     "categoryDetailTooltip": "分类汇总",
@@ -739,8 +733,6 @@
     "cloudTabOffline": "离线模式",
     "cloudTabBackup": "备份同步",
     "cloudTabBackupSubtitle": "点击卡片切换备份方式，首次需要配置信息",
-    "restoreOpenButton": "打开所选备份",
-    "restoreSelectHint": "点击列表选择要恢复的备份",
     "cloudBackupEntryLocalOnly": "仅本地备份",
     "cloudBackupEntryFailed": "上次备份失败，将自动重试",
     "cloudBackupStatusTitle": "备份状态",
@@ -780,13 +772,12 @@
     "welcomeSelectCurrencyTitle": "选择记账货币",
     "welcomeCurrencyDescription": "选择您常用的货币，之后可以随时在设置中更改",
     "appearanceSettings": "偏好调节",
-    "appearanceSettingsDesc": "主题、字体、语言、应用锁等",
     "appearanceSettingsPageTitle": "偏好调节",
     "appearanceSettingsPageSubtitle": "外观、显示、安全等应用偏好",
     "configImportExportTitle": "配置导入导出",
     "configImportExportSubtitle": "备份和恢复应用配置",
     "configImportExportInfoTitle": "功能说明",
-    "configImportExportInfoMessage": "备份和恢复应用配置，用于跨设备迁移或恢复设置。导出为 YAML 格式，可查看和编辑。\n\n仅包含应用配置，不包含交易记录（交易数据请使用明细导入导出功能）。",
+    "configImportExportInfoMessage": "备份和恢复应用配置，用于跨设备迁移或恢复设置。导出为 YAML 格式，可查看和编辑。\n\n仅包含应用配置，不包含交易记录（交易数据请使用数据导入导出功能）。",
     "configImportExportWarning": "配置文件包含云服务密钥、密码等敏感信息，请妥善保管。导入会覆盖现有同名配置，建议先导出备份。",
     "configExportTitle": "导出配置",
     "configExportSubtitle": "将当前配置导出为YAML文件",
@@ -845,7 +836,6 @@
     "calendarAddTransaction": "在该日记账",
     "commonUncategorized": "未分类",
     "appLockTitle": "应用上锁",
-    "appLockDesc": "PIN码与生物识别保护隐私",
     "appLockEnable": "启用应用锁",
     "appLockEnableDesc": "启动和切回应用时需要验证身份",
     "appLockSetPin": "设置密码",
@@ -999,7 +989,6 @@
         }
     },
     "exchangeRatePageTitle": "汇率管理",
-    "exchangeRateEntrySubtitle": "自动获取汇率，支持手动修正",
     "rateSourceAuto": "自动",
     "rateSourceManual": "手动",
     "rateUpdatedAt": "{date} 更新",
@@ -1168,8 +1157,7 @@
     "currencySZL": "斯威士兰里兰吉尼",
     "currencyMGA": "马达加斯加阿里亚里",
     "currencyMRU": "毛里塔尼亚乌吉亚",
-    "detailImportExportTitle": "明细导入导出",
-    "detailImportExportSubtitle": "支出明细csv格式文件",
+    "detailImportExportTitle": "数据导入导出",
     "detailImportExportImportTitle": "导入明细",
     "detailImportExportImportSubtitle": "支持 CSV/TSV/XLSX，兼容支付宝、微信账单",
     "detailImportExportExportTitle": "导出明细",
@@ -1280,34 +1268,22 @@
     "aaNoParticipants": "请先添加参与人",
     "aaSplitAmountIncomplete": "请填写全部参与人的金额",
     "backupRestoreTitle": "备份与恢复",
-    "restoreStep1Title": "选择备份",
-    "restoreStep1Subtitle": "选择要恢复的备份",
-    "restoreStep2Title": "查看备份内容",
-    "restoreStep3Title": "选择恢复策略",
-    "restoreStep4Title": "确认导入结果",
+    "restoreStep2Title": "备份内容",
     "restoreDecisionRestoreLocal": "恢复为本地账本",
     "restoreDecisionFork": "恢复为本地副本",
-    "restoreDecisionReconnect": "登录原账号获取最新",
-    "restoreDecisionReconnectNeedLogin": "未登录，登录原账号后可用",
-    "restoreDecisionReconnectAccountMismatch": "当前账号不是该账本的原账号",
-    "restoreDecisionReconnectNoAccount": "备份缺少原账号信息，无法按原账号恢复",
+    "restoreDecisionReconnect": "恢复为云账本",
     "restoreDecisionSkip": "暂不处理",
-    "restoreApply": "应用恢复",
+    "restoreApply": "立即恢复",
     "restoreApplying": "正在应用…",
     "restoreDone": "恢复完成",
-    "restoreNoOverwrite": "恢复不会覆盖现有账本",
-    "restoreNoBackups": "暂无备份",
     "restoreOpenFailed": "无法打开备份：文件已损坏或不是备份文件",
+    "restoreApplyFailed": "恢复失败，未做任何更改（已整体回滚）",
+    "restoreCloudForkHint": "这是云账本，但不是当前账号，将恢复为本地副本",
+    "restoreFileNotFound": "备份文件不存在",
+    "restoreSectionLocal": "本地账本",
+    "restoreSectionCloud": "云端账本",
     "restoreMemberCount": "{count} 位成员",
     "@restoreMemberCount": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "restoreTxCount": "{count} 笔记录",
-    "@restoreTxCount": {
         "placeholders": {
             "count": {
                 "type": "int"
@@ -1327,14 +1303,6 @@
         "placeholders": {
             "count": {
                 "type": "int"
-            }
-        }
-    },
-    "restoreAccountOf": "账号 {account}",
-    "@restoreAccountOf": {
-        "placeholders": {
-            "account": {
-                "type": "String"
             }
         }
     },

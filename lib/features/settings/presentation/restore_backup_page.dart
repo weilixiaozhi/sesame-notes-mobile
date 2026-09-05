@@ -1,31 +1,37 @@
-/// 备份恢复页（4 步流程）。
+/// 备份恢复页。
 ///
-/// Step 1 选择备份：列表展示时间戳备份 + 输入密码/恢复词 → 打开（只读）；
-/// Step 2 查看备份内容：按归属分域展示账本（成员数/交易数/最后同步/来源账号）；
-/// Step 3 每个账本选择恢复策略（恢复为本地 / 登录原账号 / 暂不处理）；
-/// Step 4 确认导入结果（明示"恢复不会覆盖现有账本"）→ 单事务应用。
-/// Step 1–3 全程零写入，Step 4 任一步失败整体回滚。
+/// 入口（本机快照点击 / 从文件恢复 / 从云端恢复）必然携带 .snbak 文件路径：
+/// 进入页面即明文解帧打开并预览备份内容（零写入）。内容页按「本地账本 /
+/// 云端账本」分区展示，账本卡片点击勾选恢复策略（默认全选），底部
+/// 「立即恢复」单事务应用，任一步失败整体回滚；成功后展示逐账本结果。
 library;
+
+import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/shared/widgets/app_list_tile.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
+import 'package:sesame_notes/shared/widgets/currency_flag.dart';
+import 'package:sesame_notes/shared/widgets/format_money.dart';
 import 'package:sesame_notes/shared/widgets/primary_header.dart';
 import 'package:sesame_notes/shared/widgets/section_card.dart';
+import 'package:sesame_notes/shared/widgets/toast.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
+import 'package:sesame_notes/theme/icons/app_icons.dart';
+import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/features/settings/application/backup_restore_providers.dart';
 import 'package:sesame_notes/features/settings/domain/backup_manifest.dart';
 
-/// 恢复流程页面入口（4 步）。
+/// 恢复流程页面入口（单步：打开 → 勾选 → 立即恢复）。
 class RestoreBackupPage extends ConsumerStatefulWidget {
   const RestoreBackupPage({super.key, this.initialBackupPath});
 
-  /// 外部 .snbak 文件路径（本机备份页「从文件恢复」/ 云端「从云端恢复」传入）：
-  /// 存在时插入列表头部并预选，用户只需输入密码即可打开。
+  /// 待恢复的 .snbak 文件路径（三个入口均必传；文件不存在时提示并退出）。
   final String? initialBackupPath;
 
   @override
@@ -33,404 +39,129 @@ class RestoreBackupPage extends ConsumerStatefulWidget {
 }
 
 class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
+  /// initState 捕获的流程 Notifier：dispose 阶段不能使用 ref，用字段调用。
+  late BackupRestoreFlowNotifier _notifier;
+
   @override
   void initState() {
     super.initState();
-    // 进入页面即加载备份列表（只读）；外部文件预选由流程状态承载。
-    Future.microtask(
-      () => ref
-          .read(backupRestoreFlowProvider.notifier)
-          .loadBackups(externalPath: widget.initialBackupPath),
-    );
+    _notifier = ref.read(backupRestoreFlowProvider.notifier);
+    final path = widget.initialBackupPath;
+    // 进入页面即打开备份；路径缺失（异常路由）或文件已被删除时提示并退出。
+    Future.microtask(() async {
+      if (!mounted) return;
+      if (path == null || path.isEmpty) {
+        _exitWithMissingFileToast();
+        return;
+      }
+      final file = File(path);
+      if (!await file.exists()) {
+        if (!mounted) return;
+        _exitWithMissingFileToast();
+        return;
+      }
+      if (!mounted) return;
+      await _notifier.openBackup(file: file);
+    });
+  }
+
+  /// 备份文件不存在：提示后退出页面（恢复流程无选择列表兜底步骤）。
+  void _exitWithMissingFileToast() {
+    showToast(context, AppLocalizations.of(context).restoreFileNotFound);
+    Navigator.of(context).maybePop();
+  }
+
+  @override
+  void dispose() {
+    // 退出页面即关闭恢复会话，释放解压出的临时 sqlite 文件。
+    unawaited(_notifier.closeSession());
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final flow = ref.watch(backupRestoreFlowProvider);
+    final l10n = AppLocalizations.of(context);
+    final Widget body;
+    if (flow.report != null) {
+      // 完成态：逐账本展示恢复结果，AppBar 返回退出。
+      body = _buildDone(context, flow);
+    } else if (flow.session == null) {
+      // 打开中 / 打开失败
+      body = _buildOpening(context, flow);
+    } else {
+      // 备份内容 + 勾选恢复策略
+      body = _buildContent(context, flow);
+    }
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context).backupRestoreTitle),
+        title: Text(
+          flow.report != null ? l10n.restoreDone : l10n.restoreStep2Title,
+        ),
       ),
-      body: SafeArea(
-        child: switch (flow.step) {
-          1 => _buildStep1(context, flow),
-          2 => _buildStep2(context, flow),
-          3 => _buildStep3(context, flow),
-          _ => _buildStep4(context, flow),
-        },
-      ),
+      body: SafeArea(child: body),
     );
   }
 
   // ---------------------------------------------------------------
-  // Step 1：选择备份 + 输入密码
+  // 打开中 / 打开失败
   // ---------------------------------------------------------------
 
-  Widget _buildStep1(BuildContext context, BackupRestoreFlowState flow) {
+  Widget _buildOpening(BuildContext context, BackupRestoreFlowState flow) {
     final l10n = AppLocalizations.of(context);
     final errorText = _errorText(context, flow.error);
-    final selected = flow.selected;
-    return ListView(
-      padding: const EdgeInsets.all(AppDimens.p16),
-      children: [
-        PrimaryHeader(
-          title: l10n.restoreStep1Title,
-          subtitle: l10n.restoreStep1Subtitle,
-        ),
-        if (errorText != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppDimens.p12),
-            child: Text(
-              errorText,
-              style: TextStyle(color: AppTokens.error(context)),
-            ),
-          ),
-        if (flow.backups.isEmpty && !flow.loading)
-          Padding(
-            padding: const EdgeInsets.all(AppDimens.p32),
-            child: Center(child: Text(l10n.restoreNoBackups)),
-          ),
-        // 点选提示：列表只做选择，打开由下方按钮显式触发。
-        if (flow.backups.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppDimens.p8),
-            child: Text(
-              l10n.restoreSelectHint,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppTokens.textSecondary(context),
-              ),
-            ),
-          ),
-        for (final backup in flow.backups)
-          AppListTile(
-            leading: Icons.backup_outlined,
-            title: _formatBackupTime(backup.createdAt),
-            subtitle: backup.sizeLabel,
-            // 勾选 = 已选中；右箭头 = 可点选。
-            trailing: Icon(
-              selected?.pathKey == backup.pathKey
-                  ? Icons.check_circle
-                  : Icons.chevron_right,
-              color: selected?.pathKey == backup.pathKey
-                  ? AppTokens.primary(context)
-                  : AppTokens.iconTertiary(context),
-            ),
-            onTap: () => ref
-                .read(backupRestoreFlowProvider.notifier)
-                .selectBackup(backup),
-          ),
-        if (flow.loading) const LinearProgressIndicator(),
-        if (flow.backups.isNotEmpty) ...[
-          const SizedBox(height: AppDimens.p16),
-          FilledButton(
-            onPressed: selected == null
-                ? null
-                : () => _openSelected(context, selected),
-            child: Text(l10n.restoreOpenButton),
-          ),
-        ],
-      ],
-    );
-  }
-
-  /// 打开当前选中的备份（设备密钥解密，零写入）。
-  Future<void> _openSelected(
-    BuildContext context,
-    RestoreBackupFile backup,
-  ) async {
-    await ref.read(backupRestoreFlowProvider.notifier).openBackup(file: backup);
-  }
-
-  // ---------------------------------------------------------------
-  // Step 2：查看备份内容（按归属分域）
-  // ---------------------------------------------------------------
-
-  Widget _buildStep2(BuildContext context, BackupRestoreFlowState flow) {
-    final l10n = AppLocalizations.of(context);
-    final locals = flow.items.where(
-      (i) => i.storageOrigin == LedgerStorageOrigin.local,
-    );
-    final clouds = flow.items.where(
-      (i) => i.storageOrigin == LedgerStorageOrigin.cloud,
-    );
-    return ListView(
-      padding: const EdgeInsets.all(AppDimens.p16),
-      children: [
-        PrimaryHeader(
-          title: l10n.restoreStep2Title,
-          subtitle: flow.selected?.sizeLabel ?? '',
-        ),
-        if (locals.isNotEmpty)
-          SectionCard(
-            margin: const EdgeInsets.only(bottom: AppDimens.p12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(AppDimens.p12),
-                  child: Text(
-                    '仅本地',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ),
-                for (final item in locals) _itemTile(context, item),
-              ],
-            ),
-          ),
-        for (final account in _groupByAccount(clouds).entries)
-          SectionCard(
-            margin: const EdgeInsets.only(bottom: AppDimens.p12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(AppDimens.p12),
-                  child: Text(
-                    account.key,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ),
-                for (final item in account.value) _itemTile(context, item),
-              ],
-            ),
-          ),
-        Padding(
-          padding: const EdgeInsets.only(top: AppDimens.p12),
-          child: FilledButton(
-            onPressed: () => ref
-                .read(backupRestoreFlowProvider.notifier)
-                .proceedToStrategy(),
-            child: Text(l10n.restoreStep3Title),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 云端账本按归属账号分域（账号引用无凭据，仅展示）。
-  Map<String, List<RestoreLedgerItem>> _groupByAccount(
-    Iterable<RestoreLedgerItem> clouds,
-  ) {
-    final grouped = <String, List<RestoreLedgerItem>>{};
-    for (final item in clouds) {
-      // 账号名可能为空串（客户端本地不存账号名），回退到账号 id 展示
-      final rawName = item.accountName ?? '';
-      final accountName = rawName.isNotEmpty
-          ? rawName
-          : (item.accountId ?? '未知账号');
-      grouped.putIfAbsent(accountName, () => []).add(item);
+    if (errorText == null) {
+      return const Center(child: CircularProgressIndicator());
     }
-    return grouped;
-  }
-
-  Widget _itemTile(BuildContext context, RestoreLedgerItem item) {
-    final l10n = AppLocalizations.of(context);
-    final warnings = <String>[
-      if (item.pendingCount > 0) l10n.restorePendingWarning(item.pendingCount),
-      if (item.conflictCount > 0)
-        l10n.restoreConflictWarning(item.conflictCount),
-    ];
-    final subtitleParts = <String>[
-      l10n.restoreMemberCount(item.memberCount),
-      l10n.restoreTxCount(item.transactionCount),
-    ];
-    return AppListTile(
-      leading: Icons.menu_book_outlined,
-      title: item.name,
-      subtitle:
-          subtitleParts.join(' · ') +
-          (warnings.isEmpty ? '' : '\n${warnings.join('\n')}'),
-    );
-  }
-
-  // ---------------------------------------------------------------
-  // Step 3：每账本选择恢复策略（显式三选一，无隐式 Merge）
-  // ---------------------------------------------------------------
-
-  Widget _buildStep3(BuildContext context, BackupRestoreFlowState flow) {
-    final l10n = AppLocalizations.of(context);
-    // 当前登录账号：云端账本「登录原账号」选项的账号身份校验基准。
-    final currentAccountId = ref.watch(authSessionProvider)?.userId;
-    return ListView(
-      padding: const EdgeInsets.all(AppDimens.p16),
-      children: [
-        PrimaryHeader(
-          title: l10n.restoreStep3Title,
-          subtitle: flow.selected?.sizeLabel ?? '',
-        ),
-        for (final item in flow.items) ...[
-          SectionCard(
-            margin: const EdgeInsets.only(bottom: AppDimens.p12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(AppDimens.p12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.name,
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      if (item.storageOrigin == LedgerStorageOrigin.cloud &&
-                          item.accountId != null)
-                        Text(
-                          l10n.restoreAccountOf(
-                            (item.accountName ?? '').isEmpty
-                                ? item.accountId!
-                                : item.accountName!,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                RadioGroup<RestoreDecision>(
-                  groupValue:
-                      flow.decisions[item.ledgerBackupId] ??
-                      _defaultDecision(item),
-                  onChanged: (value) {
-                    if (value != null) {
-                      ref
-                          .read(backupRestoreFlowProvider.notifier)
-                          .setDecision(item.ledgerBackupId, value);
-                    }
-                  },
-                  child: Column(
-                    children: [
-                      for (final decision in _decisionsFor(item))
-                        RadioListTile<RestoreDecision>(
-                          title: Text(_decisionLabel(context, decision)),
-                          value: decision,
-                          // 「登录原账号」未通过账号身份校验时禁用：
-                          // 未登录 / 账号不符 / 缺少原账号信息均拦截。
-                          enabled:
-                              decision != RestoreDecision.reconnect ||
-                              reconnectBlockerOf(
-                                    itemAccountId: item.accountId,
-                                    currentAccountId: currentAccountId,
-                                  ) ==
-                                  ReconnectBlocker.none,
-                        ),
-                    ],
-                  ),
-                ),
-                // 拦截原因提示（仅云端账本的「登录原账号」被拦截时展示）。
-                if (_reconnectBlockedHint(context, item, currentAccountId) !=
-                    null)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppDimens.p12,
-                      0,
-                      AppDimens.p12,
-                      AppDimens.p12,
-                    ),
-                    child: Text(
-                      _reconnectBlockedHint(context, item, currentAccountId)!,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTokens.warning(context),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-        Padding(
-          padding: const EdgeInsets.only(top: AppDimens.p12),
-          child: FilledButton(
-            onPressed: () =>
-                ref.read(backupRestoreFlowProvider.notifier).proceedToConfirm(),
-            child: Text(l10n.restoreStep4Title),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 「登录原账号」拦截提示文案；未拦截返回 null。
-  String? _reconnectBlockedHint(
-    BuildContext context,
-    RestoreLedgerItem item,
-    String? currentAccountId,
-  ) {
-    final l10n = AppLocalizations.of(context);
-    final blocker = reconnectBlockerOf(
-      itemAccountId: item.accountId,
-      currentAccountId: currentAccountId,
-    );
-    return switch (blocker) {
-      ReconnectBlocker.none => null,
-      ReconnectBlocker.needLogin => l10n.restoreDecisionReconnectNeedLogin,
-      ReconnectBlocker.accountMismatch =>
-        l10n.restoreDecisionReconnectAccountMismatch,
-      ReconnectBlocker.noAccount => l10n.restoreDecisionReconnectNoAccount,
-    };
-  }
-
-  /// 决策选项：云端账本 3 选（恢复为本地副本/登录原账号/暂不处理）；
-  /// 本地账本 2 选（恢复为本地账本/暂不处理）。
-  List<RestoreDecision> _decisionsFor(RestoreLedgerItem item) {
-    if (item.storageOrigin == LedgerStorageOrigin.cloud) {
-      return [
-        RestoreDecision.forkCloudToLocal,
-        RestoreDecision.reconnect,
-        RestoreDecision.skip,
-      ];
-    }
-    return [RestoreDecision.restoreLocal, RestoreDecision.skip];
-  }
-
-  RestoreDecision _defaultDecision(RestoreLedgerItem item) =>
-      item.storageOrigin == LedgerStorageOrigin.cloud
-      ? RestoreDecision.forkCloudToLocal
-      : RestoreDecision.restoreLocal;
-
-  String _decisionLabel(BuildContext context, RestoreDecision decision) {
-    final l10n = AppLocalizations.of(context);
-    return switch (decision) {
-      RestoreDecision.restoreLocal => l10n.restoreDecisionRestoreLocal,
-      RestoreDecision.forkCloudToLocal => l10n.restoreDecisionFork,
-      RestoreDecision.reconnect => l10n.restoreDecisionReconnect,
-      RestoreDecision.skip => l10n.restoreDecisionSkip,
-    };
-  }
-
-  // ---------------------------------------------------------------
-  // Step 4：确认导入结果 → 单事务应用
-  // ---------------------------------------------------------------
-
-  Widget _buildStep4(BuildContext context, BackupRestoreFlowState flow) {
-    final l10n = AppLocalizations.of(context);
-    if (flow.report != null) {
-      // 完成态：展示映射清单与结果
-      return ListView(
+    return Center(
+      child: Padding(
         padding: const EdgeInsets.all(AppDimens.p16),
-        children: [
-          PrimaryHeader(
-            title: l10n.restoreDone,
-            subtitle: flow.selected?.sizeLabel ?? '',
-          ),
-          for (final entry in flow.report!.entries)
-            SectionCard(
-              margin: const EdgeInsets.only(bottom: AppDimens.p12),
-              child: AppListTile(
-                leading: Icons.check_circle_outline,
-                title: entry.name,
-                subtitle: _resultLabel(context, entry),
-              ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              errorText,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppTokens.error(context)),
             ),
-        ],
-      );
-    }
+            const SizedBox(height: AppDimens.p16),
+            FilledButton(
+              onPressed: () => Navigator.of(context).maybePop(),
+              child: Text(l10n.commonBack),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------
+  // 备份内容：本地账本 / 云端账本 双分区 + 勾选恢复策略
+  // ---------------------------------------------------------------
+
+  Widget _buildContent(BuildContext context, BackupRestoreFlowState flow) {
+    final l10n = AppLocalizations.of(context);
+    final currentAccountId = ref.watch(authSessionProvider)?.userId;
+    // 云端账本分区的账号昵称副标题：仅当前账号的云端账本进入该分区，
+    // 直接取当前登录资料昵称展示（旧备份 manifest 无昵称也能显示）。
+    final nickname =
+        ref.watch(accountStateProvider).profile?.displayName?.trim() ?? '';
+    // 分区判定：云端账本且归属账号 == 当前账号 → 云端分区；其余（本地账本 +
+    // 未登录/账号不符/缺账号信息的云端账本）→ 本地分区（恢复为本地副本）。
+    final clouds = flow.items
+        .where(
+          (i) => cloudSectionOf(item: i, currentAccountId: currentAccountId),
+        )
+        .toList();
+    final locals = flow.items
+        .where(
+          (i) => !cloudSectionOf(item: i, currentAccountId: currentAccountId),
+        )
+        .toList();
     final errorText = _errorText(context, flow.error);
     return ListView(
       padding: const EdgeInsets.all(AppDimens.p16),
       children: [
-        PrimaryHeader(
-          title: l10n.restoreStep4Title,
-          subtitle: l10n.restoreNoOverwrite,
-        ),
         if (errorText != null)
           Padding(
             padding: const EdgeInsets.only(bottom: AppDimens.p12),
@@ -439,31 +170,99 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
               style: TextStyle(color: AppTokens.error(context)),
             ),
           ),
-        for (final item in flow.items)
+        _sectionHeader(
+          context,
+          AppIcons.localStorage,
+          l10n.restoreSectionLocal,
+        ),
+        for (final item in locals)
+          _RestoreLedgerCard(
+            item: item,
+            selected:
+                (flow.decisions[item.ledgerBackupId] ?? RestoreDecision.skip) !=
+                RestoreDecision.skip,
+            onToggle: () => _toggleDecision(item, currentAccountId),
+          ),
+        const SizedBox(height: AppDimens.p16),
+        _sectionHeader(context, AppIcons.cloudQueue, l10n.restoreSectionCloud),
+        for (final item in clouds)
+          _RestoreLedgerCard(
+            item: item,
+            selected:
+                (flow.decisions[item.ledgerBackupId] ?? RestoreDecision.skip) !=
+                RestoreDecision.skip,
+            accountNickname: nickname,
+            onToggle: () => _toggleDecision(item, currentAccountId),
+          ),
+        const SizedBox(height: AppDimens.p16),
+        FilledButton(
+          onPressed: flow.loading
+              ? null
+              : () => ref.read(backupRestoreFlowProvider.notifier).apply(),
+          child: Text(flow.loading ? l10n.restoreApplying : l10n.restoreApply),
+        ),
+      ],
+    );
+  }
+
+  /// 分区标题（图标 + 文案），与账本管理页双分区标题同一视觉。
+  Widget _sectionHeader(BuildContext context, IconData icon, String title) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppDimens.p4,
+        AppDimens.p8,
+        AppDimens.p4,
+        AppDimens.p8,
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: AppDimens.icon16, color: theme.colorScheme.outline),
+          const SizedBox(width: AppDimens.p8),
+          Text(
+            title,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.outline,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 勾选/取消勾选：选中 = 该账本默认决策恢复，未选中 = skip（暂不处理）。
+  void _toggleDecision(RestoreLedgerItem item, String? currentAccountId) {
+    final state = ref.read(backupRestoreFlowProvider);
+    final current =
+        state.decisions[item.ledgerBackupId] ?? RestoreDecision.skip;
+    final next = current == RestoreDecision.skip
+        ? defaultDecisionFor(item: item, currentAccountId: currentAccountId)
+        : RestoreDecision.skip;
+    ref
+        .read(backupRestoreFlowProvider.notifier)
+        .setDecision(item.ledgerBackupId, next);
+  }
+
+  // ---------------------------------------------------------------
+  // 完成态：逐账本展示恢复结果
+  // ---------------------------------------------------------------
+
+  Widget _buildDone(BuildContext context, BackupRestoreFlowState flow) {
+    final l10n = AppLocalizations.of(context);
+    return ListView(
+      padding: const EdgeInsets.all(AppDimens.p16),
+      children: [
+        PrimaryHeader(title: l10n.restoreDone),
+        for (final entry in flow.report!.entries)
           SectionCard(
             margin: const EdgeInsets.only(bottom: AppDimens.p12),
-            child: AppListTile(
-              leading: Icons.menu_book_outlined,
-              title: item.name,
-              subtitle: _decisionLabel(
-                context,
-                flow.decisions[item.ledgerBackupId] ?? RestoreDecision.skip,
-              ),
+            child: ListTile(
+              leading: const Icon(Icons.check_circle_outline),
+              title: Text(entry.name),
+              subtitle: Text(_resultLabel(context, entry)),
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.only(top: AppDimens.p12),
-          child: FilledButton(
-            onPressed: flow.loading
-                ? null
-                : () async {
-                    await ref.read(backupRestoreFlowProvider.notifier).apply();
-                  },
-            child: Text(
-              flow.loading ? l10n.restoreApplying : l10n.restoreApply,
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -491,12 +290,209 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
       RestoreFlowError.openFailed => l10n.restoreOpenFailed,
       RestoreFlowError.schemaTooOld => l10n.restoreSchemaTooOld,
       RestoreFlowError.schemaTooNew => l10n.restoreSchemaTooNew,
+      RestoreFlowError.applyFailed => l10n.restoreApplyFailed,
     };
   }
+}
 
-  String _formatBackupTime(DateTime time) {
-    String two(int v) => v.toString().padLeft(2, '0');
-    final local = time.toLocal();
-    return '${local.month}月${local.day}日 ${two(local.hour)}:${two(local.minute)}';
+/// 恢复预览账本卡片：复刻账本管理页 LedgerCard 布局（无编辑入口），
+/// 点击切换勾选（选中 = 恢复，未选中 = 暂不处理）。
+class _RestoreLedgerCard extends StatelessWidget {
+  const _RestoreLedgerCard({
+    required this.item,
+    required this.selected,
+    required this.onToggle,
+    this.accountNickname,
+  });
+
+  final RestoreLedgerItem item;
+  final bool selected;
+  final VoidCallback onToggle;
+
+  /// 账号昵称副标题（仅「云端账本」分区传入；本地分区为 null）。
+  final String? accountNickname;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final primary = Theme.of(context).colorScheme.primary;
+    final isCloud = item.storageOrigin == LedgerStorageOrigin.cloud;
+    final warnings = <String>[
+      if (item.pendingCount > 0) l10n.restorePendingWarning(item.pendingCount),
+      if (item.conflictCount > 0)
+        l10n.restoreConflictWarning(item.conflictCount),
+    ];
+    return GestureDetector(
+      onTap: onToggle,
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppDimens.p12,
+          vertical: AppDimens.p4,
+        ),
+        decoration: BoxDecoration(
+          color: AppTokens.surface(context),
+          borderRadius: BorderRadius.circular(AppDimens.radius12),
+          border: AppTokens.isDark(context)
+              ? Border.all(color: AppTokens.border(context), width: 1)
+              : null,
+          boxShadow: AppTokens.isDark(context)
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppDimens.radius12),
+          child: Stack(
+            children: [
+              // 左侧色条：仅选中时显示（与账本管理页选中态同一视觉）
+              if (selected)
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 4,
+                    decoration: BoxDecoration(
+                      color: primary,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(AppDimens.radius12),
+                        bottomLeft: Radius.circular(AppDimens.radius12),
+                      ),
+                    ),
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.all(AppDimens.p16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 顶部：账本名称 + 账号昵称副标题 + 归属图标 + 勾选状态
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.name,
+                            style: AppTextTokens.boldTitle(
+                              context,
+                            ).copyWith(color: AppTokens.textPrimary(context)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (accountNickname != null &&
+                            accountNickname!.isNotEmpty) ...[
+                          const SizedBox(width: AppDimens.p8),
+                          Flexible(
+                            child: Text(
+                              accountNickname!,
+                              style: AppTextTokens.label(context).copyWith(
+                                color: AppTokens.textSecondary(context),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(width: AppDimens.p8),
+                        Icon(
+                          isCloud ? AppIcons.cloudQueue : AppIcons.localStorage,
+                          size: AppDimens.icon20,
+                          color: isCloud
+                              ? AppTokens.statusOnline(context)
+                              : AppTokens.brandLocal,
+                        ),
+                        const SizedBox(width: AppDimens.p4),
+                        Icon(
+                          selected
+                              ? AppIcons.radioChecked
+                              : AppIcons.radioUnchecked,
+                          size: AppDimens.icon20,
+                          color: selected
+                              ? primary
+                              : AppTokens.iconTertiary(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppDimens.p12),
+                    // 统计字段（与账本管理页卡片同口径）：币种 / 笔数 / 支出
+                    Row(
+                      children: [
+                        Text(
+                          '${l10n.ledgersCurrency}：',
+                          style: AppTextTokens.body(
+                            context,
+                          ).copyWith(color: AppTokens.textSecondary(context)),
+                        ),
+                        currencyFlagLabel(
+                          context,
+                          item.currency,
+                          textStyle: AppTextTokens.body(
+                            context,
+                          ).copyWith(color: AppTokens.textSecondary(context)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppDimens.p4),
+                    Text(
+                      l10n.ledgersRecords(item.transactionCount.toString()),
+                      style: AppTextTokens.body(
+                        context,
+                      ).copyWith(color: AppTokens.textSecondary(context)),
+                    ),
+                    const SizedBox(height: AppDimens.p4),
+                    Text(
+                      l10n.ledgersExpense(
+                        formatMoneyWithCurrency(
+                          item.expenseTotal,
+                          currencyCode: item.currency,
+                        ),
+                      ),
+                      style: AppTextTokens.body(
+                        context,
+                      ).copyWith(color: AppTokens.textPrimary(context)),
+                    ),
+                    const SizedBox(height: AppDimens.p4),
+                    // 成员数 + 未同步改动/冲突警告
+                    Text(
+                      l10n.restoreMemberCount(item.memberCount),
+                      style: AppTextTokens.body(
+                        context,
+                      ).copyWith(color: AppTokens.textSecondary(context)),
+                    ),
+                    for (final warning in warnings)
+                      Padding(
+                        padding: const EdgeInsets.only(top: AppDimens.p4),
+                        child: Text(
+                          warning,
+                          style: AppTextTokens.body(
+                            context,
+                          ).copyWith(color: AppTokens.warning(context)),
+                        ),
+                      ),
+                    // 云端账本落入本地分区：明示「不是当前账号，恢复为本地副本」
+                    if (isCloud &&
+                        (accountNickname == null || accountNickname!.isEmpty))
+                      Padding(
+                        padding: const EdgeInsets.only(top: AppDimens.p4),
+                        child: Text(
+                          l10n.restoreCloudForkHint,
+                          style: AppTextTokens.body(
+                            context,
+                          ).copyWith(color: AppTokens.warning(context)),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

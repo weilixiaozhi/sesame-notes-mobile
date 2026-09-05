@@ -892,12 +892,6 @@ abstract class AppLocalizations {
   /// **'Check for Updates'**
   String get mineCheckUpdate;
 
-  /// No description provided for @mineCheckUpdateSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Check GitHub releases for new versions'**
-  String get mineCheckUpdateSubtitle;
-
   /// No description provided for @updateDialogTitle.
   ///
   /// In en, this message translates to:
@@ -1450,29 +1444,11 @@ abstract class AppLocalizations {
   /// **'In use · Last success {time}'**
   String cloudBackupActiveLastSuccess(String time);
 
-  /// No description provided for @mineCloudServiceLoading.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading...'**
-  String get mineCloudServiceLoading;
-
-  /// No description provided for @mineSyncError.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to get status'**
-  String get mineSyncError;
-
   /// No description provided for @mineCategoryManagement.
   ///
   /// In en, this message translates to:
   /// **'Category Management'**
   String get mineCategoryManagement;
-
-  /// No description provided for @mineCategoryManagementSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit custom categories'**
-  String get mineCategoryManagementSubtitle;
 
   /// No description provided for @mineRecurringTransactions.
   ///
@@ -1480,23 +1456,11 @@ abstract class AppLocalizations {
   /// **'Recurring Bills'**
   String get mineRecurringTransactions;
 
-  /// No description provided for @mineRecurringTransactionsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Manage recurring bills'**
-  String get mineRecurringTransactionsSubtitle;
-
   /// No description provided for @mineReminderSettings.
   ///
   /// In en, this message translates to:
-  /// **'Reminder Settings'**
+  /// **'Notification Settings'**
   String get mineReminderSettings;
-
-  /// No description provided for @mineReminderSettingsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Set daily recording reminders'**
-  String get mineReminderSettingsSubtitle;
 
   /// No description provided for @categoryEditTitle.
   ///
@@ -3136,18 +3100,6 @@ abstract class AppLocalizations {
   /// **'Tap a card to switch backup methods. The first setup requires configuration.'**
   String get cloudTabBackupSubtitle;
 
-  /// No description provided for @restoreOpenButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Open Selected Backup'**
-  String get restoreOpenButton;
-
-  /// No description provided for @restoreSelectHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap a backup to select it'**
-  String get restoreSelectHint;
-
   /// No description provided for @cloudBackupEntryLocalOnly.
   ///
   /// In en, this message translates to:
@@ -3340,12 +3292,6 @@ abstract class AppLocalizations {
   /// **'Preferences'**
   String get appearanceSettings;
 
-  /// No description provided for @appearanceSettingsDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Theme, font, language, app lock, etc.'**
-  String get appearanceSettingsDesc;
-
   /// No description provided for @appearanceSettingsPageTitle.
   ///
   /// In en, this message translates to:
@@ -3379,7 +3325,7 @@ abstract class AppLocalizations {
   /// No description provided for @configImportExportInfoMessage.
   ///
   /// In en, this message translates to:
-  /// **'Back up and restore app configurations for cross-device migration or settings recovery. Exports as YAML format, viewable and editable.\n\nOnly includes app configurations, not transaction records (use Detail Import/Export for transaction data).'**
+  /// **'Back up and restore app configurations for cross-device migration or settings recovery. Exports as YAML format, viewable and editable.\n\nOnly includes app configurations, not transaction records (use Data Import/Export for transaction data).'**
   String get configImportExportInfoMessage;
 
   /// No description provided for @configImportExportWarning.
@@ -3645,12 +3591,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lock App'**
   String get appLockTitle;
-
-  /// No description provided for @appLockDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'PIN & biometric to protect privacy'**
-  String get appLockDesc;
 
   /// No description provided for @appLockEnable.
   ///
@@ -4029,12 +3969,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Exchange Rates'**
   String get exchangeRatePageTitle;
-
-  /// No description provided for @exchangeRateEntrySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto-fetched rates with manual override'**
-  String get exchangeRateEntrySubtitle;
 
   /// No description provided for @rateSourceAuto.
   ///
@@ -4837,14 +4771,8 @@ abstract class AppLocalizations {
   /// No description provided for @detailImportExportTitle.
   ///
   /// In en, this message translates to:
-  /// **'Detail Import/Export'**
+  /// **'Data Import/Export'**
   String get detailImportExportTitle;
-
-  /// No description provided for @detailImportExportSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Expense CSV file'**
-  String get detailImportExportSubtitle;
 
   /// No description provided for @detailImportExportImportTitle.
   ///
@@ -5320,35 +5248,11 @@ abstract class AppLocalizations {
   /// **'Backup & Restore'**
   String get backupRestoreTitle;
 
-  /// No description provided for @restoreStep1Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose Backup'**
-  String get restoreStep1Title;
-
-  /// No description provided for @restoreStep1Subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Select a backup to restore'**
-  String get restoreStep1Subtitle;
-
   /// No description provided for @restoreStep2Title.
   ///
   /// In en, this message translates to:
   /// **'Backup Contents'**
   String get restoreStep2Title;
-
-  /// No description provided for @restoreStep3Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose Recovery Strategy'**
-  String get restoreStep3Title;
-
-  /// No description provided for @restoreStep4Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm Import'**
-  String get restoreStep4Title;
 
   /// No description provided for @restoreDecisionRestoreLocal.
   ///
@@ -5365,26 +5269,8 @@ abstract class AppLocalizations {
   /// No description provided for @restoreDecisionReconnect.
   ///
   /// In en, this message translates to:
-  /// **'Sign in to original account for latest'**
+  /// **'Restore as cloud ledger'**
   String get restoreDecisionReconnect;
-
-  /// No description provided for @restoreDecisionReconnectNeedLogin.
-  ///
-  /// In en, this message translates to:
-  /// **'Not signed in — sign in to the original account first'**
-  String get restoreDecisionReconnectNeedLogin;
-
-  /// No description provided for @restoreDecisionReconnectAccountMismatch.
-  ///
-  /// In en, this message translates to:
-  /// **'The current account is not the original account of this ledger'**
-  String get restoreDecisionReconnectAccountMismatch;
-
-  /// No description provided for @restoreDecisionReconnectNoAccount.
-  ///
-  /// In en, this message translates to:
-  /// **'The backup lacks original account info and cannot restore by account'**
-  String get restoreDecisionReconnectNoAccount;
 
   /// No description provided for @restoreDecisionSkip.
   ///
@@ -5395,7 +5281,7 @@ abstract class AppLocalizations {
   /// No description provided for @restoreApply.
   ///
   /// In en, this message translates to:
-  /// **'Apply Restore'**
+  /// **'Restore Now'**
   String get restoreApply;
 
   /// No description provided for @restoreApplying.
@@ -5410,35 +5296,47 @@ abstract class AppLocalizations {
   /// **'Restore Complete'**
   String get restoreDone;
 
-  /// No description provided for @restoreNoOverwrite.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore will not overwrite existing ledgers'**
-  String get restoreNoOverwrite;
-
-  /// No description provided for @restoreNoBackups.
-  ///
-  /// In en, this message translates to:
-  /// **'No backups yet'**
-  String get restoreNoBackups;
-
   /// No description provided for @restoreOpenFailed.
   ///
   /// In en, this message translates to:
   /// **'Cannot open backup: file is corrupted or not a backup'**
   String get restoreOpenFailed;
 
+  /// No description provided for @restoreApplyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore failed; nothing was changed (rolled back)'**
+  String get restoreApplyFailed;
+
+  /// No description provided for @restoreCloudForkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a cloud ledger from a different account; it will be restored as a local copy'**
+  String get restoreCloudForkHint;
+
+  /// No description provided for @restoreFileNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup file not found'**
+  String get restoreFileNotFound;
+
+  /// No description provided for @restoreSectionLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Ledgers'**
+  String get restoreSectionLocal;
+
+  /// No description provided for @restoreSectionCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud Ledgers'**
+  String get restoreSectionCloud;
+
   /// No description provided for @restoreMemberCount.
   ///
   /// In en, this message translates to:
   /// **'{count} members'**
   String restoreMemberCount(int count);
-
-  /// No description provided for @restoreTxCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} records'**
-  String restoreTxCount(int count);
 
   /// No description provided for @restorePendingWarning.
   ///
@@ -5451,12 +5349,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} open conflicts (restore uses backup-time state)'**
   String restoreConflictWarning(int count);
-
-  /// No description provided for @restoreAccountOf.
-  ///
-  /// In en, this message translates to:
-  /// **'Account {account}'**
-  String restoreAccountOf(String account);
 
   /// No description provided for @restoreSchemaTooOld.
   ///

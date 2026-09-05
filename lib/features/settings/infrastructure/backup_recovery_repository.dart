@@ -1,10 +1,11 @@
 /// 备份恢复只读仓库（RecoverySession 隔离区预览层）。
 ///
-/// 设计意图：恢复预览（Step 2 账本清单/成员数/交易数）必须**零写入**——用
+/// 设计意图：恢复预览（账本清单/币种/支出/成员数/交易数）必须**零写入**——用
 /// sqlite3 包以只读模式直接查询备份 sqlite，不经过 drift（drift 打开连接会
 /// 执行 PRAGMA/迁移等写路径，违背只读隔离区语义）。
 library;
 
+import 'package:decimal/decimal.dart';
 import 'package:sqlite3/sqlite3.dart' show sqlite3, OpenMode, Database;
 
 /// 备份库中的账本行（预览用）。
@@ -14,6 +15,8 @@ class BackupRecoveryLedgerRow {
     required this.name,
     required this.storageMode,
     required this.syncId,
+    required this.currency,
+    required this.scopeAccountId,
   });
 
   /// 账本 id（备份时的原始 id）。
@@ -27,6 +30,12 @@ class BackupRecoveryLedgerRow {
 
   /// 备份时的同步身份（仅展示/审计，绝不激活）。
   final String? syncId;
+
+  /// 账本本位币（ISO 大写）。
+  final String currency;
+
+  /// 账号数据域（null = 本地域）；manifest 缺归属账号时用它兜底溯源。
+  final String? scopeAccountId;
 }
 
 /// 只读访问层：所有查询均为 SELECT，任何路径都不写备份文件。
@@ -46,7 +55,8 @@ class BackupRecoveryRepository {
   List<BackupRecoveryLedgerRow> listLedgers() {
     try {
       final rows = _db.select(
-        'SELECT id, name, storage_mode, sync_id FROM ledgers WHERE deleted_at IS NULL ORDER BY name',
+        'SELECT id, name, storage_mode, sync_id, currency, scope_account_id '
+        'FROM ledgers WHERE deleted_at IS NULL ORDER BY name',
       );
       return [
         for (final row in rows)
@@ -55,6 +65,8 @@ class BackupRecoveryRepository {
             name: row['name'] as String,
             storageMode: row['storage_mode'] as String,
             syncId: row['sync_id'] as String?,
+            currency: row['currency'] as String? ?? 'CNY',
+            scopeAccountId: row['scope_account_id'] as String?,
           ),
       ];
     } catch (e) {
@@ -76,6 +88,27 @@ class BackupRecoveryRepository {
       'SELECT COUNT(*) AS c FROM transactions WHERE ledger_id = ?1 AND deleted_at IS NULL',
       ledgerId,
     );
+  }
+
+  /// 账本累计支出总额：Dart 层 Decimal 累加（金额为规范化 decimal 字符串，
+  /// SQL SUM 对 TEXT 列失效），口径与账本管理页卡片一致。
+  double sumLedgerExpense(String ledgerId) {
+    try {
+      final rows = _db.select(
+        'SELECT native_amount, amount FROM transactions '
+        'WHERE ledger_id = ?1 AND deleted_at IS NULL',
+        [ledgerId],
+      );
+      var total = Decimal.zero;
+      for (final row in rows) {
+        final raw = (row['native_amount'] ?? row['amount']) as String?;
+        final value = raw == null ? null : Decimal.tryParse(raw);
+        if (value != null) total += value;
+      }
+      return total.toDouble();
+    } catch (e) {
+      throw StateError('备份支出统计读取失败: $e');
+    }
   }
 
   /// 关闭只读连接（幂等）。

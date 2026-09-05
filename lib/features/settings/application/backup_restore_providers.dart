@@ -1,8 +1,8 @@
-/// 备份恢复 4 步流程状态。
+/// 备份恢复流程状态（集中编排：打开 → 预览 → 勾选策略 → 立即恢复）。
 ///
-/// 设计意图：恢复流程的状态（当前步/备份列表/会话/决策/结果）集中在本
-/// Notifier，页面只做渲染；服务经构造注入（测试 overrideWith 注入假实现，
-/// 生产由默认装配）。Step 1–3 零写入，Step 4 单事务应用。
+/// 设计意图：恢复流程的状态（加载中/错误/会话/预览条目/决策/结果）集中在
+/// 本 Notifier，页面只做渲染；服务经构造注入（测试 overrideWith 注入假实现，
+/// 生产由默认装配）。打开与勾选全程零写入，「立即恢复」单事务应用。
 library;
 
 import 'dart:async';
@@ -18,14 +18,13 @@ import 'package:sesame_notes/shared/providers/sync_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/features/settings/infrastructure/backup_import_service.dart';
 import 'package:sesame_notes/features/settings/domain/backup_manifest.dart';
-import 'package:sesame_notes/features/settings/infrastructure/local_backup_service.dart';
 
 /// 恢复流程错误分类（UI 据此映射本地化文案）。
 enum RestoreFlowError {
   /// 无错误
   none,
 
-  /// 密码错误 / 文件损坏 / 解析失败
+  /// 文件损坏 / 非备份文件 / 解析失败
   openFailed,
 
   /// 备份 schema 旧于当前
@@ -33,30 +32,9 @@ enum RestoreFlowError {
 
   /// 备份 schema 新于当前
   schemaTooNew,
-}
 
-/// 恢复列表中的本地备份展示项。
-class RestoreBackupFile {
-  const RestoreBackupFile._({
-    required this._source,
-    required this.createdAt,
-    required this.sizeLabel,
-    required this.pathKey,
-  });
-
-  /// 外部 .snbak 文件（「从文件恢复」/「从云端恢复」兜底通道）构造入口。
-  factory RestoreBackupFile.external(LocalBackupFile file) =>
-      RestoreBackupFile._(
-        source: file,
-        createdAt: file.createdAt,
-        sizeLabel: file.sizeLabel,
-        pathKey: file.file.path,
-      );
-
-  final LocalBackupFile _source;
-  final DateTime createdAt;
-  final String sizeLabel;
-  final String pathKey;
+  /// 应用恢复失败（单事务已整体回滚）
+  applyFailed,
 }
 
 /// 单个账本的恢复预览展示项。
@@ -66,7 +44,8 @@ class RestoreLedgerItem {
     required this.name,
     required this.storageOrigin,
     this.accountId,
-    this.accountName,
+    required this.currency,
+    required this.expenseTotal,
     required this.memberCount,
     required this.transactionCount,
     required this.pendingCount,
@@ -76,8 +55,16 @@ class RestoreLedgerItem {
   final String ledgerBackupId;
   final String name;
   final LedgerStorageOrigin storageOrigin;
+
+  /// 备份记录的归属账号 id（云端账本；本地账本为 null）。
   final String? accountId;
-  final String? accountName;
+
+  /// 账本本位币（ISO 大写），与账本管理页卡片同口径展示。
+  final String currency;
+
+  /// 账本累计支出总额（备份时快照），与账本管理页卡片同口径。
+  final double expenseTotal;
+
   final int memberCount;
   final int transactionCount;
   final int pendingCount;
@@ -87,39 +74,32 @@ class RestoreLedgerItem {
 /// 页面可选的恢复决策。
 enum RestoreDecision { restoreLocal, forkCloudToLocal, reconnect, skip }
 
-/// 「登录原账号获取最新」的账号身份拦截原因。
-enum ReconnectBlocker {
-  /// 账号匹配，可用。
-  none,
-
-  /// 未登录。
-  needLogin,
-
-  /// 当前账号不是备份记录的原账号。
-  accountMismatch,
-
-  /// 备份缺少原账号信息，无从校验身份。
-  noAccount,
-}
-
-/// 判定云端账本「登录原账号获取最新」是否被拦截（纯函数，测试锚点）。
+/// 判定云端账本是否归入「云端账本」分区（其余账本一律归「本地账本」分区）。
 ///
-/// 规则：未登录 → 需登录；原账号缺失 → 无法校验；当前账号 ≠ 原账号 → 不符；
-/// 全部满足才可用。
-ReconnectBlocker reconnectBlockerOf({
-  required String? itemAccountId,
+/// 规则：已登录且备份记录的归属账号 == 当前账号。未登录 / 账号不符 /
+/// 备份缺账号信息的云端账本归入本地分区，选中时恢复为本地副本。
+bool cloudSectionOf({
+  required RestoreLedgerItem item,
   required String? currentAccountId,
 }) {
-  if (currentAccountId == null || currentAccountId.isEmpty) {
-    return ReconnectBlocker.needLogin;
+  if (item.storageOrigin != LedgerStorageOrigin.cloud) return false;
+  if (currentAccountId == null || currentAccountId.isEmpty) return false;
+  if (item.accountId == null || item.accountId!.isEmpty) return false;
+  return item.accountId == currentAccountId;
+}
+
+/// 账本的默认决策（默认全选：勾选时按此决策恢复，取消勾选 = skip）。
+RestoreDecision defaultDecisionFor({
+  required RestoreLedgerItem item,
+  required String? currentAccountId,
+}) {
+  if (item.storageOrigin == LedgerStorageOrigin.local) {
+    return RestoreDecision.restoreLocal;
   }
-  if (itemAccountId == null || itemAccountId.isEmpty) {
-    return ReconnectBlocker.noAccount;
+  if (cloudSectionOf(item: item, currentAccountId: currentAccountId)) {
+    return RestoreDecision.reconnect;
   }
-  if (itemAccountId != currentAccountId) {
-    return ReconnectBlocker.accountMismatch;
-  }
-  return ReconnectBlocker.none;
+  return RestoreDecision.forkCloudToLocal;
 }
 
 /// 应用恢复后是否需要触发 Reconnect v1（纯函数，测试锚点）。
@@ -165,62 +145,45 @@ class RestoreApplyReport {
 /// 恢复流程状态（不可变快照）。
 class BackupRestoreFlowState {
   const BackupRestoreFlowState({
-    this.step = 1,
     this.loading = false,
     this.error = RestoreFlowError.none,
-    this.backups = const [],
-    this.selected,
     this.session,
     this.items = const [],
     this.decisions = const {},
     this.report,
   });
 
-  /// 当前步骤（1 选择备份 / 2 查看内容 / 3 选择策略 / 4 确认应用）。
-  final int step;
-
   /// 是否忙（打开备份/应用恢复中）。
   final bool loading;
 
-  /// 错误分类（Step 1–3 失败不影响 live DB）。
+  /// 错误分类（打开失败/应用失败，均不触碰 live DB）。
   final RestoreFlowError error;
 
-  /// 本地备份列表。
-  final List<RestoreBackupFile> backups;
-
-  /// 当前选中的备份文件。
-  final RestoreBackupFile? selected;
-
-  /// 打开的只读恢复会话（Step 1 产物）。
+  /// 打开的只读恢复会话（打开备份的产物，退出页面时关闭释放临时文件）。
   final RecoverySession? session;
 
-  /// 备份内容预览条目（Step 2 产物）。
+  /// 备份内容预览条目。
   final List<RestoreLedgerItem> items;
 
-  /// 每账本恢复决策（Step 3；未决策 = skip）。
+  /// 每账本恢复决策（默认全选预填；未决策 = skip）。
   final Map<String, RestoreDecision> decisions;
 
-  /// Step 4 应用结果。
+  /// 应用恢复结果（完成后展示逐账本结果）。
   final RestoreApplyReport? report;
 
   BackupRestoreFlowState copyWith({
-    int? step,
     bool? loading,
     RestoreFlowError? error,
-    List<RestoreBackupFile>? backups,
-    RestoreBackupFile? selected,
     RecoverySession? session,
+    bool clearSession = false,
     List<RestoreLedgerItem>? items,
     Map<String, RestoreDecision>? decisions,
     RestoreApplyReport? report,
   }) {
     return BackupRestoreFlowState(
-      step: step ?? this.step,
       loading: loading ?? this.loading,
       error: error ?? this.error,
-      backups: backups ?? this.backups,
-      selected: selected ?? this.selected,
-      session: session ?? this.session,
+      session: clearSession ? null : (session ?? this.session),
       items: items ?? this.items,
       decisions: decisions ?? this.decisions,
       report: report ?? this.report,
@@ -228,83 +191,43 @@ class BackupRestoreFlowState {
   }
 }
 
-/// 恢复流程 Notifier：编排 4 步状态机。
+/// 恢复流程 Notifier：编排打开 → 预览 → 勾选 → 立即恢复。
 class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
-  BackupRestoreFlowNotifier({
-    LocalBackupService? backupService,
-    BackupImportService? importService,
-  }) : _backupService = backupService, // ignore: prefer_initializing_formals
-       _importService = importService; // ignore: prefer_initializing_formals
+  BackupRestoreFlowNotifier({BackupImportService? importService})
+    : _importService = importService; // ignore: prefer_initializing_formals
 
-  final LocalBackupService? _backupService;
   final BackupImportService? _importService;
 
-  LocalBackupService get _backup => _backupService ?? LocalBackupService();
   BackupImportService get _import => _importService ?? BackupImportService();
 
+  /// 当前打开的会话引用（onDispose 兜底关闭时不能访问 state，用普通字段）。
+  RecoverySession? _session;
+
   @override
-  BackupRestoreFlowState build() => const BackupRestoreFlowState();
-
-  /// Step 1：加载本地备份列表（只读）。
-  ///
-  /// [externalPath] 为备份目录之外的外部 .snbak 文件（「从文件恢复」选择的文件、
-  /// 云端下载的最新备份），存在时插入列表头部并预选——用户只需输入密码即可打开。
-  Future<void> loadBackups({String? externalPath}) async {
-    state = state.copyWith(loading: true, error: RestoreFlowError.none);
-    try {
-      final backups = (await _backup.listBackups())
-          .map(
-            (file) => RestoreBackupFile._(
-              source: file,
-              createdAt: file.createdAt,
-              sizeLabel: file.sizeLabel,
-              pathKey: file.file.path,
-            ),
-          )
-          .toList();
-      RestoreBackupFile? preselected;
-      if (externalPath != null) {
-        final external = File(externalPath);
-        if (await external.exists()) {
-          final item = RestoreBackupFile.external(
-            LocalBackupFile(
-              file: external,
-              createdAt: await external.lastModified(),
-              sizeBytes: await external.length(),
-            ),
-          );
-          backups.insert(0, item);
-          preselected = item;
-        }
-      }
-      state = state.copyWith(
-        loading: false,
-        backups: backups,
-        selected: preselected,
-      );
-    } catch (e, st) {
-      logger.error('RestoreFlow', '读取备份列表失败', e, st);
-      state = state.copyWith(
-        loading: false,
-        error: RestoreFlowError.openFailed,
-      );
-    }
+  BackupRestoreFlowState build() {
+    // 容器销毁兜底关闭会话：页面中途退出/异常路径也会释放解压临时文件
+    ref.onDispose(() {
+      final session = _session;
+      if (session != null) unawaited(session.close());
+    });
+    return const BackupRestoreFlowState();
   }
 
-  /// Step 1：点选备份（仅选中，不打开；打开由页面「打开所选备份」按钮触发）。
-  void selectBackup(RestoreBackupFile file) {
-    state = state.copyWith(selected: file, error: RestoreFlowError.none);
-  }
-
-  /// Step 1→2：打开备份（明文解帧 + Manifest 校验 + 预览），零写入。
+  /// 打开备份（明文解帧 + Manifest 校验 + 只读预览），零写入。
   ///
   /// 备份无加密，任何设备可直接打开；打开失败即文件损坏或非备份文件。
-  Future<void> openBackup({required RestoreBackupFile file}) async {
-    state = state.copyWith(loading: true, error: RestoreFlowError.none);
+  /// 成功后按「默认全选」预填每账本决策（本地→恢复为本地账本，
+  /// 云端匹配账号→恢复为云账本，其余云端→恢复为本地副本）。
+  Future<void> openBackup({required File file}) async {
+    state = state.copyWith(
+      loading: true,
+      error: RestoreFlowError.none,
+      clearSession: true,
+    );
     try {
       final db = ref.read(databaseProvider);
       final session = await _import.openBackup(
-        backupFile: file._source.file,
+        backupFile: file,
         currentSchemaVersion: db.schemaVersion,
       );
       final items = (await _import.listRecoveryItems(session))
@@ -314,7 +237,8 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
               name: item.name,
               storageOrigin: item.storageOrigin,
               accountId: item.accountReference?.accountId,
-              accountName: item.accountReference?.accountName,
+              currency: item.currency,
+              expenseTotal: item.expenseTotal,
               memberCount: item.memberCount,
               transactionCount: item.transactionCount,
               pendingCount: item.pendingCount,
@@ -322,12 +246,19 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
             ),
           )
           .toList(growable: false);
+      final currentAccountId = ref.read(authSessionProvider)?.userId;
+      _session = session;
       state = state.copyWith(
         loading: false,
-        selected: file,
         session: session,
         items: items,
-        step: 2,
+        decisions: {
+          for (final item in items)
+            item.ledgerBackupId: defaultDecisionFor(
+              item: item,
+              currentAccountId: currentAccountId,
+            ),
+        },
       );
     } on BackupFormatException catch (e) {
       logger.warning('RestoreFlow', '打开备份失败: ${e.reason.name} ${e.message}');
@@ -346,37 +277,17 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
     }
   }
 
-  /// Step 2→3：进入策略选择（内容已只读预览，无写入）。
-  void proceedToStrategy() {
-    state = state.copyWith(step: 3);
-  }
-
-  /// Step 3：设置单个账本的恢复决策（未决策 = skip）。
+  /// 勾选/取消勾选单个账本：选中 = 默认决策恢复，未选中 = skip（暂不处理）。
   void setDecision(String ledgerBackupId, RestoreDecision decision) {
     final decisions = Map<String, RestoreDecision>.from(state.decisions);
     decisions[ledgerBackupId] = decision;
     state = state.copyWith(decisions: decisions);
   }
 
-  /// Step 3→4：进入确认页（映射预览，零写入）。
+  /// 应用恢复：单事务写入 live DB，任一步失败整体回滚。
   ///
-  /// 设计意图：Step 3 界面展示的默认决策（本地恢复 / 云端 Fork）必须在此
-  /// 物化进决策表——否则用户看到"已选中"但 apply 时全部走 skip（显式决策
-  /// 与 UI 默认值保持一致）。
-  void proceedToConfirm() {
-    final decisions = Map<String, RestoreDecision>.from(state.decisions);
-    for (final item in state.items) {
-      decisions.putIfAbsent(
-        item.ledgerBackupId,
-        () => item.storageOrigin == LedgerStorageOrigin.cloud
-            ? RestoreDecision.forkCloudToLocal
-            : RestoreDecision.restoreLocal,
-      );
-    }
-    state = state.copyWith(decisions: decisions, step: 4);
-  }
-
-  /// Step 4：单事务应用恢复；成功后停留在完成态展示结果。
+  /// 成功后关闭会话（释放临时文件）并停留在完成态展示逐账本结果；
+  /// 失败保留会话，用户可直接重试。
   Future<void> apply() async {
     final session = state.session;
     if (session == null) return;
@@ -400,7 +311,7 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
         localSelfId: localSelfId,
         currentAccountId: currentAccountId,
       );
-      // 存在「登录原账号」且账号匹配的决策：触发 Reconnect v1 从服务器
+      // 存在「恢复为云账本」且账号匹配的决策：触发 Reconnect v1 从服务器
       // 下载云端最新（备份内容不复制，实际数据由同步引擎收敛）。
       if (shouldReconnectAfterApply(
         items: state.items,
@@ -421,14 +332,29 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
             )
             .toList(growable: false),
       );
-      state = state.copyWith(loading: false, report: report, step: 4);
+      await session.close();
+      _session = null;
+      state = state.copyWith(
+        loading: false,
+        report: report,
+        clearSession: true,
+      );
     } catch (e, st) {
       logger.error('RestoreFlow', '应用恢复失败（已回滚）', e, st);
       state = state.copyWith(
         loading: false,
-        error: RestoreFlowError.openFailed,
+        error: RestoreFlowError.applyFailed,
       );
     }
+  }
+
+  /// 关闭恢复会话并清理临时文件（页面退出/应用完成后调用；幂等）。
+  Future<void> closeSession() async {
+    final session = _session;
+    if (session == null) return;
+    _session = null;
+    state = state.copyWith(clearSession: true);
+    await session.close();
   }
 
   /// 把页面决策转换为恢复引擎决策。
@@ -459,25 +385,6 @@ class BackupRestoreFlowNotifier extends Notifier<BackupRestoreFlowState> {
     } catch (e, st) {
       logger.error('RestoreFlow', '恢复后 Reconnect 失败', e, st);
     }
-  }
-
-  /// 返回上一步（2→1 时关闭会话，释放临时文件）。
-  Future<void> back() async {
-    if (state.step == 2) {
-      final session = state.session;
-      state = state.copyWith(
-        step: 1,
-        session: null,
-        items: const [],
-        decisions: const {},
-        report: null,
-      );
-      if (session != null) {
-        await session.close();
-      }
-      return;
-    }
-    state = state.copyWith(step: state.step - 1);
   }
 }
 

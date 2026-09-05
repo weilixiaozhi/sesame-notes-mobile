@@ -3,7 +3,7 @@
 /// 按本仓库的备份语义适配：
 /// - 第三方备份是「.snbak 整包快照」模型（非逐条增量同步）：
 ///   上传 = 生成本地快照并版本化上传；下载 = 拉取云端最新快照并进入
-///   4 步恢复页（RestoreBackupPage）；
+///   恢复页（RestoreBackupPage）；
 /// - 各后端凭据随配置保存（Supabase 账号密码在配置内，创建服务时自动登录），
 ///   区块不设独立登录入口；
 /// - 「自动同步」开关控制自动备份时是否随之上传云端。
@@ -100,7 +100,7 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
                     onTap: _uploadBusy || _downloadBusy ? null : _uploadNow,
                   ),
                   AppTokens.cardDivider(context),
-                  // 从云端恢复：下载云端最新快照并进入 4 步恢复页。
+                  // 从云端恢复：下载云端最新快照并进入恢复页。
                   AppListTile(
                     leading: AppIcons.cloudDownload,
                     title: l10n.cloudBackupRestoreFromCloud,
@@ -228,7 +228,7 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
     }
   }
 
-  /// 从云端恢复：下载最新 .snbak → 以外部备份进入 4 步恢复页。
+  /// 从云端恢复：下载最新 .snbak → 以外部备份进入恢复页。
   Future<void> _downloadRestore() async {
     final l10n = AppLocalizations.of(context);
     setState(() => _downloadBusy = true);

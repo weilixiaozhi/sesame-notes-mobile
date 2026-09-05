@@ -204,7 +204,6 @@
     "joinSharedNeedLogin": "加入共享帳本需先登入",
     "joinSharedPreviewTitle": "邀請詳情",
     "mineCheckUpdate": "檢查更新",
-    "mineCheckUpdateSubtitle": "偵測 GitHub 發布頁是否有新版本",
     "updateDialogTitle": "檢查更新",
     "updateFound": "發現新版本 {version}",
     "updateLatest": "目前已是最新版本",
@@ -321,7 +320,7 @@
     "languageSystemDefault": "跟隨系統",
     "mineAvatarDelete": "刪除頭像",
     "mineAvatarUploadNew": "上傳新頭像",
-    "mineCloudService": "備份與雲端同步配置",
+    "mineCloudService": "備份與雲端同步",
     "cloudBackupUrlLabel": "服務地址",
     "cloudBackupAnonKeyLabel": "Anon Key",
     "cloudBackupBucketLabel": "儲存桶",
@@ -346,14 +345,9 @@
             }
         }
     },
-    "mineCloudServiceLoading": "載入中…",
-    "mineSyncError": "狀態取得失敗",
     "mineCategoryManagement": "分類管理",
-    "mineCategoryManagementSubtitle": "編輯自訂分類",
     "mineRecurringTransactions": "週期帳單",
-    "mineRecurringTransactionsSubtitle": "管理週期性帳單",
-    "mineReminderSettings": "記帳提醒",
-    "mineReminderSettingsSubtitle": "設定每日記帳提醒",
+    "mineReminderSettings": "通知設定",
     "categoryEditTitle": "編輯分類",
     "categoryNewTitle": "新建分類",
     "categoryDetailTooltip": "分類匯總",
@@ -739,8 +733,6 @@
     "cloudTabOffline": "離線模式",
     "cloudTabBackup": "備份同步",
     "cloudTabBackupSubtitle": "點擊卡片切換備份方式，首次需要配置資訊",
-    "restoreOpenButton": "開啟所選備份",
-    "restoreSelectHint": "點擊列表選擇要恢復的備份",
     "cloudBackupEntryLocalOnly": "僅本機備份",
     "cloudBackupEntryFailed": "上次備份失敗，將自動重試",
     "cloudBackupStatusTitle": "備份狀態",
@@ -780,13 +772,12 @@
     "welcomeSelectCurrencyTitle": "選擇記帳貨幣",
     "welcomeCurrencyDescription": "選擇您常用的貨幣，之後可以隨時在設定中更改",
     "appearanceSettings": "偏好調節",
-    "appearanceSettingsDesc": "主題、字體、語言、應用鎖等",
     "appearanceSettingsPageTitle": "偏好調節",
     "appearanceSettingsPageSubtitle": "外觀、顯示、安全等應用偏好",
     "configImportExportTitle": "配置匯入匯出",
     "configImportExportSubtitle": "備份和恢復應用配置",
     "configImportExportInfoTitle": "功能說明",
-    "configImportExportInfoMessage": "備份和恢復應用配置，用於跨裝置遷移或恢復設定。匯出為 YAML 格式，可檢視和編輯。\n\n僅包含應用配置，不包含交易記錄（交易資料請使用明細匯入匯出功能）。",
+    "configImportExportInfoMessage": "備份和恢復應用配置，用於跨裝置遷移或恢復設定。匯出為 YAML 格式，可檢視和編輯。\n\n僅包含應用配置，不包含交易記錄（交易資料請使用資料匯入匯出功能）。",
     "configImportExportWarning": "配置檔案包含雲端服務金鑰、密碼等敏感資訊，請妥善保管。匯入會覆蓋同名配置，建議先匯出備份。",
     "configExportTitle": "匯出配置",
     "configExportSubtitle": "將目前配置匯出為YAML檔案",
@@ -845,7 +836,6 @@
     "calendarAddTransaction": "在該日記帳",
     "commonUncategorized": "未分類",
     "appLockTitle": "應用上鎖",
-    "appLockDesc": "PIN碼與生物辨識保護隱私",
     "appLockEnable": "啟用應用鎖",
     "appLockEnableDesc": "啟動和切回應用時需要驗證身份",
     "appLockSetPin": "設定密碼",
@@ -999,7 +989,6 @@
         }
     },
     "exchangeRatePageTitle": "匯率管理",
-    "exchangeRateEntrySubtitle": "自動取得匯率，支援手動修正",
     "rateSourceAuto": "自動",
     "rateSourceManual": "手動",
     "rateUpdatedAt": "{date} 更新",
@@ -1168,8 +1157,7 @@
     "currencySZL": "斯威士蘭里蘭吉尼",
     "currencyMGA": "马達加斯加阿里亞里",
     "currencyMRU": "毛里塔尼亞烏吉亞",
-    "detailImportExportTitle": "明細匯入匯出",
-    "detailImportExportSubtitle": "支出明細csv格式檔案",
+    "detailImportExportTitle": "資料匯入匯出",
     "detailImportExportImportTitle": "匯入明細",
     "detailImportExportImportSubtitle": "支援 CSV/TSV/XLSX，相容支付寶、微信帳單",
     "detailImportExportExportTitle": "匯出明細",
@@ -1280,34 +1268,22 @@
     "aaNoParticipants": "請先新增參與人",
     "aaSplitAmountIncomplete": "請填寫全部參與人的金額",
     "backupRestoreTitle": "備份與還原",
-    "restoreStep1Title": "選擇備份",
-    "restoreStep1Subtitle": "選擇要恢復的備份",
-    "restoreStep2Title": "檢視備份內容",
-    "restoreStep3Title": "選擇還原策略",
-    "restoreStep4Title": "確認匯入結果",
+    "restoreStep2Title": "備份內容",
     "restoreDecisionRestoreLocal": "還原為本機帳本",
     "restoreDecisionFork": "還原為本機副本",
-    "restoreDecisionReconnect": "登入原帳號取得最新",
-    "restoreDecisionReconnectNeedLogin": "未登入，登入原帳號後可用",
-    "restoreDecisionReconnectAccountMismatch": "目前帳號不是該帳本的原帳號",
-    "restoreDecisionReconnectNoAccount": "備份缺少原帳號資訊，無法按原帳號恢復",
+    "restoreDecisionReconnect": "恢復為雲端帳本",
     "restoreDecisionSkip": "暫不處理",
-    "restoreApply": "套用還原",
+    "restoreApply": "立即恢復",
     "restoreApplying": "正在套用…",
     "restoreDone": "還原完成",
-    "restoreNoOverwrite": "還原不會覆蓋現有帳本",
-    "restoreNoBackups": "暫無備份",
     "restoreOpenFailed": "無法開啟備份：檔案已損壞或不是備份檔案",
+    "restoreApplyFailed": "恢復失敗，未做任何更改（已整體回滾）",
+    "restoreCloudForkHint": "這是雲端帳本，但不是當前帳號，將恢復為本地副本",
+    "restoreFileNotFound": "備份檔案不存在",
+    "restoreSectionLocal": "本機帳本",
+    "restoreSectionCloud": "雲端帳本",
     "restoreMemberCount": "{count} 位成員",
     "@restoreMemberCount": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "restoreTxCount": "{count} 筆記錄",
-    "@restoreTxCount": {
         "placeholders": {
             "count": {
                 "type": "int"
@@ -1327,14 +1303,6 @@
         "placeholders": {
             "count": {
                 "type": "int"
-            }
-        }
-    },
-    "restoreAccountOf": "帳號 {account}",
-    "@restoreAccountOf": {
-        "placeholders": {
-            "account": {
-                "type": "String"
             }
         }
     },

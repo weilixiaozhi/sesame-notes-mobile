@@ -441,10 +441,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mineCheckUpdate => 'Check for Updates';
 
   @override
-  String get mineCheckUpdateSubtitle =>
-      'Check GitHub releases for new versions';
-
-  @override
   String get updateDialogTitle => 'Check for Updates';
 
   @override
@@ -770,28 +766,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get mineCloudServiceLoading => 'Loading...';
-
-  @override
-  String get mineSyncError => 'Failed to get status';
-
-  @override
   String get mineCategoryManagement => 'Category Management';
-
-  @override
-  String get mineCategoryManagementSubtitle => 'Edit custom categories';
 
   @override
   String get mineRecurringTransactions => 'Recurring Bills';
 
   @override
-  String get mineRecurringTransactionsSubtitle => 'Manage recurring bills';
-
-  @override
-  String get mineReminderSettings => 'Reminder Settings';
-
-  @override
-  String get mineReminderSettingsSubtitle => 'Set daily recording reminders';
+  String get mineReminderSettings => 'Notification Settings';
 
   @override
   String get categoryEditTitle => 'Edit Category';
@@ -1718,12 +1699,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap a card to switch backup methods. The first setup requires configuration.';
 
   @override
-  String get restoreOpenButton => 'Open Selected Backup';
-
-  @override
-  String get restoreSelectHint => 'Tap a backup to select it';
-
-  @override
   String get cloudBackupEntryLocalOnly => 'Local backup only';
 
   @override
@@ -1829,9 +1804,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appearanceSettings => 'Preferences';
 
   @override
-  String get appearanceSettingsDesc => 'Theme, font, language, app lock, etc.';
-
-  @override
   String get appearanceSettingsPageTitle => 'Preferences';
 
   @override
@@ -1850,7 +1822,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get configImportExportInfoMessage =>
-      'Back up and restore app configurations for cross-device migration or settings recovery. Exports as YAML format, viewable and editable.\n\nOnly includes app configurations, not transaction records (use Detail Import/Export for transaction data).';
+      'Back up and restore app configurations for cross-device migration or settings recovery. Exports as YAML format, viewable and editable.\n\nOnly includes app configurations, not transaction records (use Data Import/Export for transaction data).';
 
   @override
   String get configImportExportWarning =>
@@ -1992,9 +1964,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appLockTitle => 'Lock App';
-
-  @override
-  String get appLockDesc => 'PIN & biometric to protect privacy';
 
   @override
   String get appLockEnable => 'Enable App Lock';
@@ -2212,10 +2181,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exchangeRatePageTitle => 'Exchange Rates';
-
-  @override
-  String get exchangeRateEntrySubtitle =>
-      'Auto-fetched rates with manual override';
 
   @override
   String get rateSourceAuto => 'Auto';
@@ -2634,10 +2599,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currencyMRU => 'Mauritanian Ouguiya';
 
   @override
-  String get detailImportExportTitle => 'Detail Import/Export';
-
-  @override
-  String get detailImportExportSubtitle => 'Expense CSV file';
+  String get detailImportExportTitle => 'Data Import/Export';
 
   @override
   String get detailImportExportImportTitle => 'Import Details';
@@ -2905,19 +2867,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupRestoreTitle => 'Backup & Restore';
 
   @override
-  String get restoreStep1Title => 'Choose Backup';
-
-  @override
-  String get restoreStep1Subtitle => 'Select a backup to restore';
-
-  @override
   String get restoreStep2Title => 'Backup Contents';
-
-  @override
-  String get restoreStep3Title => 'Choose Recovery Strategy';
-
-  @override
-  String get restoreStep4Title => 'Confirm Import';
 
   @override
   String get restoreDecisionRestoreLocal => 'Restore as local ledger';
@@ -2926,26 +2876,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restoreDecisionFork => 'Restore as local copy';
 
   @override
-  String get restoreDecisionReconnect =>
-      'Sign in to original account for latest';
-
-  @override
-  String get restoreDecisionReconnectNeedLogin =>
-      'Not signed in — sign in to the original account first';
-
-  @override
-  String get restoreDecisionReconnectAccountMismatch =>
-      'The current account is not the original account of this ledger';
-
-  @override
-  String get restoreDecisionReconnectNoAccount =>
-      'The backup lacks original account info and cannot restore by account';
+  String get restoreDecisionReconnect => 'Restore as cloud ledger';
 
   @override
   String get restoreDecisionSkip => 'Skip';
 
   @override
-  String get restoreApply => 'Apply Restore';
+  String get restoreApply => 'Restore Now';
 
   @override
   String get restoreApplying => 'Applying...';
@@ -2954,24 +2891,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restoreDone => 'Restore Complete';
 
   @override
-  String get restoreNoOverwrite =>
-      'Restore will not overwrite existing ledgers';
-
-  @override
-  String get restoreNoBackups => 'No backups yet';
-
-  @override
   String get restoreOpenFailed =>
       'Cannot open backup: file is corrupted or not a backup';
 
   @override
-  String restoreMemberCount(int count) {
-    return '$count members';
-  }
+  String get restoreApplyFailed =>
+      'Restore failed; nothing was changed (rolled back)';
 
   @override
-  String restoreTxCount(int count) {
-    return '$count records';
+  String get restoreCloudForkHint =>
+      'This is a cloud ledger from a different account; it will be restored as a local copy';
+
+  @override
+  String get restoreFileNotFound => 'Backup file not found';
+
+  @override
+  String get restoreSectionLocal => 'Local Ledgers';
+
+  @override
+  String get restoreSectionCloud => 'Cloud Ledgers';
+
+  @override
+  String restoreMemberCount(int count) {
+    return '$count members';
   }
 
   @override
@@ -2982,11 +2924,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String restoreConflictWarning(int count) {
     return '$count open conflicts (restore uses backup-time state)';
-  }
-
-  @override
-  String restoreAccountOf(String account) {
-    return 'Account $account';
   }
 
   @override

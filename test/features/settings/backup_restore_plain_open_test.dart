@@ -2,8 +2,7 @@
 ///
 /// 需求锚点：
 /// - .snbak 为明文分帧文件，任何设备可直接解帧打开；
-/// - 恢复页打开备份时直接解帧进入 Step 2；
-/// - selectBackup 只改变选中态，不改变步骤；
+/// - 恢复页打开备份时直接解帧进入预览（默认全选决策）；
 /// - BackupPayloadCodec 明文分帧往返一致；长度字段损坏抛 corrupt。
 library;
 
@@ -33,7 +32,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  test('本机 .snbak 明文分帧：直接打开进入 step2', () async {
+  test('本机 .snbak 明文分帧：直接解帧打开进入预览', () async {
     final tmp = await Directory.systemTemp.createTemp('plain_open_restore_');
     addTearDown(() => tmp.delete(recursive: true));
     final srcFile = File(p.join(tmp.path, 'src.sqlite'));
@@ -41,10 +40,10 @@ void main() {
     final extractDir = Directory(p.join(tmp.path, 'extract'));
     await extractDir.create(recursive: true);
 
-    // 源库生成明文分帧 .snbak（备份目录供恢复列表枚举）。
+    // 源库生成明文分帧 .snbak。
     final srcDb = SesameDatabase.forTesting(NativeDatabase(srcFile));
     addTearDown(srcDb.close);
-    await LocalBackupService(
+    final backup = await LocalBackupService(
       backupDir: backupDir,
       databaseFile: srcFile,
     ).createBackup(db: srcDb);
@@ -56,10 +55,6 @@ void main() {
         databaseProvider.overrideWithValue(liveDb),
         backupRestoreFlowProvider.overrideWith(
           () => BackupRestoreFlowNotifier(
-            backupService: LocalBackupService(
-              backupDir: backupDir,
-              databaseFile: File(p.join(tmp.path, 'live.sqlite')),
-            ),
             importService: BackupImportService(tempDirOverride: extractDir),
           ),
         ),
@@ -67,44 +62,14 @@ void main() {
     );
     addTearDown(container.dispose);
     final notifier = container.read(backupRestoreFlowProvider.notifier);
-    await notifier.loadBackups();
-    final item = notifier.state.backups.single;
 
-    // 明文分帧，直接解帧打开，成功进入 step 2。
-    await notifier.openBackup(file: item);
-    expect(notifier.state.step, 2);
+    // 明文分帧，直接解帧打开，进入预览。
+    await notifier.openBackup(file: backup);
     expect(notifier.state.error, RestoreFlowError.none);
+    expect(notifier.state.session, isNotNull);
+    expect(notifier.state.items, isEmpty, reason: '空库备份无账本条目');
     // 关闭会话释放提取的临时文件，tearDown 才能删除临时目录。
-    await notifier.back();
-  });
-
-  test('点选备份：selectBackup 只改选中态，不打开', () async {
-    final tmp = await Directory.systemTemp.createTemp('select_backup_');
-    addTearDown(() => tmp.delete(recursive: true));
-    final backupDir = Directory(p.join(tmp.path, 'backups'));
-    await backupDir.create(recursive: true);
-    final file = File(
-      p.join(backupDir.path, 'sesame_notes_20260801_120000.snbak'),
-    );
-    await file.writeAsBytes([1, 2, 3]);
-
-    final container = ProviderContainer(
-      overrides: [
-        backupRestoreFlowProvider.overrideWith(
-          () => BackupRestoreFlowNotifier(
-            backupService: LocalBackupService(backupDir: backupDir),
-          ),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-    final notifier = container.read(backupRestoreFlowProvider.notifier);
-    await notifier.loadBackups();
-    final item = notifier.state.backups.single;
-
-    notifier.selectBackup(item);
-    expect(notifier.state.selected?.pathKey, item.pathKey);
-    expect(notifier.state.step, 1, reason: '点选不改变步骤');
+    await notifier.closeSession();
   });
 
   test('BackupPayloadCodec：明文分帧往返一致，长度字段损坏抛 corrupt', () {

@@ -20,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sesame_notes/core/api/api_client_provider.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/features/settings/infrastructure/auto_backup_service.dart';
 import 'package:sesame_notes/features/settings/infrastructure/local_backup_service.dart';
@@ -82,6 +83,8 @@ final autoBackupCoordinatorProvider = Provider<AutoBackupService>((ref) {
         deviceId: deviceId,
         // 备份只含本地域与当前账号域：其他账号数据不进入 .snbak
         currentAccountId: ref.read(authSessionProvider)?.userId,
+        // 备份 Manifest 记录当前账号昵称（恢复页账号溯源展示用）
+        accountNames: currentAccountNames(ref.read),
       );
     },
     uploadToCloud: uploadBackupFileIfAutoSyncEnabled,
@@ -190,7 +193,21 @@ Future<File> createLocalBackupNow({required CloudReadFn read}) async {
     deviceId: deviceId,
     // 备份只含本地域与当前账号域：其他账号数据不进入 .snbak
     currentAccountId: read(authSessionProvider)?.userId,
+    // 备份 Manifest 记录当前账号昵称（恢复页账号溯源展示用）
+    accountNames: currentAccountNames(read),
   );
+}
+
+/// 当前登录账号的「账号 id → 昵称」映射（备份 Manifest 账号引用展示用）。
+///
+/// 未登录 / 无昵称时返回 null（Manifest 允许账号引用昵称为空串）。
+Map<String, String>? currentAccountNames(CloudReadFn read) {
+  final userId = read(authSessionProvider)?.userId;
+  final name = read(accountStateProvider).profile?.displayName?.trim();
+  if (userId == null || userId.isEmpty || name == null || name.isEmpty) {
+    return null;
+  }
+  return {userId: name};
 }
 
 /// 记录成功：写入 backup_state 单例行 + 当天去重标记。
