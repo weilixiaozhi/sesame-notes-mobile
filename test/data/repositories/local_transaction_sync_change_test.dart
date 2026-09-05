@@ -627,4 +627,23 @@ void main() {
     expect(txVariant.ledgerId, cloudLedgerId);
     // payload 已由 push 侧反序列化为生成模型（否则 _deser 抛错）——走到这里即消费成功。
   });
+
+  test('addTransaction 时间含微秒 → payload 时间为契约 3 位毫秒', () async {
+    await repo.addTransaction(
+      ledgerId: cloudLedgerId,
+      type: 'expense',
+      amount: '6.66',
+      happenedAt: DateTime.utc(2026, 8, 21, 10, 0, 0, 0, 123),
+    );
+
+    final changes = await txChanges();
+    expect(changes.length, 1);
+    final payload = jsonDecode(changes.single.payload) as Map<String, dynamic>;
+    final contract = RegExp(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$');
+    expect(
+      payload['happened_at'],
+      matches(contract),
+      reason: '交易 payload 时间必须为 3 位毫秒，否则服务端 schema 校验拒绝',
+    );
+  });
 }
