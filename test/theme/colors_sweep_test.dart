@@ -63,7 +63,10 @@ void main() {
       expect(AppTokens.cardOuterBorderWidth(ctx), 0);
       expect(AppTokens.cardInnerDividerColor(ctx), isA<Color>());
       expect(AppTokens.cardInnerDividerHeight(ctx), isA<double>());
-      expect(AppTokens.cardDivider(ctx), isA<Divider>());
+      // cardDivider 由 Padding（上下呼吸距）包裹 Divider 构成
+      final divider = AppTokens.cardDivider(ctx);
+      expect(divider, isA<Padding>());
+      expect((divider as Padding).child, isA<Divider>());
 
       expect(AppTokens.primary(ctx), isA<Color>());
       expect(AppTokens.success(ctx), isA<Color>());
