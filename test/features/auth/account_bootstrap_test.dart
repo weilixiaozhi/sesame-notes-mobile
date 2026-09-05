@@ -155,6 +155,49 @@ void main() {
     expect(adapter.paths, isEmpty);
   });
 
+  test('无凭证启动：自愈清除残留云端账本与同步簿记（P0-1 兜底），本地账本保留', () async {
+    // 播种上次会话认证失效 purge 被进程中断/清理失败留下的残留：
+    // 云端账本 + 待推送变更 + 设备游标。未登录启动必须补清，否则
+    // 「我的页显示需重新登录」的同时云端账本仍可见、可切换。
+    const cloudId = 'cloud-leftover';
+    await repo.createBoundLedger(id: cloudId, name: '残留云端账本');
+    final localId = await repo.createLedger(name: '本地账本', storageMode: 'local');
+    final now = DateTime.now().toUtc();
+    await db
+        .into(db.syncChanges)
+        .insert(
+          SyncChangesCompanion.insert(
+            entityType: 'ledger',
+            entityId: cloudId,
+            ledgerId: d.Value(cloudId),
+            action: 'upsert',
+            payload: '{}',
+            updatedAt: now,
+            mutationId: const Uuid().v4(),
+          ),
+        );
+    await db
+        .into(db.syncState)
+        .insert(SyncStateCompanion.insert(deviceId: 'device-1'));
+    adapter = _QueuedAdapter([
+      (status: 200, body: _sessionBody(), error: null),
+    ]);
+    container = buildContainer();
+
+    await container.read(accountBootstrapProvider.future);
+
+    expect(container.read(accountStateProvider).status, AccountStatus.local);
+    expect(adapter.paths, isEmpty, reason: '无凭证不发起网络请求，自愈清理仅操作本地库');
+    expect(
+      await repo.getLedgerById(cloudId),
+      isNull,
+      reason: '未登录启动必须清除残留云端账本，登录态语义与云端数据持有必须一致',
+    );
+    expect(await repo.getLedgerById(localId), isNotNull, reason: '本地账本一行不动');
+    expect(await db.select(db.syncChanges).get(), isEmpty, reason: '待推送队列整表清除');
+    expect(await db.select(db.syncState).get(), isEmpty, reason: '设备同步游标清除');
+  });
+
   test('有凭证 + 缓存资料 + 刷新 200：缓存先渲染，随后凭证束轮换并更新会话与资料', () async {
     SharedPreferences.setMockInitialValues({});
     await rawStore.write(

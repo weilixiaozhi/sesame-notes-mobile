@@ -51,7 +51,15 @@ final accountBootstrapProvider = FutureProvider<void>((ref) async {
   await ref.read(sharedPreferencesProvider.future);
   final store = ref.read(secureAccountStoreProvider);
   final credential = await store.load();
-  if (credential == null) return;
+  if (credential == null) {
+    // P0-1 兜底自愈：无凭证启动时补清可能残留的云端账本与同步簿记。
+    // 运行期认证类 401 的 purge 是尽力而为的（进程被中断或清理失败只记
+    // 日志），残留数据必须在每次未登录启动时补清——否则「我的页显示需
+    // 重新登录」的同时云端账本仍可见、可切换。清理幂等、仅操作本地库、
+    // 离线可用；本地账本一行不动，重登后由 reconnect 全量快照拉回。
+    await purgeCloudDataOnAuthFailure(ref);
+    return;
+  }
   final cache = ref.read(cloudProfileCacheProvider);
   final cached = cache.read(credential.userId);
   if (cached != null) {
