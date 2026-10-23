@@ -1,0 +1,20 @@
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// 将各模块构建目录统一重定向到仓库根目录的 build/ 下，便于统一清理。
+rootProject.layout.buildDirectory.set(layout.projectDirectory.dir("../build"))
+subprojects {
+    project.layout.buildDirectory.set(rootProject.layout.buildDirectory.dir(project.name))
+}
+
+subprojects {
+    project.evaluationDependsOn(":app")
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.layout.buildDirectory.get().asFile
+}

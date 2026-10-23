@@ -1,0 +1,7 @@
+# 将本文件复制为 android/key.properties，并填写正式签名信息。
+# key.properties 包含敏感凭据，禁止提交到版本控制。
+# storeFile 相对于 android/app 目录解析。
+storeFile=release.keystore
+storePassword=YOUR_STORE_PASSWORD
+keyAlias=release
+keyPassword=YOUR_KEY_PASSWORD

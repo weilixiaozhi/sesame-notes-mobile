@@ -1,0 +1,2273 @@
+{
+  "startupPreparationTitle": "Unable to finish starting the app",
+  "startupPreparationMessage": "Local settings could not be read. Please retry to continue.",
+  "startupPreparing": "Preparing your data",
+  "appUpdateCancelDownload": "Cancel download",
+  "appUpdateReady": "Update downloaded. Ready to install.",
+  "appUpdatePaused": "Waiting for the network or a system retry.",
+  "appUpdateBackground": "Downloading in the background. You can close this window.",
+  "calendarAnniversary": "Anniversary",
+  "calendarNote": "Note",
+  "calendarCredential": "Credentials",
+  "calendarTraining": "Workout",
+  "calendarTemplate": "Template",
+  "calendarPlan": "Plan",
+  "syncCenterSubtitle": "View sync status and resolve conflicts, failures, and pending actions",
+  "calendarEmptyDay": "No records for this day",
+  "fitnessHomeSyncing": "Refreshing fitness data",
+  "fitnessPullLocalSuccess": "Local fitness data refreshed",
+  "fitnessPullCloudSuccess": "Cloud fitness data synced",
+  "fitnessPullCloudFailedButLocalOk": "Local fitness data refreshed; cloud sync failed",
+  "fitnessDetailEmptyExercises": "No exercises yet",
+  "fitnessWorkoutMissing": "This workout is unavailable",
+  "fitnessTemplateMissing": "This template is unavailable",
+  "fitnessMissingDetailHint": "Go back and select another item.",
+  "fitnessReorderHint": "Long press the title to reorder",
+  "fitnessHomeExerciseLabel": "Exercises",
+  "fitnessSetRestTime": "Set rest time",
+  "fitnessWarmupLabel": "Warmup",
+  "fitnessRepUnit": "reps",
+  "fitnessSideWeight": "Per side",
+  "fitnessTotalWeight": "Total weight",
+  "fitnessLeftKg": "L kg",
+  "fitnessRightKg": "R kg",
+  "fitnessSideWeightValue": "L {left} / R {right} kg",
+  "@fitnessSideWeightValue": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      },
+      "right": {
+        "type": "String"
+      }
+    }
+  },
+  "fitnessPlanTrainingDays": "Train {count} days",
+  "fitnessPlanRestDays": "Rest {count} days",
+  "@fitnessPlanTrainingDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@fitnessPlanRestDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessExerciseTotal": "Exercises",
+  "fitnessSetCount": "{count} sets",
+  "@fitnessSetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessFinishConfirm": "End this workout and save the current time and completed sets? You can restart it later.",
+  "fitnessStartUsingTemplate": "Start workout with this template",
+  "fitnessEdit": "Edit",
+  "fitnessMyPlans": "My plans",
+  "fitnessMyTemplates": "My templates",
+  "fitnessViewAll": "View all",
+  "fitnessCreateBlank": "Add workout",
+  "fitnessSelectedTraining": "My workouts",
+  "fitnessNoSelectedTraining": "No workouts on this date",
+  "fitnessNoPlans": "No plans yet",
+  "fitnessNoTemplates": "No templates yet",
+  "memoBackupLocalOnly": "Local backup saved. Cloud upload failed; please try again later.",
+  "@@locale": "en",
+  "appTitle": "Sesame Notes",
+  "@appTitle": {
+    "description": "The application title"
+  },
+  "tabHome": "Home",
+  "tabAnalytics": "Statistics",
+  "tabCalendar": "Calendar",
+  "tabMine": "Mine",
+  "commonCancel": "Cancel",
+  "commonConfirm": "Confirm",
+  "commonSave": "Save",
+  "commonDelete": "Delete",
+  "commonAdd": "Add",
+  "commonOk": "OK",
+  "commonDone": "Done",
+  "homeSelectBillMonth": "Select month",
+  "homePickerHint": "Swipe up or down to pick",
+  "homeBackToCurrentMonth": "Back to current month",
+  "homeTodayExpense": "Today",
+  "homeWeekExpense": "This week",
+  "homeMonthExpense": "This month",
+  "homeDetailCategory": "Category",
+  "homeDetailDate": "Date",
+  "homeDetailAmount": "Amount",
+  "homeDetailCurrency": "Currency",
+  "homeDetailNativeAmount": "In base currency",
+  "homeDetailMembers": "Members",
+  "homeDetailCreator": "Created by",
+  "homeDetailLastEditor": "Last edited by",
+  "homeDetailEditHistory": "Edit history",
+  "homeDetailEditHistoryHint": "View only",
+  "homeDetailEditButton": "Edit",
+  "homeDetailNoHistory": "No edit history",
+  "homeDeleteDetailTitle": "Delete this entry?",
+  "homeDeleteDetailMessage": "This will delete the \"{name}\" record. This action cannot be undone.",
+  "commonEmpty": "Nothing here yet",
+  "commonError": "Error",
+  "commonFailed": "Failed",
+  "commonOperationFailed": "Operation failed, please try again later",
+  "commonRetry": "Retry",
+  "commonBack": "Back",
+  "commonNext": "Next",
+  "commonFinish": "Finish",
+  "commonOther": "Other",
+  "commonSearch": "Search",
+  "commonNoteHint": "Note...",
+  "commonSettings": "Settings",
+  "commonCurrent": "Current",
+  "commonConfigure": "Configure",
+  "commonPressAgainToExit": "Press again to exit",
+  "commonWeekdayMonday": "Monday",
+  "commonWeekdayTuesday": "Tuesday",
+  "commonWeekdayWednesday": "Wednesday",
+  "commonWeekdayThursday": "Thursday",
+  "commonWeekdayFriday": "Friday",
+  "commonWeekdaySaturday": "Saturday",
+  "commonWeekdaySunday": "Sunday",
+  "homeExpense": "Expense",
+  "homeNoRecords": "No records yet",
+  "homeSelectDate": "Select date",
+  "homeYear": "{year}",
+  "@homeYear": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "homeMonth": "{month}M",
+  "@homeMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "homeMonthExpenseOf": "Month {month}",
+  "@homeMonthExpenseOf": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "homeBaseCurrencyNeedLedger": "Please create a ledger first",
+  "homeBaseCurrencySwitched": "Ledger currency switched to {code}",
+  "@homeBaseCurrencySwitched": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "homePullCloudSuccess": "Synced cloud ledger data",
+  "homePullCloudFailed": "Refresh failed, please try again later",
+  "homePullLocalSuccess": "Refreshed local ledger data & config",
+  "homePullCloudFailedButLocalOk": "Cloud sync failed; refreshed local data (rates/config)",
+  "homeSyncing": "Refreshing ledger data",
+  "dayHomeSyncing": "Refreshing anniversary book data",
+  "dayPullLocalSuccess": "Refreshed local anniversary book data",
+  "dayPullCloudSuccess": "Synced cloud anniversary book data",
+  "dayPullCloudFailedButLocalOk": "Cloud sync failed; refreshed local anniversary book data",
+  "dayPullLocalFailed": "Local anniversary book refresh failed. Please try again later",
+  "dayPullCloudFailed": "Cloud anniversary book refresh failed. Please try again later",
+  "analyticsMonth": "Month",
+  "analyticsYear": "Year",
+  "analyticsWeek": "Week",
+  "analyticsTotalExpenseLabel": "Total Expense",
+  "analyticsCategoryLabel": "Category",
+  "analyticsExpenseRatio": "Expense Ratio",
+  "analyticsThisWeek": "This Week",
+  "analyticsBackToThisWeek": "Back to This Week",
+  "analyticsBackToThisMonth": "Back to This Month",
+  "analyticsBackToThisYear": "Back to This Year",
+  "analyticsWeekN": "Week {week}",
+  "@analyticsWeekN": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "analyticsSelectWeek": "Select week",
+  "ledgersTitle": "Ledger Management",
+  "ledgersArchivedTitle": "Archived ledgers",
+  "ledgersArchivedLabel": "Archived",
+  "ledgersArchive": "Archive ledger",
+  "ledgersRestore": "Restore ledger",
+  "ledgersArchiveSuccess": "Ledger archived",
+  "ledgersRestoreSuccess": "Ledger restored",
+  "ledgersArchivedRestoreRequired": "This ledger is archived. Restore it before continuing.",
+  "ledgersNew": "Add Ledger",
+  "ledgersClear": "Clear Ledger",
+  "ledgersClearMessage": "Are you sure to clear all transactions in ledger \"{name}\"? This action cannot be undone.\\nThe ledger will be kept, only transaction data will be deleted.",
+  "@ledgersClearMessage": {
+    "placeholders": {
+      "name": {
+        "type": "Object"
+      }
+    }
+  },
+  "ledgerDefaultName": "Default Ledger",
+  "ledgersEdit": "Edit Ledger",
+  "ledgersDelete": "Delete Ledger",
+  "ledgersDeleteConfirm": "Delete Ledger",
+  "ledgersDeleteMessage": "Are you sure you want to delete this ledger and all its records? This action cannot be undone.\\nIf there is a backup in the cloud, it will also be deleted.",
+  "ledgersDeleted": "Deleted",
+  "ledgersClearTitle": "Clear Ledger",
+  "ledgersClearSuccess": "Ledger cleared",
+  "ledgersCreateSuccess": "Ledger created",
+  "ledgerNameLabel": "Ledger Name",
+  "ledgerNameHint": "Please enter the ledger name",
+  "ledgersDefaultLedgerName": "Default Ledger",
+  "ledgersCurrency": "Currency",
+  "ledgersMonthStartDay": "Month start day",
+  "ledgersMonthStartDayHint": "Statistics and budgets start each monthly period on the selected day (1~31). If that date does not exist, use the last day of that month (30, 29 or 28).",
+  "ledgersMonthStartDayNatural": "1st (calendar month)",
+  "ledgersMonthStartDayValue": "Day {day} of each month",
+  "@ledgersMonthStartDayValue": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "ledgersSearchCurrency": "Search: Chinese or code",
+  "ledgersCreate": "Add ledger",
+  "ledgersRecords": "Records: {count}",
+  "@ledgersRecords": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersExpense": "Expense: {expense}",
+  "@ledgersExpense": {
+    "placeholders": {
+      "expense": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersEmpty": "No ledgers",
+  "ledgersSectionLocal": "Local ledgers",
+  "ledgersSectionCloud": "Cloud Ledgers",
+  "joinSharedTitle": "Join Shared Ledger",
+  "joinSharedCodeHint": "Enter invite code",
+  "joinSharedQuery": "Query",
+  "joinSharedQueryFailed": "Invalid or expired invite code",
+  "joinSharedAlreadyOwner": "You are already the owner of this ledger",
+  "joinSharedAccept": "Accept Invite",
+  "joinSharedSuccess": "Ledger joined",
+  "joinSharedNeedLogin": "Login required to join a shared ledger",
+  "joinSharedPreviewTitle": "Invite Details",
+  "ledgersActionMoveToCloud": "Move to the Cloud",
+  "ledgersActionMoveToLocal": "Move to local",
+  "ledgersActionCopyToLocal": "Copy to local",
+  "ledgersMoveToCloudMessage": "Ledger \"{name}\" will be uploaded to the cloud and synced across your devices.",
+  "@ledgersMoveToCloudMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersMoveToLocalMessage": "Ledger \"{name}\" will be deleted from the cloud and kept on this device only. Other devices will no longer see it.",
+  "@ledgersMoveToLocalMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersCopyToLocalMessage": "A local copy of ledger \"{name}\" will be created. The cloud ledger stays unchanged.",
+  "@ledgersCopyToLocalMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersMoveToCloudSuccess": "Moved to the Cloud",
+  "ledgersMoveToLocalSuccess": "Moved to local",
+  "ledgersCopyToLocalSuccess": "Copied to local",
+  "ledgersSwitched": "Switched to ledger \"{name}\"",
+  "@ledgersSwitched": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryTitle": "Category Management",
+  "categoryExpense": "Expense",
+  "categoryEmpty": "No categories",
+  "importReading": "Reading file…",
+  "importPreparing": "Preparing…",
+  "importConfirmMapping": "Confirm Mapping",
+  "importCategoryMapping": "Category Mapping",
+  "importNoDataParsed": "No data parsed. Please return to previous page to check CSV content or separator.",
+  "importFieldAmount": "Amount",
+  "importFieldNote": "Note",
+  "importKeepOriginalName": "Keep original name",
+  "importNextStep": "Next Step",
+  "importPreviousStep": "Previous Step",
+  "importStartImport": "Start Import",
+  "importInProgress": "Import in Progress",
+  "importFetchingRates": "Fetching exchange rates…",
+  "importXlsxFormulaError": "Formula cells detected. Please save values in Excel first and retry",
+  "importPrecheckTitle": "Import Pre-check",
+  "importProgressRunning": "Processed {done} / {total} records",
+  "importCancelled": "Import Cancelled",
+  "mineTitle": "Mine",
+  "mineLanguageSettings": "Language Settings",
+  "languageTitle": "Language Settings",
+  "languageChinese": "简体中文",
+  "languageEnglish": "English",
+  "languageSystemDefault": "Follow System",
+  "mineCloudService": "Backup & Cloud Sync",
+  "cloudBackupUrlLabel": "Server URL",
+  "cloudBackupAnonKeyLabel": "Anon Key",
+  "cloudBackupBucketLabel": "Bucket",
+  "cloudBackupAccountLabel": "Account",
+  "cloudBackupPasswordLabel": "Password",
+  "cloudBackupUsernameLabel": "Username",
+  "cloudBackupRemotePathLabel": "Remote Path",
+  "cloudBackupEndpointLabel": "Endpoint",
+  "cloudBackupRegionLabel": "Region",
+  "cloudBackupAccessKeyLabel": "Access Key",
+  "cloudBackupSecretKeyLabel": "Secret Key",
+  "cloudBackupSslLabel": "Use SSL",
+  "cloudBackupPortLabel": "Port",
+  "cloudBackupNotConfigured": "Not configured",
+  "cloudBackupConfiguredInactive": "Configured, not currently used",
+  "cloudBackupActiveNoSuccess": "In use · No successful backup yet",
+  "cloudBackupActiveLastSuccess": "In use · Last success {time}",
+  "@cloudBackupActiveLastSuccess": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "mineCategoryManagement": "Category Management",
+  "mineReminderSettings": "Notification Settings",
+  "categoryEditTitle": "Edit Category",
+  "categoryNewTitle": "Add Category",
+  "categoryDetailTooltip": "Category Summary",
+  "categoryDefaultTitle": "Default Category",
+  "categoryNameLabel": "Category Name",
+  "categoryNameHint": "Enter category name",
+  "categoryNameDuplicate": "Category name already exists",
+  "categoryIconLabel": "Category Icon",
+  "categoryCurrentIcon": "Current Icon",
+  "categorySaveError": "Save failed",
+  "categoryUpdated": "Category \"{name}\" updated",
+  "categoryCreated": "Category \"{name}\" created",
+  "categoryCannotDelete": "Cannot delete",
+  "categoryClearUnused": "Clear Unused Categories",
+  "categoryClearUnusedMessage": "Are you sure you want to delete {count} unused categories? This action cannot be undone.",
+  "@categoryClearUnusedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "categoryClearUnusedListTitle": "Categories to be deleted:",
+  "categoryClearUnusedEmpty": "No unused categories",
+  "categoryClearUnusedSuccess": "Deleted {count} categories",
+  "@categoryClearUnusedSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "categoryClearUnusedFailed": "Clear failed",
+  "categoryDeleteError": "Delete failed",
+  "categorySubCategoryCreated": "Subcategory added: {name}",
+  "categoryParentCategoryTitle": "Belongs To",
+  "categorySelectParentHint": "Please select a category",
+  "categorySelectParentTitle": "Select Category",
+  "categoryHasSubCategories": "This category has subcategories and cannot be modified",
+  "categorySearchCategory": "Search categories",
+  "categoryTopLevelLabel": "Top-level",
+  "categorySecondLevelLabel": "Second-level",
+  "categoryExpenseList": "Dining-Transport-Shopping-Entertainment-Home-Family-Communication-Utilities-Housing-Medical-Education-Pets-Sports-Digital-Travel-Alcohol & Tobacco-Baby Care-Beauty-Repair-Social-Learning-Car-Taxi-Subway-Delivery-Property-Parking-Donation-Give Gift-Tax-Beverage-Clothing-Snacks-Send Red Packet-Fruit-Game-Books-Lover-Decoration-Daily Goods-Lottery-Stock-Social Security-Express-Work-Transfer-Other",
+  "categoryExpenseDining": "Dining-Breakfast-Lunch-Dinner-Meituan Delivery-Ele.me Delivery-JD Delivery-Restaurant-Food",
+  "categoryExpenseSnacks": "Snacks-Cookies-Chips-Candy-Chocolate-Nuts",
+  "categoryExpenseFruit": "Fruit-Apple-Banana-Orange-Grape-Watermelon-Other Fruits",
+  "categoryExpenseBeverage": "Beverage-Milk Tea-Coffee-Juice-Soda-Mineral Water",
+  "categoryExpensePastry": "Pastry-Cake-Bread-Dessert-Baked Goods",
+  "categoryExpenseCooking": "Cooking Ingredients-Vegetables-Meat-Seafood-Seasoning-Grain & Oil",
+  "categoryExpenseShopping": "Shopping-Supermarket-Daily Necessities-Clothing-Shoes-Bags",
+  "categoryExpensePets": "Pets-Pet Food-Pet Supplies-Pet Medical-Pet Grooming",
+  "categoryExpenseTransport": "Transport-Transit Card-Taxi-Parking Fee-Fuel",
+  "categoryExpenseCar": "Car-Car Maintenance-Car Repair-Car Insurance-Car Wash-Traffic Fine",
+  "categoryExpenseClothing": "Apparel-Top-Pants-Dress-Shoes-Apparel Accessories",
+  "categoryExpenseDailyGoods": "Daily Goods-Personal Care-Paper Products-Cleaning Supplies-Kitchen Supplies",
+  "categoryExpenseEducation": "Education-Tuition-Training Fee-Books-Stationery-Office Supplies-Learning",
+  "categoryExpenseInvestLoss": "Investment Loss-Stock Loss-Fund Loss-Other Investment Loss",
+  "categoryExpenseEntertainment": "Entertainment-Movie-KTV-Amusement Park-Bar-Other Entertainment",
+  "categoryExpenseGame": "Game-Game Top up-Game Equipment-Game Membership",
+  "categoryExpenseHealthProducts": "Health Products-Vitamins-Health Food-Nutritional Supplements",
+  "categoryExpenseSubscription": "Subscription-Video Membership-Music Membership-Cloud Storage-Other Subscription",
+  "categoryExpenseSports": "Sports-Gym-Sports Equipment-Sports Course-Outdoor Activity",
+  "categoryExpenseHousing": "Housing-Utilities-Property Fee-Rent-Mortgage-Renovation-Broadband",
+  "categoryExpenseHome": "Home-Furniture-Appliances-Decorations-Bedding",
+  "categoryExpenseBeauty": "Beauty-Skincare-Cosmetics-Haircut-Nail Care",
+  "categoryExpenseTransfer": "Transfer-Living Cost-Family-Parents-Lover-Borrow Money",
+  "appearanceThemeMode": "Display mode",
+  "appearanceThemeModeSystem": "Follow System",
+  "appearanceThemeModeLight": "Light Mode",
+  "appearanceThemeModeDark": "Dark Mode",
+  "reminderTitle": "Recording Reminder",
+  "reminderBody": "Don't forget to record today's expenses 💰",
+  "reminderDailyTitle": "Recording Reminder",
+  "reminderTimeTitle": "Daily Reminder Time",
+  "commonSelectTime": "Select Time",
+  "reminderPermissionRequired": "Allow notifications and the relevant reminder channel in system settings",
+  "reminderCheckBattery": "Battery",
+  "reminderStatusUnavailable": "Unable to read status. Please try again later.",
+  "reminderStatusLoading": "Reading system settings…",
+  "reminderChannelNotCreated": "Not created yet",
+  "reminderBatteryIgnored": "Battery management: Exempt from system battery restrictions",
+  "reminderBatteryNotIgnored": "Battery management: Subject to system battery restrictions",
+  "reminderCheckChannel": "Notifications",
+  "reminderStatusNotificationLabel": "Notification",
+  "reminderStatusImportanceLabel": "Importance",
+  "reminderStatusSoundLabel": "Sound",
+  "reminderStatusVibrationLabel": "Vibration",
+  "reminderStatusDndLabel": "DND",
+  "reminderStatusOn": "On",
+  "reminderStatusOff": "Off",
+  "reminderStatusDndBypass": "Allowed",
+  "reminderStatusDndFollow": "Follow system",
+  "reminderImportanceHigh": "High",
+  "reminderImportanceDefault": "Default",
+  "reminderImportanceLow": "Low",
+  "reminderImportanceMin": "Minimum",
+  "reminderImportanceNone": "Off",
+  "reminderImportanceUnknown": "Unknown",
+  "reminderOpenAppSettings": "App Settings",
+  "reminderAutoStartSettings": "Auto-start",
+  "reminderAutoStartAdvice": "This device cannot open the auto-start page directly. Enable it manually in system settings.\n\nOnePlus, OPPO, realme: Settings → Apps → Auto-start → Sesame Notes.\n\nOther devices: search for Auto-start or App launch management and allow Sesame Notes to start automatically. Menu names vary by system version.",
+  "reminderDescription": "Settings apply to this device. Turning off notifications pauses all reminders and keeps your preferences. Anniversary reminders are grouped by day and scheduled a year ahead, refreshed when you open the app or dates or records change.",
+  "reminderAndroidInstructions": "• Enable recording, anniversary and rest reminders separately in notification settings, where you can also manage sound and vibration.\n• Allow Alarms & reminders to reduce delays. A next-alarm indicator may appear. Recording and anniversary reminders use normal notifications; rest timers play sound or vibrate according to your settings.\n• Enable background activity and auto-start separately. Battery status only checks the system power-saving exemption; manufacturer restrictions need a separate check.\n• Force-stopping the app may clear scheduled reminders. Reopen Sesame Notes to restore future reminders. Silent and Do Not Disturb modes may mute notification sounds.",
+  "categoryDetailLoadFailed": "Could not load data. Please try again.",
+  "categoryDetailSummaryTitle": "Category Summary",
+  "categoryDetailTotalCount": "Total Count",
+  "categoryDetailTotalAmount": "Total Amount",
+  "categoryDetailAverageAmount": "Average Amount",
+  "categoryDetailSortTitle": "Sort",
+  "categoryDetailSortTimeDesc": "Time ↓",
+  "categoryDetailSortTimeAsc": "Time ↑",
+  "categoryDetailSortAmountDesc": "Amount ↓",
+  "categoryDetailSortAmountAsc": "Amount ↑",
+  "categoryDetailNoTransactions": "No transactions",
+  "categoryDetailNoTransactionsSubtext": "No transactions in this category yet",
+  "categoryDetailDeleteFailed": "Delete failed",
+  "categoryMigrationTransactionLabel": "{count} records",
+  "@categoryMigrationTransactionLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTemplateEntryFlat": "Flat Template",
+  "categoryTemplateEntryHierarchical": "Hierarchical Template",
+  "categoryTemplateFlatTitle": "Flat Category Template",
+  "categoryTemplateHierarchicalTitle": "Hierarchical Category Template",
+  "categoryTemplateSelectedCount": "{count} selected",
+  "@categoryTemplateSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTemplateSelectAll": "Select all",
+  "categoryTemplateDeselectAll": "Deselect all",
+  "categoryTemplateAlreadyAdded": "Added",
+  "categoryTemplateAlreadyAddedHint": "Added categories stay selected and cannot be deselected",
+  "categoryTemplateConfirmTitle": "Add Categories",
+  "categoryTemplateConfirmMessage": "Add the selected {count} categories to your category list?",
+  "@categoryTemplateConfirmMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTemplateAddSuccess": "Added {count} categories",
+  "@categoryTemplateAddSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTemplateAddFailed": "Failed to add: {error}",
+  "categoryTemplatePartiallyCompleted": "{completed}\nThe remaining categories could not be processed. Please try again.",
+  "@categoryTemplatePartiallyCompleted": {
+    "description": "已提交的模板处理摘要及剩余操作未完成提示。",
+    "placeholders": {
+      "completed": {
+        "type": "String"
+      }
+    }
+  },
+  "@categoryTemplateAddFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryManageAdd": "Add Category",
+  "categoryManageDelete": "Batch Delete Categories",
+  "categoryManageConfirmDelete": "Confirm Delete",
+  "categoryManageReorderHint": "Long press to reorder",
+  "categorySelectParentsTitle": "Select Parent Categories",
+  "categoryChildrenTitle": "Subcategories",
+  "categoryManageSubcategoryCount": "Subcategories: {count}",
+  "@categoryManageSubcategoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categorySubcategoryCount": "{count} subcategories",
+  "@categorySubcategoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTransactionBreakdown": "{direct} direct records · {total} total",
+  "@categoryTransactionBreakdown": {
+    "placeholders": {
+      "direct": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "categorySharedManageBannerOwner": "Shared ledger: category changes here sync to all members",
+  "categorySharedManageBannerEditor": "This shared ledger uses the owner's categories; edits here only affect your personal categories",
+  "categorySortSaveFailed": "Failed to save order. Please try again",
+  "categoryDeleteOptionAll": "Delete categories and all data (incl. subcategories)",
+  "categoryDeleteOptionMigrate": "Delete categories and their subcategories and migrate all data to another category",
+  "categoryDeleteOptionPromote": "Delete categories and data (excl. subcategories, subcategories become top-level)",
+  "categoryDeleteSelectedTitle": "Delete Selected Categories",
+  "categoryDeleteSelectedSubtitleWithSub": "Are you sure you want to delete {count} selected categories and clear their data? (including subcategories and data) This action cannot be undone.",
+  "@categoryDeleteSelectedSubtitleWithSub": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryDeleteSelectedSubtitleWithoutSub": "Are you sure you want to delete {count} selected categories and clear their data? (excluding subcategories and data) This action cannot be undone.",
+  "@categoryDeleteSelectedSubtitleWithoutSub": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryMigrateSelectTargetTitle": "Select Target Category",
+  "categoryMigrateConfirmButton": "Confirm (Migrate data and delete categories)",
+  "categoryMigrateChildLabel": "Sub · {parent}",
+  "@categoryMigrateChildLabel": {
+    "placeholders": {
+      "parent": {
+        "type": "Object"
+      }
+    }
+  },
+  "subcategoryAdd": "Add Subcategory",
+  "subcategoryDelete": "Batch Delete",
+  "subcategoryDeleteOptionAll": "Delete categories and all data under them",
+  "subcategoryDeleteOptionMigrate": "Delete categories and migrate all data to another category",
+  "subcategoryDeleteSelectedSubtitle": "Are you sure you want to delete {count} selected categories and clear their data? This action cannot be undone.",
+  "@subcategoryDeleteSelectedSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "subcategoryEmpty": "No subcategories yet",
+  "cloudFirstSaveSwitchTitle": "Configuration Saved",
+  "cloudFirstSaveSwitchMessage": "Switch to this cloud service as the active sync configuration now?",
+  "cloudSaveOnlyNoSwitch": "Not Now",
+  "cloudSaveAndSwitch": "Switch Now",
+  "cloudClearConfig": "Clear configuration",
+  "cloudClearConfigConfirmTitle": "Clear cloud configuration",
+  "cloudClearConfigConfirmMessage": "Clear this cloud service configuration?\nBacked-up data on the cloud will not be deleted. You can reconfigure and restore anytime.",
+  "cloudClearConfigDone": "Configuration cleared",
+  "authLogin": "Login",
+  "authPassword": "Password",
+  "authErrorInvalidCredentials": "Incorrect phone number or password",
+  "authErrorRateLimit": "Too many attempts, please try again later.",
+  "authErrorNetworkIssue": "Network error, please check your connection and try again.",
+  "authErrorServerNotConfigured": "This version has no account server configured, so login and registration are unavailable. You can go back and continue using local features.",
+  "exportCsvHeaderType": "Type",
+  "exportCsvHeaderCategory": "Category",
+  "exportCsvHeaderSubCategory": "Subcategory",
+  "exportCsvHeaderAmount": "Amount",
+  "exportCsvHeaderNote": "Note",
+  "exportCsvHeaderTime": "Time",
+  "exportSuccessTitle": "Export Successful",
+  "exportFailedTitle": "Export Failed",
+  "exportTypeExpense": "Expense",
+  "currencyCNY": "Chinese Yuan",
+  "currencyUSD": "US Dollar",
+  "currencyEUR": "Euro",
+  "currencyJPY": "Japanese Yen",
+  "currencyHKD": "Hong Kong Dollar",
+  "currencyTWD": "Add Taiwan Dollar",
+  "currencyGBP": "British Pound",
+  "currencyAUD": "Australian Dollar",
+  "currencyCAD": "Canadian Dollar",
+  "currencyKRW": "South Korean Won",
+  "currencySGD": "Singapore Dollar",
+  "currencyMYR": "Malaysian Ringgit",
+  "currencyTHB": "Thai Baht",
+  "currencyIDR": "Indonesian Rupiah",
+  "currencyPHP": "Philippine Peso",
+  "currencyVND": "Vietnamese Dong",
+  "currencyINR": "Indian Rupee",
+  "currencyRUB": "Russian Ruble",
+  "currencyBYN": "Belarusian Ruble",
+  "currencyNZD": "Add Zealand Dollar",
+  "currencyCHF": "Swiss Franc",
+  "currencySEK": "Swedish Krona",
+  "currencyNOK": "Norwegian Krone",
+  "currencyDKK": "Danish Krone",
+  "currencyBRL": "Brazilian Real",
+  "currencyMXN": "Mexican Peso",
+  "currencyTRY": "Turkish Lira",
+  "currencyZAR": "South African Rand",
+  "currencyAED": "UAE Dirham",
+  "currencySAR": "Saudi Riyal",
+  "currencyPLN": "Polish Zloty",
+  "currencyCZK": "Czech Koruna",
+  "currencyHUF": "Hungarian Forint",
+  "currencyARS": "Argentine Peso",
+  "currencyCLP": "Chilean Peso",
+  "currencyCOP": "Colombian Peso",
+  "currencyPEN": "Peruvian Sol",
+  "currencyEGP": "Egyptian Pound",
+  "currencyNGN": "Nigerian Naira",
+  "currencyKZT": "Kazakhstani Tenge",
+  "currencyUAH": "Ukrainian Hryvnia",
+  "currencyILS": "Israeli New Shekel",
+  "currencyPKR": "Pakistani Rupee",
+  "currencyBDT": "Bangladeshi Taka",
+  "currencyLKR": "Sri Lankan Rupee",
+  "currencyMMK": "Myanmar Kyat",
+  "recurringTransactionEnabled": "Enabled",
+  "recurringTransactionDisabled": "Disabled",
+  "recurringTransactionTitle": "Recurring Bills",
+  "recurringTransactionAdd": "Add recurring bill",
+  "recurringTransactionEdit": "Edit Recurring Bill",
+  "recurringTransactionFrequency": "Frequency",
+  "recurringTransactionDaily": "Daily",
+  "recurringTransactionWeekly": "Weekly",
+  "recurringTransactionMonthly": "Monthly",
+  "recurringTransactionYearly": "Yearly",
+  "recurringTransactionInterval": "Interval",
+  "recurringTransactionDayOfMonth": "Day of Month",
+  "recurringTransactionStartDate": "Start Date",
+  "recurringTransactionEndDate": "End Date",
+  "recurringTransactionNoEndDate": "Perpetual",
+  "recurringTransactionDeleteConfirm": "Are you sure you want to delete this recurring bill?",
+  "recurringTransactionEndBeforeStart": "End date cannot be earlier than start date",
+  "recurringTransactionEveryNDays": "Every {n} day(s)",
+  "@recurringTransactionEveryNDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "recurringTransactionEveryNWeeks": "Every {n} week(s)",
+  "@recurringTransactionEveryNWeeks": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "recurringTransactionEveryNMonths": "Every {n} month(s)",
+  "@recurringTransactionEveryNMonths": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "recurringTransactionEveryNYears": "Every {n} year(s)",
+  "@recurringTransactionEveryNYears": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ledgerSelectTitle": "Select Ledger",
+  "cloudTestConnection": "Test Connection",
+  "cloudLastTestTime": "Last test time: {time}",
+  "@cloudLastTestTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudLocalStorageTitle": "Local Storage",
+  "cloudLocalStorageSubtitle": "Data is only saved on local device",
+  "localBackupPageTitle": "Local Storage",
+  "localBackupAutoTitle": "Auto Local Backup",
+  "localBackupAutoSubtitle": "Automatically back up a database snapshot on first launch each day",
+  "localBackupNowTooltip": "Back up now",
+  "localBackupSuccess": "Backup completed",
+  "localBackupFailed": "Backup failed. Check available storage space",
+  "localBackupListHint": "Select a backup to restore:",
+  "localBackupImportFromFile": "Import from file",
+  "localBackupImportInvalidFile": "Please select a .snbak backup file",
+  "localBackupListEmpty": "No backups yet",
+  "cloudCustomSupabaseTitle": "Custom Supabase",
+  "cloudCustomSupabaseSubtitle": "Click to configure self-hosted Supabase",
+  "cloudCustomWebdavTitle": "Custom WebDAV",
+  "cloudCustomWebdavSubtitle": "Click to configure Nutstore/Nextcloud etc.",
+  "cloudCustomS3Title": "S3 Protocol Storage",
+  "cloudCustomS3Subtitle": "AWS S3 / Cloudflare R2 / MinIO",
+  "cloudTabOffline": "Offline",
+  "cloudTabBackup": "Backup",
+  "cloudBackupEntryLocalOnly": "Local backup only",
+  "cloudBackupEntryFailed": "Last backup failed — will retry automatically",
+  "cloudBackupStatusTitle": "Backup status",
+  "cloudBackupUploadNow": "Upload to cloud now",
+  "cloudBackupUploading": "Uploading…",
+  "cloudBackupUploadSuccess": "Upload successful",
+  "cloudBackupRestoreFromCloud": "Restore from cloud",
+  "cloudBackupDownloading": "Downloading…",
+  "cloudBackupDownloadSuccess": "Downloaded — opening restore page",
+  "cloudBackupDownloadFailed": "Download failed — check cloud settings and network",
+  "cloudBackupNoRemote": "No cloud backup yet",
+  "cloudBackupAutoSyncTitle": "Auto backup to cloud",
+  "cloudBackupAutoSyncSubtitle": "Sync upload to cloud during each auto backup",
+  "localBackupRestoreHint": "Tap a backup to open the restore flow",
+  "cloudStatusNotTested": "Not tested",
+  "cloudStatusNormal": "Connection normal",
+  "cloudStatusFailed": "Connection failed",
+  "cloudTestSuccessMessage": "Connection normal, configuration valid",
+  "cloudTestFailedMessage": "Connection failed",
+  "cloudSwitchConfirmTitle": "Switch Cloud Service",
+  "cloudSwitchConfirmMessage": "Switching cloud service will log out current account. Confirm switch?",
+  "cloudSwitchFailedTitle": "Switch Failed",
+  "cloudSwitchFailedConfigMissing": "Please configure this cloud service first",
+  "cloudConfigInvalidMessage": "Please fill in complete information",
+  "cloudSaveFailed": "Save Failed",
+  "cloudSwitchedTo": "Switched to {type}",
+  "@cloudSwitchedTo": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudConfigureSupabaseTitle": "Configure Supabase",
+  "cloudConfigureWebdavTitle": "Configure WebDAV",
+  "cloudConfigureS3Title": "Configure S3",
+  "welcomeHomeBookkeeping": "Bookkeeping",
+  "welcomeHomeAnniversary": "Anniversary",
+  "welcomeHomeFitness": "Fitness",
+  "welcomeHomeMemo": "Memo",
+  "calendarToday": "Back to Today",
+  "commonUncategorized": "Uncategorized",
+  "appLockTitle": "Lock App",
+  "appLockEnable": "Enable App Lock",
+  "appLockEnableDesc": "Require authentication on launch and resume",
+  "appLockSetPin": "Set PIN",
+  "appLockChangePin": "Change PIN",
+  "appLockVerifyPin": "Verify PIN",
+  "appLockVerifyCurrentPin": "Enter current PIN",
+  "appLockSetNewPin": "Set new PIN",
+  "appLockConfirmPin": "Confirm PIN",
+  "appLockEnterPin": "Enter PIN",
+  "appLockPinSetSuccess": "PIN set successfully",
+  "appLockDisabled": "App Lock disabled",
+  "appLockBiometric": "Biometric Unlock",
+  "appLockBiometricDesc": "Use Face ID or fingerprint to unlock",
+  "appLockBiometricReason": "Verify identity to unlock Sesame Notes",
+  "appLockTimeout": "Auto-lock Timeout",
+  "appLockTimeoutImmediate": "Immediately",
+  "appLockTimeout1Min": "After 1 minute",
+  "appLockTimeout5Min": "After 5 minutes",
+  "appLockTimeout15Min": "After 15 minutes",
+  "dayOfMonth": "{day}th of each month",
+  "@dayOfMonth": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedRoleOwner": "Owner",
+  "sharedRoleEditor": "Editor",
+  "commonCopied": "Copied",
+  "sharedInviteFormRole": "Role",
+  "sharedInviteFormExpiry": "Valid for",
+  "sharedInviteExpiryDays": "{n} day",
+  "@sharedInviteExpiryDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedInviteGenerate": "Generate invite code",
+  "sharedInviteGenerateAnother": "Generate a new code",
+  "sharedInviteCopyCode": "Copy code",
+  "sharedInviteShareCode": "Share code",
+  "sharedInviteExpiresAt": "Expires at {dt}",
+  "@sharedInviteExpiresAt": {
+    "placeholders": {
+      "dt": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedInviteWarning": "Each code can be used once. Generating a new code invalidates all unused codes for this ledger.",
+  "sharedInviteInstruction": "Ask the recipient to open the ledger list from the bookkeeping home screen and choose Join shared ledger. Generating a new code invalidates all previous unused codes for this ledger.",
+  "sharedInviteShareText": "I'm inviting you to the Sesame Notes shared ledger \"{ledger}\".\n\nCode: {code}\n\nOpen Sesame Notes → Me → Join shared ledger and enter this code.",
+  "@sharedInviteShareText": {
+    "placeholders": {
+      "ledger": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgerAaDescription": "Track each member’s share of expenses",
+  "ledgerMemberCount": "{count} members",
+  "@ledgerMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ledgerOwnerDescription": "Manage the ledger and members",
+  "ledgerEditorDescription": "Record and edit together",
+  "ledgerInviteDescription": "Invite friends to “{ledger}” and keep records together.",
+  "@ledgerInviteDescription": {
+    "placeholders": {
+      "ledger": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgerInviteRoleDescription": "Can view and edit records in this ledger.",
+  "ledgerInviteMembers": "Invite members",
+  "sharedMembersStatsAllTime": "All time",
+  "sharedMembersStatsSummary": "{memberCount} payers · {txCount} expenses · {currency}",
+  "@sharedMembersStatsSummary": {
+    "placeholders": {
+      "memberCount": {
+        "type": "int"
+      },
+      "txCount": {
+        "type": "int"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedMembersStatsDistribution": "Expense distribution",
+  "sharedMembersStatsSortHint": "Highest amount first",
+  "sharedMembersStatsScopeHint": "Grouped by payer in the ledger currency. Records without a payer are excluded. These are actual expenses, not AA shares.",
+  "ledgerBasicSettings": "Basic settings",
+  "ledgerAaLabel": "AA splitting",
+  "ledgerMembersTitle": "Ledger members",
+  "ledgerVirtualMembersTitle": "Virtual members",
+  "sharedMembersExpenseTotal": "Member expense total",
+  "sharedMembersPageTitle": "Members",
+  "ledgersLeaveAndDelete": "Leave and Delete",
+  "ledgersLeaveAndDeleteConfirm": "Leave and Delete Ledger",
+  "ledgersLeaveAndDeleteMessage": "Leave and delete the shared ledger \"{name}\"?\\nAfter leaving, the cloud removes your membership and all local data is cleared. You won't be able to access its transactions anymore.",
+  "@ledgersLeaveAndDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersLeaveAndDeleteSuccess": "Left and deleted the ledger",
+  "ledgersDeleteShared": "Delete Shared Ledger",
+  "ledgersDeleteSharedConfirm": "Delete Shared Ledger",
+  "ledgersDeleteSharedMessage": "Delete the shared ledger \"{name}\"?\\nThis also removes all collaborators and clears their local data. This cannot be undone.",
+  "@ledgersDeleteSharedMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersDeleteSharedSuccess": "Shared ledger deleted",
+  "sharedMembersRemoveTitle": "Remove member",
+  "sharedMembersRemoveCta": "Remove this member",
+  "sharedMembersRemoveConfirm": "Remove {name}? They will immediately lose access to this ledger.",
+  "@sharedMembersRemoveConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedMembersRemoved": "Member removed",
+  "sharedMembersRemoveFailed": "Failed to remove member. Please try again later.",
+  "sharedMembersSaveFirst": "Please save the ledger first",
+  "sharedMembersLoadFailed": "Failed to load members",
+  "sharedMembersRetry": "Retry",
+  "sharedTxCreatedBy": "Created by {name}",
+  "@sharedTxCreatedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedTxEditedBy": "Last edited by {name}",
+  "@sharedTxEditedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedTxCreatedAndEditedBy": "Created and edited by {name}",
+  "@sharedTxCreatedAndEditedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedMembersStatsTitle": "Member expenses",
+  "sharedMembersStatsEmpty": "No transactions yet",
+  "sharedMembersStatsTxCount": "{count} tx",
+  "@sharedMembersStatsTxCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeRatePageTitle": "Exchange Rates",
+  "rateSourceAuto": "Auto",
+  "rateSourceManual": "Manual",
+  "rateUpdatedAt": "Updated {date}",
+  "@rateUpdatedAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "rateNotFetched": "Not fetched",
+  "rateEditTitle": "Edit Rate",
+  "rateInverseHint": "Inverse: 1 {base} ≈ {rate} {quote}",
+  "@rateInverseHint": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      },
+      "quote": {
+        "type": "String"
+      }
+    }
+  },
+  "rateResetToAuto": "Reset to auto",
+  "rateRefreshSuccess": "Rates updated",
+  "rateRefreshFailed": "Fetch failed, you can set rates manually",
+  "rateDisclaimer": "Source: open exchange-rate data, updated daily. Conversion is for reference only and may differ from bank rates.",
+  "txRateLabel": "Rate",
+  "txRateMissingHint": "Please enter the rate for this entry before saving",
+  "ledgerBaseCurrencyLabel": "Ledger currency",
+  "statsConvertedFootnote": "Includes foreign currency, converted to {currency} at entry-time rates",
+  "@statsConvertedFootnote": {
+    "placeholders": {
+      "currency": {}
+    }
+  },
+  "ledgerCurrencyChangeRecalcHint": "Changing the base currency will reconvert all history at current rates",
+  "ledgerCurrencyChangeRecalcWarning": "Converted amounts of all transactions in this ledger will be recalculated at the latest rates and overwritten; switching away and back cannot restore the original values",
+  "recalcForeignTxBanner": "Unconverted foreign-currency transactions detected in this ledger",
+  "recalcForeignTxAction": "Reconvert at current rates",
+  "recalcForeignTxDone": "Reconverted {count} foreign-currency transactions",
+  "@recalcForeignTxDone": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "txCurrencyPickerTitle": "Select currency",
+  "txAddEntryTitle": "Add transaction",
+  "txDeleteLongPress": "Hold to clear",
+  "txSelectDateTimeTitle": "Select date & time",
+  "txSelectDateTimeHint": "Swipe up or down to pick a value",
+  "txEditCategory": "Edit categories",
+  "txEditCategoryReadOnly": "Edit categories (read-only in shared ledger)",
+  "txLedgerBaseCurrency": "Ledger currency",
+  "recalcSyncCountHint": "{count} transactions will be reconverted and synced",
+  "@recalcSyncCountHint": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "analyticsLoadFailed": "Could not load data. Please try again.",
+  "analyticsRetry": "Retry",
+  "exportCsvHeaderCurrency": "Currency",
+  "importFieldCurrency": "Currency",
+  "currencyMOP": "Macau Pataca",
+  "currencyMNT": "Mongolian Tughrik",
+  "currencyKPW": "North Korean Won",
+  "currencyKHR": "Cambodian Riel",
+  "currencyLAK": "Lao Kip",
+  "currencyBND": "Bruneian Dollar",
+  "currencyNPR": "Nepalese Rupee",
+  "currencyBTN": "Bhutanese Ngultrum",
+  "currencyMVR": "Maldivian Rufiyaa",
+  "currencyAFN": "Afghan Afghani",
+  "currencyUZS": "Uzbekistani Som",
+  "currencyTJS": "Tajikistani Somoni",
+  "currencyTMT": "Turkmenistani Manat",
+  "currencyKGS": "Kyrgyzstani Som",
+  "currencyQAR": "Qatari Riyal",
+  "currencyKWD": "Kuwaiti Dinar",
+  "currencyBHD": "Bahraini Dinar",
+  "currencyOMR": "Omani Rial",
+  "currencyJOD": "Jordanian Dinar",
+  "currencyLBP": "Lebanese Pound",
+  "currencyIQD": "Iraqi Dinar",
+  "currencyIRR": "Iranian Rial",
+  "currencyYER": "Yemeni Rial",
+  "currencySYP": "Syrian Pound",
+  "currencyGEL": "Georgian Lari",
+  "currencyAMD": "Armenian Dram",
+  "currencyAZN": "Azerbaijan Manat",
+  "currencyRON": "Romanian Leu",
+  "currencyBGN": "Bulgarian Lev",
+  "currencyRSD": "Serbian Dinar",
+  "currencyISK": "Icelandic Krona",
+  "currencyMDL": "Moldovan Leu",
+  "currencyALL": "Albanian Lek",
+  "currencyMKD": "Macedonian Denar",
+  "currencyBAM": "Bosnian Convertible Mark",
+  "currencyGIP": "Gibraltar Pound",
+  "currencyGTQ": "Guatemalan Quetzal",
+  "currencyHNL": "Honduran Lempira",
+  "currencyNIO": "Nicaraguan Cordoba",
+  "currencyCRC": "Costa Rican Colon",
+  "currencyPAB": "Panamanian Balboa",
+  "currencyDOP": "Dominican Peso",
+  "currencyCUP": "Cuban Peso",
+  "currencyJMD": "Jamaican Dollar",
+  "currencyTTD": "Trinidadian Dollar",
+  "currencyBSD": "Bahamian Dollar",
+  "currencyBBD": "Barbadian or Bajan Dollar",
+  "currencyBZD": "Belizean Dollar",
+  "currencyHTG": "Haitian Gourde",
+  "currencyKYD": "Caymanian Dollar",
+  "currencyAWG": "Aruban or Dutch Guilder",
+  "currencyBMD": "Bermudian Dollar",
+  "currencyUYU": "Uruguayan Peso",
+  "currencyPYG": "Paraguayan Guarani",
+  "currencyBOB": "Bolivian Bolíviano",
+  "currencyVES": "Venezuelan Bolívar",
+  "currencyGYD": "Guyanese Dollar",
+  "currencySRD": "Surinamese Dollar",
+  "currencyFJD": "Fijian Dollar",
+  "currencyPGK": "Papua New Guinean Kina",
+  "currencySBD": "Solomon Islander Dollar",
+  "currencyTOP": "Tongan Pa'anga",
+  "currencyVUV": "Ni-Vanuatu Vatu",
+  "currencyWST": "Samoan Tala",
+  "currencyKES": "Kenyan Shilling",
+  "currencyGHS": "Ghanaian Cedi",
+  "currencyMAD": "Moroccan Dirham",
+  "currencyDZD": "Algerian Dinar",
+  "currencyTND": "Tunisian Dinar",
+  "currencyLYD": "Libyan Dinar",
+  "currencyETB": "Ethiopian Birr",
+  "currencyUGX": "Ugandan Shilling",
+  "currencyTZS": "Tanzanian Shilling",
+  "currencyRWF": "Rwandan Franc",
+  "currencyMUR": "Mauritian Rupee",
+  "currencyBWP": "Botswana Pula",
+  "currencyNAD": "Namibian Dollar",
+  "currencyZMW": "Zambian Kwacha",
+  "currencyMWK": "Malawian Kwacha",
+  "currencyMZN": "Mozambican Metical",
+  "currencyAOA": "Angolan Kwanza",
+  "currencyCDF": "Congolese Franc",
+  "currencyGMD": "Gambian Dalasi",
+  "currencyGNF": "Guinean Franc",
+  "currencyLRD": "Liberian Dollar",
+  "currencySLE": "Sierra Leonean Leone",
+  "currencySDG": "Sudanese Pound",
+  "currencySSP": "South Sudanese Pound",
+  "currencySOS": "Somali Shilling",
+  "currencyDJF": "Djiboutian Franc",
+  "currencyERN": "Eritrean Nakfa",
+  "currencyBIF": "Burundian Franc",
+  "currencyCVE": "Cape Verdean Escudo",
+  "currencySTN": "Sao Tomean Dobra",
+  "currencySCR": "Seychellois Rupee",
+  "currencyKMF": "Comorian Franc",
+  "currencyLSL": "Basotho Loti",
+  "currencySZL": "Swazi Lilangeni",
+  "currencyMGA": "Malagasy Ariary",
+  "currencyMRU": "Mauritanian Ouguiya",
+  "detailImportExportTitle": "Data Import/Export",
+  "detailImportExportImportTitle": "Import data",
+  "detailImportExportImportSubtitle": "Select a domain and destination, then review the file",
+  "detailImportExportExportTitle": "Export data",
+  "detailImportExportExportSubtitle": "Select domains and sources to export all content",
+  "detailImportExportImportPoint1": "Select a domain and destination book or fitness space, then choose and review a file.",
+  "detailImportExportImportPoint2": "Import CSV, TSV, TXT, XLSX or JSON. All data types support editable field mapping, record selection and import progress; no file version or application identifier is required.",
+  "detailImportExportImportPoint3": "Reimporting the same file skips imported records. Review and select records before importing. Fitness plans can be imported from tables; importing preferences replaces the destination preferences.",
+  "detailImportExportExportPoint1": "All four domains are selected by default. Choose one book or fitness space per domain to export its complete content.",
+  "detailImportExportExportPoint2": "Bookkeeping exports all transactions, anniversaries all events, and memos all entries. Fitness exports all workouts, plans, templates and fitness preferences in the space, including timer state.",
+  "detailImportExportExportPoint3": "Accounting and days export as CSV; memos and complete fitness data export as JSON. Save or share separate files through the system panel.",
+  "detailExportAction": "Export",
+  "exchangeRateCurrentLedger": "Current ledger: {name}",
+  "@exchangeRateCurrentLedger": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "exchangeRateInfoTitle": "About Ledger Currency",
+  "exchangeRateInfoMessage": "The ledger currency is the base currency of the current ledger: foreign-currency transactions in this ledger are converted into it at exchange rates, so totals can be compared directly in statistics and asset overviews. Each ledger has its own ledger currency and you can switch it at any time; switching recalculates converted amounts for all transactions in this ledger at the latest rates.\n\nRates are fetched automatically from public data sources on a daily basis. You can also tap \"Edit\" for any currency in the list below to set a manual rate — it overrides the automatic data and takes effect immediately.",
+  "rateEditLabel": "Edit",
+  "rateInvalidInput": "Please enter a valid rate (a number greater than 0)",
+  "currencyManageTitle": "Manage Displayed Currencies",
+  "currencyManageEntry": "Currency Management",
+  "currencyManageCount": "{count} currencies selected",
+  "currencyManageBaseLocked": "Ledger base currency (cannot be hidden)",
+  "currencyManageHint": "Hiding a currency does not affect existing transactions; you can re-enable it here at any time.",
+  "detailImportExportMigrateTitle": "Migration",
+  "detailImportExportMigrateTip": "Export and import into another book or fitness space. Use the management page to copy or move between local and cloud storage.",
+  "ledgerMetaReadOnlyToast": "Collaborators cannot modify ledger settings.",
+  "aaStatisticsTitle": "AA Statistics",
+  "aaStatisticsTotalAmount": "Total shared",
+  "aaStatisticsPerPerson": "Split details",
+  "aaStatisticsPaid": "Split paid",
+  "aaStatisticsPaidAll": "Total paid",
+  "aaStatisticsShare": "Share",
+  "aaStatisticsNet": "Balance",
+  "aaStatisticsNetReceive": "to receive",
+  "aaStatisticsNetPay": "to pay",
+  "aaStatisticsTransferPlan": "Settlement plan",
+  "aaStatisticsTransferSeparator": "pays",
+  "aaStatisticsNoTransfers": "All settled up",
+  "aaStatisticsExcluded": "No split",
+  "aaStatisticsParticipantCount": "{count} participants",
+  "@aaStatisticsParticipantCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aaStatisticsExcludedEmpty": "No no-split transactions",
+  "aaStatisticsViewDetails": "View details",
+  "aaStatisticsBillSummary": "Bill summary",
+  "aaStatisticsNetReceiveAmount": "To receive",
+  "aaStatisticsNetPayAmount": "To pay",
+  "aaStatisticsSettled": "Settled",
+  "aaStatisticsModePerPerson": "Split equally",
+  "aaStatisticsModeCustom": "Custom amount",
+  "aaStatisticsSplitDetail": "Split details",
+  "aaStatisticsPayerPrefix": "Paid by",
+  "aaStatisticsMemberTxEmpty": "No bills for this member",
+  "aaEditTitle": "Edit split",
+  "aaEditSplitButton": "Edit split",
+  "aaPayer": "Paid by",
+  "aaSplitMode": "Split method",
+  "aaParticipants": "Participants",
+  "aaModePerPerson": "Split equally",
+  "aaModeCustom": "Custom split",
+  "aaModeNoSplit": "No split",
+  "aaParticipantsAll": "All members",
+  "aaParticipantsUnit": "",
+  "aaVirtualUserNameHint": "Enter a nickname",
+  "aaVirtualUserDeleteConfirm": "Delete \"{name}\"?",
+  "@aaVirtualUserDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aaVirtualUserInUse": "Has related transactions and cannot be deleted",
+  "aaVirtualUserDefaultName": "Virtual User {index}",
+  "@aaVirtualUserDefaultName": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "aaUnknownUser": "Unknown",
+  "ledgerAaStatisticsEntry": "AA Statistics",
+  "aaNoParticipants": "Add participants first",
+  "aaSplitAmountIncomplete": "Enter an amount for every participant",
+  "restoreStep2Title": "Backup Contents",
+  "restoreApply": "Restore Now",
+  "restoreApplying": "Applying...",
+  "restoreDone": "Restore Complete",
+  "restoreOpenFailed": "Cannot open backup: file is corrupted or not a backup",
+  "restoreApplyFailed": "Restore failed; nothing was changed (rolled back)",
+  "restoreCloudForkHint": "This is a cloud ledger from a different account; it will be restored as a local copy",
+  "restoreFileNotFound": "Backup file not found",
+  "restoreSectionLocal": "Local Ledgers",
+  "restoreSectionCloud": "Cloud Ledgers",
+  "restoreMemberCount": "{count} members",
+  "@restoreMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreConflictWarning": "{count} open conflicts (restore uses backup-time state)",
+  "@restoreConflictWarning": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreSchemaUnsupported": "Unsupported backup schema. Choose a backup created by the current version",
+  "authWelcomeBack": "Welcome back",
+  "authWelcomeSubtitle": "Sign in to your Sesame Notes account",
+  "authPhone": "Phone number",
+  "authPhoneHint": "Enter phone number",
+  "authPasswordHint": "Enter password",
+  "authRegisterPasswordHint": "Set a login password",
+  "authConfirmPasswordHint": "Enter password again",
+  "authPasswordShow": "Show",
+  "authPasswordHide": "Hide",
+  "authRegionSheetTitle": "Select country code",
+  "authRegionCancel": "Cancel",
+  "authNoAccount": "No account? Register now",
+  "authInvalidPhone": "Please enter a valid phone number",
+  "authInvalidPassword": "Please enter your password",
+  "authPasswordMismatch": "Passwords do not match",
+  "authErrorPhoneAlreadyRegistered": "Phone number already registered",
+  "authErrorServer": "Service unavailable, please try again later",
+  "authErrorOther": "Operation failed, please try again later",
+  "authConfirmPassword": "Confirm password",
+  "authAlreadyHaveAccount": "Have an account? Sign in",
+  "authRegister": "Register",
+  "mineLocalName": "Local Sesame",
+  "mineLocalSubtitle": "Local only · Not signed in",
+  "mineLoginRegister": "Sign in / Register",
+  "mineLoginValue": "Sign in to use cloud ledgers and sharing",
+  "mineSesameNumber": "Sesame number {number}",
+  "@mineSesameNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "profileTitle": "Profile",
+  "profileNickname": "Nickname",
+  "profileSesameNumber": "Sesame number",
+  "profileGender": "Gender",
+  "profilePhone": "Phone",
+  "profileGenderUnset": "Not set",
+  "profileGenderMale": "Male",
+  "profileGenderFemale": "Female",
+  "profileChangePassword": "Change password",
+  "profileLogout": "Sign out",
+  "profileLogoutHint": "Signing out keeps all local books on this device. Cloud books remain in your account and can be synced after you sign in again.",
+  "profileLogoutConfirmTitle": "Sign out",
+  "profileLogoutConfirmMessage": "Are you sure you want to sign out?",
+  "profileLogoutPendingTitle": "Unsynced changes",
+  "profileLogoutPendingMessage": "These cloud books contain unsynced changes. “Keep local copies” copies the affected books to this device first. Unconfirmed category changes stay with this account so you can continue after signing in again.",
+  "profileLogoutSyncFirst": "Sync first",
+  "profileLogoutKeepLocalCopy": "Keep local copy and sign out",
+  "profileBasicInfo": "Basic info",
+  "profileAccountInfo": "Account info",
+  "editNameTitle": "Edit nickname",
+  "editNameSave": "Save",
+  "editNameEmpty": "Nickname cannot be empty",
+  "editNameHint": "Nicknames do not need to be unique. Chinese, English, numbers, and Emoji are supported.",
+  "editNameClear": "Clear nickname",
+  "editNameSaved": "Nickname saved",
+  "editNameSaveFailed": "Save failed, try again later",
+  "editGenderTitle": "Gender",
+  "editGenderSaved": "Gender saved",
+  "editGenderPrivacyHint": "Your gender is visible only to you and is not shown to other shared ledger members.",
+  "avatarPreviewTitle": "Avatar",
+  "avatarClose": "Close",
+  "avatarFromGallery": "Choose from gallery",
+  "avatarRestoreDefault": "Restore default avatar",
+  "avatarUploadFailed": "Avatar upload failed, try again later",
+  "avatarRestored": "Default avatar restored",
+  "avatarTooLarge": "Image too large, choose a smaller one",
+  "avatarInvalid": "Cannot recognize the image, choose another one",
+  "changePasswordTitle": "Change password",
+  "changePasswordCurrent": "Current password",
+  "changePasswordCurrentHint": "Enter current password",
+  "changePasswordNew": "Add password",
+  "changePasswordNewHint": "Set a new password",
+  "changePasswordConfirm": "Confirm new password",
+  "changePasswordConfirmHint": "Enter the new password again",
+  "changePasswordHint": "Use up to 128 characters. Other devices will be signed out after the change; this device stays signed in.",
+  "changePasswordNewRequired": "Enter a new password",
+  "changePasswordTooLong": "Use no more than 128 characters",
+  "changePasswordMismatch": "Add passwords do not match",
+  "changePasswordCurrentInvalid": "Current password is incorrect",
+  "changePasswordSuccess": "Password changed",
+  "changePasswordSubmit": "Save",
+  "changePasswordFailed": "Change failed, try again later",
+  "daysTools": "Tools",
+  "dayBooksTitle": "Anniversary books",
+  "dayBookNew": "Add anniversary book",
+  "dayBookEdit": "Edit anniversary book",
+  "dayBookEmpty": "No anniversary books yet",
+  "dayEventsEmpty": "No anniversaries yet",
+  "dayNoNext": "No next date within the supported range",
+  "dayBirthday": "Birthday",
+  "dayAnniversary": "Anniversary",
+  "dayCountdown": "Countdown",
+  "dayStage": "Stage",
+  "dayAdd": "Add anniversary",
+  "dayEdit": "Edit anniversary",
+  "dayName": "Name",
+  "dayDate": "Date",
+  "dayBirthDate": "Date of birth",
+  "dayStart": "Start time",
+  "dayEnd": "End time",
+  "dayNextDate": "Next time",
+  "daySolar": "Solar",
+  "dayLunar": "Lunar",
+  "dayLeapMonth": "Leap month",
+  "dayRepeat": "Repeat",
+  "dayNoRepeat": "Never",
+  "dayYearly": "Yearly",
+  "dayFixedDate": "Fixed date",
+  "dayIntervalDays": "Count X days",
+  "dayStatistic": "Display as",
+  "dayAge": "Age",
+  "dayYears": "Years / months / days",
+  "dayDays": "Days",
+  "dayToday": "Today",
+  "daySaveFailed": "Could not save. Try again.",
+  "dayInvalid": "Check the name, dates and repeat settings.",
+  "dayRecordInvalid": "This record has invalid date data. Select and confirm the dates again.",
+  "dayDateOutOfRange": "The result is outside the supported range: {first} to {last}",
+  "@dayDateOutOfRange": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "dayTargetUnavailable": "This anniversary book is unavailable. Keep your input and try again.",
+  "dayDifference": "Date interval",
+  "dayOffset": "Date offset",
+  "dayHolidays": "Holidays",
+  "dayLocal": "Local anniversary book",
+  "dayCloud": "Cloud anniversary book",
+  "dayBookPending": "Pending sync",
+  "dayBookStale": "Sync binding expired",
+  "dayDay": "Day",
+  "dayCalculate": "Calculate",
+  "dayRemaining": "In {count} days",
+  "@dayRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayElapsed": "{count} days ago",
+  "@dayElapsed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayAgeValue": "Age {count}",
+  "@dayAgeValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayDeleteEvent": "Delete “{name}”?",
+  "@dayDeleteEvent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dayDeleteBook": "Delete anniversary book “{name}” and its {count} anniversaries?",
+  "@dayDeleteBook": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayCloudDeleteHint": "Deletion syncs to your other devices",
+  "dayNewYear": "Add Year's Day",
+  "dayLabour": "Labour Day",
+  "dayNational": "National Day",
+  "daySpring": "Spring Festival",
+  "dayLantern": "Lantern Festival",
+  "dayDragonBoat": "Dragon Boat Festival",
+  "dayQixi": "Qixi",
+  "dayMidAutumn": "Mid-Autumn Festival",
+  "dayDoubleNinth": "Double Ninth Festival",
+  "dayNewYearsEve": "Lunar New Year's Eve",
+  "dayQingming": "Qingming",
+  "commonPrevious": "Previous",
+  "dayBackupSection": "Anniversaries",
+  "dayCsvImportSummary": "Import preview",
+  "dayDefaultBookName": "Default anniversaries",
+  "dayExportSection": "Export anniversaries",
+  "exportSelectAtLeastOne": "Select at least one section",
+  "importContentDays": "Anniversaries",
+  "importContentLedger": "Bookkeeping",
+  "importContentTitle": "Choose import content",
+  "ledgerExportSection": "Export bookkeeping",
+  "daySyncPending": "{count} pending changes",
+  "@daySyncPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daySyncRejected": "{count} changes need correction",
+  "@daySyncRejected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daySyncConflicts": "{count} sync conflicts",
+  "@daySyncConflicts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayRestorePending": "Local restore is complete. Selected cloud books are being restored",
+  "shareHandedToSystem": "Files were handed to system sharing. Confirm they were saved in the destination app",
+  "startupDatabaseTitle": "Unable to open current data",
+  "startupDatabaseMessage": "The data structure does not match this version, or the database cannot currently be read. Keep the original database file, restore from a compatible backup, and restart. The app will not automatically erase or change the original file.",
+  "dayCachedExportWarning": "This cloud book has unfinished sync or a sync error, so its content may not be current. Export the content already on this device?",
+  "dayType": "Type",
+  "dayUpcomingTitle": "Upcoming anniversaries",
+  "dayAnniversaryValue": "{count} years",
+  "dayDaysValue": "{count} days",
+  "dayRemainingDuration": "In {duration}",
+  "dayElapsedDuration": "{duration} ago",
+  "dayTotalDuration": "{duration} in total",
+  "@dayAnniversaryValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@dayDaysValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@dayRemainingDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "@dayElapsedDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "@dayTotalDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "dayYearsValue": "{count} years",
+  "dayMonthsValue": "{count} months",
+  "@dayYearsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@dayMonthsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayRepeatQuestion": "Repeats",
+  "dayCalculationResult": "Result:",
+  "dayOffsetBefore": "{count} days before",
+  "@dayOffsetBefore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayOffsetAfter": "{count} days after",
+  "@dayOffsetAfter": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayNameHint": "Enter an event name",
+  "dayDaysHint": "Enter a number of days",
+  "dayDifferenceFullSpan": "Difference: {years} years {months} months {days} days",
+  "dayDifferenceTotalDays": "Difference: {days} days",
+  "@dayDifferenceFullSpan": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      },
+      "months": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@dayDifferenceTotalDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "memosTab": "Memos",
+  "memoNormal": "Notes",
+  "memoCredentials": "Accounts and passwords",
+  "memoEditCard": "Edit account and password",
+  "memoName": "Name",
+  "memoEnterName": "Enter a name",
+  "memoDefaultBookName": "Default memos",
+  "memoBooks": "Memo books",
+  "memoBooksManagement": "Manage memo books",
+  "memoBookType": "Memo book type",
+  "memoCreateBookTitle": "Add book",
+  "memoStorageLocal": "On this device",
+  "memoStorageCloud": "Cloud",
+  "memoBookName": "Memo book name",
+  "memoRename": "Rename",
+  "memoNoBooks": "Add a book to get started",
+  "memoNoEntries": "No entries yet",
+  "memoNoSearchResult": "No matching accounts",
+  "memoUntitled": "Untitled note",
+  "memoNewNote": "Add note",
+  "memoNewCard": "Add account and password",
+  "memoCredentialsTitle": "Accounts and passwords",
+  "memoAccount": "Account",
+  "memoPassword": "Password",
+  "memoFieldIndex": "Field {index}",
+  "@memoFieldIndex": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "memoFieldName": "Field name",
+  "memoFieldValue": "Value",
+  "memoAddField": "Add field",
+  "memoRemoveField": "Remove field",
+  "memoNewField": "Add field",
+  "memoFieldNameRequired": "Name the field before filling in a value",
+  "memoCardEmpty": "Fill in a name or at least one field",
+  "memoPhone": "Phone",
+  "memoEmail": "Email",
+  "memoLoadFailed": "Could not load data. Please try again.",
+  "memoUnavailable": "The book or account changed. Reopen it to continue; unsaved input is kept for the original account.",
+  "memoDownloadRequired": "Connect to finish downloading this book",
+  "memoEditing": "Editing",
+  "memoSaving": "Saving",
+  "memoSaveFailed": "Save failed. Your input is kept; please retry.",
+  "memoDeleteEntry": "Delete this record?",
+  "memoDeleteEntryMessage": "This cannot be undone.",
+  "memoCopy": "Copy",
+  "memoCopied": "Copied",
+  "memoExport": "Export",
+  "memoSelectEntry": "Select note",
+  "memoSelectFormat": "Choose an export format",
+  "memoExportFailed": "Document generation failed. Retry this note and format.",
+  "memoExportCancelled": "Export cancelled",
+  "memoExportReady": "File generated",
+  "memoLocal": "Local memo books",
+  "memoCloud": "Cloud memo books",
+  "memoSearchHint": "Search field name or value",
+  "memoSortManual": "Manual order",
+  "memoSortUpdated": "Recently edited",
+  "memoReorder": "Drag to reorder",
+  "memoReorderFailed": "Could not save the order. Please try again.",
+  "memoOrderChanged": "Cards have changed. Refresh before reordering.",
+  "memoOrderCapacity": "Card order numbers have reached their limit. A new card cannot be added. Your draft has been kept.",
+  "memoMore": "Load more",
+  "memoConflictCopy": "Conflict copy",
+  "memoDeleteBookMessage": "Delete this book and its {count} entries?",
+  "@memoDeleteBookMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memoEntryCount": "{count} entries",
+  "@memoEntryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayExpired": "Expired",
+  "dayPresent": "Present",
+  "dayMilestone": "Anniversary",
+  "dayStatisticExample": "Example: {value}",
+  "@dayStatisticExample": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "memoHomeSyncing": "Refreshing memo data",
+  "memoHomeEmpty": "No memos yet",
+  "memoSelectBook": "Select memo book",
+  "memoPullLocalSuccess": "Local memo data refreshed",
+  "memoPullCloudSuccess": "Cloud memo data synced",
+  "memoPullCloudFailedButLocalOk": "Cloud sync failed; local memo data refreshed",
+  "memoPullLocalFailed": "Local memo refresh failed. Try again later.",
+  "memoPullCloudFailed": "Cloud memo refresh failed. Try again later.",
+  "memoExportSection": "Export memos",
+  "fitnessTitle": "Fitness",
+  "fitnessContinue": "Continue workout",
+  "fitnessStart": "Start workout",
+  "fitnessFinish": "Finish workout",
+  "fitnessRestart": "Restart workout",
+  "fitnessNoData": "Nothing here yet",
+  "fitnessPlans": "Training plans",
+  "fitnessNewPlan": "Add training plan",
+  "fitnessTemplates": "Workout templates",
+  "fitnessNewTemplate": "Add workout template",
+  "fitnessPlanLibrary": "Plan library",
+  "fitnessTemplateLibrary": "Template library",
+  "fitnessAddToMyPlan": "Add to my plans",
+  "fitnessAddToMyTemplate": "Add to my templates",
+  "fitnessAddAgain": "Add again",
+  "fitnessReuseForTemplate": "Reuse \"{name}\"",
+  "@fitnessReuseForTemplate": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "fitnessCreateCopies": "Add copies",
+  "fitnessOfficialSource": "Source: official training library",
+  "fitnessLibraryAdded": "Added to the current training space",
+  "fitnessExercises": "Exercise library",
+  "fitnessAddExercises": "Add exercises",
+  "fitnessReplace": "Replace exercise",
+  "fitnessNoExercises": "Search or change filters to find exercises",
+  "fitnessName": "Name",
+  "fitnessSearch": "Search names and aliases",
+  "fitnessPlanned": "Not started",
+  "fitnessActive": "In progress",
+  "fitnessFinished": "Finished",
+  "fitnessDate": "Scheduled date",
+  "fitnessTime": "Time",
+  "fitnessVolume": "Volume",
+  "fitnessSets": "Sets",
+  "fitnessDuration": "Duration (seconds)",
+  "fitnessAddSet": "Add set",
+  "fitnessKeypadAddSet": "Add set",
+  "fitnessFillSets": "Apply",
+  "fitnessFillAbove": "Above",
+  "fitnessFillBelow": "Below",
+  "fitnessNextInput": "Next field",
+  "fitnessCopySet": "Copy this set",
+  "fitnessDeleteSet": "Delete this set",
+  "fitnessRest": "Rest timer",
+  "fitnessRestSeconds": "Rest (seconds)",
+  "fitnessWarmupRest": "Warm-up rest (seconds)",
+  "fitnessPause": "Pause",
+  "fitnessResume": "Resume",
+  "fitnessSkip": "Skip",
+  "fitnessRestRestart": "Restart",
+  "fitnessRestEnd": "End",
+  "fitnessRepeatRest": "Repeat rest",
+  "fitnessStartTimer": "Start timer",
+  "fitnessCopy": "Duplicate",
+  "fitnessMoveUp": "Move up",
+  "fitnessMoveDown": "Move down",
+  "fitnessUpdateTemplate": "Update template",
+  "fitnessUpdateTemplateConfirm": "Update the source template with this workout’s exercises and set configuration? The template name and existing workouts will stay unchanged.",
+  "fitnessSaveTemplate": "Save as template",
+  "fitnessDeleteMessage": "Delete this item? Previously generated workouts and history are kept.",
+  "fitnessCompletedChange": "This exercise contains completed sets. Replace or remove it?",
+  "fitnessInvalidSet": "Enter valid fields before confirming this set.",
+  "fitnessIncompleteSet": "This set is incomplete. Confirm it again after editing.",
+  "fitnessInvalidForm": "Check the name, numbers and required exercises.",
+  "fitnessActiveExists": "A workout is already running. Continue it or finish it first.",
+  "fitnessPaused": "Paused",
+  "fitnessStartDate": "Start date",
+  "fitnessCycleDays": "Plan cycle (including rest)",
+  "fitnessRestDay": "Rest day",
+  "fitnessPin": "Pin exercise",
+  "fitnessUnpin": "Unpin exercise",
+  "fitnessPinned": "Pinned",
+  "fitnessRecent": "Recently used",
+  "fitnessAll": "All",
+  "fitnessBodyPart": "Body part",
+  "fitnessEquipment": "Equipment",
+  "fitnessInstructions": "Instructions",
+  "fitnessPlay": "Play demonstration",
+  "fitnessPauseMedia": "Pause demonstration",
+  "fitnessDefaultRest": "Default rest duration",
+  "fitnessTrainingDays": "Training days",
+  "fitnessShowMore": "Load more",
+  "fitnessLoadFailed": "Could not load data. Please try again.",
+  "fitnessSaveFailed": "Save failed. Your input is kept; try again.",
+  "fitnessDetails": "Details",
+  "fitnessIncomplete": "Fitness data has not fully downloaded. Sync and try again.",
+  "fitnessReminderPermissionDenied": "System reminders are not permitted. Workout recording still works.",
+  "fitnessChest": "Chest",
+  "fitnessBack": "Back",
+  "fitnessShoulders": "Shoulders",
+  "fitnessBiceps": "Biceps",
+  "fitnessTriceps": "Triceps",
+  "fitnessAbs": "Abs",
+  "fitnessGlutes": "Glutes",
+  "fitnessHamstrings": "Hamstrings",
+  "fitnessQuadriceps": "Quadriceps",
+  "fitnessCalves": "Calves",
+  "fitnessUpperArms": "Upper arms",
+  "fitnessLowerArms": "Forearms",
+  "fitnessUpperLegs": "Thighs",
+  "fitnessLowerLegs": "Lower legs",
+  "fitnessWaist": "Waist",
+  "fitnessCardio": "Cardio",
+  "fitnessBarbell": "Barbell",
+  "fitnessDumbbell": "Dumbbell",
+  "fitnessKettlebell": "Kettlebell",
+  "fitnessCable": "Cable",
+  "fitnessMachine": "Machine",
+  "fitnessSledMachine": "Sled machine",
+  "fitnessBodyWeightEquipment": "Body weight",
+  "fitnessWeightedEquipment": "Weighted",
+  "fitnessLats": "Lats",
+  "fitnessSpine": "Spinal erectors",
+  "fitnessUpperBack": "Upper back",
+  "fitnessLowerBack": "Lower back",
+  "fitnessRearDeltoids": "Rear deltoids",
+  "fitnessRhomboids": "Rhomboids",
+  "fitnessTraps": "Trapezius",
+  "fitnessHipFlexors": "Hip flexors",
+  "fitnessCore": "Core",
+  "fitnessFeet": "Feet",
+  "fitnessAnkles": "Ankles",
+  "fitnessConflicts": "Sync conflicts",
+  "fitnessRestCompletedTitle": "Rest complete",
+  "fitnessRestCompletedBody": "Rest is over. Continue training or finish your workout.",
+  "fitnessUnknownPart": "Unknown body part",
+  "fitnessBodyFront": "Front",
+  "fitnessBodyBack": "Back",
+  "fitnessNeck": "Neck",
+  "fitnessAdductors": "Adductors",
+  "fitnessAbductors": "Abductors",
+  "fitnessSerratus": "Serratus anterior",
+  "fitnessLevatorScapulae": "Levator scapulae",
+  "fitnessBand": "Band",
+  "fitnessResistanceBand": "Resistance band",
+  "fitnessAssistedEquipment": "Assisted equipment",
+  "fitnessBosu": "Bosu ball",
+  "fitnessElliptical": "Elliptical machine",
+  "fitnessEzBar": "EZ barbell",
+  "fitnessHammer": "Hammer",
+  "fitnessMedicineBall": "Medicine ball",
+  "fitnessOlympicBarbell": "Olympic barbell",
+  "fitnessRoller": "Roller",
+  "fitnessRope": "Rope",
+  "fitnessSkiErg": "SkiErg machine",
+  "fitnessSmithMachine": "Smith machine",
+  "fitnessStabilityBall": "Stability ball",
+  "fitnessStationaryBike": "Stationary bike",
+  "fitnessStepmill": "Stepmill machine",
+  "fitnessTire": "Tire",
+  "fitnessTrapBar": "Trap bar",
+  "fitnessUpperBodyErgometer": "Upper body ergometer",
+  "fitnessAbWheel": "Ab wheel",
+  "fitnessAnkleStabilizers": "Ankle stabilizers",
+  "fitnessBrachialis": "Brachialis",
+  "fitnessGripMuscles": "Grip muscles",
+  "fitnessGroin": "Groin",
+  "fitnessHands": "Hands",
+  "fitnessLowerAbs": "Lower abs",
+  "fitnessObliques": "Obliques",
+  "fitnessRotatorCuff": "Rotator cuff",
+  "fitnessShins": "Shins",
+  "fitnessSoleus": "Soleus",
+  "fitnessSternocleidomastoid": "Sternocleidomastoid",
+  "fitnessUpperChest": "Upper chest",
+  "fitnessWristExtensors": "Wrist extensors",
+  "fitnessWristFlexors": "Wrist flexors",
+  "fitnessWrists": "Wrists",
+  "fitnessExerciseCount": "{count, plural, one {1 exercise} other {{count} exercises}}",
+  "@fitnessExerciseCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessBodyChestRegions": "Upper\nMid–low",
+  "fitnessBodyFrontShoulderRegions": "Front\nSide",
+  "fitnessBodyBackShoulderRegions": "Side\nRear",
+  "fitnessTrainingTime": "Training time",
+  "fitnessTrainingDuration": "Training duration",
+  "fitnessTrainingBodyParts": "Training body parts",
+  "fitnessDurationHours": "{hours} h",
+  "@fitnessDurationHours": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "fitnessClosed": "Closed",
+  "fitnessPlanNoStartDate": "Not selected",
+  "fitnessExerciseDetail": "Exercise details",
+  "fitnessExerciseHistory": "Training history",
+  "fitnessNoExerciseHistory": "No checked sets for this exercise yet",
+  "fitnessRestNotRecorded": "-",
+  "fitnessRestInProgress": "Timer not finished",
+  "fitnessPlanSchedule": "Cycle schedule",
+  "fitnessDeletePlan": "Delete plan",
+  "fitnessDeletePlanMessage": "Delete only this plan? All generated workouts and rest days, including completed workouts, will be kept.",
+  "fitnessPlanEnabled": "Enable plan",
+  "fitnessPlanStartDateRequired": "Choose a start date to enable the plan",
+  "syncCenterTitle": "Sync Management",
+  "syncCenterLoadFailed": "Could not load sync status. Try again.",
+  "syncCenterActionFailed": "Operation incomplete. Your data is preserved. Try again.",
+  "syncCenterUseRemote": "Use cloud version",
+  "syncCenterKeepLocal": "Keep local version",
+  "syncCenterDecisionConfirm": "Use the selected version? Deleted cloud records will not be recreated under the same identity. Local content can be preserved as a copy.",
+  "syncCenterConflict": "Conflicting versions need your decision",
+  "syncCenterRejected": "Upload rejected",
+  "syncCenterStale": "Sync connection is outdated",
+  "syncCenterDeleting": "Waiting for cloud deletion confirmation",
+  "syncCenterMoving": "Move to device is incomplete",
+  "syncCenterIncomplete": "Download incomplete",
+  "syncCenterDeleted": "Deleted",
+  "syncCenterCompare": "Compare versions",
+  "syncCenterLocal": "Local version",
+  "syncCenterRemote": "Cloud version",
+  "syncCenterEmpty": "No sync issues to resolve",
+  "syncCenterEdit": "Edit record",
+  "syncCenterProtect": "Keep a copy on this device",
+  "syncCenterDownload": "Protect content and download again",
+  "syncCenterPending": "{count} sync operations need attention",
+  "@syncCenterPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncCenterUploading": "Waiting to upload",
+  "fitnessPlanUnfilled": "Empty",
+  "fitnessPlanFillHint": "Tap a template to fill a date",
+  "fitnessPlanFillDays": "Choose a template or rest for every day",
+  "fitnessPlanSetRest": "Set rest day",
+  "fitnessPlanReplaceHint": "Tap a template to replace this assignment",
+  "syncCenterDeleteReview": "Delete “{name}”? It currently contains {count} cloud records. Unsynced local changes to this book will also be deleted.",
+  "@syncCenterDeleteReview": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncCenterMoveReview": "Continue moving “{name}” to this device? It has {count} cloud records. The move finishes after a complete copy is saved and cloud deletion is confirmed.",
+  "@syncCenterMoveReview": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncCenterDeleteGone": "“{name}” is no longer available in the cloud. Finish this deletion? Existing recovery copies will be kept.",
+  "@syncCenterDeleteGone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syncCenterBudget": "This content exceeds the sync size limit. Reduce its size and try again.",
+  "dataTransferInfoTitle": "How it works",
+  "daySelectBook": "Select anniversary book",
+  "fitnessExportSection": "Export fitness",
+  "fitnessRecordCount": "{count} data items",
+  "fitnessDefaultSpaceName": "Default fitness space",
+  "fitnessSelectSpace": "Select fitness space",
+  "fitnessNoSpaces": "No fitness spaces",
+  "fitnessSpacesManagement": "Fitness spaces",
+  "fitnessCreateSpace": "Add fitness space",
+  "fitnessSpaceName": "Space name",
+  "fitnessLocalSpaces": "Local fitness spaces",
+  "fitnessCloudSpaces": "Cloud fitness spaces",
+  "fitnessDeleteSpaceMessage": "Delete this fitness space and its {count} data items?",
+  "privateBookDownloadRequired": "Complete data synchronization first",
+  "privateBookMoveToCloudMessage": "\"{name}\" will be uploaded to the cloud and synced across your devices.",
+  "@privateBookMoveToCloudMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "privateBookMoveToLocalMessage": "\"{name}\" will be deleted from the cloud and kept on this device only. Other devices will no longer see it.",
+  "@privateBookMoveToLocalMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "privateBookCopyToLocalMessage": "A local copy of \"{name}\" will be created. The cloud original stays unchanged.",
+  "@privateBookCopyToLocalMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reminderGlobalTitle": "Enable notifications",
+  "reminderPlatformUnsupported": "Reminder notifications are not supported on this platform yet.",
+  "reminderDaysTitle": "Anniversary reminders",
+  "reminderDaySame": "On the day",
+  "reminderDayBefore": "1 day before",
+  "reminderThreeDaysBefore": "3 days before",
+  "reminderWeekBefore": "1 week before",
+  "reminderChooseOneDay": "Keep at least one reminder day",
+  "reminderDaysTimeTitle": "Reminder time",
+  "reminderRestTitle": "Rest timer reminders",
+  "reminderSystemSettings": "Reminder help",
+  "transferCommitting": "Committing, please wait",
+  "transferBookTypeMismatch": "This file is a \"{fileType}\" export while the target is \"{targetType}\". Go back and pick a matching memo book.",
+  "transferDefaultValue": "Default value",
+  "transferDefaultValueHelp": "Used when this field is not read from the file; leave empty for no value.",
+  "transferIgnoreField": "Don't read this field",
+  "transferDuplicate": "Already imported; will skip",
+  "transferExportProgress": "Generating export files · {count} generated",
+  "transferFailed": "Import did not finish. Check the data or retry. Successfully imported records will not be duplicated.",
+  "transferFitnessHint": "Each item includes its complete plan/workout, exercises and sets. Importing preferences replaces current fitness preferences.",
+  "transferMappingHelp": "Auto-detected fields can be changed. Choosing \"Don't read this field\" skips the file and uses the default below. * indicates required fields.",
+  "transferMatchingTitle": "Match exercises",
+  "transferPendingSync": "Local import complete. Cloud synchronization will continue in the sync queue.",
+  "transferRecord": "Record {lines} · {title}",
+  "transferRequired": "Choose a field",
+  "transferResult": "Imported {imported} · Skipped {skipped} · Failed {failed}",
+  "transferSelectAll": "Select all valid records",
+  "transferSelectCategory": "Choose an existing category",
+  "transferSelectExercise": "Choose an exercise",
+  "transferSummary": "Total {total} · Valid {valid} · Duplicates {duplicates} · Errors {errors} · Selected {selected}",
+  "transferTarget": "Target: {name}",
+  "transferUnnamed": "Untitled",
+  "transferValid": "Ready to import",
+  "transferFieldLabel": "{field, select, faccount {Account} famount {Amount} fbody {Body} fcalendar {Calendar} fcategory {Category} fcategory_icon {Category icon} fcompleted {Completed} fcountdown_mode {Countdown mode} fcreated_at {Created at} fcurrency {Currency} fcycle_days {Cycle days} fdate {Date} fday {Training day (1-based)} fdays {Training schedule} femail {Email} fend_calendar {End calendar} fend_date {End date} fend_is_leap_month {End leap month} fentity_type {Record type} fexercise {Exercise} fexercises {Exercises and sets} fgeneration_state {Plan execution state} fid {Relationship reference} finterval_days {Interval days} fis_leap_month {Leap month} fkind {Set kind} fname {Name} fnote {Note} foccurrence_key {Plan occurrence} fpassword {Password} fpending_schedule {Pending schedule} fphone {Phone} fpreferences {Fitness preferences} fremark {Note} frepeat_type {Repeat} freps {Repetitions} frest_seconds {Rest seconds} frest_timer {Rest timer} frun_segments {Execution segments} fscheduled_date {Workout date} fset_count {Number of sets} fsource_kind {Workout source} fsource_plan_id {Related plan} fsource_plan_name {Related plan name} fsource_template_id {Related template} fstart_calendar {Start calendar} fstart_date {Start date} fstart_is_leap_month {Start leap month} fstatistic_type {Count by} fstatus {Status} fsub_category {Subcategory} fsub_category_icon {Subcategory icon} ftitle {Title} ftype {Type} fupdated_at {Updated at} fweight {Weight} fsets {Sets} fslot {Training slot} fday_index {Day index (0-based)} other {Field}}",
+  "transferCardFields": "Card fields",
+  "transferCardFieldsHelp": "Every column can become a card field. Turn a column off, or clear its name, to skip it; rename the field to whatever you prefer.",
+  "transferCardFieldName": "Field name",
+  "transferJsonRoot": "Entire JSON object",
+  "fitnessCustom": "Custom",
+  "fitnessCustomCreate": "Add custom exercise",
+  "fitnessCustomEdit": "Edit custom exercise",
+  "fitnessCustomName": "Exercise name",
+  "fitnessCustomRequired": "Please complete this required field",
+  "fitnessCustomUpload": "Upload image",
+  "fitnessCustomImageTooLarge": "Please choose an image smaller than 48 KB",
+  "fitnessCustomDeleteConfirm": "Delete this custom exercise? Existing workout records will be kept.",
+  "fitnessCustomLimit": "Custom exercise storage is full. Delete unused exercises or choose icons instead of images.",
+  "commonNameInvalid": "Enter a visible name of at most {max} characters",
+  "@commonNameInvalid": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appUpdateTitle": "Check for updates",
+  "appUpdateNotConfigured": "Updates are not configured for this build yet.",
+  "appUpdateUnsupported": "In-app updates are available for the official Android arm64 app only.",
+  "appUpdatePermission": "Allow this app to install updates in system settings, then return here to continue.",
+  "appUpdateFailed": "Update failed. Check your network and free storage, then retry.",
+  "appUpdateCurrentVersion": "Current version",
+  "appUpdateWorking": "Working…",
+  "appUpdateDownloading": "Downloading",
+  "appUpdateLatest": "You are up to date.",
+  "appUpdateClose": "Close",
+  "appUpdateDownload": "Update",
+  "appUpdateInstall": "Install",
+  "syncCenterPullFailed": "Downloaded records could not be applied. Retry sync.",
+  "localBookMigrationTitle": "Move local books to the cloud?",
+  "localBookMigrationMessage": "You have {count} local books across Accounting, Days, Memos, and Fitness. Move them to this account’s cloud and sync across devices? Choose Keep local to leave them on this device.",
+  "localBookMigrationConfirm": "Move to cloud",
+  "localBookMigrationKeepLocal": "Keep local",
+  "localBookMigrationFailed": "Migration could not be completed. Your local content is preserved. Please try again.",
+  "@localBookMigrationMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "localBookMigrationSuccess": "Migration successful",
+  "reminderExactPermissionTitle": "Allow on-time reminders",
+  "memoSelectCredentials": "Select accounts",
+  "memoSelectedEntries": "Selected {count} records",
+  "@memoSelectedEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memoPng": "Image (PNG)",
+  "memoPngTooLarge": "The content is too long for a single image. Choose PDF, Word or Markdown.",
+  "shellMemos": "Notes",
+  "shellAddMoney": "Add expense",
+  "shellAddDay": "Add a day",
+  "shellMoneyDetails": "Transactions",
+  "shellAddMemo": "Write a note",
+  "shellFitnessTraining": "Training",
+  "shellMemoNotes": "Notes",
+  "homeViewAnalytics": "View analytics",
+  "shellFitnessPlans": "Plans",
+  "homeMonthlyBills": "{month} transactions",
+  "shellMoney": "Money",
+  "shellDays": "Days",
+  "shellFitness": "Fitness",
+  "shellChooseBook": "Switch book",
+  "homeDailyExpenseTrend": "Daily expenses",
+  "shellChooseSpace": "Switch space",
+  "welcomeDomainsTitle": "Make room for everyday life",
+  "@homeMonthlyBills": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "appearanceThemeJournal": "Warm journal",
+  "appearanceThemeClassicDescription": "Brand blue and soft corners",
+  "appearanceThemeMinimal": "Minimal list",
+  "appearanceThemeClassic": "Classic blue",
+  "appearanceThemeTitle": "Appearance & themes",
+  "appearanceThemeMinimalDescription": "Cool whites and defined edges",
+  "appearanceThemeJournalDescription": "Warm paper and forest green",
+  "appearanceThemeSaveFailed": "Appearance applied, but preferences could not be saved. Try again.",
+  "shellAddFitness": "New",
+  "shellAddCalendar": "Record this day",
+  "fitnessCalendarPlanned": "Planned",
+  "fitnessCalendarRest": "Rest",
+  "txEditorContextUnavailable": "This ledger or account has changed. Go back and reopen the entry; your input is still here.",
+  "appearanceThemeIntro": "Choose your visual style",
+  "appearanceThemeNote": "Style and display mode are independent. Changes apply immediately.",
+  "dayHeroDaysBefore": "days ago",
+  "dayHeroDaysAfter": "days away",
+  "homeSummaryLoadFailed": "Could not load expense summary",
+  "homeSummaryCachedFailure": "Could not refresh; showing the last result",
+  "txAmountInvalid": "Enter an amount greater than 0 with up to 2 decimal places.",
+  "txDivisionByZero": "Cannot divide by zero. Change the amount.",
+  "txExpressionInvalid": "Enter a complete, valid expression.",
+  "@categoryTemplateRestoreMessage": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryConflictCloud": "Cloud version",
+  "@categoryTemplatePending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryConflictChooseLocal": "Use the submitted local version? Later edits on this device will be preserved separately for further sync.",
+  "categoryTemplateRestoreTitle": "Restore original categories",
+  "recurringTransactionTimeZone": "Time zone",
+  "categoryConflictSubmitted": "Submitted local version",
+  "categoryTemplateRestoreMessage": "The original categories for these templates were deleted:\n{names}\nRestore the original categories and their settings? This creates no duplicate categories and restores no deleted transactions.",
+  "recurringTransactionTimeZoneInvalid": "Select a valid IANA time zone",
+  "categoryTemplateRestoreConfirm": "Restore originals",
+  "categoryConflictRefreshRequired": "Version information is not ready. Reload it before making a decision.",
+  "recurringTransactionAmountPrecision": "Enter an amount greater than zero, with up to 28 integer digits and 10 decimal places.",
+  "categoryConflictExplanation": "The local version is from this upload and excludes later edits. Choose which version to use for this category.",
+  "categoryConflictRestoreTitle": "Restore deleted cloud category",
+  "recurringTransactionTimeZoneLocked": "Transactions already exist. Create a new recurring rule to use another time zone.",
+  "categoryTemplatePendingLabel": "Awaiting review",
+  "categoryConflictRetry": "Retry confirmation",
+  "recurringTransactionDayOfWeek": "Day of the week",
+  "categoryConflictChooseCloud": "Use the displayed cloud version? The local submission in this conflict will not be applied. Later device edits will be preserved separately.",
+  "categoryTemplateNoChanges": "No categories were added or restored",
+  "categoryConflictDeleteTitle": "Confirm category deletion",
+  "categoryConflictType": "Category type",
+  "categoryConflictUnavailable": "This version is unavailable. Reload it to continue.",
+  "categoryTemplateBlockedParentHierarchy": "The original parent has changed level; this child cannot be added",
+  "categoryTemplateBlockedDuplicate": "A category with this name exists; this template was not added",
+  "categoryConflictChanged": "The category changed. Compare the refreshed versions before confirming again.",
+  "categoryConflictUseLocal": "Use local version",
+  "categoryTemplateBlockedParentDuplicate": "A parent with this name exists; this template was not added",
+  "categoryConflictPosition": "Sort value: {value}",
+  "categoryConflictRestoreMessage": "This category was deleted in the cloud. Restore that same category using the submitted local version? A second category will not be created.",
+  "@categoryConflictPosition": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryTemplateBlockedLabel": "Not added",
+  "categoryConflictRestore": "Confirm restore",
+  "categoryConflictParentMissing": "Parent category has not been downloaded",
+  "categoryConflictRefresh": "Reload versions",
+  "categoryTemplatePending": "{count} categories await cloud confirmation. Open Sync issues to review them.",
+  "recurringTransactionIntervalInvalid": "Enter an integer from 1 to 10000.",
+  "categoryConflictDeleteMessage": "The local submission deletes this category. Applying it will delete the cloud category. Review both versions first.",
+  "recurringTransactionMonthOfYear": "Month of the year",
+  "categoryTemplateRestored": "Restored {count} original categories",
+  "recurringTransactionTimeZoneHint": "Generate by this time zone’s calendar dates, consistently across devices.",
+  "categoryConflictPending": "The confirmation result has not arrived. Retry the original decision before choosing another version.",
+  "@categoryTemplateRestored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryConflictUseCloud": "Use cloud version",
+  "reminderDaysDailyTitle": "Daily reminders",
+  "reminderDaysDailyHint": "Uses the shared reminder time. Scheduled milestones take priority, with no duplicate reminders.",
+  "reminderDaysDailySelect": "Select anniversaries (multiple)",
+  "reminderDaysDailyChooseOne": "Select at least one birthday, anniversary or countdown.",
+  "reminderDaysDailyEmpty": "No anniversaries available for daily reminders.",
+  "reminderDaysDailyLoadFailed": "Could not load anniversaries. Please try again.",
+  "reminderDaysDailyAccountChanged": "Your account changed. Close this dialog and select again.",
+  "syncCenterTransactionTitle": "Transaction · {category}",
+  "@syncCenterTransactionTitle": {"placeholders": {"category": {"type": "String"}}},
+  "syncCenterCategoryTitle": "Category · {name}",
+  "@syncCenterCategoryTitle": {"placeholders": {"name": {"type": "String"}}},
+  "syncCenterBookContext": "Ledger: {name}",
+  "@syncCenterBookContext": {"placeholders": {"name": {"type": "String"}}},
+  "syncCenterUnknownCategory": "Category name unavailable",
+  "syncCenterEntityTitle": "{type} · {name}",
+  "syncCenterTypeLedger": "Ledger",
+  "syncCenterTypeDayBook": "Anniversary book",
+  "syncCenterTypeDayEvent": "Anniversary",
+  "syncCenterTypeMemoBook": "Memo book",
+  "syncCenterTypeMemoEntry": "Memo",
+  "syncCenterTypeFitnessSpace": "Fitness space",
+  "syncCenterTypeFitnessWorkout": "Workout",
+  "syncCenterTypeFitnessPlan": "Training plan",
+  "syncCenterTypeFitnessTemplate": "Training template",
+  "syncCenterTypeMember": "Ledger member",
+  "syncCenterTypeRecurring": "Recurring transaction",
+  "syncCenterTypeExchangeRate": "Exchange rate",
+  "syncCenterTypeRecord": "Record",
+  "syncCenterPendingRecordHint": "Saved on this device and waiting to upload.",
+  "syncCenterAwaitingReceiptHint": "The upload result is not confirmed. Retrying uses the original request to continue syncing. Your local content is preserved.",
+  "syncCenterRecordUnavailable": "The original content was deleted or cannot be read. Sync again and check.",
+  "syncCenterLastFailure": "Last sync did not finish: {reason}",
+  "@syncCenterLastFailure": {"placeholders": {"reason": {"type": "String"}}},
+  "@syncCenterEntityTitle": {"placeholders": {"type": {"type": "String"}, "name": {"type": "String"}}}
+}

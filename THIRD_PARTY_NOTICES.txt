@@ -1,0 +1,40 @@
+第三方内容声明
+
+本项目的 MIT 许可不替代以下第三方内容各自的许可。本文件列出随本仓库
+直接分发的相关资料；通过包管理器取得的其他依赖仍适用其各自的许可。
+
+一、健身动作非媒体数据
+
+来源：https://github.com/hasaneyldrm/exercises-dataset
+固定版本：7455efae41b330c265e7cd4b78dfa848e7ce5ebd
+版权：Copyright (c) 2026 Hasan Emir Yıldırım
+许可：上游 MIT，完整原文见 third_party/exercises-dataset/LICENSE。
+
+适用文件：
+- assets/fitness/exercises.json
+- lib/data/models/fitness_catalog_registry.dart
+- api/openapi/fitness-catalog.json
+
+这些文件使用或派生自上游动作名称、分类、教学文字等非媒体数据，
+并包含本项目使用的数据结构、标识与本地媒体路径。
+
+二、健身 GIF 与其他 Gym Visual 媒体
+
+适用目录：assets/fitness/videos/
+权利人及署名：© Gym visual — https://gymvisual.com/
+条款：https://gymvisual.com/content/3-terms-and-conditions-of-use
+
+这些媒体不在本项目或 exercises-dataset 的 MIT 授权范围内。本项目不因
+附带这些文件而授予使用或再分发权利，相关使用须遵守权利人的条款，
+并在需要时取得独立授权。
+
+third_party/exercises-dataset/NOTICE.md 是固定版本的上游声明原文。
+其中关于已取得许可和媒体规格的表述描述的是上游仓库，不能视为本项目
+或本项目使用者已经取得相同授权的证明。
+
+三、随包字体
+
+- assets/memos/NotoEmoji.ttf：SIL Open Font License 1.1，版权及许可见
+  assets/memos/OFL-Emoji.txt，字体内同时保留原有版权与许可信息。
+- assets/memos/NotoSansSC.ttf：SIL Open Font License 1.1，许可见
+  assets/memos/OFL-CJK.txt，字体内保留 Adobe 版权及 Reserved Font Name 声明。

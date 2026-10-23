@@ -1,0 +1,2226 @@
+{
+  "startupPreparationTitle": "暫時無法完成啟動",
+  "startupPreparationMessage": "本機設定暫時無法讀取，請重試後繼續使用。",
+  "startupPreparing": "正在準備資料",
+  "appUpdateCancelDownload": "取消下載",
+  "appUpdateReady": "更新已下載，可繼續安裝。",
+  "appUpdatePaused": "等待網路恢復或系統重試。",
+  "appUpdateBackground": "正在背景下載，可關閉此視窗。",
+  "calendarAnniversary": "紀念日",
+  "calendarNote": "筆記",
+  "calendarCredential": "帳號密碼",
+  "calendarTraining": "訓練",
+  "calendarTemplate": "範本",
+  "calendarPlan": "計畫",
+  "syncCenterSubtitle": "查看同步狀態，處理衝突、失敗和待完成的操作",
+  "calendarEmptyDay": "當天暫無記錄",
+  "fitnessHomeSyncing": "正在重新整理健身資料",
+  "fitnessPullLocalSuccess": "已重新整理本機健身資料",
+  "fitnessPullCloudSuccess": "已同步雲端健身資料",
+  "fitnessPullCloudFailedButLocalOk": "本機健身資料已重新整理，雲端同步失敗",
+  "fitnessDetailEmptyExercises": "暫無動作",
+  "fitnessWorkoutMissing": "暫時找不到這次訓練",
+  "fitnessTemplateMissing": "暫時找不到這個範本",
+  "fitnessMissingDetailHint": "請返回上一頁重新選擇。",
+  "fitnessReorderHint": "長按標題拖曳排序",
+  "fitnessHomeExerciseLabel": "動作",
+  "fitnessSetRestTime": "設定休息時間",
+  "fitnessWarmupLabel": "熱身",
+  "fitnessRepUnit": "次",
+  "fitnessSideWeight": "單邊重量",
+  "fitnessTotalWeight": "總重量",
+  "fitnessLeftKg": "左kg",
+  "fitnessRightKg": "右kg",
+  "fitnessSideWeightValue": "左 {left} / 右 {right} kg",
+  "@fitnessSideWeightValue": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      },
+      "right": {
+        "type": "String"
+      }
+    }
+  },
+  "fitnessPlanTrainingDays": "訓練 {count} 天",
+  "fitnessPlanRestDays": "休息 {count} 天",
+  "@fitnessPlanTrainingDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@fitnessPlanRestDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessExerciseTotal": "動作數",
+  "fitnessSetCount": "{count}組",
+  "@fitnessSetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessFinishConfirm": "確定結束訓練並儲存目前用時與完成情況？之後可以重新開始。",
+  "fitnessStartUsingTemplate": "使用此範本開始訓練",
+  "fitnessEdit": "編輯",
+  "fitnessMyPlans": "我的計畫",
+  "fitnessMyTemplates": "我的範本",
+  "fitnessViewAll": "查看全部",
+  "fitnessCreateBlank": "添加訓練",
+  "fitnessSelectedTraining": "我的訓練",
+  "fitnessNoSelectedTraining": "當天暫無訓練",
+  "fitnessNoPlans": "暫無訓練計畫",
+  "fitnessNoTemplates": "暫無訓練範本",
+  "memoBackupLocalOnly": "本機備份已儲存，雲端上傳失敗，請稍後重試。",
+  "@@locale": "zh_TW",
+  "appTitle": "芝麻記",
+  "@appTitle": {
+    "description": "The application title"
+  },
+  "tabHome": "記帳",
+  "tabAnalytics": "統計",
+  "tabCalendar": "日曆",
+  "tabMine": "我",
+  "commonCancel": "取消",
+  "commonConfirm": "確定",
+  "commonSave": "儲存",
+  "commonDelete": "刪除",
+  "commonAdd": "添加",
+  "commonOk": "確定",
+  "commonDone": "完成",
+  "homeSelectBillMonth": "選擇帳單月份",
+  "homePickerHint": "上下滑動數字以選擇時間",
+  "homeBackToCurrentMonth": "回到當月",
+  "homeTodayExpense": "今日",
+  "homeWeekExpense": "本週",
+  "homeMonthExpense": "本月支出",
+  "homeDetailCategory": "分類",
+  "homeDetailDate": "記帳日期",
+  "homeDetailAmount": "記帳金額",
+  "homeDetailCurrency": "貨幣",
+  "homeDetailNativeAmount": "折合主貨幣",
+  "homeDetailMembers": "協作成員",
+  "homeDetailCreator": "建立者",
+  "homeDetailLastEditor": "最後編輯",
+  "homeDetailEditHistory": "編輯記錄",
+  "homeDetailEditHistoryHint": "僅供查看",
+  "homeDetailEditButton": "編輯記帳",
+  "homeDetailNoHistory": "暫無編輯歷史",
+  "homeDeleteDetailTitle": "刪除這條明細?",
+  "homeDeleteDetailMessage": "將刪除\"{name}\"記錄,此操作無法復原。",
+  "commonEmpty": "暫無內容",
+  "commonError": "錯誤",
+  "commonFailed": "失敗",
+  "commonOperationFailed": "操作失敗，請稍後重試",
+  "commonRetry": "重試",
+  "commonBack": "返回",
+  "commonNext": "下一步",
+  "commonFinish": "完成",
+  "commonOther": "其他",
+  "commonSearch": "搜尋",
+  "commonNoteHint": "備註…",
+  "commonSettings": "設定",
+  "commonCurrent": "當前",
+  "commonConfigure": "配置",
+  "commonPressAgainToExit": "再按一次退出應用程式",
+  "commonWeekdayMonday": "星期一",
+  "commonWeekdayTuesday": "星期二",
+  "commonWeekdayWednesday": "星期三",
+  "commonWeekdayThursday": "星期四",
+  "commonWeekdayFriday": "星期五",
+  "commonWeekdaySaturday": "星期六",
+  "commonWeekdaySunday": "星期日",
+  "homeExpense": "支出",
+  "homeNoRecords": "暫無記帳記錄",
+  "homeSelectDate": "選擇日期",
+  "homeYear": "{year}年",
+  "@homeYear": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "homeMonth": "{month}月",
+  "@homeMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "homeMonthExpenseOf": "{month}月支出",
+  "@homeMonthExpenseOf": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "homeBaseCurrencyNeedLedger": "請先建立帳本",
+  "homeBaseCurrencySwitched": "已切換帳本幣種為 {code}",
+  "@homeBaseCurrencySwitched": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "homePullCloudSuccess": "已同步雲端帳本資料",
+  "homePullCloudFailed": "刷新失敗，請稍後重試",
+  "homePullLocalSuccess": "已刷新本地帳本資料與設定",
+  "homePullCloudFailedButLocalOk": "雲端同步失敗，已刷新本地資料（匯率/設定）",
+  "homeSyncing": "正在重新整理帳本資料",
+  "dayHomeSyncing": "正在重新整理紀念日本資料",
+  "dayPullLocalSuccess": "已刷新本地紀念日本資料",
+  "dayPullCloudSuccess": "已同步雲端紀念日本資料",
+  "dayPullCloudFailedButLocalOk": "雲端同步失敗，已刷新本地紀念日本資料",
+  "dayPullLocalFailed": "本地紀念日本刷新失敗，請稍後重試",
+  "dayPullCloudFailed": "雲端紀念日本刷新失敗，請稍後重試",
+  "analyticsMonth": "月",
+  "analyticsYear": "年",
+  "analyticsWeek": "週",
+  "analyticsTotalExpenseLabel": "總支出",
+  "analyticsCategoryLabel": "分類",
+  "analyticsExpenseRatio": "支出佔比",
+  "analyticsThisWeek": "本週",
+  "analyticsBackToThisWeek": "回到本週",
+  "analyticsBackToThisMonth": "回到本月",
+  "analyticsBackToThisYear": "回到今年",
+  "analyticsWeekN": "第{week}週",
+  "@analyticsWeekN": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "analyticsSelectWeek": "選擇週",
+  "ledgersTitle": "帳本管理",
+  "ledgersArchivedTitle": "封存帳本",
+  "ledgersArchivedLabel": "已封存",
+  "ledgersArchive": "封存帳本",
+  "ledgersRestore": "恢復使用",
+  "ledgersArchiveSuccess": "帳本已封存",
+  "ledgersRestoreSuccess": "帳本已恢復使用",
+  "ledgersArchivedRestoreRequired": "帳本已封存，請先恢復使用",
+  "ledgersNew": "添加帳本",
+  "ledgersClear": "清空當前帳本",
+  "ledgersClearMessage": "確定要清空帳本「{name}」的所有帳單嗎？此操作不可復原。帳本本身會保留，僅刪除帳單資料。",
+  "@ledgersClearMessage": {
+    "placeholders": {
+      "name": {
+        "type": "Object"
+      }
+    }
+  },
+  "ledgerDefaultName": "預設帳本",
+  "ledgersEdit": "編輯帳本",
+  "ledgersDelete": "刪除帳本",
+  "ledgersDeleteConfirm": "刪除帳本",
+  "ledgersDeleteMessage": "確定要刪除該帳本及其全部記錄嗎？此操作不可復原。\\n若雲端存在備份，也會一併刪除。",
+  "ledgersDeleted": "已刪除",
+  "ledgersClearTitle": "清空帳本",
+  "ledgersClearSuccess": "帳本已清空",
+  "ledgersCreateSuccess": "帳本建立成功",
+  "ledgerNameLabel": "帳本名稱",
+  "ledgerNameHint": "請輸入帳本名稱",
+  "ledgersDefaultLedgerName": "預設帳本",
+  "ledgersCurrency": "幣種",
+  "ledgersMonthStartDay": "每月起始日",
+  "ledgersMonthStartDayHint": "統計與預算以所選日期（1~31日）作為每月週期起點。當月沒有該日期時，自動取當月最後一天（30、29或28日）。",
+  "ledgersMonthStartDayNatural": "1日（自然月）",
+  "ledgersMonthStartDayValue": "每月{day}日",
+  "@ledgersMonthStartDayValue": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "ledgersSearchCurrency": "搜尋：中文或代碼",
+  "ledgersCreate": "添加帳本",
+  "ledgersRecords": "筆數：{count}",
+  "@ledgersRecords": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersExpense": "支出：{expense}",
+  "@ledgersExpense": {
+    "placeholders": {
+      "expense": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersEmpty": "暫無帳本",
+  "ledgersSectionLocal": "本地帳本",
+  "ledgersSectionCloud": "雲端帳本",
+  "joinSharedTitle": "加入共享帳本",
+  "joinSharedCodeHint": "輸入邀請碼",
+  "joinSharedQuery": "查詢",
+  "joinSharedQueryFailed": "邀請碼無效或已過期",
+  "joinSharedAlreadyOwner": "你已經是該帳本的 Owner，無需透過邀請碼加入",
+  "joinSharedAccept": "接受邀請",
+  "joinSharedSuccess": "已加入帳本",
+  "joinSharedNeedLogin": "加入共享帳本需先登入",
+  "joinSharedPreviewTitle": "邀請詳情",
+  "ledgersActionMoveToCloud": "移動到雲端",
+  "ledgersActionMoveToLocal": "移動到本地",
+  "ledgersActionCopyToLocal": "複製到本地",
+  "ledgersMoveToCloudMessage": "帳本\"{name}\"的資料將上傳到雲端，並在各裝置間同步。",
+  "@ledgersMoveToCloudMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersMoveToLocalMessage": "帳本\"{name}\"將從雲端刪除，僅保留在這台裝置上，其他裝置將不再看得到它。",
+  "@ledgersMoveToLocalMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersCopyToLocalMessage": "將帳本\"{name}\"複製一份到本地，雲端原帳本保持不變。",
+  "@ledgersCopyToLocalMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersMoveToCloudSuccess": "已移動到雲端",
+  "ledgersMoveToLocalSuccess": "已移動到本地",
+  "ledgersCopyToLocalSuccess": "已複製到本地",
+  "ledgersSwitched": "已切換到帳本「{name}」",
+  "@ledgersSwitched": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryTitle": "分類管理",
+  "categoryExpense": "支出分類",
+  "categoryEmpty": "暫無分類",
+  "importReading": "讀取檔案中…",
+  "importPreparing": "準備中…",
+  "importConfirmMapping": "確認對應",
+  "importCategoryMapping": "分類對應",
+  "importNoDataParsed": "未解析到任何資料，請返回上一頁檢查 CSV 內容或分隔符。",
+  "importFieldAmount": "金額",
+  "importFieldNote": "備註",
+  "importKeepOriginalName": "保持原名（自動建立/合併）",
+  "importNextStep": "下一步",
+  "importPreviousStep": "上一步",
+  "importStartImport": "開始匯入",
+  "importInProgress": "正在匯入…",
+  "importFetchingRates": "正在取得匯率…",
+  "importXlsxFormulaError": "偵測到公式儲存格，請先在 Excel 中另存為值後重試",
+  "importPrecheckTitle": "匯入預檢查",
+  "importProgressRunning": "已處理：{done}/{total}",
+  "importCancelled": "（已取消）",
+  "mineTitle": "我的",
+  "mineLanguageSettings": "語言設定",
+  "languageTitle": "語言設定",
+  "languageChinese": "简体中文",
+  "languageEnglish": "English",
+  "languageSystemDefault": "跟隨系統",
+  "mineCloudService": "備份與雲端同步",
+  "cloudBackupUrlLabel": "服務地址",
+  "cloudBackupAnonKeyLabel": "Anon Key",
+  "cloudBackupBucketLabel": "儲存桶",
+  "cloudBackupAccountLabel": "帳號",
+  "cloudBackupPasswordLabel": "密碼",
+  "cloudBackupUsernameLabel": "使用者名稱",
+  "cloudBackupRemotePathLabel": "遠端路徑",
+  "cloudBackupEndpointLabel": "Endpoint",
+  "cloudBackupRegionLabel": "Region",
+  "cloudBackupAccessKeyLabel": "Access Key",
+  "cloudBackupSecretKeyLabel": "Secret Key",
+  "cloudBackupSslLabel": "使用 SSL",
+  "cloudBackupPortLabel": "連接埠",
+  "cloudBackupNotConfigured": "未設定",
+  "cloudBackupConfiguredInactive": "已設定，目前未使用",
+  "cloudBackupActiveNoSuccess": "目前使用 · 尚無成功備份",
+  "cloudBackupActiveLastSuccess": "目前使用 · 上次成功 {time}",
+  "@cloudBackupActiveLastSuccess": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "mineCategoryManagement": "分類管理",
+  "mineReminderSettings": "通知設定",
+  "categoryEditTitle": "編輯分類",
+  "categoryNewTitle": "添加分類",
+  "categoryDetailTooltip": "分類匯總",
+  "categoryDefaultTitle": "預設分類",
+  "categoryNameLabel": "分類名稱",
+  "categoryNameHint": "請輸入分類名稱",
+  "categoryNameDuplicate": "分類名稱已存在",
+  "categoryIconLabel": "分類圖示",
+  "categoryCurrentIcon": "當前圖示",
+  "categorySaveError": "儲存失敗",
+  "categoryUpdated": "分類\"{name}\"已更新",
+  "categoryCreated": "分類\"{name}\"已建立",
+  "categoryCannotDelete": "無法刪除",
+  "categoryClearUnused": "清理未使用分類",
+  "categoryClearUnusedMessage": "確定要刪除 {count} 個未使用的分類嗎？此操作無法撤銷。",
+  "@categoryClearUnusedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "categoryClearUnusedListTitle": "將被刪除的分類：",
+  "categoryClearUnusedEmpty": "暫無未使用的分類",
+  "categoryClearUnusedSuccess": "已刪除 {count} 個分類",
+  "@categoryClearUnusedSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "categoryClearUnusedFailed": "清空失敗",
+  "categoryDeleteError": "刪除失敗",
+  "categorySubCategoryCreated": "已添加二級分類：{name}",
+  "categoryParentCategoryTitle": "所屬分類",
+  "categorySelectParentHint": "請選擇所屬分類",
+  "categorySelectParentTitle": "選擇所屬分類",
+  "categoryHasSubCategories": "此分類包含二級分類，無法修改",
+  "categorySearchCategory": "搜尋分類",
+  "categoryTopLevelLabel": "一級分類",
+  "categorySecondLevelLabel": "二級分類",
+  "categoryExpenseList": "餐飲-交通-購物-娛樂-居家-家庭-通訊-水電-住房-醫療-教育-寵物-運動-數碼-旅行-煙酒-母嬰-美容-維修-社交-學習-汽車-打車-地鐵-外賣-物業-停車-捐贈-送禮-納稅-飲料-服裝-零食-發紅包-水果-遊戲-書籍-愛人-裝修-日用品-彩票-股票-社保-快遞-工作-轉帳-其他",
+  "categoryExpenseDining": "餐飲-早餐-午餐-晚餐-美團外賣-餓了麼外賣-京東外賣-餐廳-美食",
+  "categoryExpenseSnacks": "零食-餅乾-薯片-糖果-巧克力-堅果",
+  "categoryExpenseFruit": "水果-蘋果-香蕉-橙子-葡萄-西瓜-其他水果",
+  "categoryExpenseBeverage": "飲料-奶茶-咖啡-果汁-汽水-礦泉水",
+  "categoryExpensePastry": "糕點-蛋糕-麵包-甜點-曲奇",
+  "categoryExpenseCooking": "做飯食材-蔬菜-肉類-水產-調料-糧油",
+  "categoryExpenseShopping": "購物-超市-日用百貨-服裝-鞋子-包包",
+  "categoryExpensePets": "寵物-寵物食品-寵物用品-寵物醫療-寵物美容",
+  "categoryExpenseTransport": "交通-交通卡充值-打車-停車費-加油",
+  "categoryExpenseCar": "汽車-汽車保養-汽車維修-汽車保險-洗車-違章罰款",
+  "categoryExpenseClothing": "服裝-上衣-褲子-裙子-鞋子-服飾配件",
+  "categoryExpenseDailyGoods": "日用品-洗護用品-紙品-清潔用品-廚房用品",
+  "categoryExpenseEducation": "教育-學費-培訓費-書籍-文具-辦公用品-學習",
+  "categoryExpenseInvestLoss": "投資虧損-股票虧損-基金虧損-其他投資虧損",
+  "categoryExpenseEntertainment": "娛樂-電影-KTV-遊樂場-酒吧-其他娛樂",
+  "categoryExpenseGame": "遊戲-遊戲儲值-遊戲裝備-遊戲會員",
+  "categoryExpenseHealthProducts": "保健品-維生素-保健食品-營養品",
+  "categoryExpenseSubscription": "訂閱服務-視頻會員-音樂會員-雲端儲存-其他訂閱",
+  "categoryExpenseSports": "運動-健身房-運動裝備-運動課程-戶外活動",
+  "categoryExpenseHousing": "住房-水電煤-物業費-房租-房貸-裝修-寬頻",
+  "categoryExpenseHome": "居家-傢俱-家電-裝飾品-床上用品",
+  "categoryExpenseBeauty": "美容-護膚品-化妝品-剪髮-美甲",
+  "categoryExpenseTransfer": "轉帳-生活費-家庭-父母-戀人-借錢",
+  "appearanceThemeMode": "顯示模式",
+  "appearanceThemeModeSystem": "跟隨系統",
+  "appearanceThemeModeLight": "亮色模式",
+  "appearanceThemeModeDark": "暗黑模式",
+  "reminderTitle": "記帳提醒",
+  "reminderBody": "別忘了記錄今天的支出哦 💰",
+  "reminderDailyTitle": "記帳提醒",
+  "reminderTimeTitle": "每日提醒時間",
+  "commonSelectTime": "選擇時間",
+  "reminderPermissionRequired": "請在系統設定中允許通知，並開啟對應提醒管道",
+  "reminderCheckBattery": "耗電管理",
+  "reminderStatusUnavailable": "暫時無法讀取狀態，請稍後重試",
+  "reminderStatusLoading": "正在讀取系統設定…",
+  "reminderChannelNotCreated": "尚未建立",
+  "reminderBatteryIgnored": "耗電管理：已豁免系統省電限制",
+  "reminderBatteryNotIgnored": "耗電管理：未豁免系統省電限制",
+  "reminderCheckChannel": "通知管理",
+  "reminderStatusNotificationLabel": "通知",
+  "reminderStatusImportanceLabel": "重要性",
+  "reminderStatusSoundLabel": "聲音",
+  "reminderStatusVibrationLabel": "震動",
+  "reminderStatusDndLabel": "勿擾",
+  "reminderStatusOn": "開啟",
+  "reminderStatusOff": "關閉",
+  "reminderStatusDndBypass": "允許打擾",
+  "reminderStatusDndFollow": "遵循系統",
+  "reminderImportanceHigh": "高",
+  "reminderImportanceDefault": "預設",
+  "reminderImportanceLow": "低",
+  "reminderImportanceMin": "最低",
+  "reminderImportanceNone": "關閉",
+  "reminderImportanceUnknown": "未知",
+  "reminderOpenAppSettings": "應用設定",
+  "reminderAutoStartSettings": "自動啟動設定",
+  "reminderAutoStartAdvice": "目前裝置無法直接開啟自動啟動頁面，請在系統設定中手動開啟。\n\n一加、OPPO、realme：設定 → 應用程式 → 自動啟動 → 芝麻記。\n\n其他裝置：搜尋「自動啟動」或「應用程式啟動管理」，允許芝麻記自動啟動。選單名稱可能因系統版本不同。",
+  "reminderDescription": "設定僅對目前裝置生效。關閉通知會暫停所有提醒，並保留各項設定。紀念日按天合併提醒，預先安排未來一年，在開啟應用程式、日期或記錄變更時更新。",
+  "reminderAndroidInstructions": "• 在通知管理中分別開啟記帳、紀念日和健身休息提醒，聲音與震動也在此設定。\n• 允許「鬧鐘和提醒」權限，減少提醒延遲。系統可能顯示下一次鬧鐘標誌；記帳和紀念日使用一般通知，健身休息結束時依設定發出聲音或震動。\n• 背景執行和自動啟動需分別開啟。耗電管理狀態僅反映系統省電豁免，廠商限制需單獨檢查。\n• 強制停止應用程式可能清除提醒排程，重新開啟芝麻記可恢復未來提醒。靜音和勿擾模式可能影響提示聲音。",
+  "categoryDetailLoadFailed": "載入失敗，請重試",
+  "categoryDetailSummaryTitle": "分類匯總",
+  "categoryDetailTotalCount": "總筆數",
+  "categoryDetailTotalAmount": "總金額",
+  "categoryDetailAverageAmount": "平均金額",
+  "categoryDetailSortTitle": "排序",
+  "categoryDetailSortTimeDesc": "時間↓",
+  "categoryDetailSortTimeAsc": "時間↑",
+  "categoryDetailSortAmountDesc": "金額↓",
+  "categoryDetailSortAmountAsc": "金額↑",
+  "categoryDetailNoTransactions": "暫無交易記錄",
+  "categoryDetailNoTransactionsSubtext": "該分類下暫無交易記錄",
+  "categoryDetailDeleteFailed": "刪除失敗",
+  "categoryMigrationTransactionLabel": "{count}筆",
+  "@categoryMigrationTransactionLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTemplateEntryFlat": "一級模板",
+  "categoryTemplateEntryHierarchical": "二級模板",
+  "categoryTemplateFlatTitle": "一級分類模板",
+  "categoryTemplateHierarchicalTitle": "二級分類模板",
+  "categoryTemplateSelectedCount": "本次已勾選 {count} 項",
+  "@categoryTemplateSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTemplateSelectAll": "全選",
+  "categoryTemplateDeselectAll": "取消全選",
+  "categoryTemplateAlreadyAdded": "已添加",
+  "categoryTemplateAlreadyAddedHint": "已添加的分類會保持勾選，不能取消",
+  "categoryTemplateConfirmTitle": "確認添加",
+  "categoryTemplateConfirmMessage": "確定將勾選的 {count} 個分類加入分類表嗎？",
+  "@categoryTemplateConfirmMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTemplateAddSuccess": "已添加 {count} 個分類",
+  "@categoryTemplateAddSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTemplateAddFailed": "添加失敗：{error}",
+  "categoryTemplatePartiallyCompleted": "{completed}\n其餘分類尚未處理完成，請重試。",
+  "@categoryTemplatePartiallyCompleted": {
+    "description": "已提交的模板處理摘要及其餘操作未完成提示。",
+    "placeholders": {
+      "completed": {
+        "type": "String"
+      }
+    }
+  },
+  "@categoryTemplateAddFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryManageAdd": "添加分類",
+  "categoryManageDelete": "批次刪除分類",
+  "categoryManageConfirmDelete": "確認刪除",
+  "categoryManageReorderHint": "長按調整分類順序",
+  "categorySelectParentsTitle": "選擇父分類",
+  "categoryChildrenTitle": "子分類",
+  "categoryManageSubcategoryCount": "子分類：{count}",
+  "@categoryManageSubcategoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categorySubcategoryCount": "{count} 個子分類",
+  "@categorySubcategoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTransactionBreakdown": "直屬交易 {direct} 筆 · 共 {total} 筆",
+  "@categoryTransactionBreakdown": {
+    "placeholders": {
+      "direct": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "categorySharedManageBannerOwner": "共享帳本：分類的添加、修改、刪除會同步給所有成員",
+  "categorySharedManageBannerEditor": "共享帳本記帳使用擁有者的分類；此處的編輯僅影響你的個人分類",
+  "categorySortSaveFailed": "排序保存失敗，請重試",
+  "categoryDeleteOptionAll": "刪除分類和分類下的所有資料（含二級）",
+  "categoryDeleteOptionMigrate": "刪除分類及其子分類並遷移所有資料到其他分類",
+  "categoryDeleteOptionPromote": "刪除分類和分類下的所有資料（不含二級分類，二級分類將變為一級分類）",
+  "categoryDeleteSelectedTitle": "刪除選中的分類",
+  "categoryDeleteSelectedSubtitleWithSub": "確定要刪除 {count} 個選中分類並且清空分類下的資料嗎？（包含二級分類和資料）此操作無法撤銷。",
+  "@categoryDeleteSelectedSubtitleWithSub": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryDeleteSelectedSubtitleWithoutSub": "確定要刪除 {count} 個選中分類並且清空分類下的資料嗎？（不含二級分類和資料）此操作無法撤銷。",
+  "@categoryDeleteSelectedSubtitleWithoutSub": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryMigrateSelectTargetTitle": "選擇資料遷移到的分類",
+  "categoryMigrateConfirmButton": "確定（遷移分類資料並刪除分類）",
+  "categoryMigrateChildLabel": "二級 · {parent}",
+  "@categoryMigrateChildLabel": {
+    "placeholders": {
+      "parent": {
+        "type": "Object"
+      }
+    }
+  },
+  "subcategoryAdd": "添加子分類",
+  "subcategoryDelete": "批次刪除",
+  "subcategoryDeleteOptionAll": "刪除分類和分類下的所有資料",
+  "subcategoryDeleteOptionMigrate": "刪除分類並將分類下的所有資料遷移到其他分類",
+  "subcategoryDeleteSelectedSubtitle": "確定要刪除 {count} 個選中分類並且清空分類下的資料嗎？此操作無法撤銷。",
+  "@subcategoryDeleteSelectedSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "subcategoryEmpty": "暫無子分類",
+  "cloudFirstSaveSwitchTitle": "設定已儲存",
+  "cloudFirstSaveSwitchMessage": "是否立即切換到該雲端服務作為目前同步設定？",
+  "cloudSaveOnlyNoSwitch": "暫不切換",
+  "cloudSaveAndSwitch": "立即切換",
+  "cloudClearConfig": "清除設定",
+  "cloudClearConfigConfirmTitle": "清除雲端設定",
+  "cloudClearConfigConfirmMessage": "確定要清除該雲端服務的設定嗎？\n雲端已備份的資料不會被刪除，你可以隨時重新設定並恢復。",
+  "cloudClearConfigDone": "設定已清除",
+  "authLogin": "登入",
+  "authPassword": "密碼",
+  "authErrorInvalidCredentials": "手機號碼或密碼錯誤",
+  "authErrorRateLimit": "操作過於頻繁，請稍後再試。",
+  "authErrorNetworkIssue": "網路異常，請檢查網路後重試。",
+  "authErrorServerNotConfigured": "此版本尚未設定帳號伺服器，暫時無法登入或註冊。你可以返回並繼續使用本機功能。",
+  "exportCsvHeaderType": "類型",
+  "exportCsvHeaderCategory": "分類",
+  "exportCsvHeaderSubCategory": "二級分類",
+  "exportCsvHeaderAmount": "金額",
+  "exportCsvHeaderNote": "備註",
+  "exportCsvHeaderTime": "時間",
+  "exportSuccessTitle": "匯出成功",
+  "exportFailedTitle": "匯出失敗",
+  "exportTypeExpense": "支出",
+  "currencyCNY": "人民幣",
+  "currencyUSD": "美元",
+  "currencyEUR": "歐元",
+  "currencyJPY": "日元",
+  "currencyHKD": "港幣",
+  "currencyTWD": "新台幣",
+  "currencyGBP": "英鎊",
+  "currencyAUD": "澳元",
+  "currencyCAD": "加元",
+  "currencyKRW": "韓元",
+  "currencySGD": "新加坡元",
+  "currencyMYR": "馬來西亞令吉",
+  "currencyTHB": "泰銖",
+  "currencyIDR": "印尼盾",
+  "currencyPHP": "菲律賓披索",
+  "currencyVND": "越南盾",
+  "currencyINR": "印度盧比",
+  "currencyRUB": "俄羅斯盧布",
+  "currencyBYN": "白俄羅斯盧布",
+  "currencyNZD": "紐西蘭元",
+  "currencyCHF": "瑞士法郎",
+  "currencySEK": "瑞典克朗",
+  "currencyNOK": "挪威克朗",
+  "currencyDKK": "丹麥克朗",
+  "currencyBRL": "巴西雷亞爾",
+  "currencyMXN": "墨西哥披索",
+  "currencyTRY": "土耳其里拉",
+  "currencyZAR": "南非蘭特",
+  "currencyAED": "阿聯酋迪拉姆",
+  "currencySAR": "沙烏地里亞爾",
+  "currencyPLN": "波蘭茲羅提",
+  "currencyCZK": "捷克克朗",
+  "currencyHUF": "匈牙利福林",
+  "currencyARS": "阿根廷披索",
+  "currencyCLP": "智利披索",
+  "currencyCOP": "哥倫比亞披索",
+  "currencyPEN": "秘魯索爾",
+  "currencyEGP": "埃及鎊",
+  "currencyNGN": "奈及利亞奈拉",
+  "currencyKZT": "哈薩克坦吉",
+  "currencyUAH": "烏克蘭格里夫納",
+  "currencyILS": "以色列新謝克爾",
+  "currencyPKR": "巴基斯坦盧比",
+  "currencyBDT": "孟加拉塔卡",
+  "currencyLKR": "斯里蘭卡盧比",
+  "currencyMMK": "緬甸元",
+  "recurringTransactionEnabled": "啟用",
+  "recurringTransactionDisabled": "關閉",
+  "recurringTransactionTitle": "週期帳單",
+  "recurringTransactionAdd": "添加週期帳單",
+  "recurringTransactionEdit": "編輯週期帳單",
+  "recurringTransactionFrequency": "週期頻率",
+  "recurringTransactionDaily": "每天",
+  "recurringTransactionWeekly": "每週",
+  "recurringTransactionMonthly": "每月",
+  "recurringTransactionYearly": "每年",
+  "recurringTransactionInterval": "間隔",
+  "recurringTransactionDayOfMonth": "每月第幾天",
+  "recurringTransactionStartDate": "開始日期",
+  "recurringTransactionEndDate": "結束日期",
+  "recurringTransactionNoEndDate": "永久週期",
+  "recurringTransactionDeleteConfirm": "確定要刪除這個週期帳單嗎？",
+  "recurringTransactionEndBeforeStart": "結束日期不能早於開始日期",
+  "recurringTransactionEveryNDays": "每 {n} 天",
+  "@recurringTransactionEveryNDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "recurringTransactionEveryNWeeks": "每 {n} 週",
+  "@recurringTransactionEveryNWeeks": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "recurringTransactionEveryNMonths": "每 {n} 個月",
+  "@recurringTransactionEveryNMonths": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "recurringTransactionEveryNYears": "每 {n} 年",
+  "@recurringTransactionEveryNYears": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ledgerSelectTitle": "選擇帳本",
+  "cloudTestConnection": "測試連線",
+  "cloudLastTestTime": "上次測試時間：{time}",
+  "@cloudLastTestTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudLocalStorageTitle": "本地儲存",
+  "cloudLocalStorageSubtitle": "資料僅儲存在本地裝置",
+  "localBackupPageTitle": "本地儲存",
+  "localBackupAutoTitle": "自動本地備份",
+  "localBackupAutoSubtitle": "每天首次開啟應用程式時自動備份資料庫快照",
+  "localBackupNowTooltip": "立即備份",
+  "localBackupSuccess": "備份成功",
+  "localBackupFailed": "備份失敗，請檢查可用儲存空間",
+  "localBackupListHint": "選擇一個資料進行恢復：",
+  "localBackupImportFromFile": "匯入檔案恢復",
+  "localBackupImportInvalidFile": "請選擇 .snbak 格式的備份檔案",
+  "localBackupListEmpty": "暫無備份",
+  "cloudCustomSupabaseTitle": "自訂 Supabase",
+  "cloudCustomSupabaseSubtitle": "點擊設定自建Supabase服務",
+  "cloudCustomWebdavTitle": "自訂 WebDAV",
+  "cloudCustomWebdavSubtitle": "點擊設定堅果雲/Nextcloud等",
+  "cloudCustomS3Title": "S3 協議儲存",
+  "cloudCustomS3Subtitle": "AWS S3 / Cloudflare R2 / MinIO",
+  "cloudTabOffline": "離線模式",
+  "cloudTabBackup": "備份同步",
+  "cloudBackupEntryLocalOnly": "僅本地備份",
+  "cloudBackupEntryFailed": "上次備份失敗，將自動重試",
+  "cloudBackupStatusTitle": "備份狀態",
+  "cloudBackupUploadNow": "立即上傳到雲端",
+  "cloudBackupUploading": "正在上傳…",
+  "cloudBackupUploadSuccess": "上傳成功",
+  "cloudBackupRestoreFromCloud": "從雲端恢復",
+  "cloudBackupDownloading": "正在下載…",
+  "cloudBackupDownloadSuccess": "已下載，即將開啟恢復頁",
+  "cloudBackupDownloadFailed": "下載失敗，請檢查雲端配置與網路",
+  "cloudBackupNoRemote": "雲端暫無備份",
+  "cloudBackupAutoSyncTitle": "自動備份到雲端",
+  "cloudBackupAutoSyncSubtitle": "每次自動備份時同步上傳到雲端",
+  "localBackupRestoreHint": "點擊備份進入恢復流程",
+  "cloudStatusNotTested": "未測試",
+  "cloudStatusNormal": "連線正常",
+  "cloudStatusFailed": "連線失敗",
+  "cloudTestSuccessMessage": "連線正常，設定有效",
+  "cloudTestFailedMessage": "連線失敗",
+  "cloudSwitchConfirmTitle": "切換雲端服務",
+  "cloudSwitchConfirmMessage": "切換雲端服務將登出目前帳號。確認切換？",
+  "cloudSwitchFailedTitle": "切換失敗",
+  "cloudSwitchFailedConfigMissing": "請先設定此雲端服務",
+  "cloudConfigInvalidMessage": "請填寫完整資訊",
+  "cloudSaveFailed": "儲存失敗",
+  "cloudSwitchedTo": "已切換至 {type}",
+  "@cloudSwitchedTo": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudConfigureSupabaseTitle": "設定 Supabase",
+  "cloudConfigureWebdavTitle": "設定 WebDAV",
+  "cloudConfigureS3Title": "設定 S3",
+  "welcomeHomeBookkeeping": "記帳",
+  "welcomeHomeAnniversary": "紀念日",
+  "welcomeHomeFitness": "健身",
+  "welcomeHomeMemo": "備忘錄",
+  "calendarToday": "回到今天",
+  "commonUncategorized": "未分類",
+  "appLockTitle": "應用上鎖",
+  "appLockEnable": "啟用應用鎖",
+  "appLockEnableDesc": "啟動和切回應用時需要驗證身份",
+  "appLockSetPin": "設定密碼",
+  "appLockChangePin": "修改密碼",
+  "appLockVerifyPin": "驗證密碼",
+  "appLockVerifyCurrentPin": "請輸入當前密碼",
+  "appLockSetNewPin": "請設定新密碼",
+  "appLockConfirmPin": "請再次輸入密碼",
+  "appLockEnterPin": "請輸入密碼",
+  "appLockPinSetSuccess": "密碼設定成功",
+  "appLockDisabled": "應用鎖已關閉",
+  "appLockBiometric": "生物辨識解鎖",
+  "appLockBiometricDesc": "使用Face ID或指紋快速解鎖",
+  "appLockBiometricReason": "請驗證身份以解鎖芝麻記",
+  "appLockTimeout": "自動鎖定時間",
+  "appLockTimeoutImmediate": "立即",
+  "appLockTimeout1Min": "1分鐘後",
+  "appLockTimeout5Min": "5分鐘後",
+  "appLockTimeout15Min": "15分鐘後",
+  "dayOfMonth": "每月{day}日",
+  "@dayOfMonth": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedRoleOwner": "所有者",
+  "sharedRoleEditor": "編輯者",
+  "commonCopied": "已複製",
+  "sharedInviteFormRole": "角色",
+  "sharedInviteFormExpiry": "有效期",
+  "sharedInviteExpiryDays": "{n} 天",
+  "@sharedInviteExpiryDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedInviteGenerate": "生成邀請碼",
+  "sharedInviteGenerateAnother": "重新生成邀请码",
+  "sharedInviteCopyCode": "複製邀請碼",
+  "sharedInviteShareCode": "分享邀請碼",
+  "sharedInviteExpiresAt": "邀請將在 {dt} 失效",
+  "@sharedInviteExpiresAt": {
+    "placeholders": {
+      "dt": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedInviteWarning": "邀请码仅可使用一次。重新生成将使本账本此前尚未使用的邀请码失效。",
+  "sharedInviteInstruction": "请对方从记账首页进入账本列表，再选择加入共享账本。 新邀請碼產生成功後，此帳本之前未使用的邀請碼自動失效。",
+  "sharedInviteShareText": "邀請你加入芝麻記共享帳本「{ledger}」\n\n邀請碼:{code}\n\n打開芝麻記 → 我的 → 加入共享帳本，輸入此碼即可。",
+  "@sharedInviteShareText": {
+    "placeholders": {
+      "ledger": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgerAaDescription": "記錄成員各自承擔的費用",
+  "ledgerMemberCount": "{count} 人",
+  "@ledgerMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ledgerOwnerDescription": "管理帳本與成員",
+  "ledgerEditorDescription": "共同記帳與編輯",
+  "ledgerInviteDescription": "邀請朋友加入「{ledger}」，一起記帳。",
+  "@ledgerInviteDescription": {
+    "placeholders": {
+      "ledger": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgerInviteRoleDescription": "可檢視和編輯帳本中的記錄。",
+  "ledgerInviteMembers": "邀請成員",
+  "sharedMembersStatsAllTime": "全部時間",
+  "sharedMembersStatsSummary": "{memberCount} 位支出人 · {txCount} 筆支出 · {currency}",
+  "@sharedMembersStatsSummary": {
+    "placeholders": {
+      "memberCount": {
+        "type": "int"
+      },
+      "txCount": {
+        "type": "int"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedMembersStatsDistribution": "支出分布",
+  "sharedMembersStatsSortHint": "按支出金額從高到低",
+  "sharedMembersStatsScopeHint": "按支出人統計，金額折算為本位幣；未指定支出人的記錄不計入。此處為實際支出，不代表 AA 應攤金額。",
+  "ledgerBasicSettings": "基本設定",
+  "ledgerAaLabel": "AA 分攤",
+  "ledgerMembersTitle": "帳本成員",
+  "ledgerVirtualMembersTitle": "虛擬成員",
+  "sharedMembersExpenseTotal": "成員支出合計",
+  "sharedMembersPageTitle": "成員管理",
+  "ledgersLeaveAndDelete": "退出並刪除",
+  "ledgersLeaveAndDeleteConfirm": "退出並刪除帳本",
+  "ledgersLeaveAndDeleteMessage": "確定要退出並刪除共享帳本「{name}」嗎？\n退出後雲端將移除你的成員身分，本地資料全部清空，且無法再存取其中的交易。",
+  "@ledgersLeaveAndDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersLeaveAndDeleteSuccess": "已退出並刪除帳本",
+  "ledgersDeleteShared": "刪除共享帳本",
+  "ledgersDeleteSharedConfirm": "刪除共享帳本",
+  "ledgersDeleteSharedMessage": "確定要刪除共享帳本「{name}」嗎？\n此操作會一併移除所有協作者並清空他們的本地資料，不可恢復。",
+  "@ledgersDeleteSharedMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersDeleteSharedSuccess": "已刪除共享帳本",
+  "sharedMembersRemoveTitle": "移除成員",
+  "sharedMembersRemoveCta": "移除該成員",
+  "sharedMembersRemoveConfirm": "確定移除 {name}?ta 將立即失去對該帳本的訪問。",
+  "@sharedMembersRemoveConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedMembersRemoved": "已移除成員",
+  "sharedMembersRemoveFailed": "移除成員失敗，請稍後再試",
+  "sharedMembersSaveFirst": "請先保存帳本",
+  "sharedMembersLoadFailed": "成員列表載入失敗",
+  "sharedMembersRetry": "重試",
+  "sharedTxCreatedBy": "{name} 建立",
+  "@sharedTxCreatedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedTxEditedBy": "{name} 最後編輯",
+  "@sharedTxEditedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedTxCreatedAndEditedBy": "{name} 建立並編輯",
+  "@sharedTxCreatedAndEditedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedMembersStatsTitle": "成員支出",
+  "sharedMembersStatsEmpty": "暫無記帳",
+  "sharedMembersStatsTxCount": "{count}筆",
+  "@sharedMembersStatsTxCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeRatePageTitle": "匯率管理",
+  "rateSourceAuto": "自動",
+  "rateSourceManual": "手動",
+  "rateUpdatedAt": "{date} 更新",
+  "@rateUpdatedAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "rateNotFetched": "未取得",
+  "rateEditTitle": "編輯匯率",
+  "rateInverseHint": "反向參考:1 {base} ≈ {rate} {quote}",
+  "@rateInverseHint": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      },
+      "quote": {
+        "type": "String"
+      }
+    }
+  },
+  "rateResetToAuto": "恢復自動",
+  "rateRefreshSuccess": "匯率已更新",
+  "rateRefreshFailed": "取得失敗,可手動設定匯率",
+  "rateDisclaimer": "資料來源:開源匯率資料,每日更新;折算僅供參考,可能與銀行實際牌價有差異。",
+  "txRateLabel": "匯率",
+  "txRateMissingHint": "請手動填寫本筆匯率後儲存",
+  "ledgerBaseCurrencyLabel": "帳本幣種",
+  "statsConvertedFootnote": "含外幣,已按各筆記帳時匯率折算為 {currency}",
+  "@statsConvertedFootnote": {
+    "placeholders": {
+      "currency": {}
+    }
+  },
+  "ledgerCurrencyChangeRecalcHint": "修改本位幣將按當前匯率重算全部歷史交易的折算值",
+  "ledgerCurrencyChangeRecalcWarning": "歷史折算值將按最新匯率重算並覆蓋，往返切換（切走再切回）也無法還原原始折算值",
+  "recalcForeignTxBanner": "偵測到該帳本有未折算的外幣交易",
+  "recalcForeignTxAction": "按當前匯率重算折算",
+  "recalcForeignTxDone": "已重算 {count} 筆外幣交易的折算值",
+  "@recalcForeignTxDone": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "txCurrencyPickerTitle": "選擇幣種",
+  "txAddEntryTitle": "記一筆",
+  "txDeleteLongPress": "長按清空",
+  "txSelectDateTimeTitle": "選擇交易時間",
+  "txSelectDateTimeHint": "上下滑動數字以選擇時間",
+  "txEditCategory": "編輯分類",
+  "txEditCategoryReadOnly": "編輯分類（共享帳本唯讀）",
+  "txLedgerBaseCurrency": "帳本幣種",
+  "recalcSyncCountHint": "將重算並同步 {count} 筆交易",
+  "@recalcSyncCountHint": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "analyticsLoadFailed": "載入失敗，請重試",
+  "analyticsRetry": "重試",
+  "exportCsvHeaderCurrency": "幣種",
+  "importFieldCurrency": "幣種",
+  "currencyMOP": "澳門元",
+  "currencyMNT": "蒙古圖格里克",
+  "currencyKPW": "朝鲜元",
+  "currencyKHR": "柬埔寨瑞爾",
+  "currencyLAK": "老撾基普",
+  "currencyBND": "文萊元",
+  "currencyNPR": "尼泊爾盧比",
+  "currencyBTN": "不丹努爾特魯姆",
+  "currencyMVR": "马爾代夫拉菲亞",
+  "currencyAFN": "阿富汗尼",
+  "currencyUZS": "烏茲別克斯坦索姆",
+  "currencyTJS": "塔吉克斯坦索莫尼",
+  "currencyTMT": "土庫曼斯坦马納特",
+  "currencyKGS": "吉爾吉斯斯坦索姆",
+  "currencyQAR": "卡塔爾里亞爾",
+  "currencyKWD": "科威特第納爾",
+  "currencyBHD": "巴林第納爾",
+  "currencyOMR": "阿曼里亞爾",
+  "currencyJOD": "约旦第納爾",
+  "currencyLBP": "黎巴嫩鎊",
+  "currencyIQD": "伊拉克第納爾",
+  "currencyIRR": "伊朗里亞爾",
+  "currencyYER": "也門里亞爾",
+  "currencySYP": "敘利亞鎊",
+  "currencyGEL": "格魯吉亞拉里",
+  "currencyAMD": "亞美尼亞德拉姆",
+  "currencyAZN": "阿塞拜疆马納特",
+  "currencyRON": "羅马尼亞列伊",
+  "currencyBGN": "保加利亞列弗",
+  "currencyRSD": "塞爾維亞第納爾",
+  "currencyISK": "冰岛克朗",
+  "currencyMDL": "摩爾多瓦列伊",
+  "currencyALL": "阿爾巴尼亞列克",
+  "currencyMKD": "北马其顿第納爾",
+  "currencyBAM": "波黑可兑換马克",
+  "currencyGIP": "直布羅陀鎊",
+  "currencyGTQ": "危地马拉格查爾",
+  "currencyHNL": "洪都拉斯伦皮拉",
+  "currencyNIO": "尼加拉瓜科多巴",
+  "currencyCRC": "哥斯達黎加科朗",
+  "currencyPAB": "巴拿马巴波亞",
+  "currencyDOP": "多米尼加比索",
+  "currencyCUP": "古巴比索",
+  "currencyJMD": "牙買加元",
+  "currencyTTD": "特立尼達和多巴哥元",
+  "currencyBSD": "巴哈马元",
+  "currencyBBD": "巴巴多斯元",
+  "currencyBZD": "伯利茲元",
+  "currencyHTG": "海地古德",
+  "currencyKYD": "开曼群岛元",
+  "currencyAWG": "阿魯巴弗羅林",
+  "currencyBMD": "百慕大元",
+  "currencyUYU": "烏拉圭比索",
+  "currencyPYG": "巴拉圭瓜拉尼",
+  "currencyBOB": "玻利維亞诺",
+  "currencyVES": "委內瑞拉玻利瓦爾",
+  "currencyGYD": "圭亞那元",
+  "currencySRD": "蘇里南元",
+  "currencyFJD": "斐濟元",
+  "currencyPGK": "巴布亞新幾內亞基那",
+  "currencySBD": "所羅門群岛元",
+  "currencyTOP": "湯加潘加",
+  "currencyVUV": "瓦努阿圖瓦圖",
+  "currencyWST": "薩摩亞塔拉",
+  "currencyKES": "肯尼亞先令",
+  "currencyGHS": "加納塞地",
+  "currencyMAD": "摩洛哥迪拉姆",
+  "currencyDZD": "阿爾及利亞第納爾",
+  "currencyTND": "突尼斯第納爾",
+  "currencyLYD": "利比亞第納爾",
+  "currencyETB": "埃塞俄比亞比爾",
+  "currencyUGX": "烏干達先令",
+  "currencyTZS": "坦桑尼亞先令",
+  "currencyRWF": "盧旺達法郎",
+  "currencyMUR": "毛里求斯盧比",
+  "currencyBWP": "博茨瓦納普拉",
+  "currencyNAD": "納米比亞元",
+  "currencyZMW": "贊比亞克瓦查",
+  "currencyMWK": "马拉維克瓦查",
+  "currencyMZN": "莫桑比克梅蒂卡爾",
+  "currencyAOA": "安哥拉宽扎",
+  "currencyCDF": "剛果法郎",
+  "currencyGMD": "岡比亞達拉西",
+  "currencyGNF": "幾內亞法郎",
+  "currencyLRD": "利比里亞元",
+  "currencySLE": "塞拉利昂利昂",
+  "currencySDG": "蘇丹鎊",
+  "currencySSP": "南蘇丹鎊",
+  "currencySOS": "索马里先令",
+  "currencyDJF": "吉布提法郎",
+  "currencyERN": "厄立特里亞納克法",
+  "currencyBIF": "布隆迪法郎",
+  "currencyCVE": "佛得角埃斯庫多",
+  "currencySTN": "聖多美多布拉",
+  "currencySCR": "塞舌爾盧比",
+  "currencyKMF": "科摩羅法郎",
+  "currencyLSL": "萊索托洛蒂",
+  "currencySZL": "斯威士蘭里蘭吉尼",
+  "currencyMGA": "马達加斯加阿里亞里",
+  "currencyMRU": "毛里塔尼亞烏吉亞",
+  "detailImportExportTitle": "資料匯入匯出",
+  "detailImportExportImportTitle": "匯入資料",
+  "detailImportExportImportSubtitle": "選擇业务和目標，确認文件内容後導入",
+  "detailImportExportExportTitle": "匯出資料",
+  "detailImportExportExportSubtitle": "選擇业务和數據來源，導出全部内容",
+  "detailImportExportImportPoint1": "先選擇業務和目標本或健身空間，再選擇檔案並確認匯入。",
+  "detailImportExportImportPoint2": "支持 CSV、TSV、TXT、XLSX、JSON。各类数据均可修改字段映射、选择记录并查看导入进度；无需文件版本、来源应用或内部标识。",
+  "detailImportExportImportPoint3": "重複匯入同一檔案會略過已匯入記錄；預覽後可勾選匯入內容。健身計畫支援表格匯入，匯入偏好會取代目標空間的偏好。",
+  "detailImportExportExportPoint1": "預設勾選記帳、紀念日、備忘錄和健身，各選擇一個本或健身空間，匯出其中的全部內容。",
+  "detailImportExportExportPoint2": "記帳匯出全部明細，紀念日匯出全部事項，備忘錄匯出全部內容；健身匯出空間內的訓練紀錄、計畫、範本和健身偏好（含計時狀態）。",
+  "detailImportExportExportPoint3": "记账和纪念日导出为 CSV，备忘录和完整健身数据导出为 JSON；各业务生成独立文件，通过系统面板保存或分享。",
+  "detailExportAction": "匯出",
+  "exchangeRateCurrentLedger": "目前帳本：{name}",
+  "@exchangeRateCurrentLedger": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "exchangeRateInfoTitle": "關於帳本幣種",
+  "exchangeRateInfoMessage": "帳本幣種是目前帳本的本位幣：帳本內的外幣交易會按匯率折算成帳本幣種，在統計頁和資產總覽中統一彙總比較。每個帳本各有自己的帳本幣種，可隨時切換；切換後將按最新匯率重算本帳本全部交易的折算值。\n\n匯率預設從公開資料來源每日自動拉取，也支援你點擊下方列表中的「編輯」為任意幣種手動設定匯率——手動匯率會覆蓋自動資料並立即生效。",
+  "rateEditLabel": "編輯",
+  "rateInvalidInput": "請輸入有效的匯率值（大於 0 的數字）",
+  "currencyManageTitle": "管理展示幣種",
+  "currencyManageEntry": "幣種管理",
+  "currencyManageCount": "已選 {count} 個幣種",
+  "currencyManageBaseLocked": "帳本本位幣，不可隱藏",
+  "currencyManageHint": "隱藏的幣種不影響已有交易記錄，可隨時在此重新啟用。",
+  "detailImportExportMigrateTitle": "遷移提示",
+  "detailImportExportMigrateTip": "匯出後可匯入另一個本或健身空間；複製、轉為本地或轉為雲端可在對應的管理頁面操作。",
+  "ledgerMetaReadOnlyToast": "協作者無權修改帳本資訊",
+  "aaStatisticsTitle": "分攤統計",
+  "aaStatisticsTotalAmount": "分攤總額",
+  "aaStatisticsPerPerson": "分攤詳情",
+  "aaStatisticsPaid": "分攤實付",
+  "aaStatisticsPaidAll": "總付",
+  "aaStatisticsShare": "應攤",
+  "aaStatisticsNet": "差額",
+  "aaStatisticsNetReceive": "應收",
+  "aaStatisticsNetPay": "應付",
+  "aaStatisticsTransferPlan": "轉帳方案",
+  "aaStatisticsTransferSeparator": "付給",
+  "aaStatisticsNoTransfers": "已結清，無需轉帳",
+  "aaStatisticsExcluded": "不分攤",
+  "aaStatisticsParticipantCount": "分攤人數 {count} 人",
+  "@aaStatisticsParticipantCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aaStatisticsExcludedEmpty": "暫無不分攤的交易",
+  "aaStatisticsViewDetails": "查看詳情",
+  "aaStatisticsBillSummary": "帳單匯總",
+  "aaStatisticsNetReceiveAmount": "應收金額",
+  "aaStatisticsNetPayAmount": "應付金額",
+  "aaStatisticsSettled": "已結清",
+  "aaStatisticsModePerPerson": "人均分攤",
+  "aaStatisticsModeCustom": "指定金額",
+  "aaStatisticsSplitDetail": "分攤明細",
+  "aaStatisticsPayerPrefix": "付款",
+  "aaStatisticsMemberTxEmpty": "暫無該成員的帳單",
+  "aaEditTitle": "編輯分攤",
+  "aaEditSplitButton": "編輯分攤",
+  "aaPayer": "支出人",
+  "aaSplitMode": "分攤方式",
+  "aaParticipants": "參與人",
+  "aaModePerPerson": "人均分攤",
+  "aaModeCustom": "指定分攤",
+  "aaModeNoSplit": "不分攤",
+  "aaParticipantsAll": "全部成員",
+  "aaParticipantsUnit": "人",
+  "aaVirtualUserNameHint": "輸入暱稱",
+  "aaVirtualUserDeleteConfirm": "確定刪除虛擬用戶「{name}」嗎？",
+  "@aaVirtualUserDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aaVirtualUserInUse": "該虛擬用戶名下有帳，不可刪除",
+  "aaVirtualUserDefaultName": "虛擬用戶{index}",
+  "@aaVirtualUserDefaultName": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "aaUnknownUser": "未知",
+  "ledgerAaStatisticsEntry": "分攤統計",
+  "aaNoParticipants": "請先添加參與人",
+  "aaSplitAmountIncomplete": "請填寫全部參與人的金額",
+  "restoreStep2Title": "備份內容",
+  "restoreApply": "立即恢復",
+  "restoreApplying": "正在套用…",
+  "restoreDone": "還原完成",
+  "restoreOpenFailed": "無法開啟備份：檔案已損壞或不是備份檔案",
+  "restoreApplyFailed": "恢復失敗，未做任何更改（已整體回滾）",
+  "restoreCloudForkHint": "這是雲端帳本，但不是當前帳號，將恢復為本地副本",
+  "restoreFileNotFound": "備份檔案不存在",
+  "restoreSectionLocal": "本地帳本",
+  "restoreSectionCloud": "雲端帳本",
+  "restoreMemberCount": "{count} 位成員",
+  "@restoreMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreConflictWarning": "有 {count} 個未解決衝突（依備份時狀態還原）",
+  "@restoreConflictWarning": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreSchemaUnsupported": "備份結構版本不受支援，請選擇目前版本建立的備份",
+  "authWelcomeBack": "歡迎回來",
+  "authWelcomeSubtitle": "登入你的芝麻記帳號",
+  "authPhone": "手機號碼",
+  "authPhoneHint": "請輸入手機號碼",
+  "authPasswordHint": "請輸入密碼",
+  "authRegisterPasswordHint": "設定登入密碼",
+  "authConfirmPasswordHint": "再次輸入密碼",
+  "authPasswordShow": "顯示",
+  "authPasswordHide": "隱藏",
+  "authRegionSheetTitle": "選擇區號",
+  "authRegionCancel": "取消",
+  "authNoAccount": "還沒有帳號？立即註冊",
+  "authInvalidPhone": "請輸入有效的手機號碼",
+  "authInvalidPassword": "請輸入密碼",
+  "authPasswordMismatch": "兩次輸入的密碼不一致",
+  "authErrorPhoneAlreadyRegistered": "該手機號碼已註冊",
+  "authErrorServer": "服務暫時不可用，請稍後重試",
+  "authErrorOther": "操作失敗，請稍後重試",
+  "authConfirmPassword": "確認密碼",
+  "authAlreadyHaveAccount": "已有帳號？立即登入",
+  "authRegister": "註冊",
+  "mineLocalName": "單機芝麻仔",
+  "mineLocalSubtitle": "本地使用 · 未登入",
+  "mineLoginRegister": "登入 / 註冊",
+  "mineLoginValue": "登入後可使用雲端帳本與共享功能",
+  "mineSesameNumber": "芝麻號 {number}",
+  "@mineSesameNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "profileTitle": "個人資料",
+  "profileNickname": "暱稱",
+  "profileSesameNumber": "芝麻號",
+  "profileGender": "性別",
+  "profilePhone": "手機號碼",
+  "profileGenderUnset": "未設定",
+  "profileGenderMale": "男",
+  "profileGenderFemale": "女",
+  "profileChangePassword": "修改密碼",
+  "profileLogout": "登出",
+  "profileLogoutHint": "登出帳號會保留這台裝置上的所有本機本子。雲端本子仍儲存在帳號中，重新登入後可同步復原。",
+  "profileLogoutConfirmTitle": "登出",
+  "profileLogoutConfirmMessage": "確定要登出目前帳號嗎？",
+  "profileLogoutPendingTitle": "有尚未同步的修改",
+  "profileLogoutPendingMessage": "這些雲端本還有未同步的修改。選擇「保留本地副本」會先將受影響的本子複製到本地。分類的未確認修改會按帳號保留，重新登入後可繼續處理。",
+  "profileLogoutSyncFirst": "先同步",
+  "profileLogoutKeepLocalCopy": "保留本地副本並登出",
+  "profileBasicInfo": "基本資料",
+  "profileAccountInfo": "帳號資訊",
+  "editNameTitle": "編輯暱稱",
+  "editNameSave": "儲存",
+  "editNameEmpty": "暱稱不能為空",
+  "editNameHint": "暱稱無唯一要求，可與其他人重名。支援中文、英文、數字和 Emoji。",
+  "editNameClear": "清空暱稱",
+  "editNameSaved": "暱稱已儲存",
+  "editNameSaveFailed": "儲存失敗，請稍後重試",
+  "editGenderTitle": "性別",
+  "editGenderSaved": "性別已儲存",
+  "editGenderPrivacyHint": "性別僅本人可見，不對共享帳本其他成員顯示。",
+  "avatarPreviewTitle": "頭像",
+  "avatarClose": "關閉",
+  "avatarFromGallery": "從相簿選擇",
+  "avatarRestoreDefault": "恢復預設頭像",
+  "avatarUploadFailed": "頭像上傳失敗，請稍後重試",
+  "avatarRestored": "已恢復預設頭像",
+  "avatarTooLarge": "圖片過大，請選擇較小的圖片",
+  "avatarInvalid": "無法識別該圖片，請重新選擇",
+  "changePasswordTitle": "修改密碼",
+  "changePasswordCurrent": "目前密碼",
+  "changePasswordCurrentHint": "輸入目前密碼",
+  "changePasswordNew": "新密碼",
+  "changePasswordNewHint": "設定新密碼",
+  "changePasswordConfirm": "確認新密碼",
+  "changePasswordConfirmHint": "再次輸入新密碼",
+  "changePasswordHint": "密碼最多 128 個字元。修改後其他裝置會登出，目前裝置保持登入。",
+  "changePasswordNewRequired": "請輸入新密碼",
+  "changePasswordTooLong": "密碼最多 128 個字元",
+  "changePasswordMismatch": "兩次輸入的新密碼不一致",
+  "changePasswordCurrentInvalid": "目前密碼錯誤",
+  "changePasswordSuccess": "密碼已修改",
+  "changePasswordSubmit": "儲存",
+  "changePasswordFailed": "修改失敗，請稍後重試",
+  "daysTools": "工具",
+  "dayBooksTitle": "紀念日本管理",
+  "dayBookNew": "添加紀念日本",
+  "dayBookEdit": "編輯紀念日本",
+  "dayBookEmpty": "暫無紀念日本",
+  "dayEventsEmpty": "暫無紀念日",
+  "dayNoNext": "支援範圍內暫無下一次日期",
+  "dayBirthday": "生日",
+  "dayAnniversary": "紀念日",
+  "dayCountdown": "倒數日",
+  "dayStage": "階段記錄",
+  "dayAdd": "添加紀念日",
+  "dayEdit": "編輯紀念日",
+  "dayName": "名稱",
+  "dayDate": "日期",
+  "dayBirthDate": "出生日期",
+  "dayStart": "開始時間",
+  "dayEnd": "結束時間",
+  "dayNextDate": "下次時間",
+  "daySolar": "公曆",
+  "dayLunar": "農曆",
+  "dayLeapMonth": "閏月",
+  "dayRepeat": "循環",
+  "dayNoRepeat": "不循環",
+  "dayYearly": "每年",
+  "dayFixedDate": "具體日期",
+  "dayIntervalDays": "X 天倒數",
+  "dayStatistic": "統計",
+  "dayAge": "周歲",
+  "dayYears": "年 / 月 / 日",
+  "dayDays": "天數",
+  "dayToday": "今天",
+  "daySaveFailed": "儲存失敗，請重試",
+  "dayInvalid": "請檢查名稱、日期與循環設定",
+  "dayRecordInvalid": "日期資料異常，請重新確認日期",
+  "dayDateOutOfRange": "計算結果超出支援範圍：{first} 至 {last}",
+  "@dayDateOutOfRange": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "dayTargetUnavailable": "所屬紀念日本已無法使用，請保留輸入後重試",
+  "dayDifference": "日期間隔",
+  "dayOffset": "日期推算",
+  "dayHolidays": "節日",
+  "dayLocal": "本地紀念日本",
+  "dayCloud": "雲端紀念日本",
+  "dayBookPending": "待同步",
+  "dayBookStale": "同步身分失效",
+  "dayDay": "日",
+  "dayCalculate": "計算",
+  "dayRemaining": "還有{count}天",
+  "@dayRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayElapsed": "已過{count}天",
+  "@dayElapsed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayAgeValue": "{count}周歲",
+  "@dayAgeValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayDeleteEvent": "確定刪除「{name}」嗎？",
+  "@dayDeleteEvent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dayDeleteBook": "確定刪除紀念日本「{name}」及其中的 {count} 條紀念日嗎？",
+  "@dayDeleteBook": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayCloudDeleteHint": "刪除將同步到其他裝置",
+  "dayNewYear": "元旦",
+  "dayLabour": "勞動節",
+  "dayNational": "國慶節",
+  "daySpring": "春節",
+  "dayLantern": "元宵",
+  "dayDragonBoat": "端午",
+  "dayQixi": "七夕",
+  "dayMidAutumn": "中秋",
+  "dayDoubleNinth": "重陽",
+  "dayNewYearsEve": "除夕",
+  "dayQingming": "清明",
+  "commonPrevious": "上一步",
+  "dayBackupSection": "紀念日",
+  "dayCsvImportSummary": "匯入預覽",
+  "dayDefaultBookName": "預設紀念日",
+  "dayExportSection": "匯出紀念日",
+  "exportSelectAtLeastOne": "請至少選擇一項",
+  "importContentDays": "紀念日",
+  "importContentLedger": "記帳",
+  "importContentTitle": "選擇匯入內容",
+  "ledgerExportSection": "匯出記帳",
+  "daySyncPending": "待同步 {count} 項",
+  "@daySyncPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daySyncRejected": "需修正 {count} 項",
+  "@daySyncRejected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daySyncConflicts": "{count} 個同步衝突",
+  "@daySyncConflicts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayRestorePending": "本地恢復已完成，選中的雲端本正在恢復",
+  "shareHandedToSystem": "檔案已交給系統分享，請在目標應用程式確認儲存結果",
+  "startupDatabaseTitle": "無法開啟目前資料",
+  "startupDatabaseMessage": "目前資料結構與此版本不一致，或資料庫暫時無法讀取。請保留原資料庫檔案，從與此版本相容的備份恢復後重新啟動。應用程式不會自動清空或修改原檔案。",
+  "dayCachedExportWarning": "此雲端本同步尚未完成或曾發生錯誤，匯出內容可能不是最新。是否繼續匯出此裝置已有內容？",
+  "dayType": "類型",
+  "dayUpcomingTitle": "即將到來的紀念日",
+  "dayAnniversaryValue": "{count}週年",
+  "dayDaysValue": "{count}天",
+  "dayRemainingDuration": "還有{duration}",
+  "dayElapsedDuration": "已過{duration}",
+  "dayTotalDuration": "共{duration}",
+  "@dayAnniversaryValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@dayDaysValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@dayRemainingDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "@dayElapsedDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "@dayTotalDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "dayYearsValue": "{count}年",
+  "dayMonthsValue": "{count}個月",
+  "@dayYearsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@dayMonthsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayRepeatQuestion": "是否循環",
+  "dayCalculationResult": "計算結果：",
+  "dayOffsetBefore": "{count} 天前",
+  "@dayOffsetBefore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayOffsetAfter": "{count} 天後",
+  "@dayOffsetAfter": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayNameHint": "請輸入紀念日名稱",
+  "dayDaysHint": "請輸入天數",
+  "dayDifferenceFullSpan": "相差{years}年{months}個月{days}天",
+  "dayDifferenceTotalDays": "相差{days}天",
+  "@dayDifferenceFullSpan": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      },
+      "months": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@dayDifferenceTotalDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "memosTab": "備忘錄",
+  "memoNormal": "普通本",
+  "memoCredentials": "帳號密碼本",
+  "memoEditCard": "編輯帳號密碼",
+  "memoName": "名稱",
+  "memoEnterName": "請輸入名稱",
+  "memoDefaultBookName": "預設備忘錄",
+  "memoBooks": "備忘錄本",
+  "memoBooksManagement": "備忘錄本管理",
+  "memoBookType": "備忘錄類型",
+  "memoCreateBookTitle": "添加本子",
+  "memoStorageLocal": "本機",
+  "memoStorageCloud": "雲端",
+  "memoBookName": "備忘錄名稱",
+  "memoRename": "重新命名",
+  "memoNoBooks": "暫無備忘錄本，請先添加一本",
+  "memoNoEntries": "暫無內容",
+  "memoNoSearchResult": "沒有符合的帳號密碼",
+  "memoUntitled": "未命名筆記",
+  "memoNewNote": "添加筆記",
+  "memoNewCard": "添加帳號密碼",
+  "memoCredentialsTitle": "帳號密碼",
+  "memoAccount": "帳號",
+  "memoPassword": "密碼",
+  "memoFieldIndex": "欄位 {index}",
+  "@memoFieldIndex": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "memoFieldName": "欄位名稱",
+  "memoFieldValue": "內容",
+  "memoAddField": "添加欄位",
+  "memoRemoveField": "刪除欄位",
+  "memoNewField": "新欄位",
+  "memoFieldNameRequired": "請先填寫欄位名稱",
+  "memoCardEmpty": "請填寫名稱或至少一個欄位",
+  "memoPhone": "手機號碼",
+  "memoEmail": "電子郵件",
+  "memoLoadFailed": "載入失敗，請重試",
+  "memoUnavailable": "本子或帳號已變更，請返回重新開啟；未儲存輸入仍按原帳號保留",
+  "memoDownloadRequired": "內容尚未完整下載，請連線補全",
+  "memoEditing": "編輯中",
+  "memoSaving": "儲存中",
+  "memoSaveFailed": "儲存失敗，輸入已保留，請重試",
+  "memoDeleteEntry": "刪除這條記錄？",
+  "memoDeleteEntryMessage": "刪除後無法復原。",
+  "memoCopy": "複製",
+  "memoCopied": "已複製",
+  "memoExport": "匯出",
+  "memoSelectEntry": "選擇筆記",
+  "memoSelectFormat": "選擇匯出格式",
+  "memoExportFailed": "文件產生失敗，可重試目前篇章及格式",
+  "memoExportCancelled": "已取消匯出",
+  "memoExportReady": "檔案已產生",
+  "memoLocal": "本地備忘錄",
+  "memoCloud": "雲端備忘錄",
+  "memoSearchHint": "搜尋欄位名稱或內容",
+  "memoSortManual": "手動順序",
+  "memoSortUpdated": "最近編輯",
+  "memoReorder": "拖動排序",
+  "memoReorderFailed": "順序儲存失敗，請重試",
+  "memoOrderChanged": "卡片已發生變化，請重新整理後再調整",
+  "memoOrderCapacity": "卡片順序編號已達上限，暫時無法新增，目前草稿已保留",
+  "memoMore": "載入更多",
+  "memoConflictCopy": "衝突副本",
+  "memoDeleteBookMessage": "將刪除本子及其 {count} 筆內容",
+  "@memoDeleteBookMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memoEntryCount": "{count} 筆內容",
+  "@memoEntryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayExpired": "已過期",
+  "dayPresent": "至今",
+  "dayMilestone": "周年",
+  "dayStatisticExample": "示例：{value}",
+  "memoHomeSyncing": "正在重新整理備忘錄資料",
+  "memoHomeEmpty": "暫無備忘錄",
+  "memoSelectBook": "選擇備忘錄",
+  "memoPullLocalSuccess": "已重新整理本機備忘錄本資料",
+  "memoPullCloudSuccess": "已同步雲端備忘錄本資料",
+  "memoPullCloudFailedButLocalOk": "雲端同步失敗，已重新整理本機備忘錄本資料",
+  "memoPullLocalFailed": "本機備忘錄本重新整理失敗，請稍後重試",
+  "memoPullCloudFailed": "雲端備忘錄本重新整理失敗，請稍後重試",
+  "memoExportSection": "匯出備忘錄",
+  "fitnessTitle": "健身",
+  "fitnessContinue": "繼續訓練",
+  "fitnessStart": "開始訓練",
+  "fitnessFinish": "結束訓練",
+  "fitnessRestart": "重新開始",
+  "fitnessNoData": "暫無內容",
+  "fitnessPlans": "訓練計畫",
+  "fitnessNewPlan": "添加訓練計畫",
+  "fitnessTemplates": "訓練範本",
+  "fitnessNewTemplate": "添加訓練範本",
+  "fitnessPlanLibrary": "計畫庫",
+  "fitnessTemplateLibrary": "範本庫",
+  "fitnessAddToMyPlan": "添加到我的計畫",
+  "fitnessAddToMyTemplate": "添加到我的範本",
+  "fitnessAddAgain": "再次添加",
+  "fitnessReuseForTemplate": "重用「{name}」",
+  "@fitnessReuseForTemplate": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "fitnessCreateCopies": "添加副本",
+  "fitnessOfficialSource": "來源：官方訓練內容庫",
+  "fitnessLibraryAdded": "已添加到目前訓練空間",
+  "fitnessExercises": "動作庫",
+  "fitnessAddExercises": "添加動作",
+  "fitnessReplace": "替換動作",
+  "fitnessNoExercises": "搜尋或調整篩選尋找動作",
+  "fitnessName": "名稱",
+  "fitnessSearch": "搜尋名稱與別名",
+  "fitnessPlanned": "未開始",
+  "fitnessActive": "進行中",
+  "fitnessFinished": "已完成",
+  "fitnessDate": "安排日期",
+  "fitnessTime": "時間",
+  "fitnessVolume": "訓練量",
+  "fitnessSets": "組數",
+  "fitnessDuration": "時長（秒）",
+  "fitnessAddSet": "添加訓練組",
+  "fitnessKeypadAddSet": "添加訓練組",
+  "fitnessFillSets": "一鍵改",
+  "fitnessFillAbove": "向上",
+  "fitnessFillBelow": "向下",
+  "fitnessNextInput": "下一項",
+  "fitnessCopySet": "複製本組",
+  "fitnessDeleteSet": "刪除本組",
+  "fitnessRest": "休息計時",
+  "fitnessRestSeconds": "休息時長（秒）",
+  "fitnessWarmupRest": "熱身休息（秒）",
+  "fitnessPause": "暫停",
+  "fitnessResume": "繼續",
+  "fitnessSkip": "略過",
+  "fitnessRestRestart": "重新開始",
+  "fitnessRestEnd": "結束",
+  "fitnessRepeatRest": "重複休息",
+  "fitnessStartTimer": "開始計時",
+  "fitnessCopy": "複製",
+  "fitnessMoveUp": "上移",
+  "fitnessMoveDown": "下移",
+  "fitnessUpdateTemplate": "更新範本",
+  "fitnessUpdateTemplateConfirm": "使用本次訓練的動作與組設定更新來源範本？範本名稱和已有訓練紀錄保持不變。",
+  "fitnessSaveTemplate": "另存範本",
+  "fitnessDeleteMessage": "刪除此項目？已產生訓練與歷史會保留。",
+  "fitnessCompletedChange": "此動作已有完成組，確認替換或移除？",
+  "fitnessInvalidSet": "請填寫有效資料後確認此組。",
+  "fitnessIncompleteSet": "此組資料不完整，修改後請重新確認完成。",
+  "fitnessInvalidForm": "請檢查名稱、數值與必要的動作。",
+  "fitnessActiveExists": "已有進行中訓練，請繼續或先結束它。",
+  "fitnessPaused": "已暫停",
+  "fitnessStartDate": "開始日期",
+  "fitnessCycleDays": "計劃循環週期（含休息）",
+  "fitnessRestDay": "休息日",
+  "fitnessPin": "置頂動作",
+  "fitnessUnpin": "取消置頂",
+  "fitnessPinned": "置頂",
+  "fitnessRecent": "最近使用",
+  "fitnessAll": "全部",
+  "fitnessBodyPart": "部位",
+  "fitnessEquipment": "器材",
+  "fitnessInstructions": "教學步驟",
+  "fitnessPlay": "播放示範",
+  "fitnessPauseMedia": "暫停示範",
+  "fitnessDefaultRest": "預設休息時長",
+  "fitnessTrainingDays": "訓練天數",
+  "fitnessShowMore": "載入更多",
+  "fitnessLoadFailed": "載入失敗，請重試",
+  "fitnessSaveFailed": "儲存失敗，輸入已保留，請重試。",
+  "fitnessDetails": "明細",
+  "fitnessIncomplete": "健身資料尚未完整下載，請同步完成後重試。",
+  "fitnessReminderPermissionDenied": "系統未允許提醒，不影響訓練記錄。",
+  "fitnessChest": "胸部",
+  "fitnessBack": "背部",
+  "fitnessShoulders": "肩部",
+  "fitnessBiceps": "肱二頭肌",
+  "fitnessTriceps": "肱三頭肌",
+  "fitnessAbs": "腹部",
+  "fitnessGlutes": "臀部",
+  "fitnessHamstrings": "腿後肌群",
+  "fitnessQuadriceps": "股四頭肌",
+  "fitnessCalves": "小腿",
+  "fitnessUpperArms": "上臂",
+  "fitnessLowerArms": "前臂",
+  "fitnessUpperLegs": "大腿",
+  "fitnessLowerLegs": "小腿",
+  "fitnessWaist": "腰腹",
+  "fitnessCardio": "有氧",
+  "fitnessBarbell": "槓鈴",
+  "fitnessDumbbell": "啞鈴",
+  "fitnessKettlebell": "壺鈴",
+  "fitnessCable": "滑輪器材",
+  "fitnessMachine": "固定器材",
+  "fitnessSledMachine": "腿推器材",
+  "fitnessBodyWeightEquipment": "自重",
+  "fitnessWeightedEquipment": "負重器材",
+  "fitnessLats": "背闊肌",
+  "fitnessSpine": "豎脊肌",
+  "fitnessUpperBack": "上背部",
+  "fitnessLowerBack": "下背部",
+  "fitnessRearDeltoids": "三角肌後束",
+  "fitnessRhomboids": "菱形肌",
+  "fitnessTraps": "斜方肌",
+  "fitnessHipFlexors": "髖屈肌群",
+  "fitnessCore": "核心",
+  "fitnessFeet": "足部",
+  "fitnessAnkles": "踝部",
+  "fitnessConflicts": "同步衝突",
+  "fitnessRestCompletedTitle": "休息結束",
+  "fitnessRestCompletedBody": "本次休息已結束，可以繼續訓練或結束本次訓練。",
+  "fitnessUnknownPart": "未知部位",
+  "fitnessBodyFront": "正面",
+  "fitnessBodyBack": "背面",
+  "fitnessNeck": "頸部",
+  "fitnessAdductors": "內收肌",
+  "fitnessAbductors": "外展肌",
+  "fitnessSerratus": "前鋸肌",
+  "fitnessLevatorScapulae": "肩胛提肌",
+  "fitnessBand": "彈力帶",
+  "fitnessResistanceBand": "阻力帶",
+  "fitnessAssistedEquipment": "輔助器械",
+  "fitnessBosu": "半球平衡球",
+  "fitnessElliptical": "橢圓機",
+  "fitnessEzBar": "曲桿杠鈴",
+  "fitnessHammer": "錘子",
+  "fitnessMedicineBall": "藥球",
+  "fitnessOlympicBarbell": "奧林匹克杠鈴",
+  "fitnessRoller": "泡沫軸",
+  "fitnessRope": "繩索",
+  "fitnessSkiErg": "滑雪訓練機",
+  "fitnessSmithMachine": "史密斯機",
+  "fitnessStabilityBall": "健身球",
+  "fitnessStationaryBike": "健身單車",
+  "fitnessStepmill": "登階機",
+  "fitnessTire": "輪胎",
+  "fitnessTrapBar": "六角杠鈴",
+  "fitnessUpperBodyErgometer": "上肢功率車",
+  "fitnessAbWheel": "健腹輪",
+  "fitnessAnkleStabilizers": "踝關節穩定肌",
+  "fitnessBrachialis": "肱肌",
+  "fitnessGripMuscles": "握力肌群",
+  "fitnessGroin": "腹股溝",
+  "fitnessHands": "手部",
+  "fitnessLowerAbs": "下腹部",
+  "fitnessObliques": "腹斜肌",
+  "fitnessRotatorCuff": "肩袖肌群",
+  "fitnessShins": "脛前肌群",
+  "fitnessSoleus": "比目魚肌",
+  "fitnessSternocleidomastoid": "胸鎖乳突肌",
+  "fitnessUpperChest": "上胸部",
+  "fitnessWristExtensors": "伸腕肌群",
+  "fitnessWristFlexors": "屈腕肌群",
+  "fitnessWrists": "手腕",
+  "fitnessExerciseCount": "{count} 個動作",
+  "@fitnessExerciseCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessBodyChestRegions": "上胸\n中下胸",
+  "fitnessBodyFrontShoulderRegions": "前束\n中束",
+  "fitnessBodyBackShoulderRegions": "中束\n後束",
+  "fitnessTrainingTime": "訓練時間",
+  "fitnessTrainingDuration": "訓練時長",
+  "fitnessTrainingBodyParts": "訓練部位",
+  "fitnessDurationHours": "{hours}小時",
+  "@fitnessDurationHours": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "fitnessClosed": "已關閉",
+  "fitnessPlanNoStartDate": "未選擇",
+  "fitnessExerciseDetail": "動作詳情",
+  "fitnessExerciseHistory": "訓練歷史",
+  "fitnessNoExerciseHistory": "暫無此動作已勾選完成的訓練組",
+  "fitnessRestNotRecorded": "-",
+  "fitnessRestInProgress": "計時尚未結束",
+  "fitnessPlanSchedule": "週期安排",
+  "fitnessDeletePlan": "刪除計劃",
+  "fitnessDeletePlanMessage": "僅刪除此計劃？已經產生的全部訓練與休息記錄將保留，包含已完成訓練。",
+  "fitnessPlanEnabled": "計劃啟動",
+  "fitnessPlanStartDateRequired": "請選擇開始日期後啟動計劃",
+  "syncCenterTitle": "同步處理",
+  "syncCenterLoadFailed": "无法读取同步状态，请重试",
+  "syncCenterActionFailed": "操作未完成，数据已保留，请重试",
+  "syncCenterUseRemote": "采用云端",
+  "syncCenterKeepLocal": "保留本地",
+  "syncCenterDecisionConfirm": "确认使用所选版本？云端已删除的内容不会以原身份重新创建，本机内容可以保留为副本。",
+  "syncCenterConflict": "内容冲突，需要选择版本",
+  "syncCenterRejected": "上传被拒绝，需要处理",
+  "syncCenterStale": "同步绑定失效",
+  "syncCenterDeleting": "等待云端确认删除",
+  "syncCenterMoving": "转为本机尚未完成",
+  "syncCenterIncomplete": "尚未完整下载",
+  "syncCenterDeleted": "已删除",
+  "syncCenterCompare": "查看两个版本",
+  "syncCenterLocal": "本地版本",
+  "syncCenterRemote": "云端版本",
+  "syncCenterEmpty": "暫無待處理的同步問題",
+  "syncCenterEdit": "编辑原记录",
+  "syncCenterProtect": "保留为本机副本",
+  "syncCenterDownload": "保护内容并重新下载",
+  "syncCenterPending": "有 {count} 项同步操作需要处理",
+  "@syncCenterPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncCenterUploading": "等待上传",
+  "fitnessPlanUnfilled": "待填充",
+  "fitnessPlanFillHint": "點擊範本填充到日期中",
+  "fitnessPlanFillDays": "請為每天選擇訓練範本或休息",
+  "fitnessPlanSetRest": "設為休息日",
+  "fitnessPlanReplaceHint": "點擊範本替換目前安排",
+  "syncCenterDeleteReview": "确认删除「{name}」？云端当前有 {count} 条记录，本机对此本尚未同步的修改也将一并删除。",
+  "@syncCenterDeleteReview": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncCenterMoveReview": "继续将「{name}」转为本机？云端当前有 {count} 条记录，完整副本保存且云端删除确认后才会完成。",
+  "@syncCenterMoveReview": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncCenterDeleteGone": "云端已没有「{name}」，确认结束这次删除？已有保护副本会保留。",
+  "@syncCenterDeleteGone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syncCenterBudget": "内容超过同步大小限制，请缩小内容后重试。",
+  "dataTransferInfoTitle": "功能说明",
+  "daySelectBook": "選擇紀念日本",
+  "fitnessExportSection": "匯出健身",
+  "fitnessRecordCount": "共 {count} 項數據",
+  "fitnessDefaultSpaceName": "預設健身空間",
+  "fitnessSelectSpace": "選擇健身空間",
+  "fitnessNoSpaces": "暫無健身空間",
+  "fitnessSpacesManagement": "健身空間管理",
+  "fitnessCreateSpace": "添加健身空間",
+  "fitnessSpaceName": "空間名稱",
+  "fitnessLocalSpaces": "本地健身空間",
+  "fitnessCloudSpaces": "雲端健身空間",
+  "fitnessDeleteSpaceMessage": "刪除此健身空間及其中的 {count} 項資料？",
+  "privateBookDownloadRequired": "請先完成資料同步",
+  "privateBookMoveToCloudMessage": "「{name}」的資料將上傳到雲端，並在各裝置間同步。",
+  "privateBookMoveToLocalMessage": "「{name}」將從雲端刪除，僅保留在這台裝置上，其他裝置將無法再看到它。",
+  "privateBookCopyToLocalMessage": "將「{name}」複製一份到本機，雲端原本保持不變。",
+  "reminderGlobalTitle": "開啟通知",
+  "reminderPlatformUnsupported": "目前平台暫不支援提醒通知。",
+  "reminderDaysTitle": "紀念日提醒",
+  "reminderDaySame": "當天",
+  "reminderDayBefore": "前一天",
+  "reminderThreeDaysBefore": "前三天",
+  "reminderWeekBefore": "前一週",
+  "reminderChooseOneDay": "請至少保留一個提醒日期",
+  "reminderDaysTimeTitle": "提醒時間",
+  "reminderRestTitle": "健身休息結束提醒",
+  "reminderSystemSettings": "提醒說明",
+  "transferCommitting": "正在提交，請稍候",
+  "transferBookTypeMismatch": "此檔案來自「{fileType}」，目前目標是「{targetType}」；請返回上一步選擇同類型的備忘錄本。",
+  "transferDefaultValue": "預設值",
+  "transferDefaultValueHelp": "此欄位不從檔案讀取時使用此值，留空表示空值。",
+  "transferIgnoreField": "不讀取此欄位",
+  "transferDuplicate": "已匯入，將略過",
+  "transferExportProgress": "正在產生匯出檔案 · 已產生 {count} 個",
+  "transferFailed": "匯入未完成，請檢查資料或重試。已成功記錄不會重複匯入。",
+  "transferFitnessHint": "每項包含完整計畫／訓練及其動作和組；匯入偏好會取代目前健身偏好。",
+  "transferMappingHelp": "自動識別結果均可修改：選擇「不讀取此欄位」時不會從檔案取值，改用下方預設值。* 表示必填。",
+  "transferMatchingTitle": "動作對應",
+  "transferPendingSync": "本機匯入已完成，雲端同步由同步佇列繼續處理。",
+  "transferRecord": "第 {lines} 筆 · {title}",
+  "transferRequired": "請選擇欄位",
+  "transferResult": "匯入 {imported} 筆 · 略過 {skipped} 筆 · 失敗 {failed} 筆",
+  "transferSelectAll": "全選有效記錄",
+  "transferSelectCategory": "請選擇已有分類",
+  "transferSelectExercise": "請選擇動作",
+  "transferSummary": "共 {total} 筆 · 有效 {valid} · 重複 {duplicates} · 錯誤 {errors} · 已選 {selected}",
+  "transferTarget": "目標：{name}",
+  "transferUnnamed": "未命名",
+  "transferValid": "可以匯入",
+  "transferFieldLabel": "{field, select, faccount {帳號} famount {金額} fbody {正文} fcalendar {曆法} fcategory {分類} fcategory_icon {分類圖示} fcompleted {完成} fcountdown_mode {倒數方式} fcreated_at {建立時間} fcurrency {幣別} fcycle_days {循環天数} fdate {日期} fday {訓練日（從 1 開始）} fdays {訓練日安排} femail {信箱} fend_calendar {結束曆法} fend_date {結束日期} fend_is_leap_month {結束閏月} fentity_type {資料類型} fexercise {動作} fexercises {動作与組} fgeneration_state {計畫執行狀態} fid {記錄關聯標識} finterval_days {間隔天数} fis_leap_month {閏月} fkind {組類型} fname {名稱} fnote {備註} foccurrence_key {計畫發生標識} fpassword {密碼} fpending_schedule {待生效安排} fphone {電話} fpreferences {健身偏好} fremark {備註} frepeat_type {重複规则} freps {次數} frest_seconds {休息秒数} frest_timer {計時狀態} frun_segments {執行時段} fscheduled_date {訓練日期} fset_count {組数} fsource_kind {訓練來源} fsource_plan_id {關聯計畫} fsource_plan_name {關聯計畫名稱} fsource_template_id {關聯模板} fstart_calendar {開始曆法} fstart_date {開始日期} fstart_is_leap_month {開始閏月} fstatistic_type {統計方式} fstatus {狀態} fsub_category {二級分類} fsub_category_icon {二級分類圖示} ftitle {標題} ftype {類型} fupdated_at {修改時間} fweight {重量} fsets {組明細} fslot {訓練安排} fday_index {訓練日序號（從 0 開始）} other {欄位}}",
+  "transferCardFields": "卡片欄位",
+  "transferCardFieldsHelp": "每列都可作為卡片欄位：關閉開關或清空名稱即不匯入該欄，欄位名稱可改成你習慣的叫法。",
+  "transferCardFieldName": "欄位名稱",
+  "transferJsonRoot": "整個 JSON 物件",
+  "fitnessCustom": "自訂",
+  "fitnessCustomCreate": "添加自訂動作",
+  "fitnessCustomEdit": "編輯自訂動作",
+  "fitnessCustomName": "動作名稱",
+  "fitnessCustomRequired": "請填寫此必填項",
+  "fitnessCustomUpload": "上傳圖片",
+  "fitnessCustomImageTooLarge": "請選擇小於 48 KB 的圖片",
+  "fitnessCustomDeleteConfirm": "刪除此自訂動作？已有訓練紀錄會保留。",
+  "fitnessCustomLimit": "自訂動作容量已滿，請刪除不用的動作，或將圖片換為圖示。",
+  "commonNameInvalid": "名稱需包含可見文字，且不超過 {max} 個字元",
+  "@commonNameInvalid": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appUpdateTitle": "檢查更新",
+  "appUpdateNotConfigured": "此版本尚未設定更新來源。",
+  "appUpdateUnsupported": "應用程式內更新僅支援 Android arm64 正式版。",
+  "appUpdatePermission": "請在系統設定中允許本應用程式安裝更新，然後返回繼續。",
+  "appUpdateFailed": "更新失敗，請檢查網路及剩餘儲存空間後重試。",
+  "appUpdateCurrentVersion": "目前版本",
+  "appUpdateWorking": "正在處理…",
+  "appUpdateDownloading": "正在下載",
+  "appUpdateLatest": "目前已是最新版本。",
+  "appUpdateClose": "關閉",
+  "appUpdateDownload": "更新",
+  "appUpdateInstall": "安裝",
+  "syncCenterPullFailed": "下載的記錄未能套用，請重試同步",
+  "localBookMigrationTitle": "將本機本子移轉到雲端？",
+  "localBookMigrationMessage": "記帳、紀念日、備忘錄和健身中共有 {count} 個本機本子。是否全部移轉到目前帳號的雲端，並在各裝置間同步？選擇「保留本機」則繼續只儲存在這台裝置上。",
+  "localBookMigrationConfirm": "移轉到雲端",
+  "localBookMigrationKeepLocal": "保留本機",
+  "localBookMigrationFailed": "移轉未完成，本機內容已保留，請重試。",
+  "localBookMigrationSuccess": "移轉成功",
+  "reminderExactPermissionTitle": "允許準時提醒",
+  "memoSelectCredentials": "選擇帳號記錄",
+  "memoSelectedEntries": "已選擇 {count} 筆",
+  "@memoSelectedEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memoPng": "圖片（PNG）",
+  "memoPngTooLarge": "內容過長，無法產生單張圖片，請選擇 PDF、Word 或 Markdown。",
+  "shellMemos": "備忘",
+  "shellAddMoney": "記一筆",
+  "shellAddDay": "記日子",
+  "shellMoneyDetails": "明細",
+  "shellAddMemo": "寫備忘",
+  "shellFitnessTraining": "訓練",
+  "shellMemoNotes": "備忘錄",
+  "homeViewAnalytics": "查看統計",
+  "shellFitnessPlans": "計畫",
+  "homeMonthlyBills": "{month}月帳單",
+  "shellMoney": "記帳",
+  "shellDays": "日子",
+  "shellFitness": "健身",
+  "shellChooseBook": "切換本子",
+  "homeDailyExpenseTrend": "每日支出",
+  "shellChooseSpace": "切換訓練空間",
+  "welcomeDomainsTitle": "記錄生活的每一面",
+  "appearanceThemeJournal": "溫暖手帳",
+  "appearanceThemeClassicDescription": "品牌藍與柔和圓角",
+  "appearanceThemeMinimal": "極簡清單",
+  "appearanceThemeClassic": "經典藍",
+  "appearanceThemeTitle": "外觀與主題",
+  "appearanceThemeMinimalDescription": "冷白藍灰與清晰邊界",
+  "appearanceThemeJournalDescription": "米紙森林綠與輕紙感",
+  "appearanceThemeSaveFailed": "外觀已套用，但偏好儲存失敗，請重試",
+  "shellAddFitness": "新增",
+  "shellAddCalendar": "記錄這一天",
+  "fitnessCalendarPlanned": "計畫",
+  "fitnessCalendarRest": "休息",
+  "txEditorContextUnavailable": "帳本或帳號已變更，請返回後重新開啟；本次輸入仍保留",
+  "appearanceThemeIntro": "選擇喜歡的視覺風格",
+  "appearanceThemeNote": "風格與顯示模式獨立設定，選擇後立即生效。",
+  "dayHeroDaysBefore": "天前",
+  "dayHeroDaysAfter": "天後",
+  "homeSummaryLoadFailed": "支出彙總讀取失敗",
+  "homeSummaryCachedFailure": "讀取失敗，顯示上次結果",
+  "txAmountInvalid": "請輸入大於 0 且最多兩位小數的金額",
+  "txDivisionByZero": "不能除以 0，請修改金額",
+  "txExpressionInvalid": "請輸入完整有效的算式",
+  "@categoryTemplateRestoreMessage": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryConflictCloud": "雲端版本",
+  "@categoryTemplatePending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryConflictChooseLocal": "採用已提交的本機版本？之後的本機編輯會另外保留，等待繼續同步。",
+  "categoryTemplateRestoreTitle": "還原原分類",
+  "recurringTransactionTimeZone": "記帳時區",
+  "categoryConflictSubmitted": "已提交的本機版本",
+  "categoryTemplateRestoreMessage": "以下範本對應的原分類曾被刪除：\n{names}\n是否還原原分類及原有設定？不會建立第二個分類，也不會還原已刪除的交易。",
+  "recurringTransactionTimeZoneInvalid": "請選擇有效的 IANA 時區",
+  "categoryTemplateRestoreConfirm": "還原原分類",
+  "categoryConflictRefreshRequired": "版本資訊尚未就緒，請先重新讀取。",
+  "recurringTransactionAmountPrecision": "金額須大於 0，最多 28 位整數和 10 位小數。",
+  "categoryConflictExplanation": "本機版本來自這次上傳，不包含之後的編輯。請選擇此分類要採用的版本。",
+  "categoryConflictRestoreTitle": "還原雲端已刪除分類",
+  "recurringTransactionTimeZoneLocked": "已產生過交易，無法更改時區；如需調整，請新增週期規則。",
+  "categoryTemplatePendingLabel": "等待確認",
+  "categoryConflictRetry": "重試確認",
+  "recurringTransactionDayOfWeek": "每週星期幾",
+  "categoryConflictChooseCloud": "採用所示雲端版本？本次衝突的本機提交將不再套用，之後的本機編輯會另外保留。",
+  "categoryTemplateNoChanges": "沒有新增或還原分類",
+  "categoryConflictDeleteTitle": "確認刪除分類",
+  "categoryConflictType": "分類類型",
+  "categoryConflictUnavailable": "此版本內容暫時無法讀取，請重新讀取。",
+  "categoryTemplateBlockedParentHierarchy": "原父分類的層級已改變，不能新增此子分類",
+  "categoryTemplateBlockedDuplicate": "同名分類已存在，未新增此範本",
+  "categoryConflictChanged": "分類版本已變更，請重新比較後確認。",
+  "categoryConflictUseLocal": "採用本機版本",
+  "categoryTemplateBlockedParentDuplicate": "同名父分類已存在，未新增此範本",
+  "categoryConflictPosition": "排序值：{value}",
+  "categoryConflictRestoreMessage": "雲端已刪除此分類。是否按已提交的本機版本還原同一分類？不會建立第二個分類。",
+  "@categoryConflictPosition": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryTemplateBlockedLabel": "未新增",
+  "categoryConflictRestore": "確認還原",
+  "categoryConflictParentMissing": "父分類尚未下載",
+  "categoryConflictRefresh": "重新讀取",
+  "categoryTemplatePending": "{count} 個分類等待雲端確認，請到同步處理查看",
+  "recurringTransactionIntervalInvalid": "間隔須為 1 到 10000 的整數。",
+  "categoryConflictDeleteMessage": "本機提交是刪除操作。採用後將刪除雲端此分類，請先核對兩個版本。",
+  "recurringTransactionMonthOfYear": "每年第幾個月",
+  "categoryTemplateRestored": "已還原 {count} 個原分類",
+  "recurringTransactionTimeZoneHint": "依此時區的日曆日期產生，各裝置保持一致。",
+  "categoryConflictPending": "確認結果尚未收到。請重試原確認，暫時不能選擇其他版本。",
+  "@categoryTemplateRestored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryConflictUseCloud": "採用雲端版本",
+  "reminderDaysDailyTitle": "每日提醒",
+  "reminderDaysDailyHint": "使用共用提醒時間，固定提醒節點優先，不重複提醒。",
+  "reminderDaysDailySelect": "選擇紀念日（可多選）",
+  "reminderDaysDailyChooseOne": "請至少選擇一個生日、紀念日或倒數日。",
+  "reminderDaysDailyEmpty": "暫無可用於每日提醒的紀念日。",
+  "reminderDaysDailyLoadFailed": "紀念日載入失敗，請重試。",
+  "reminderDaysDailyAccountChanged": "帳號已切換，請關閉後重新選擇。",
+  "syncCenterTransactionTitle": "記帳記錄 · {category}",
+  "syncCenterCategoryTitle": "分類 · {name}",
+  "syncCenterBookContext": "帳本：{name}",
+  "syncCenterUnknownCategory": "無法讀取分類名稱",
+  "syncCenterEntityTitle": "{type} · {name}",
+  "syncCenterTypeLedger": "帳本",
+  "syncCenterTypeDayBook": "紀念日本",
+  "syncCenterTypeDayEvent": "紀念日記錄",
+  "syncCenterTypeMemoBook": "備忘錄本",
+  "syncCenterTypeMemoEntry": "備忘錄記錄",
+  "syncCenterTypeFitnessSpace": "健身空間",
+  "syncCenterTypeFitnessWorkout": "健身記錄",
+  "syncCenterTypeFitnessPlan": "訓練計畫",
+  "syncCenterTypeFitnessTemplate": "訓練範本",
+  "syncCenterTypeMember": "帳本成員",
+  "syncCenterTypeRecurring": "週期記帳",
+  "syncCenterTypeExchangeRate": "匯率",
+  "syncCenterTypeRecord": "記錄",
+  "syncCenterPendingRecordHint": "內容已儲存在本機，等待上傳到雲端。",
+  "syncCenterAwaitingReceiptHint": "上傳結果尚未確認，重試會使用原請求繼續同步。本機內容仍保留。",
+  "syncCenterRecordUnavailable": "原內容已刪除或暫時無法讀取，請重新同步後檢查。",
+  "syncCenterLastFailure": "上次同步未完成：{reason}"
+}

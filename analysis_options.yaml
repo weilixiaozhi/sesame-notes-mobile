@@ -1,0 +1,9 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    # 仓库临时目录中的生成预览和一次性副本不属于应用源代码。
+    - Temp/**
+    - build/**
+    - android/**
+    - ios/**

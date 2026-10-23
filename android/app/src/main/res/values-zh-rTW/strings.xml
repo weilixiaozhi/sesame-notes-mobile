@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 繁体中文（台湾）启动器显示「芝麻记」 -->
+    <string name="app_name">芝麻記</string>
+    <string name="update_download_channel">更新下載</string>
+    <string name="update_download_background">正在背景下載，可繼續使用應用程式</string>
+    <string name="update_download_ready">更新已下載</string>
+    <string name="update_download_install">點擊開啟應用程式並安裝更新</string>
+    <string name="update_download_failed">更新下載失敗</string>
+    <string name="update_download_retry">可在應用程式中重試下載</string>
+</resources>

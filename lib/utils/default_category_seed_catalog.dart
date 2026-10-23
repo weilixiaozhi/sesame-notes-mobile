@@ -1,0 +1,133 @@
+/// 默认分类写入项只包含稳定身份和内容，不依赖界面或本地化对象。
+class CategorySeedItem {
+  /// 保留模板键、名称、图标、层级及父内排序，父分类以稳定模板键引用。
+  const CategorySeedItem(
+    this.key,
+    this.name,
+    this.icon,
+    this.level,
+    this.sortOrder, [
+    this.parentKey,
+  ]);
+
+  final String key;
+  final String name;
+  final String icon;
+  final int level;
+  final int sortOrder;
+  final String? parentKey;
+}
+
+/// 账号正式默认目录固定使用中文内容，与云端首次初始化保持相同身份和顺序。
+const accountDefaultCategorySeeds = <CategorySeedItem>[
+  CategorySeedItem('dining', '餐饮', 'utensils', 1, 0),
+  CategorySeedItem('dining_breakfast', '早餐', 'sandwich', 2, 0, 'dining'),
+  CategorySeedItem('dining_lunch', '午餐', 'salad', 2, 1, 'dining'),
+  CategorySeedItem('dining_dinner', '晚餐', 'soup', 2, 2, 'dining'),
+  CategorySeedItem('beverage', '饮料', 'milk', 1, 1),
+  CategorySeedItem('beverage_milk_tea', '奶茶', 'cupSoda', 2, 0, 'beverage'),
+  CategorySeedItem('beverage_coffee', '咖啡', 'coffee', 2, 1, 'beverage'),
+  CategorySeedItem('beverage_juice', '果汁', 'glassWater', 2, 2, 'beverage'),
+  CategorySeedItem('beverage_soda', '汽水', 'beer', 2, 3, 'beverage'),
+  CategorySeedItem('beverage_water', '矿泉水', 'glassWater', 2, 4, 'beverage'),
+  CategorySeedItem('shopping', '购物', 'shoppingCart', 1, 2),
+  CategorySeedItem(
+    'shopping_supermarket',
+    '超市',
+    'shoppingCart',
+    2,
+    0,
+    'shopping',
+  ),
+  CategorySeedItem('shopping_clothing', '服装', 'shirt', 2, 1, 'shopping'),
+  CategorySeedItem('shopping_shoes', '鞋子', 'footprints', 2, 2, 'shopping'),
+  CategorySeedItem('shopping_bag', '包包', 'shoppingBag', 2, 3, 'shopping'),
+  CategorySeedItem('transport', '交通', 'bus', 1, 3),
+  CategorySeedItem(
+    'transport_transitcard',
+    '交通卡充值',
+    'walletCards',
+    2,
+    0,
+    'transport',
+  ),
+  CategorySeedItem('transport_taxi', '打车', 'car', 2, 1, 'transport'),
+  CategorySeedItem(
+    'transport_parking',
+    '停车费',
+    'parkingCircle',
+    2,
+    2,
+    'transport',
+  ),
+  CategorySeedItem('transport_fuel', '加油', 'fuel', 2, 3, 'transport'),
+  CategorySeedItem('communication', '通讯', 'phone', 1, 4),
+  CategorySeedItem('fruit', '水果', 'apple', 1, 5),
+  CategorySeedItem('snacks', '零食', 'lollipop', 1, 6),
+  CategorySeedItem('sports', '运动', 'dumbbell', 1, 7),
+  CategorySeedItem('pets', '宠物', 'dog', 1, 8),
+  CategorySeedItem('pets_food', '宠物食品', 'bone', 2, 0, 'pets'),
+  CategorySeedItem('pets_supplies', '宠物用品', 'boxes', 2, 1, 'pets'),
+  CategorySeedItem('pets_medical', '宠物医疗', 'stethoscope', 2, 2, 'pets'),
+  CategorySeedItem('pets_grooming', '宠物美容', 'showerHead', 2, 3, 'pets'),
+  CategorySeedItem('housing', '住房', 'building2', 1, 9),
+  CategorySeedItem('housing_utilities', '水电煤', 'zap', 2, 0, 'housing'),
+  CategorySeedItem('housing_property', '物业费', 'building', 2, 1, 'housing'),
+  CategorySeedItem('housing_rent', '房租', 'key', 2, 2, 'housing'),
+  CategorySeedItem('housing_mortgage', '房贷', 'landmark', 2, 3, 'housing'),
+  CategorySeedItem('housing_broadband', '宽带', 'wifi', 2, 4, 'housing'),
+  CategorySeedItem('transfer', '转账', 'handCoins', 1, 10),
+  CategorySeedItem(
+    'transfer_livingcost',
+    '生活费',
+    'heartHandshake',
+    2,
+    0,
+    'transfer',
+  ),
+  CategorySeedItem('transfer_family', '家庭', 'users', 2, 1, 'transfer'),
+  CategorySeedItem('transfer_parents', '父母', 'users2', 2, 2, 'transfer'),
+  CategorySeedItem('transfer_lover', '恋人', 'heart', 2, 3, 'transfer'),
+  CategorySeedItem('transfer_borrowmoney', '借钱', 'coins', 2, 4, 'transfer'),
+  CategorySeedItem('subscription', '订阅服务', 'calendarClock', 1, 11),
+  CategorySeedItem(
+    'subscription_video',
+    '视频会员',
+    'playCircle',
+    2,
+    0,
+    'subscription',
+  ),
+  CategorySeedItem('subscription_music', '音乐会员', 'music', 2, 1, 'subscription'),
+  CategorySeedItem('entertainment', '娱乐', 'partyPopper', 1, 12),
+  CategorySeedItem(
+    'entertainment_movie',
+    '电影',
+    'clapperboard',
+    2,
+    0,
+    'entertainment',
+  ),
+  CategorySeedItem('entertainment_ktv', 'KTV', 'mic', 2, 1, 'entertainment'),
+  CategorySeedItem(
+    'entertainment_amusement',
+    '游乐场',
+    'ferrisWheel',
+    2,
+    2,
+    'entertainment',
+  ),
+  CategorySeedItem('education', '教育', 'graduationCap', 1, 13),
+  CategorySeedItem('education_books', '书籍', 'bookOpen', 2, 0, 'education'),
+  CategorySeedItem('education_learning', '学习', 'library', 2, 1, 'education'),
+  CategorySeedItem('gift', '送礼', 'gift', 1, 14),
+  CategorySeedItem('game', '游戏', 'gamepad2', 1, 15),
+  CategorySeedItem('beauty', '美容', 'sparkles', 1, 16),
+  CategorySeedItem('beauty_skincare', '护肤品', 'smile', 2, 0, 'beauty'),
+  CategorySeedItem('beauty_cosmetics', '化妆品', 'palette', 2, 1, 'beauty'),
+  CategorySeedItem('beauty_salon', '剪发', 'scissors', 2, 2, 'beauty'),
+  CategorySeedItem('beauty_nail', '美甲', 'hand', 2, 3, 'beauty'),
+  CategorySeedItem('medical', '医疗', 'cross', 1, 17),
+  CategorySeedItem('digital', '数码', 'smartphone', 1, 18),
+  CategorySeedItem('other', '其他', 'package', 1, 19),
+];

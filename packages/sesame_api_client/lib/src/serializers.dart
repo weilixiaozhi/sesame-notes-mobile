@@ -1,0 +1,1247 @@
+//
+// AUTO-GENERATED FILE, DO NOT MODIFY!
+//
+
+// ignore_for_file: unused_import
+
+import 'package:one_of_serializer/any_of_serializer.dart';
+import 'package:one_of_serializer/one_of_serializer.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/json_object.dart';
+import 'package:built_value/serializer.dart';
+import 'package:built_value/standard_json_plugin.dart';
+import 'package:built_value/iso_8601_date_time_serializer.dart';
+import 'package:sesame_api_client/src/date_serializer.dart';
+import 'package:sesame_api_client/src/model/date.dart';
+
+import 'package:sesame_api_client/src/model/category.dart';
+import 'package:sesame_api_client/src/model/category_conflict.dart';
+import 'package:sesame_api_client/src/model/category_conflict_local_payload.dart';
+import 'package:sesame_api_client/src/model/category_resolution.dart';
+import 'package:sesame_api_client/src/model/create_official_fitness_taxonomy_request.dart';
+import 'package:sesame_api_client/src/model/day_book.dart';
+import 'package:sesame_api_client/src/model/day_event.dart';
+import 'package:sesame_api_client/src/model/day_original_date.dart';
+import 'package:sesame_api_client/src/model/delete_admin_groups_by_group_id_request.dart';
+import 'package:sesame_api_client/src/model/delete_admin_users_by_user_id_avatar_request.dart';
+import 'package:sesame_api_client/src/model/delete_ledgers_by_ledger_id_transactions_by_transaction_id_request.dart';
+import 'package:sesame_api_client/src/model/delete_official_fitness_taxonomy_request.dart';
+import 'package:sesame_api_client/src/model/error.dart';
+import 'package:sesame_api_client/src/model/exchange_rate_override.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics200_response.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics200_response_coverage.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics200_response_range.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics200_response_series_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics200_response_summary.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics_catalog200_response.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics_catalog200_response_events_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics_catalog200_response_events_inner_source_pages_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response_events_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response_pages_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response_series_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response_summary.dart';
+import 'package:sesame_api_client/src/model/get_admin_audit_logs200_response.dart';
+import 'package:sesame_api_client/src/model/get_admin_audit_logs200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_groups200_response.dart';
+import 'package:sesame_api_client/src/model/get_admin_groups200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_groups_by_group_id_members200_response.dart';
+import 'package:sesame_api_client/src/model/get_admin_groups_by_group_id_members200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_identity_types200_response.dart';
+import 'package:sesame_api_client/src/model/get_admin_identity_types200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_permission_catalog200_response.dart';
+import 'package:sesame_api_client/src/model/get_admin_permission_catalog200_response_identities_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_permission_catalog200_response_pages_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_permission_catalog200_response_permissions_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_status200_response.dart';
+import 'package:sesame_api_client/src/model/get_admin_status200_response_ledgers.dart';
+import 'package:sesame_api_client/src/model/get_admin_status200_response_users.dart';
+import 'package:sesame_api_client/src/model/get_admin_users200_response.dart';
+import 'package:sesame_api_client/src/model/get_admin_users200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_users_by_user_id200_response.dart';
+import 'package:sesame_api_client/src/model/get_admin_users_by_user_id_devices200_response.dart';
+import 'package:sesame_api_client/src/model/get_admin_users_by_user_id_devices200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_category_conflicts200_response.dart';
+import 'package:sesame_api_client/src/model/get_day_books_by_day_book_id_events200_response.dart';
+import 'package:sesame_api_client/src/model/get_devices200_response_inner.dart';
+import 'package:sesame_api_client/src/model/get_exchange_rates200_response.dart';
+import 'package:sesame_api_client/src/model/get_fitness_catalog200_response.dart';
+import 'package:sesame_api_client/src/model/get_fitness_catalog200_response_exercises_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_catalog200_response_taxonomies.dart';
+import 'package:sesame_api_client/src/model/get_fitness_catalog200_response_taxonomies_body_parts_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_library200_response.dart';
+import 'package:sesame_api_client/src/model/get_fitness_library200_response_plans_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_library200_response_plans_inner_days_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_library200_response_templates_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_library200_response_templates_inner_exercises_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_library200_response_templates_inner_goals.dart';
+import 'package:sesame_api_client/src/model/get_fitness_library200_response_templates_inner_name.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_calendar200_response.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_calendar200_response_days_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_calendar200_response_days_inner_rest_days_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_calendar200_response_days_inner_workouts_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_export200_response.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_export200_response_records_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_export200_response_records_inner_any_of.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_export200_response_records_inner_any_of1.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_export200_response_records_inner_any_of2.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_export200_response_records_inner_any_of3.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_plans200_response.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_plans200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_plans200_response_items_inner_days_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_plans200_response_items_inner_days_inner_slot.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_plans200_response_items_inner_days_inner_slot_exercises_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_plans200_response_items_inner_days_inner_slot_exercises_inner_sets_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_plans200_response_items_inner_generation_state.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_plans200_response_items_inner_generation_state_generated_cycles_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_plans200_response_items_inner_pending_schedule.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_preferences200_response.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_preferences200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_preferences200_response_items_inner_custom_exercises_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_preferences200_response_items_inner_exercise_rest_settings_value.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_statistics200_response.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_statistics200_response_by_date_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_statistics200_response_by_exercise_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_templates200_response.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_templates200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_templates200_response_items_inner_catalog_origin.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_templates200_response_items_inner_exercises_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_templates200_response_items_inner_exercises_inner_sets_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_workouts200_response.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_workouts200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_workouts200_response_items_inner_exercises_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_workouts200_response_items_inner_exercises_inner_sets_inner.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_workouts200_response_items_inner_rest_timer.dart';
+import 'package:sesame_api_client/src/model/get_fitness_spaces_by_fitness_space_id_workouts200_response_items_inner_run_segments_inner.dart';
+import 'package:sesame_api_client/src/model/get_health200_response.dart';
+import 'package:sesame_api_client/src/model/get_invites_by_code200_response.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_aa_stats200_response.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_aa_stats200_response_participants_inner.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_aa_stats200_response_transfers_inner.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_action_preview200_response.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_member_stats200_response.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_member_stats200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_members200_response_inner.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_recurring_transactions200_response.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_shared_resources200_response.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_transaction_stats200_response.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_transaction_stats200_response_by_category_inner.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_transaction_stats200_response_by_currency_inner.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_transaction_stats200_response_by_day_inner.dart';
+import 'package:sesame_api_client/src/model/get_ledgers_by_ledger_id_transactions200_response.dart';
+import 'package:sesame_api_client/src/model/get_memo_books_by_memo_book_id_calendar_counts200_response.dart';
+import 'package:sesame_api_client/src/model/get_memo_books_by_memo_book_id_calendar_counts200_response_days_inner.dart';
+import 'package:sesame_api_client/src/model/get_memo_books_by_memo_book_id_entries200_response.dart';
+import 'package:sesame_api_client/src/model/get_profile_me200_response.dart';
+import 'package:sesame_api_client/src/model/get_sync_accounting_full200_response.dart';
+import 'package:sesame_api_client/src/model/get_sync_accounting_full200_response_ledger_snapshots_inner.dart';
+import 'package:sesame_api_client/src/model/get_sync_day_books200_response.dart';
+import 'package:sesame_api_client/src/model/get_sync_day_books_full200_response.dart';
+import 'package:sesame_api_client/src/model/get_sync_fitness_spaces200_response.dart';
+import 'package:sesame_api_client/src/model/get_sync_fitness_spaces200_response_fitness_spaces_inner.dart';
+import 'package:sesame_api_client/src/model/get_sync_fitness_spaces_full200_response.dart';
+import 'package:sesame_api_client/src/model/get_sync_fitness_spaces_full200_response_fitness_space.dart';
+import 'package:sesame_api_client/src/model/get_sync_full200_response.dart';
+import 'package:sesame_api_client/src/model/get_sync_full200_response_ledger.dart';
+import 'package:sesame_api_client/src/model/get_sync_full200_response_recurring_state.dart';
+import 'package:sesame_api_client/src/model/get_sync_full200_response_recurring_state_occurrences_inner.dart';
+import 'package:sesame_api_client/src/model/get_sync_full200_response_recurring_state_rules_inner.dart';
+import 'package:sesame_api_client/src/model/get_sync_memo_books200_response.dart';
+import 'package:sesame_api_client/src/model/get_sync_memo_books200_response_memo_books_inner.dart';
+import 'package:sesame_api_client/src/model/get_sync_memo_books_full200_response.dart';
+import 'package:sesame_api_client/src/model/get_sync_pull200_response.dart';
+import 'package:sesame_api_client/src/model/get_sync_pull200_response_changes_inner.dart';
+import 'package:sesame_api_client/src/model/ledger.dart';
+import 'package:sesame_api_client/src/model/list_official_exercises200_response.dart';
+import 'package:sesame_api_client/src/model/list_official_exercises200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/list_official_exercises200_response_items_inner_content.dart';
+import 'package:sesame_api_client/src/model/list_official_fitness_references200_response.dart';
+import 'package:sesame_api_client/src/model/list_official_fitness_references200_response_exercises_inner.dart';
+import 'package:sesame_api_client/src/model/list_official_fitness_taxonomies200_response.dart';
+import 'package:sesame_api_client/src/model/list_official_fitness_taxonomies200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/list_official_fitness_taxonomies200_response_items_inner_name.dart';
+import 'package:sesame_api_client/src/model/list_official_plans200_response.dart';
+import 'package:sesame_api_client/src/model/list_official_plans200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/list_official_templates200_response.dart';
+import 'package:sesame_api_client/src/model/list_official_templates200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/member.dart';
+import 'package:sesame_api_client/src/model/memo_book.dart';
+import 'package:sesame_api_client/src/model/memo_entry.dart';
+import 'package:sesame_api_client/src/model/patch_admin_accounts_by_admin_id_request.dart';
+import 'package:sesame_api_client/src/model/patch_admin_fitness_exercises_by_content_id_request.dart';
+import 'package:sesame_api_client/src/model/patch_admin_fitness_plans_by_content_id_request.dart';
+import 'package:sesame_api_client/src/model/patch_admin_fitness_templates_by_content_id_request.dart';
+import 'package:sesame_api_client/src/model/patch_admin_groups_by_group_id_request.dart';
+import 'package:sesame_api_client/src/model/patch_admin_users_by_user_id_disable200_response.dart';
+import 'package:sesame_api_client/src/model/patch_admin_users_by_user_id_disable_request.dart';
+import 'package:sesame_api_client/src/model/patch_auth_password_request.dart';
+import 'package:sesame_api_client/src/model/patch_ledgers_by_ledger_id_categories_by_category_id_request.dart';
+import 'package:sesame_api_client/src/model/patch_ledgers_by_ledger_id_request.dart';
+import 'package:sesame_api_client/src/model/patch_ledgers_by_ledger_id_transactions_by_transaction_id_request.dart';
+import 'package:sesame_api_client/src/model/patch_profile_me_request.dart';
+import 'package:sesame_api_client/src/model/post_admin_accounts_by_admin_id_reset_password_request.dart';
+import 'package:sesame_api_client/src/model/post_admin_accounts_request.dart';
+import 'package:sesame_api_client/src/model/post_admin_analytics_funnel200_response.dart';
+import 'package:sesame_api_client/src/model/post_admin_analytics_funnel200_response_coverage.dart';
+import 'package:sesame_api_client/src/model/post_admin_analytics_funnel200_response_range.dart';
+import 'package:sesame_api_client/src/model/post_admin_analytics_funnel200_response_steps_inner.dart';
+import 'package:sesame_api_client/src/model/post_admin_analytics_funnel_request.dart';
+import 'package:sesame_api_client/src/model/post_admin_auth_login200_response.dart';
+import 'package:sesame_api_client/src/model/post_admin_auth_login200_response_admin.dart';
+import 'package:sesame_api_client/src/model/post_admin_auth_login200_response_admin_group.dart';
+import 'package:sesame_api_client/src/model/post_admin_auth_login_request.dart';
+import 'package:sesame_api_client/src/model/post_admin_auth_password_request.dart';
+import 'package:sesame_api_client/src/model/post_admin_fitness_exercises_request.dart';
+import 'package:sesame_api_client/src/model/post_admin_fitness_exercises_request_content.dart';
+import 'package:sesame_api_client/src/model/post_admin_fitness_plans_request.dart';
+import 'package:sesame_api_client/src/model/post_admin_fitness_plans_request_content.dart';
+import 'package:sesame_api_client/src/model/post_admin_fitness_templates_request.dart';
+import 'package:sesame_api_client/src/model/post_admin_fitness_templates_request_content.dart';
+import 'package:sesame_api_client/src/model/post_admin_groups_by_group_id_members200_response.dart';
+import 'package:sesame_api_client/src/model/post_admin_groups_by_group_id_members_request.dart';
+import 'package:sesame_api_client/src/model/post_admin_groups_by_group_id_members_request_members_inner.dart';
+import 'package:sesame_api_client/src/model/post_admin_groups_request.dart';
+import 'package:sesame_api_client/src/model/post_admin_users_by_user_id_reset_password_request.dart';
+import 'package:sesame_api_client/src/model/post_analytics_events200_response.dart';
+import 'package:sesame_api_client/src/model/post_analytics_events_request.dart';
+import 'package:sesame_api_client/src/model/post_analytics_events_request_events_inner.dart';
+import 'package:sesame_api_client/src/model/post_auth_browser_refresh_request.dart';
+import 'package:sesame_api_client/src/model/post_auth_browser_register201_response.dart';
+import 'package:sesame_api_client/src/model/post_auth_login_request.dart';
+import 'package:sesame_api_client/src/model/post_auth_logout_request.dart';
+import 'package:sesame_api_client/src/model/post_auth_refresh_request.dart';
+import 'package:sesame_api_client/src/model/post_auth_register201_response.dart';
+import 'package:sesame_api_client/src/model/post_auth_register201_response_user.dart';
+import 'package:sesame_api_client/src/model/post_auth_register_request.dart';
+import 'package:sesame_api_client/src/model/post_auth_register_request_device.dart';
+import 'package:sesame_api_client/src/model/post_category_conflicts_by_conflict_id_resolve_request.dart';
+import 'package:sesame_api_client/src/model/post_fitness_spaces_by_fitness_space_id_import200_response.dart';
+import 'package:sesame_api_client/src/model/post_fitness_spaces_by_fitness_space_id_import_request.dart';
+import 'package:sesame_api_client/src/model/post_fitness_spaces_by_fitness_space_id_plans_by_plan_id_command200_response.dart';
+import 'package:sesame_api_client/src/model/post_fitness_spaces_by_fitness_space_id_plans_by_plan_id_command_request.dart';
+import 'package:sesame_api_client/src/model/post_fitness_spaces_by_fitness_space_id_plans_by_plan_id_command_request_plan.dart';
+import 'package:sesame_api_client/src/model/post_fitness_spaces_by_fitness_space_id_plans_by_plan_id_command_request_template_copies_inner.dart';
+import 'package:sesame_api_client/src/model/post_fitness_spaces_by_fitness_space_id_plans_by_plan_id_command_request_template_copies_inner_payload.dart';
+import 'package:sesame_api_client/src/model/post_invites_by_code_accept200_response.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_categories_add_batch_request.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_categories_add_batch_request_any_of.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_categories_add_batch_request_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_categories_add_batch_request_any_of_items_inner.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_categories_removal_preview200_response.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_categories_removal_preview_request.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_categories_remove200_response.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_categories_remove_request.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_categories_reorder_request.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_categories_reorder_request_items_inner.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_categories_request.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_change_currency200_response.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_change_currency_request.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_clear200_response.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_clear_request.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports200_response.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports_request.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_invites201_response.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_invites_request.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_recurring_transactions_generate_due200_response.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_recurring_transactions_generate_due200_response_rule_cursors_inner.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_recurring_transactions_generate_due_request.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_transactions_request.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_transactions_request_splits_inner.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_request.dart';
+import 'package:sesame_api_client/src/model/post_sync_push200_response.dart';
+import 'package:sesame_api_client/src/model/post_sync_push200_response_outcomes_inner.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of10.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of10_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of10_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of10_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of11.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of11_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of11_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of11_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of11_any_of_payload_catalog_origin.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of12.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of12_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of12_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of12_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of13.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of13_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of13_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of13_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of13_any_of_payload_exercises_inner.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of13_any_of_payload_exercises_inner_sets_inner.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of13_any_of_payload_run_segments_inner.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of14.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of14_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of14_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of14_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of15.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of15_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of15_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of15_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of1_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of1_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of1_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of1_any_of_payload_event.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of2.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of2_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of2_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of2_any_of1_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of2_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of3.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of3_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of4.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of4_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of4_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of4_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of5.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of5_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of5_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of5_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of6.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of6_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of6_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of6_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of6_any_of_payload_initial_state.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of6_any_of_payload_initial_state_occurrences_inner.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of6_any_of_payload_initial_state_occurrences_inner_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of7.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of7_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of7_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of7_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of8.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of8_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of8_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of8_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of9.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of9_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of9_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of9_any_of1_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of9_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of_any_of.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of_any_of1.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of_any_of1_payload.dart';
+import 'package:sesame_api_client/src/model/post_sync_push_request_changes_inner_any_of_any_of_payload.dart';
+import 'package:sesame_api_client/src/model/post_ws_ticket200_response.dart';
+import 'package:sesame_api_client/src/model/put_admin_accounts_by_admin_id_identity_request.dart';
+import 'package:sesame_api_client/src/model/put_admin_groups_by_group_id_permissions_request.dart';
+import 'package:sesame_api_client/src/model/put_admin_users_by_user_id_avatar200_response.dart';
+import 'package:sesame_api_client/src/model/put_admin_users_by_user_id_avatar_request.dart';
+import 'package:sesame_api_client/src/model/put_admin_users_by_user_id_phone_request.dart';
+import 'package:sesame_api_client/src/model/put_profile_avatar_request.dart';
+import 'package:sesame_api_client/src/model/recurring_transaction.dart';
+import 'package:sesame_api_client/src/model/transaction.dart';
+import 'package:sesame_api_client/src/model/transaction_split.dart';
+import 'package:sesame_api_client/src/model/update_official_fitness_taxonomy_request.dart';
+import 'package:sesame_api_client/src/model/upload_official_fitness_media201_response.dart';
+import 'package:sesame_api_client/src/model/upload_official_fitness_media_request.dart';
+
+part 'serializers.g.dart';
+
+@SerializersFor([
+  Category,
+  CategoryConflict,
+  CategoryConflictLocalPayload,
+  CategoryResolution,
+  CreateOfficialFitnessTaxonomyRequest,
+  DayBook,
+  DayEvent,
+  DayOriginalDate,
+  DeleteAdminGroupsByGroupIdRequest,
+  DeleteAdminUsersByUserIdAvatarRequest,
+  DeleteLedgersByLedgerIdTransactionsByTransactionIdRequest,
+  DeleteOfficialFitnessTaxonomyRequest,
+  Error,
+  ExchangeRateOverride,
+  GetAdminAnalytics200Response,
+  GetAdminAnalytics200ResponseCoverage,
+  GetAdminAnalytics200ResponseRange,
+  GetAdminAnalytics200ResponseSeriesInner,
+  GetAdminAnalytics200ResponseSummary,
+  GetAdminAnalyticsCatalog200Response,
+  GetAdminAnalyticsCatalog200ResponseEventsInner,
+  GetAdminAnalyticsCatalog200ResponseEventsInnerSourcePagesInner,
+  GetAdminAnalyticsDetails200Response,
+  GetAdminAnalyticsDetails200ResponseEventsInner,
+  GetAdminAnalyticsDetails200ResponsePagesInner,
+  GetAdminAnalyticsDetails200ResponseSeriesInner,
+  GetAdminAnalyticsDetails200ResponseSummary,
+  GetAdminAuditLogs200Response,
+  GetAdminAuditLogs200ResponseItemsInner,
+  GetAdminGroups200Response,
+  GetAdminGroups200ResponseItemsInner,
+  GetAdminGroupsByGroupIdMembers200Response,
+  GetAdminGroupsByGroupIdMembers200ResponseItemsInner,
+  GetAdminIdentityTypes200Response,
+  GetAdminIdentityTypes200ResponseItemsInner,
+  GetAdminPermissionCatalog200Response,
+  GetAdminPermissionCatalog200ResponseIdentitiesInner,
+  GetAdminPermissionCatalog200ResponsePagesInner,
+  GetAdminPermissionCatalog200ResponsePermissionsInner,
+  GetAdminStatus200Response,
+  GetAdminStatus200ResponseLedgers,
+  GetAdminStatus200ResponseUsers,
+  GetAdminUsers200Response,
+  GetAdminUsers200ResponseItemsInner,
+  GetAdminUsersByUserId200Response,
+  GetAdminUsersByUserIdDevices200Response,
+  GetAdminUsersByUserIdDevices200ResponseItemsInner,
+  GetCategoryConflicts200Response,
+  GetDayBooksByDayBookIdEvents200Response,
+  GetDevices200ResponseInner,
+  GetExchangeRates200Response,
+  GetFitnessCatalog200Response,
+  GetFitnessCatalog200ResponseExercisesInner,
+  GetFitnessCatalog200ResponseTaxonomies,
+  GetFitnessCatalog200ResponseTaxonomiesBodyPartsInner,
+  GetFitnessLibrary200Response,
+  GetFitnessLibrary200ResponsePlansInner,
+  GetFitnessLibrary200ResponsePlansInnerDaysInner,
+  GetFitnessLibrary200ResponseTemplatesInner,
+  GetFitnessLibrary200ResponseTemplatesInnerExercisesInner,
+  GetFitnessLibrary200ResponseTemplatesInnerGoals,
+  GetFitnessLibrary200ResponseTemplatesInnerName,
+  GetFitnessSpacesByFitnessSpaceIdCalendar200Response,
+  GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInner,
+  GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInnerRestDaysInner,
+  GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInnerWorkoutsInner,
+  GetFitnessSpacesByFitnessSpaceIdExport200Response,
+  GetFitnessSpacesByFitnessSpaceIdExport200ResponseRecordsInner,
+  GetFitnessSpacesByFitnessSpaceIdExport200ResponseRecordsInnerAnyOf,
+  GetFitnessSpacesByFitnessSpaceIdExport200ResponseRecordsInnerAnyOf1,
+  GetFitnessSpacesByFitnessSpaceIdExport200ResponseRecordsInnerAnyOf2,
+  GetFitnessSpacesByFitnessSpaceIdExport200ResponseRecordsInnerAnyOf3,
+  GetFitnessSpacesByFitnessSpaceIdPlans200Response,
+  GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInner,
+  GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInner,
+  GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInnerSlot,
+  GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInnerSlotExercisesInner,
+  GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInnerSlotExercisesInnerSetsInner,
+  GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerGenerationState,
+  GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerGenerationStateGeneratedCyclesInner,
+  GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerPendingSchedule,
+  GetFitnessSpacesByFitnessSpaceIdPreferences200Response,
+  GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInner,
+  GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInnerCustomExercisesInner,
+  GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInnerExerciseRestSettingsValue,
+  GetFitnessSpacesByFitnessSpaceIdStatistics200Response,
+  GetFitnessSpacesByFitnessSpaceIdStatistics200ResponseByDateInner,
+  GetFitnessSpacesByFitnessSpaceIdStatistics200ResponseByExerciseInner,
+  GetFitnessSpacesByFitnessSpaceIdTemplates200Response,
+  GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInner,
+  GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerCatalogOrigin,
+  GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInner,
+  GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInnerSetsInner,
+  GetFitnessSpacesByFitnessSpaceIdWorkouts200Response,
+  GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInner,
+  GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerExercisesInner,
+  GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerExercisesInnerSetsInner,
+  GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerRestTimer,
+  GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerRunSegmentsInner,
+  GetHealth200Response,
+  GetInvitesByCode200Response,
+  GetLedgersByLedgerIdAaStats200Response,
+  GetLedgersByLedgerIdAaStats200ResponseParticipantsInner,
+  GetLedgersByLedgerIdAaStats200ResponseTransfersInner,
+  GetLedgersByLedgerIdActionPreview200Response,
+  GetLedgersByLedgerIdMemberStats200Response,
+  GetLedgersByLedgerIdMemberStats200ResponseItemsInner,
+  GetLedgersByLedgerIdMembers200ResponseInner,
+  GetLedgersByLedgerIdRecurringTransactions200Response,
+  GetLedgersByLedgerIdSharedResources200Response,
+  GetLedgersByLedgerIdTransactionStats200Response,
+  GetLedgersByLedgerIdTransactionStats200ResponseByCategoryInner,
+  GetLedgersByLedgerIdTransactionStats200ResponseByCurrencyInner,
+  GetLedgersByLedgerIdTransactionStats200ResponseByDayInner,
+  GetLedgersByLedgerIdTransactions200Response,
+  GetMemoBooksByMemoBookIdCalendarCounts200Response,
+  GetMemoBooksByMemoBookIdCalendarCounts200ResponseDaysInner,
+  GetMemoBooksByMemoBookIdEntries200Response,
+  GetProfileMe200Response,
+  GetSyncAccountingFull200Response,
+  GetSyncAccountingFull200ResponseLedgerSnapshotsInner,
+  GetSyncDayBooks200Response,
+  GetSyncDayBooksFull200Response,
+  GetSyncFitnessSpaces200Response,
+  GetSyncFitnessSpaces200ResponseFitnessSpacesInner,
+  GetSyncFitnessSpacesFull200Response,
+  GetSyncFitnessSpacesFull200ResponseFitnessSpace,
+  GetSyncFull200Response,
+  GetSyncFull200ResponseLedger,
+  GetSyncFull200ResponseRecurringState,
+  GetSyncFull200ResponseRecurringStateOccurrencesInner,
+  GetSyncFull200ResponseRecurringStateRulesInner,
+  GetSyncMemoBooks200Response,
+  GetSyncMemoBooks200ResponseMemoBooksInner,
+  GetSyncMemoBooksFull200Response,
+  GetSyncPull200Response,
+  GetSyncPull200ResponseChangesInner,
+  Ledger,
+  ListOfficialExercises200Response,
+  ListOfficialExercises200ResponseItemsInner,
+  ListOfficialExercises200ResponseItemsInnerContent,
+  ListOfficialFitnessReferences200Response,
+  ListOfficialFitnessReferences200ResponseExercisesInner,
+  ListOfficialFitnessTaxonomies200Response,
+  ListOfficialFitnessTaxonomies200ResponseItemsInner,
+  ListOfficialFitnessTaxonomies200ResponseItemsInnerName,
+  ListOfficialPlans200Response,
+  ListOfficialPlans200ResponseItemsInner,
+  ListOfficialTemplates200Response,
+  ListOfficialTemplates200ResponseItemsInner,
+  Member,
+  MemoBook,
+  MemoEntry,
+  PatchAdminAccountsByAdminIdRequest,
+  PatchAdminFitnessExercisesByContentIdRequest,
+  PatchAdminFitnessPlansByContentIdRequest,
+  PatchAdminFitnessTemplatesByContentIdRequest,
+  PatchAdminGroupsByGroupIdRequest,
+  PatchAdminUsersByUserIdDisable200Response,
+  PatchAdminUsersByUserIdDisableRequest,
+  PatchAuthPasswordRequest,
+  PatchLedgersByLedgerIdCategoriesByCategoryIdRequest,
+  PatchLedgersByLedgerIdRequest,
+  PatchLedgersByLedgerIdTransactionsByTransactionIdRequest,
+  PatchProfileMeRequest,
+  PostAdminAccountsByAdminIdResetPasswordRequest,
+  PostAdminAccountsRequest,
+  PostAdminAnalyticsFunnel200Response,
+  PostAdminAnalyticsFunnel200ResponseCoverage,
+  PostAdminAnalyticsFunnel200ResponseRange,
+  PostAdminAnalyticsFunnel200ResponseStepsInner,
+  PostAdminAnalyticsFunnelRequest,
+  PostAdminAuthLogin200Response,
+  PostAdminAuthLogin200ResponseAdmin,
+  PostAdminAuthLogin200ResponseAdminGroup,
+  PostAdminAuthLoginRequest,
+  PostAdminAuthPasswordRequest,
+  PostAdminFitnessExercisesRequest,
+  PostAdminFitnessExercisesRequestContent,
+  PostAdminFitnessPlansRequest,
+  PostAdminFitnessPlansRequestContent,
+  PostAdminFitnessTemplatesRequest,
+  PostAdminFitnessTemplatesRequestContent,
+  PostAdminGroupsByGroupIdMembers200Response,
+  PostAdminGroupsByGroupIdMembersRequest,
+  PostAdminGroupsByGroupIdMembersRequestMembersInner,
+  PostAdminGroupsRequest,
+  PostAdminUsersByUserIdResetPasswordRequest,
+  PostAnalyticsEvents200Response,
+  PostAnalyticsEventsRequest,
+  PostAnalyticsEventsRequestEventsInner,
+  PostAuthBrowserRefreshRequest,
+  PostAuthBrowserRegister201Response,
+  PostAuthLoginRequest,
+  PostAuthLogoutRequest,
+  PostAuthRefreshRequest,
+  PostAuthRegister201Response,
+  PostAuthRegister201ResponseUser,
+  PostAuthRegisterRequest,
+  PostAuthRegisterRequestDevice,
+  PostCategoryConflictsByConflictIdResolveRequest,
+  PostFitnessSpacesByFitnessSpaceIdImport200Response,
+  PostFitnessSpacesByFitnessSpaceIdImportRequest,
+  PostFitnessSpacesByFitnessSpaceIdPlansByPlanIdCommand200Response,
+  PostFitnessSpacesByFitnessSpaceIdPlansByPlanIdCommandRequest,
+  PostFitnessSpacesByFitnessSpaceIdPlansByPlanIdCommandRequestPlan,
+  PostFitnessSpacesByFitnessSpaceIdPlansByPlanIdCommandRequestTemplateCopiesInner,
+  PostFitnessSpacesByFitnessSpaceIdPlansByPlanIdCommandRequestTemplateCopiesInnerPayload,
+  PostInvitesByCodeAccept200Response,
+  PostLedgersByLedgerIdCategoriesAddBatchRequest,
+  PostLedgersByLedgerIdCategoriesAddBatchRequestAnyOf,
+  PostLedgersByLedgerIdCategoriesAddBatchRequestAnyOf1,
+  PostLedgersByLedgerIdCategoriesAddBatchRequestAnyOfItemsInner,
+  PostLedgersByLedgerIdCategoriesRemovalPreview200Response,
+  PostLedgersByLedgerIdCategoriesRemovalPreviewRequest,
+  PostLedgersByLedgerIdCategoriesRemove200Response,
+  PostLedgersByLedgerIdCategoriesRemoveRequest,
+  PostLedgersByLedgerIdCategoriesReorderRequest,
+  PostLedgersByLedgerIdCategoriesReorderRequestItemsInner,
+  PostLedgersByLedgerIdCategoriesRequest,
+  PostLedgersByLedgerIdChangeCurrency200Response,
+  PostLedgersByLedgerIdChangeCurrencyRequest,
+  PostLedgersByLedgerIdClear200Response,
+  PostLedgersByLedgerIdClearRequest,
+  PostLedgersByLedgerIdImports200Response,
+  PostLedgersByLedgerIdImportsRequest,
+  PostLedgersByLedgerIdInvites201Response,
+  PostLedgersByLedgerIdInvitesRequest,
+  PostLedgersByLedgerIdRecurringTransactionsGenerateDue200Response,
+  PostLedgersByLedgerIdRecurringTransactionsGenerateDue200ResponseRuleCursorsInner,
+  PostLedgersByLedgerIdRecurringTransactionsGenerateDueRequest,
+  PostLedgersByLedgerIdTransactionsRequest,
+  PostLedgersByLedgerIdTransactionsRequestSplitsInner,
+  PostLedgersRequest,
+  PostSyncPush200Response,
+  PostSyncPush200ResponseOutcomesInner,
+  PostSyncPushRequest,
+  PostSyncPushRequestChangesInner,
+  PostSyncPushRequestChangesInnerAnyOf,
+  PostSyncPushRequestChangesInnerAnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf10,
+  PostSyncPushRequestChangesInnerAnyOf10AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf10AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf10AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOf11,
+  PostSyncPushRequestChangesInnerAnyOf11AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf11AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf11AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOf11AnyOfPayloadCatalogOrigin,
+  PostSyncPushRequestChangesInnerAnyOf12,
+  PostSyncPushRequestChangesInnerAnyOf12AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf12AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf12AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOf13,
+  PostSyncPushRequestChangesInnerAnyOf13AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf13AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf13AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadExercisesInner,
+  PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadExercisesInnerSetsInner,
+  PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadRunSegmentsInner,
+  PostSyncPushRequestChangesInnerAnyOf14,
+  PostSyncPushRequestChangesInnerAnyOf14AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf14AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf14AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOf15,
+  PostSyncPushRequestChangesInnerAnyOf15AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf15AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf15AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOf1AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf1AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf1AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOf1AnyOfPayloadEvent,
+  PostSyncPushRequestChangesInnerAnyOf2,
+  PostSyncPushRequestChangesInnerAnyOf2AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf2AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf2AnyOf1Payload,
+  PostSyncPushRequestChangesInnerAnyOf2AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOf3,
+  PostSyncPushRequestChangesInnerAnyOf3Payload,
+  PostSyncPushRequestChangesInnerAnyOf4,
+  PostSyncPushRequestChangesInnerAnyOf4AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf4AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf4AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOf5,
+  PostSyncPushRequestChangesInnerAnyOf5AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf5AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf5AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOf6,
+  PostSyncPushRequestChangesInnerAnyOf6AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf6AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf6AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOf6AnyOfPayloadInitialState,
+  PostSyncPushRequestChangesInnerAnyOf6AnyOfPayloadInitialStateOccurrencesInner,
+  PostSyncPushRequestChangesInnerAnyOf6AnyOfPayloadInitialStateOccurrencesInnerPayload,
+  PostSyncPushRequestChangesInnerAnyOf7,
+  PostSyncPushRequestChangesInnerAnyOf7AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf7AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf7AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOf8,
+  PostSyncPushRequestChangesInnerAnyOf8AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf8AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf8AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOf9,
+  PostSyncPushRequestChangesInnerAnyOf9AnyOf,
+  PostSyncPushRequestChangesInnerAnyOf9AnyOf1,
+  PostSyncPushRequestChangesInnerAnyOf9AnyOf1Payload,
+  PostSyncPushRequestChangesInnerAnyOf9AnyOfPayload,
+  PostSyncPushRequestChangesInnerAnyOfAnyOf,
+  PostSyncPushRequestChangesInnerAnyOfAnyOf1,
+  PostSyncPushRequestChangesInnerAnyOfAnyOf1Payload,
+  PostSyncPushRequestChangesInnerAnyOfAnyOfPayload,
+  PostWsTicket200Response,
+  PutAdminAccountsByAdminIdIdentityRequest,
+  PutAdminGroupsByGroupIdPermissionsRequest,
+  PutAdminUsersByUserIdAvatar200Response,
+  PutAdminUsersByUserIdAvatarRequest,
+  PutAdminUsersByUserIdPhoneRequest,
+  PutProfileAvatarRequest,
+  RecurringTransaction,
+  Transaction,
+  TransactionSplit,
+  UpdateOfficialFitnessTaxonomyRequest,
+  UploadOfficialFitnessMedia201Response,
+  UploadOfficialFitnessMediaRequest,
+])
+Serializers serializers = (_$serializers.toBuilder()
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdStatistics200ResponseByExerciseInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdStatistics200ResponseByExerciseInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltMap, [
+          FullType(String),
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInnerExerciseRestSettingsValue)
+        ]),
+        () => MapBuilder<String,
+            GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInnerExerciseRestSettingsValue>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminAnalyticsDetails200ResponseEventsInner)]),
+        () => ListBuilder<GetAdminAnalyticsDetails200ResponseEventsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetSyncFull200ResponseRecurringStateRulesInner)]),
+        () => ListBuilder<GetSyncFull200ResponseRecurringStateRulesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(MemoEntry)]),
+        () => ListBuilder<MemoEntry>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadRunSegmentsInner)
+        ]),
+        () => ListBuilder<
+            PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadRunSegmentsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminAnalyticsCatalog200ResponseEventsInner)]),
+        () => ListBuilder<GetAdminAnalyticsCatalog200ResponseEventsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(DayEvent)]),
+        () => ListBuilder<DayEvent>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetAdminAnalytics200ResponseSeriesInner)]),
+        () => ListBuilder<GetAdminAnalytics200ResponseSeriesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(ListOfficialTemplates200ResponseItemsInner)]),
+        () => ListBuilder<ListOfficialTemplates200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(PostAnalyticsEventsRequestEventsInner)]),
+        () => ListBuilder<PostAnalyticsEventsRequestEventsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(PostSyncPush200ResponseOutcomesInner)]),
+        () => ListBuilder<PostSyncPush200ResponseOutcomesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetFitnessCatalog200ResponseTaxonomiesBodyPartsInner)]),
+        () =>
+            ListBuilder<GetFitnessCatalog200ResponseTaxonomiesBodyPartsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerExercisesInnerSetsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerExercisesInnerSetsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetFitnessLibrary200ResponsePlansInner)]),
+        () => ListBuilder<GetFitnessLibrary200ResponsePlansInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInnerSetsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInnerSetsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInnerSlotExercisesInnerSetsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInnerSlotExercisesInnerSetsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(ListOfficialFitnessReferences200ResponseExercisesInner)]),
+        () => ListBuilder<
+            ListOfficialFitnessReferences200ResponseExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInnerSlotExercisesInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInnerSlotExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltSet, [FullType(String)]),
+        () => SetBuilder<String>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminAnalyticsDetails200ResponsePagesInner)]),
+        () => ListBuilder<GetAdminAnalyticsDetails200ResponsePagesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PostSyncPushRequestChangesInner)]),
+        () => ListBuilder<PostSyncPushRequestChangesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminPermissionCatalog200ResponsePermissionsInner)]),
+        () =>
+            ListBuilder<GetAdminPermissionCatalog200ResponsePermissionsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(PostAdminGroupsByGroupIdMembersRequestMembersInner)]),
+        () => ListBuilder<PostAdminGroupsByGroupIdMembersRequestMembersInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetAdminGroups200ResponseItemsInner)]),
+        () => ListBuilder<GetAdminGroups200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminGroupsByGroupIdMembers200ResponseItemsInner)]),
+        () =>
+            ListBuilder<GetAdminGroupsByGroupIdMembers200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(PostLedgersByLedgerIdTransactionsRequestSplitsInner)]),
+        () =>
+            ListBuilder<PostLedgersByLedgerIdTransactionsRequestSplitsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              PostSyncPushRequestChangesInnerAnyOf6AnyOfPayloadInitialStateOccurrencesInner)
+        ]),
+        () => ListBuilder<
+            PostSyncPushRequestChangesInnerAnyOf6AnyOfPayloadInitialStateOccurrencesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(GetFitnessLibrary200ResponseTemplatesInnerExercisesInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessLibrary200ResponseTemplatesInnerExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetSyncFull200ResponseRecurringStateOccurrencesInner)]),
+        () =>
+            ListBuilder<GetSyncFull200ResponseRecurringStateOccurrencesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(PostLedgersByLedgerIdTransactionsRequest)]),
+        () => ListBuilder<PostLedgersByLedgerIdTransactionsRequest>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(ListOfficialExercises200ResponseItemsInner)]),
+        () => ListBuilder<ListOfficialExercises200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerRunSegmentsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerRunSegmentsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(PostLedgersByLedgerIdCategoriesRequest)]),
+        () => ListBuilder<PostLedgersByLedgerIdCategoriesRequest>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(PostAdminAnalyticsFunnel200ResponseStepsInner)]),
+        () => ListBuilder<PostAdminAnalyticsFunnel200ResponseStepsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(GetLedgersByLedgerIdTransactionStats200ResponseByDayInner)
+        ]),
+        () => ListBuilder<
+            GetLedgersByLedgerIdTransactionStats200ResponseByDayInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltMap, [FullType(String), FullType(String)]),
+        () => MapBuilder<String, String>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetSyncFitnessSpaces200ResponseFitnessSpacesInner)]),
+        () => ListBuilder<GetSyncFitnessSpaces200ResponseFitnessSpacesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(GetDevices200ResponseInner)]),
+        () => ListBuilder<GetDevices200ResponseInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetSyncAccountingFull200ResponseLedgerSnapshotsInner)]),
+        () =>
+            ListBuilder<GetSyncAccountingFull200ResponseLedgerSnapshotsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminPermissionCatalog200ResponseIdentitiesInner)]),
+        () =>
+            ListBuilder<GetAdminPermissionCatalog200ResponseIdentitiesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(GetMemoBooksByMemoBookIdCalendarCounts200ResponseDaysInner)
+        ]),
+        () => ListBuilder<
+            GetMemoBooksByMemoBookIdCalendarCounts200ResponseDaysInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerExercisesInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetLedgersByLedgerIdMemberStats200ResponseItemsInner)]),
+        () =>
+            ListBuilder<GetLedgersByLedgerIdMemberStats200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Ledger)]),
+        () => ListBuilder<Ledger>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetLedgersByLedgerIdTransactionStats200ResponseByCategoryInner)
+        ]),
+        () => ListBuilder<
+            GetLedgersByLedgerIdTransactionStats200ResponseByCategoryInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              PostFitnessSpacesByFitnessSpaceIdPlansByPlanIdCommandRequestTemplateCopiesInner)
+        ]),
+        () => ListBuilder<
+            PostFitnessSpacesByFitnessSpaceIdPlansByPlanIdCommandRequestTemplateCopiesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetFitnessLibrary200ResponseTemplatesInner)]),
+        () => ListBuilder<GetFitnessLibrary200ResponseTemplatesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Transaction)]),
+        () => ListBuilder<Transaction>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetFitnessCatalog200ResponseExercisesInner)]),
+        () => ListBuilder<GetFitnessCatalog200ResponseExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminPermissionCatalog200ResponsePagesInner)]),
+        () => ListBuilder<GetAdminPermissionCatalog200ResponsePagesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetAdminIdentityTypes200ResponseItemsInner)]),
+        () => ListBuilder<GetAdminIdentityTypes200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetAdminUsers200ResponseItemsInner)]),
+        () => ListBuilder<GetAdminUsers200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(PostLedgersByLedgerIdCategoriesReorderRequestItemsInner)
+        ]),
+        () => ListBuilder<
+            PostLedgersByLedgerIdCategoriesReorderRequestItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(ListOfficialPlans200ResponseItemsInner)]),
+        () => ListBuilder<ListOfficialPlans200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetAdminAnalyticsCatalog200ResponseEventsInnerSourcePagesInner)
+        ]),
+        () => ListBuilder<
+            GetAdminAnalyticsCatalog200ResponseEventsInnerSourcePagesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              PostLedgersByLedgerIdCategoriesAddBatchRequestAnyOfItemsInner)
+        ]),
+        () => ListBuilder<
+            PostLedgersByLedgerIdCategoriesAddBatchRequestAnyOfItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadExercisesInner)
+        ]),
+        () => ListBuilder<
+            PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(ListOfficialFitnessTaxonomies200ResponseItemsInner)]),
+        () => ListBuilder<ListOfficialFitnessTaxonomies200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(CategoryConflict)]),
+        () => ListBuilder<CategoryConflict>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminUsersByUserIdDevices200ResponseItemsInner)]),
+        () => ListBuilder<GetAdminUsersByUserIdDevices200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInnerRestDaysInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInnerRestDaysInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetLedgersByLedgerIdTransactionStats200ResponseByCurrencyInner)
+        ]),
+        () => ListBuilder<
+            GetLedgersByLedgerIdTransactionStats200ResponseByCurrencyInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              PostLedgersByLedgerIdRecurringTransactionsGenerateDue200ResponseRuleCursorsInner)
+        ]),
+        () => ListBuilder<
+            PostLedgersByLedgerIdRecurringTransactionsGenerateDue200ResponseRuleCursorsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetFitnessLibrary200ResponsePlansInnerDaysInner)]),
+        () => ListBuilder<GetFitnessLibrary200ResponsePlansInnerDaysInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(GetLedgersByLedgerIdAaStats200ResponseParticipantsInner)
+        ]),
+        () => ListBuilder<
+            GetLedgersByLedgerIdAaStats200ResponseParticipantsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetAdminAuditLogs200ResponseItemsInner)]),
+        () => ListBuilder<GetAdminAuditLogs200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerGenerationStateGeneratedCyclesInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerGenerationStateGeneratedCyclesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdExport200ResponseRecordsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdExport200ResponseRecordsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Category)]),
+        () => ListBuilder<Category>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetSyncMemoBooks200ResponseMemoBooksInner)]),
+        () => ListBuilder<GetSyncMemoBooks200ResponseMemoBooksInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(DayBook)]),
+        () => ListBuilder<DayBook>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadExercisesInnerSetsInner)
+        ]),
+        () => ListBuilder<
+            PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadExercisesInnerSetsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(ExchangeRateOverride)]),
+        () => ListBuilder<ExchangeRateOverride>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(RecurringTransaction)]),
+        () => ListBuilder<RecurringTransaction>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdStatistics200ResponseByDateInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdStatistics200ResponseByDateInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInnerWorkoutsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInnerWorkoutsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminAnalyticsDetails200ResponseSeriesInner)]),
+        () => ListBuilder<GetAdminAnalyticsDetails200ResponseSeriesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInnerCustomExercisesInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInnerCustomExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(int)]),
+        () => ListBuilder<int>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Member)]),
+        () => ListBuilder<Member>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(TransactionSplit)]),
+        () => ListBuilder<TransactionSplit>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetLedgersByLedgerIdAaStats200ResponseTransfersInner)]),
+        () =>
+            ListBuilder<GetLedgersByLedgerIdAaStats200ResponseTransfersInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetSyncPull200ResponseChangesInner)]),
+        () => ListBuilder<GetSyncPull200ResponseChangesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
+        () => MapBuilder<String, JsonObject?>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltMap, [FullType(String), FullType(bool)]),
+        () => MapBuilder<String, bool>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetLedgersByLedgerIdMembers200ResponseInner)]),
+        () => ListBuilder<GetLedgersByLedgerIdMembers200ResponseInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(String)]),
+        () => ListBuilder<String>(),
+      )
+      ..add(const OneOfSerializer())
+      ..add(const AnyOfSerializer())
+      ..add(const DateSerializer())
+      ..add(Iso8601DateTimeSerializer()))
+    .build();
+
+Serializers standardSerializers =
+    (serializers.toBuilder()..addPlugin(StandardJsonPlugin())).build();

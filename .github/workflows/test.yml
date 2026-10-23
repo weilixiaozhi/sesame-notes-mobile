@@ -1,0 +1,133 @@
+name: Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: "3.47.2"
+  NODE_VERSION: "24.22.1"
+
+jobs:
+  test:
+    name: Flutter Test (randomized order)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
+          cache: true
+
+      - name: 安装依赖
+        run: flutter pub get
+
+      - name: 格式检查（新增代码必须 dart format 合规）
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: 静态分析（仓库约定零告警）
+        run: flutter analyze --no-pub
+
+      - name: API 契约固定测试（契约哈希与乐观锁约定）
+        run: |
+          python3 scripts/test/api_contract_test.py
+
+      - name: 签名脚本回归（临时测试密钥）
+        shell: pwsh
+        run: ./scripts/test/android_keystore_test.ps1
+
+      - name: 更新元数据回归
+        run: python3 -B scripts/test/update_manifest_test.py
+
+      - name: 发布包架构检查回归
+        run: python3 -B scripts/test/apk_architecture_test.py
+
+      - name: Android 环境构建入口回归
+        run: |
+          python3 -B scripts/test/android_environment_test.py
+          node scripts/test/environment_config_test.mjs
+
+      - name: 运行测试（随机顺序，持续暴露顺序依赖）
+        run: flutter test test --test-randomize-ordering-seed=random
+
+      - name: OpenAPI 生成一致性校验（生成代码不手工编辑）
+        shell: pwsh
+        run: |
+          # 重新生成 + build_runner 后与已提交输出 diff；不一致（手改生成代码
+          # 或契约漂移）即失败。需 Docker（ubuntu-latest 自带）。
+          ./scripts/openapi/generate_api_client.ps1 -Check
+
+  android_unit_test:
+    name: Android Rest Alarm Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: "17"
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: "platform-tools"
+      - name: Android SDK components
+        run: sdkmanager --install "platforms;android-35" "platforms;android-36" "platforms;android-37.0" "build-tools;36.0.0"
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Prepare Android build and Gradle wrapper
+        shell: pwsh
+        # 原生测试只需 Flutter 构建配置和 wrapper，APK 由发布工作流负责生成。
+        run: ./scripts/build_android.ps1 -Environment test -ConfigPath config/test.example.json -ConfigOnly
+      - name: Native alarm tests
+        working-directory: android
+        run: |
+          # 原生任务通过编码后的 APP_ENV 明确选择构建环境。
+          ./gradlew :app:tasks --all -Pdart-defines=QVBQX0VOVj10ZXN0 | python3 ../scripts/test/android_variant_tasks_test.py --environment test
+          ./gradlew :app:tasks --all -Pdart-defines=QVBQX0VOVj1wcm9k | python3 ../scripts/test/android_variant_tasks_test.py --environment prod
+          ./gradlew :app:testEnvTestDebugUnitTest -Ptarget-platform=android-arm64 -Pdart-defines=QVBQX0VOVj10ZXN0
+
+  package_self_check:
+    name: Package Self Check (${{ matrix.package }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - sesame_api_client
+          - sesame_cloud_backup
+          - sesame_cloud_backup_s3
+          - sesame_cloud_backup_supabase
+          - sesame_cloud_backup_webdav
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: 依赖、分析与测试
+        working-directory: packages/${{ matrix.package }}
+        run: |
+          flutter pub get
+          flutter analyze --no-pub
+          if [ "${{ matrix.package }}" != "sesame_api_client" ]; then
+            flutter test --no-pub
+          fi

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 英文设备启动器使用英文品牌名。 -->
+    <string name="app_name">Sesame Notes</string>
+    <string name="update_download_channel">App updates</string>
+    <string name="update_download_background">Downloading in the background</string>
+    <string name="update_download_running">Downloading update</string>
+    <string name="update_download_waiting">Waiting to download</string>
+    <string name="update_download_paused">Waiting for the network to resume</string>
+    <string name="update_download_progress">%1$d%% downloaded. Tap to open the app</string>
+    <string name="update_download_ready">Update downloaded</string>
+    <string name="update_download_install">Open the app to install the update</string>
+    <string name="update_download_failed">Update download failed</string>
+    <string name="update_download_retry">Open the app to retry the download</string>
+</resources>

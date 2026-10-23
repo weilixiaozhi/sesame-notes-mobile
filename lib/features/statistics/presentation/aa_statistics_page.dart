@@ -1,0 +1,665 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:sesame_notes/core/logging/logger_service.dart';
+import 'package:sesame_notes/data/models.dart';
+import 'package:sesame_notes/l10n/app_localizations.dart';
+import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
+import 'package:sesame_notes/features/ledgers/presentation/widgets/member_directory_refresher.dart';
+import 'package:sesame_notes/navigation/route_consts.dart';
+import 'package:sesame_notes/features/statistics/application/aa_member_detail_models.dart';
+import 'package:sesame_notes/shared/aa/aa_statistics_service.dart';
+import 'package:sesame_notes/theme/colors.dart';
+import 'package:sesame_notes/theme/dimens.dart';
+import 'package:sesame_notes/theme/icons/app_icons.dart';
+import 'package:sesame_notes/theme/typography.dart';
+import 'package:sesame_notes/shared/formatting/category_utils.dart';
+import 'package:sesame_notes/shared/providers/ledger_identity_providers.dart';
+import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';
+import 'package:sesame_notes/shared/widgets/aa_participant_avatar.dart';
+import 'package:sesame_notes/shared/widgets/widgets.dart';
+import 'package:sesame_notes/features/transactions/presentation/widgets/transaction/transaction_list_item.dart';
+
+/// AA 分摊统计页。
+///
+/// 内容结构(自上而下):
+/// 1. 汇总卡:分摊总额 + 分摊交易笔数;
+/// 2. 分摊详情表:实付 / 应摊 / 差额(应收应付着色);
+/// 3. 转账方案:贪心结算结果,已结清时展示零转账提示;
+/// 4. 不分摊:aaMode=1 的交易。
+///
+/// 数据源为 [aaStatisticsProvider]。账本 id 由进入入口经 [ledgerId] 传入
+/// ("从哪里进入就是哪个账本"),缺省(如新建态)时按无账本渲染,各模块自带
+/// 空数据兜底(金额为 0 / 无行),不设整页空态。
+class AaStatisticsPage extends ConsumerWidget {
+  const AaStatisticsPage({super.key, this.ledgerId});
+
+  /// 账本 id：由进入入口传入（编辑态为当前编辑账本 id，新建态为 null）。
+  /// null 时按无账本渲染，各模块展示空数据。
+  final String? ledgerId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    // 新建态无账本 id → 空串：getLedgerById('') 返回空，汇总/清单均为空。
+    final ledgerId = this.ledgerId ?? '';
+    if (ref.watch(ledgerByIdProvider(ledgerId)).value?.archivedAt != null) {
+      return Scaffold(
+        body: Column(
+          children: [
+            PrimaryHeader(title: l10n.aaStatisticsTitle, showBack: true),
+            Expanded(
+              child: AppEmpty(text: l10n.ledgersArchivedRestoreRequired),
+            ),
+          ],
+        ),
+      );
+    }
+    final statisticsAsync = ref.watch(aaStatisticsProvider(ledgerId));
+    final excludedAsync = ref.watch(aaNoSplitTxProvider(ledgerId));
+
+    // 进入 AA 分摊(成员身份页面)时按需刷新成员公开资料(幂等 + 防抖)。
+    return MemberDirectoryRefresher(
+      ledgerId: ledgerId,
+      child: Scaffold(
+        body: Column(
+          children: [
+            PrimaryHeader(title: l10n.aaStatisticsTitle, showBack: true),
+            Expanded(
+              child: statisticsAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, st) {
+                  // 原始异常只进日志,页面展示统一友好文案,避免泄露实现细节。
+                  logger.error(
+                    'AaStatisticsPage',
+                    'AA 分摊统计加载失败 ledger=$ledgerId',
+                    e,
+                    st,
+                  );
+                  return AppEmpty(
+                    text: l10n.commonOperationFailed,
+                    icon: AppIcons.error,
+                  );
+                },
+                // 依赖数据变更信号触发的后台重算必须保留旧数据继续展示，
+                // 否则云同步/其它设备写入本地库时整页反复转圈。
+                skipLoadingOnReload: true,
+                data: (statistics) => _buildBody(
+                  context,
+                  ref,
+                  l10n,
+                  ledgerId,
+                  statistics,
+                  excludedAsync.value ?? const [],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    String ledgerId,
+    AaLedgerStatistics statistics,
+    List<({TransactionDisplay t, CategoryDisplay? category})> excluded,
+  ) {
+    // 总付口径：直接复用成员支出统计（账本编辑页「成员支出」同源，含不分摊），
+    // 按参与人 id 建映射，保证分摊详情表与账本管理的成员汇总金额一致。
+    final memberStats =
+        ref.watch(memberExpenseStatsProvider(ledgerId)).value ??
+        const <MemberExpenseStatItem>[];
+    final totalPaidAllOf = <String, double>{
+      for (final s in memberStats) s.participantId: s.expenseTotal,
+    };
+    // 协作头像成员表:统一走账本身份上下文(与成员支出/成员管理同源,
+    // 同一套磁盘缓存);仅共享账本渲染协作头像,本地账本为空映射。
+    final identity = ref.watch(ledgerIdentityProvider(ledgerId)).value;
+    final isShared = identity?.isShared ?? false;
+    final memberMap = isShared
+        ? (identity?.memberMap ?? const <String, LedgerMemberDisplay>{})
+        : const <String, LedgerMemberDisplay>{};
+
+    // 分摊详情表参与人：有 AA 活动的参与人 + 仅有不分摊支出的参与人
+    // （后者也要能从详情表进入查看自己的全部支出）。
+    final active = ref.watch(aaDetailParticipantsProvider(ledgerId));
+
+    // 分摊总额 = 各参与人实付合计(每笔 AA 交易由支出人实付一次,恒等)。
+    final totalAmount = active.fold(0.0, (sum, p) => sum + p.totalPaid);
+    return ListView(
+      padding: const EdgeInsets.all(AppDimens.p16),
+      children: [
+        _buildOverviewCard(
+          context,
+          l10n,
+          totalAmount,
+          active.length,
+          ref.watch(ledgerByIdProvider(ledgerId)).value?.currency,
+        ),
+        const SizedBox(height: AppDimens.p16),
+        // 模块标题统一走全局 SectionTitle;本页列表内边距 16、
+        // 卡片 margin 为 0,色条左缘直接对齐卡片外缘,无需水平内缩。
+        SectionTitle(
+          title: l10n.aaStatisticsPerPerson,
+          padding: EdgeInsets.zero,
+        ),
+        const SizedBox(height: AppDimens.p8),
+        _buildPerPersonCard(
+          context,
+          ref,
+          l10n,
+          ledgerId,
+          active,
+          totalPaidAllOf,
+        ),
+        const SizedBox(height: AppDimens.p16),
+        SectionTitle(
+          title: l10n.aaStatisticsTransferPlan,
+          padding: EdgeInsets.zero,
+        ),
+        const SizedBox(height: AppDimens.p8),
+        _buildTransferCard(context, ref, l10n, statistics.transfers),
+        // 不分摊区块始终展示(数据为空时由卡片内部渲染空态)。
+        const SizedBox(height: AppDimens.p16),
+        SectionTitle(
+          title: l10n.aaStatisticsExcluded,
+          padding: EdgeInsets.zero,
+        ),
+        const SizedBox(height: AppDimens.p8),
+        _buildExcludedCard(context, ref, l10n, excluded, memberMap, isShared),
+      ],
+    );
+  }
+
+  /// 汇总卡:分摊总额(大字号) + 参与人数。
+  Widget _buildOverviewCard(
+    BuildContext context,
+    AppLocalizations l10n,
+    double totalAmount,
+    int participantCount,
+    String? currencyCode,
+  ) {
+    return SectionCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(
+        vertical: AppDimens.p16,
+        horizontal: AppDimens.p16,
+      ),
+      child: Column(
+        children: [
+          Text(
+            l10n.aaStatisticsTotalAmount,
+            style: AppTextTokens.label(
+              context,
+            ).copyWith(color: AppTokens.textSecondary(context)),
+          ),
+          const SizedBox(height: AppDimens.p8),
+          AmountText(
+            value: totalAmount,
+            signed: false,
+            showCurrency: true,
+            currencyCode: currencyCode ?? '',
+            // 汇总金额必须完整可见：金额超大时等比缩小字号而非省略。
+            scaleDown: true,
+            style: AppTextTokens.display2(
+              context,
+            ).copyWith(color: AppTokens.textPrimary(context)),
+          ),
+          const SizedBox(height: AppDimens.p8),
+          Text(
+            l10n.aaStatisticsParticipantCount(participantCount),
+            style: AppTextTokens.label(
+              context,
+            ).copyWith(color: AppTokens.textTertiary(context)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 分摊详情表:每位成员一个可点击模块(头像 + 名称 + 「查看详情」徽章 +
+  /// 总付 / 分摊实付 / 应摊 / 差额四列),点击模块进入该成员账单详情页。
+  Widget _buildPerPersonCard(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    String ledgerId,
+    List<AaParticipantSummary> active,
+    Map<String, double> totalPaidAllOf,
+  ) {
+    return SectionCard(
+      margin: EdgeInsets.zero,
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          for (var i = 0; i < active.length; i++) ...[
+            if (i > 0)
+              AppTokens.cardDivider(
+                context,
+                indent: 0,
+                verticalGap: 0,
+                height: 1,
+              ),
+            _buildPerPersonRow(
+              context,
+              ref,
+              l10n,
+              ledgerId,
+              active[i],
+              totalPaidAllOf,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 分摊详情行:头像 + 名称 + 总付 / 分摊实付 / 应摊 / 差额四列,
+  /// 点击进入成员账单详情。
+  Widget _buildPerPersonRow(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    String ledgerId,
+    AaParticipantSummary p,
+    Map<String, double> totalPaidAllOf,
+  ) {
+    // 总付/分摊实付/应摊/差额统一带账本币种符号,与汇总卡口径一致。
+    final currencyCode = ref
+        .watch(ledgerByIdProvider(ledgerId))
+        .value
+        ?.currency;
+    final net = p.net;
+    final netColor = net.abs() < 0.005
+        ? AppTokens.textTertiary(context)
+        : (net > 0 ? AppTokens.success(context) : AppTokens.error(context));
+    final netLabel = net.abs() < 0.005
+        ? '—'
+        : '${net > 0 ? '+' : '-'}'
+              '${formatMoneyWithCurrency(net.abs(), currencyCode: currencyCode)}';
+    // 差额列标题:应收 / 应付;净额为零时退化为「差额」+ 占位符。
+    final netHeader = net.abs() < 0.005
+        ? l10n.aaStatisticsNet
+        : (net > 0 ? l10n.aaStatisticsNetReceive : l10n.aaStatisticsNetPay);
+
+    return InkWell(
+      // 整个成员模块可点击,进入该成员账单详情页。
+      onTap: () => _openMemberDetail(context, ledgerId, p),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimens.p16,
+          vertical: AppDimens.p12,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 首行:头像 + 名称 + 右侧「查看详情」徽章。
+            Row(
+              children: [
+                AaParticipantAvatar(
+                  ledgerId: ledgerId,
+                  participantId: p.participantId,
+                  isSelf: p.isSelf,
+                  size: AppDimens.icon28,
+                ),
+                const SizedBox(width: AppDimens.p8),
+                Expanded(
+                  child: Text(
+                    p.displayName,
+                    style: AppTextTokens.body(
+                      context,
+                    ).copyWith(color: AppTokens.textPrimary(context)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: AppDimens.p8),
+                _buildViewDetailsPill(context, l10n),
+              ],
+            ),
+            const SizedBox(height: AppDimens.p12),
+            // 第二行:总付 / 分摊实付 / 应摊 / 差额(应收绿、应付红)四列居中。
+            Row(
+              children: [
+                _buildMemberMetric(
+                  context,
+                  l10n.aaStatisticsPaidAll,
+                  formatMoneyWithCurrency(
+                    totalPaidAllOf[p.participantId] ?? 0,
+                    currencyCode: currencyCode ?? '',
+                  ),
+                ),
+                _buildMemberMetric(
+                  context,
+                  l10n.aaStatisticsPaid,
+                  formatMoneyWithCurrency(
+                    p.totalPaid,
+                    currencyCode: currencyCode ?? '',
+                  ),
+                ),
+                _buildMemberMetric(
+                  context,
+                  l10n.aaStatisticsShare,
+                  formatMoneyWithCurrency(
+                    p.totalShouldPay,
+                    currencyCode: currencyCode ?? '',
+                  ),
+                ),
+                _buildMemberMetric(context, netHeader, netLabel, netColor),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 成员模块的「查看详情」徽章：主题色浅底 + 主题色文字/箭头，
+  /// 与模块标题色条同源，不引入成员专属渐变配色。
+  Widget _buildViewDetailsPill(BuildContext context, AppLocalizations l10n) {
+    final primary = Theme.of(context).colorScheme.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimens.p8,
+        vertical: AppDimens.p4,
+      ),
+      decoration: BoxDecoration(
+        color: primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppDimens.radius44),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            l10n.aaStatisticsViewDetails,
+            style: AppTextTokens.caption(context).copyWith(color: primary),
+          ),
+          const SizedBox(width: AppDimens.p4),
+          Icon(AppIcons.chevronRight, size: AppDimens.icon12, color: primary),
+        ],
+      ),
+    );
+  }
+
+  /// 成员模块三列指标：标签（次色小字）在上、数值（主色小号加粗）在下。
+  ///
+  /// 金额超宽时等比缩小字号而非省略/换行，保证金额完整可见。
+  Widget _buildMemberMetric(
+    BuildContext context,
+    String label,
+    String value, [
+    Color? valueColor,
+  ]) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: AppTextTokens.caption(
+              context,
+            ).copyWith(color: AppTokens.textTertiary(context)),
+          ),
+          const SizedBox(height: AppDimens.p4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              maxLines: 1,
+              style: AppTextTokens.label(context).copyWith(
+                fontWeight: FontWeight.w600,
+                color: valueColor ?? AppTokens.textPrimary(context),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 进入成员账单详情页：按路由跳转，页面间不互相 import。
+  void _openMemberDetail(
+    BuildContext context,
+    String ledgerId,
+    AaParticipantSummary p,
+  ) {
+    context.pushNamed(
+      Routes.aaMemberDetail,
+      extra: AaMemberDetailArgs(
+        ledgerId: ledgerId,
+        participantId: p.participantId,
+        displayName: p.displayName,
+        isSelf: p.isSelf,
+      ),
+    );
+  }
+
+  /// 转账方案卡:每行 from 付给 to + 金额;已结清展示零转账提示。
+  ///
+  /// 「付给」文案使用主题色(蓝色)以突出转账动作,字号与两侧用户名一致;
+  /// 转账金额采用中性色
+  /// (与分摊详情表实付一致),不加粗,保持视觉克制。
+  Widget _buildTransferCard(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    List<AaTransfer> transfers,
+  ) {
+    // 主题色(蓝色):用于「付给」文案,突出转账动作。
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    // 中性色:与分摊详情表实付金额一致,转账金额保持克制不加粗。
+    final amountColor = AppTokens.textPrimary(context);
+    return SectionCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimens.p16,
+        vertical: AppDimens.p8,
+      ),
+      child: transfers.isEmpty
+          ? Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppDimens.p16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    AppIcons.checkCircle,
+                    size: AppDimens.icon16,
+                    color: AppTokens.success(context),
+                  ),
+                  const SizedBox(width: AppDimens.p8),
+                  Text(
+                    l10n.aaStatisticsNoTransfers,
+                    style: AppTextTokens.label(
+                      context,
+                    ).copyWith(color: AppTokens.textSecondary(context)),
+                  ),
+                ],
+              ),
+            )
+          : Column(
+              children: [
+                for (var i = 0; i < transfers.length; i++) ...[
+                  if (i > 0)
+                    AppTokens.cardDivider(
+                      context,
+                      indent: 0,
+                      verticalGap: 0,
+                      height: 1,
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppDimens.p12,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  transfers[i].fromName,
+                                  style: AppTextTokens.body(context).copyWith(
+                                    color: AppTokens.textPrimary(context),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppDimens.p4,
+                                ),
+                                child: Text(
+                                  l10n.aaStatisticsTransferSeparator,
+                                  style: AppTextTokens.body(context).copyWith(
+                                    // 「付给」使用主题色(蓝色),突出转账动作。
+                                    color: primaryColor,
+                                  ),
+                                ),
+                              ),
+                              Flexible(
+                                child: Text(
+                                  transfers[i].toName,
+                                  style: AppTextTokens.body(context).copyWith(
+                                    color: AppTokens.textPrimary(context),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: AppDimens.p12),
+                        AmountText(
+                          value: transfers[i].amount,
+                          signed: false,
+                          showCurrency: true,
+                          currencyCode:
+                              ref
+                                  .watch(ledgerByIdProvider(ledgerId ?? ''))
+                                  .value
+                                  ?.currency ??
+                              '',
+                          // 转账金额必须完整可见：金额超大时等比缩小字号而非省略。
+                          scaleDown: true,
+                          style: AppTextTokens.body(context).copyWith(
+                            // 中性色,与分摊详情表实付一致,不加粗。
+                            color: amountColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+    );
+  }
+
+  /// 不分摊卡:aaMode=1 的交易,完全照搬首页列表布局(日期表头 + 列表项)
+  Widget _buildExcludedCard(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    List<({TransactionDisplay t, CategoryDisplay? category})> excluded,
+    Map<String, LedgerMemberDisplay> memberMap,
+    bool isShared,
+  ) {
+    if (excluded.isEmpty) {
+      return SectionCard(
+        margin: EdgeInsets.zero,
+        padding: const EdgeInsets.symmetric(vertical: AppDimens.p16),
+        child: AppEmpty(
+          text: l10n.aaStatisticsExcludedEmpty,
+          padding: EdgeInsets.zero,
+        ),
+      );
+    }
+
+    // 与首页 TransactionList 同口径按天分组（倒序），组内保持时间倒序。
+    final groups =
+        <String, List<({TransactionDisplay t, CategoryDisplay? category})>>{};
+    for (final it in excluded) {
+      final dt = it.t.happenedAt.toLocal();
+      final key =
+          '${dt.year}-${dt.month.toString().padLeft(2, '0')}-'
+          '${dt.day.toString().padLeft(2, '0')}';
+      (groups[key] ??= []).add(it);
+    }
+    final sortedKeys = groups.keys.toList()..sort((a, b) => b.compareTo(a));
+    final currencyCode = ref
+        .watch(ledgerByIdProvider(ledgerId ?? ''))
+        .value
+        ?.currency;
+
+    return SectionCard(
+      margin: EdgeInsets.zero,
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          for (final key in sortedKeys) ...[
+            _buildDayHeader(context, key, groups[key]!, currencyCode),
+            for (final it in groups[key]!)
+              _buildExcludedRow(context, it, memberMap, isShared),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 日期分组表头:与首页一致,展示日期与当日支出合计。
+  Widget _buildDayHeader(
+    BuildContext context,
+    String dateKey,
+    List<({TransactionDisplay t, CategoryDisplay? category})> items,
+    String? currencyCode,
+  ) {
+    // 与首页一致:仅统计支出交易,按折本位币累加当日合计（decimal 字符串）。
+    var dayExpense = 0.0;
+    for (final it in items) {
+      dayExpense += double.parse(
+        it.t.nativeAmount.isEmpty ? it.t.amount : it.t.nativeAmount,
+      );
+    }
+    return DaySectionHeader(
+      dateText: dateKey,
+      expense: dayExpense,
+      currencyCode: currencyCode ?? '',
+    );
+  }
+
+  /// 单条不分摊行:复用 [TransactionListItem],传参与首页列表完全一致
+  /// (icon + 分类名 + 备注 + 协作头像 + 时间 + 金额)。
+  Widget _buildExcludedRow(
+    BuildContext context,
+    ({TransactionDisplay t, CategoryDisplay? category}) it,
+    Map<String, LedgerMemberDisplay> memberMap,
+    bool isShared,
+  ) {
+    final categoryName = CategoryUtils.getDisplayName(
+      it.category?.name,
+      context,
+    );
+    return TransactionListItem(
+      ledgerId: it.t.ledgerId,
+      category: it.category,
+      title: it.t.note ?? '',
+      categoryName: categoryName,
+      amount: it.t.amount,
+      currencyCode: it.t.currencyCode,
+      nativeAmount: it.t.nativeAmount,
+      happenedAt: it.t.happenedAt,
+      lastEditedAt: it.t.lastEditedAt,
+      // 与首页完全一致:共享账本渲染协作头像(同源缓存)。
+      collaboratorMap: memberMap,
+      creatorUserId: it.t.createdByMemberId,
+      editorUserId: it.t.lastEditedByMemberId,
+      isShared: isShared,
+    );
+  }
+}

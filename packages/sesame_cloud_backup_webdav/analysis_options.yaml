@@ -1,0 +1,2 @@
+# 包内 lint 显式消费本包已声明的 flutter_lints，支持独立目录验证。
+include: package:flutter_lints/flutter.yaml

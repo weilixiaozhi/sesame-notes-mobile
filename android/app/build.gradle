@@ -1,0 +1,197 @@
+plugins {
+    id "com.android.application"
+    // Flutter Gradle 插件依赖 Android Gradle 插件提供的扩展，必须最后应用。
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+// 正式签名凭据只从未纳入版本控制的 key.properties 读取。
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    try {
+        keystorePropertiesFile.withInputStream { stream ->
+            keystoreProperties.load(stream)
+        }
+    } catch (Exception error) {
+        throw new GradleException('无法读取 android/key.properties，请检查文件格式。', error)
+    }
+}
+
+def releaseBuildRequested = gradle.startParameter.taskNames.any {
+    it.toLowerCase(Locale.ROOT).contains('release')
+}
+if (releaseBuildRequested) {
+    def requiredSigningKeys = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
+    def missingSigningKeys = requiredSigningKeys.findAll {
+        !keystoreProperties[it]?.toString()?.trim()
+    }
+    if (!keystorePropertiesFile.exists() || !missingSigningKeys.isEmpty()) {
+        throw new GradleException(
+                'Release 构建需要完整的 android/key.properties 正式签名配置。'
+        )
+    }
+
+    def releaseKeystoreFile = file(keystoreProperties['storeFile'])
+    if (!releaseKeystoreFile.isFile()) {
+        throw new GradleException(
+                "Release keystore 不存在：${releaseKeystoreFile.absolutePath}"
+        )
+    }
+}
+
+// Flutter passes dart-defines as comma-separated base64 NAME=value entries.
+def environmentDefines = [:]
+(project.findProperty('dart-defines') ?: '').toString().split(',').findAll { it }.each { entry ->
+    def definition = new String(java.util.Base64.getDecoder().decode(entry), 'UTF-8')
+    def separator = definition.indexOf('=')
+    if (separator > 0) {
+        def key = definition.substring(0, separator)
+        if (key == 'APP_ENV' && environmentDefines.containsKey(key)) {
+            throw new GradleException("Duplicate dart-define: ${key}")
+        }
+        environmentDefines[key] = definition.substring(separator + 1)
+    }
+}
+def compileEnvironment = environmentDefines['APP_ENV']
+if (!(compileEnvironment in ['test', 'prod'])) {
+    throw new GradleException('APP_ENV must be test or prod.')
+}
+gradle.startParameter.taskNames.each { taskName ->
+    def task = taskName.toLowerCase(Locale.ROOT)
+    def expectedEnvironment = task.contains('envtest') ? 'test' : task.contains('prod') ? 'prod' : null
+    if (expectedEnvironment != null && compileEnvironment != expectedEnvironment) {
+        throw new GradleException('APP_ENV does not match the requested Android flavor.')
+    }
+    if (task.contains('envtestprobe') && compileEnvironment != 'test') {
+        throw new GradleException('The test profile probe requires config/test.json (APP_ENV=test).')
+    }
+}
+
+android {
+    namespace = "com.sesame.notes"
+    // flutter_secure_storage 要求 Android API 37，CI 安装 platforms;android-37.0。
+    compileSdk = 37
+    // 固定原生插件共用的 NDK 工具链。
+    ndkVersion = "28.2.13676358"
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+
+        // Required by some plugins (e.g. flutter_local_notifications) when using newer Java APIs.
+        coreLibraryDesugaringEnabled = true
+    }
+
+    defaultConfig {
+        applicationId = "com.sesame.notes"
+        // 最低 Android 版本沿用 Flutter SDK 配置。
+        minSdkVersion = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+        testInstrumentationRunner = "com.sesame.notes.UpdateDownloadInstrumentation"
+        // 所有原生库与 Flutter 目标架构一致，避免安装器从插件库选择错误进程架构。
+        ndk {
+            def abiByPlatform = ["android-arm": "armeabi-v7a", "android-arm64": "arm64-v8a", "android-x64": "x86_64"]
+            def targetPlatforms = (project.findProperty("target-platform") ?: "android-arm,android-arm64,android-x64").toString().split(",")
+            abiFilters.clear()
+            abiFilters.addAll(targetPlatforms.collect { abiByPlatform[it.trim()] }.findAll { it != null })
+        }
+        // Android Gradle 保留 test 前缀；对外 test 环境映射为内部 envTest 风味。
+        // 构建入口见 scripts/build_android.ps1，显式选择 test/prod。
+        missingDimensionStrategy "env", "envTest"
+    }
+
+    flavorDimensions += ["env"]
+    productFlavors {
+        envTest {
+            dimension "env"
+            // 测试应用使用独立安装身份，与正式包的数据和凭据隔离。
+            applicationIdSuffix = ".test"
+            // Launcher names carry test; debug remains a platform build mode.
+        }
+        prod {
+            dimension "env"
+            // Keep the published applicationId and signing identity for in-place upgrades.
+        }
+        envTestProbe {
+            dimension "env"
+            applicationIdSuffix = ".test.probe"
+        }
+    }
+
+    signingConfigs {
+        release {
+            if (keystoreProperties['storeFile']) {
+                storeFile = file(keystoreProperties['storeFile'])
+                storePassword = keystoreProperties['storePassword']
+                keyAlias = keystoreProperties['keyAlias']
+                keyPassword = keystoreProperties['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            // Debug 构建追加独立后缀，便于与生产包共存（applicationId / versionName 区分）
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            // test 启动器名称由 src/debug/res/values*/strings.xml 提供。
+        }
+        release {
+            // Release 仅接受显式配置的正式签名，避免不可升级的临时签名产物流出。
+            signingConfig = signingConfigs.release
+            // 发布包开启压缩、混淆和资源裁剪以控制体积。
+            minifyEnabled = true
+            shrinkResources = true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // 支持 16KB 页面大小 (Google Play 2024+ 要求)
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
+    // Normal test builds use debug; the separately guarded test probe uses profile.
+}
+
+// 通过 beforeVariants 禁用 prodDebug；Release APK 统一命名为 app-<flavor>-release.apk，
+// 版本信息由 CI 发布环节按 tag 重命名。
+androidComponents {
+    beforeVariants(selector().all()) { variantBuilder ->
+        // An explicit environment also restricts aggregate Gradle tasks to that environment.
+        def variantEnvironment = variantBuilder.flavorName == 'prod' ? 'prod' : 'test'
+        if (compileEnvironment != variantEnvironment) {
+            variantBuilder.enabled = false
+        }
+        if (variantBuilder.flavorName == 'envTestProbe' && compileEnvironment != 'test') {
+            variantBuilder.enabled = false
+        }
+        // The test probe only provides profile and cannot enter the prod release pipeline.
+        if ((variantBuilder.flavorName == 'envTest' && variantBuilder.buildType != 'debug') ||
+                (variantBuilder.flavorName == 'prod' && variantBuilder.buildType == 'debug') ||
+                (variantBuilder.flavorName == 'envTestProbe' && variantBuilder.buildType != 'profile')) {
+            variantBuilder.enabled = false
+        }
+    }
+}
+
+kotlin {
+    // Kotlin 编译目标与 Java 17 保持一致。
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+    // Java language desugaring support for older Android devices.
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
+}

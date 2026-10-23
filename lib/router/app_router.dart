@@ -1,0 +1,436 @@
+library;
+
+import 'package:sesame_notes/router/product_analytics_routes.dart';
+
+import 'package:sesame_notes/data/models/fitness_custom_exercise.dart';
+import 'package:sesame_notes/features/fitness/presentation/fitness_custom_exercise_edit_page.dart';
+import 'package:sesame_notes/features/categories/presentation/category_template_hierarchical_page.dart';
+import 'package:sesame_notes/features/categories/presentation/category_template_flat_page.dart';
+import 'package:sesame_notes/features/auth/domain/pin_setup_mode.dart';
+
+import 'package:sesame_notes/features/settings/infrastructure/transfer_table.dart';
+import 'package:sesame_notes/features/settings/presentation/widgets/data_import_target_dialog.dart';
+
+import 'package:sesame_notes/features/fitness/presentation/fitness_spaces_page.dart';
+import 'package:sesame_notes/data/models/private_book.dart';
+import 'package:sesame_notes/data/models/fitness_library.dart';
+
+/// 命名路由与页面构造的唯一映射，页面之间通过名称和输入模型交互。
+///
+/// 路径与路由名保持一致；额外参数由对应页面工厂验证类型。
+/// 页面内容复用由装配入口提供 builder，业务页面不导入其他页面实现。
+
+import 'package:sesame_notes/features/settings/presentation/sync_center_page.dart';
+
+import 'package:sesame_notes/features/fitness/presentation/fitness_template_detail_page.dart';
+import 'package:sesame_notes/features/fitness/presentation/fitness_workout_page.dart';
+import 'package:sesame_notes/features/fitness/presentation/fitness_detail_pages.dart';
+import 'package:sesame_notes/features/fitness/presentation/fitness_templates_page.dart';
+import 'package:sesame_notes/features/fitness/presentation/fitness_template_edit_page.dart';
+import 'package:sesame_notes/features/fitness/presentation/fitness_plans_page.dart';
+import 'package:sesame_notes/features/fitness/presentation/fitness_plan_edit_page.dart';
+import 'package:sesame_notes/features/fitness/presentation/fitness_library_pages.dart';
+import 'package:sesame_notes/features/fitness/presentation/fitness_exercises_page.dart';
+import 'package:sesame_notes/features/fitness/presentation/fitness_exercise_detail_page.dart';
+
+import 'package:flutter/material.dart';
+import 'package:sesame_notes/data/models/memo.dart';
+import 'package:sesame_notes/features/memos/presentation/memo_editor_page.dart';
+import 'package:sesame_notes/features/memos/presentation/memo_books_page.dart';
+import 'package:sesame_notes/features/memos/presentation/memo_credentials_page.dart';
+
+import 'package:sesame_notes/features/days/application/day_providers.dart';
+import 'package:sesame_notes/features/days/presentation/day_books_page.dart';
+import 'package:sesame_notes/features/days/presentation/day_event_detail_page.dart';
+import 'package:sesame_notes/features/days/presentation/day_event_editor.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:sesame_notes/shared/widgets/app_route.dart';
+import 'package:sesame_notes/shared/widgets/app_sheet.dart';
+import 'package:sesame_notes/data/models.dart';
+import 'package:sesame_notes/features/auth/presentation/avatar_preview_page.dart';
+import 'package:sesame_notes/features/auth/presentation/change_password_page.dart';
+import 'package:sesame_notes/features/auth/presentation/edit_profile_pages.dart';
+import 'package:sesame_notes/features/auth/presentation/login_page.dart';
+import 'package:sesame_notes/features/auth/presentation/profile_page.dart';
+import 'package:sesame_notes/features/auth/presentation/register_page.dart';
+import 'package:sesame_notes/features/auth/presentation/pin_setup_page.dart';
+import 'package:sesame_notes/features/categories/presentation/category_edit_page.dart';
+import 'package:sesame_notes/features/categories/presentation/category_manage_page.dart';
+import 'package:sesame_notes/features/ledgers/presentation/join_shared_ledger_page.dart';
+import 'package:sesame_notes/features/ledgers/presentation/ledger_edit_page.dart';
+import 'package:sesame_notes/features/ledgers/presentation/ledgers_page.dart';
+import 'package:sesame_notes/features/settings/presentation/app_lock_settings_page.dart';
+import 'package:sesame_notes/features/settings/presentation/cloud_service_page.dart';
+import 'package:sesame_notes/features/settings/presentation/local_backup_page.dart';
+import 'package:sesame_notes/features/settings/presentation/detail_export_page.dart';
+import 'package:sesame_notes/features/settings/presentation/detail_import_export_page.dart';
+import 'package:sesame_notes/features/settings/presentation/import_confirm_page.dart';
+import 'package:sesame_notes/features/settings/presentation/language_settings_page.dart';
+import 'package:sesame_notes/features/settings/presentation/theme_settings_page.dart';
+import 'package:sesame_notes/features/settings/presentation/reminder_settings_page.dart';
+import 'package:sesame_notes/features/settings/presentation/restore_backup_page.dart';
+import 'package:sesame_notes/features/statistics/presentation/aa_edit_page.dart';
+import 'package:sesame_notes/features/statistics/presentation/aa_member_detail_page.dart';
+import 'package:sesame_notes/features/statistics/presentation/aa_statistics_page.dart';
+import 'package:sesame_notes/features/transactions/presentation/category_detail_page.dart';
+import 'package:sesame_notes/features/transactions/presentation/currency_manage_page.dart';
+import 'package:sesame_notes/features/transactions/presentation/exchange_rate_page.dart';
+import 'package:sesame_notes/features/transactions/presentation/recurring_transaction_edit_page.dart';
+import 'package:sesame_notes/shared/aa/aa_edit_models.dart';
+import 'package:sesame_notes/features/statistics/application/aa_member_detail_models.dart';
+
+import 'package:sesame_notes/navigation/route_consts.dart';
+
+/// 构建全部命名路由的 GoRoute 表。
+///
+/// [stubs] 仅供测试：命中 name 时用桩页面替换真实页面，避免测试拉起
+/// 重依赖页面；生产调用不传。
+List<GoRoute> buildAppRoutes({Map<String, WidgetBuilder> stubs = const {}}) {
+  // 统一页面解析入口：stub 优先，否则走真实页面 builder。
+  Widget page(
+    BuildContext context,
+    String path,
+    Widget Function(GoRouterState state) build,
+    GoRouterState state,
+  ) {
+    final stub = stubs[path];
+    if (stub != null) return stub(context);
+    return build(state);
+  }
+
+  // 统一页面包装：所有命名路由经 AppRouterPage 创建，保持全局 200ms
+  // 转场与 opaque 语义（覆盖后下层页面转场完成即 offstage）。
+  Page<dynamic> pageFor(
+    BuildContext context,
+    String path,
+    Widget Function(GoRouterState state) build,
+    GoRouterState state,
+  ) => AppRouterPage<dynamic>(
+    name: path,
+    child: page(context, path, build, state),
+  );
+
+  // 无参路由快捷构造。
+  GoRoute plain(String path, WidgetBuilder builder) => GoRoute(
+    path: path,
+    name: path,
+    pageBuilder: (context, state) =>
+        pageFor(context, path, (_) => builder(context), state),
+  );
+
+  // 参数经 extra 传递的路由：可空参数保留兜底，必填参数强转快速失败。
+  GoRoute extraRoute(String path, Widget Function(GoRouterState state) build) =>
+      GoRoute(
+        path: path,
+        name: path,
+        pageBuilder: (context, state) => pageFor(context, path, build, state),
+      );
+
+  return [
+    plain(Routes.syncCenter, (_) => const SyncCenterPage()),
+    GoRoute(
+      path: Routes.fitnessWorkout,
+      name: Routes.fitnessWorkout,
+      pageBuilder: (context, state) => AppSheetPage<dynamic>(
+        key: state.pageKey,
+        name: Routes.fitnessWorkout,
+        fullHeight: true,
+        child: page(
+          context,
+          Routes.fitnessWorkout,
+          (state) => FitnessWorkoutPage(
+            workoutId: productAnalyticsArguments(state.extra) as String,
+            analyticsContext: state.extra is ProductAnalyticsNavigation
+                ? (state.extra as ProductAnalyticsNavigation).context
+                : null,
+          ),
+          state,
+        ),
+      ),
+    ),
+    extraRoute(
+      Routes.fitnessPlanDetail,
+      (state) => FitnessPlanDetailPage(
+        planId: state.extra as String,
+        editorBuilder: (plan) =>
+            FitnessPlanEditPage(key: ValueKey(plan.id), plan: plan),
+      ),
+    ),
+    extraRoute(
+      Routes.fitnessTemplateDetail,
+      // 官方模板按只读态打开；用户模板仍按可编辑态打开。
+      (state) => switch (state.extra) {
+        final OfficialFitnessTemplate official => FitnessTemplateDetailPage(
+          templateId: official.id,
+          official: official,
+        ),
+        final String templateId => FitnessTemplateDetailPage(
+          templateId: templateId,
+        ),
+        _ => throw StateError('FITNESS_TEMPLATE_DETAIL_ARGUMENT'),
+      },
+    ),
+    plain(Routes.fitnessSpaces, (_) => const FitnessSpacesPage()),
+    extraRoute(
+      Routes.fitnessSpaceEdit,
+      (state) => FitnessSpaceEditPage(space: state.extra as FitnessSpace?),
+    ),
+    plain(Routes.fitnessTemplates, (_) => const FitnessTemplatesPage()),
+    plain(
+      Routes.fitnessTemplateLibrary,
+      (_) => const FitnessTemplateLibraryPage(),
+    ),
+    extraRoute(
+      Routes.fitnessTemplateEdit,
+      (state) => const FitnessTemplateEditPage(),
+    ),
+    plain(Routes.fitnessPlans, (_) => const FitnessPlansPage()),
+    plain(Routes.fitnessPlanLibrary, (_) => const FitnessPlanLibraryPage()),
+    extraRoute(
+      Routes.fitnessPlanEdit,
+      (state) => state.extra is FitnessPlanImportDraft
+          ? FitnessPlanEditPage(
+              importDraft: state.extra as FitnessPlanImportDraft,
+            )
+          : FitnessPlanEditPage(plan: state.extra as FitnessPlan?),
+    ),
+    extraRoute(
+      Routes.fitnessExercises,
+      (state) => FitnessExercisesPage(mode: state.extra as String? ?? 'browse'),
+    ),
+    extraRoute(
+      Routes.fitnessExerciseDetail,
+      (state) => FitnessExerciseDetailPage(exerciseId: state.extra as String),
+    ),
+    plain(Routes.categoryManage, (_) => const CategoryManagePage()),
+    plain(Routes.categoryTemplateFlat, (_) => const CategoryTemplateFlatPage()),
+    plain(
+      Routes.categoryTemplateHierarchical,
+      (_) => const CategoryTemplateHierarchicalPage(),
+    ),
+    extraRoute(
+      Routes.fitnessCustomExerciseEdit,
+      (state) => FitnessCustomExerciseEditPage(
+        exercise: state.extra as FitnessCustomExercise?,
+      ),
+    ),
+    // 账本 id 由调用方(账本编辑页)经 extra 传入,遵循"从哪里进入
+    // 就是哪个账本";缺失/类型不符(如新建态)时传 null,统计页按空数据渲染。
+    extraRoute(
+      Routes.aaStatistics,
+      (state) => AaStatisticsPage(
+        ledgerId: state.extra is String ? state.extra as String : null,
+      ),
+    ),
+    // AA 分摊编辑页：参数由调用方(记账编辑器)经 extra 传入，必填强转；
+    // 退场固定为下滑动画（见 [aaPageTransitionBuilder]）：AA 页通常在
+    // 记账编辑器 sheet 之上 push，保存时 sheet 同步下滑收起，两者同向视觉统一。
+    // 自定义转场通过 pageBuilder 返回 CustomTransitionPage 实现。
+    GoRoute(
+      path: Routes.aaEdit,
+      name: Routes.aaEdit,
+      // 自定义转场例外：AA 页退场需与记账 sheet 下滑同步（见
+      // [aaPageTransitionBuilder]），不套用 appPageRoute 的左右滑动。
+      pageBuilder: (context, state) => CustomTransitionPage<dynamic>(
+        key: state.pageKey,
+        child: page(
+          context,
+          Routes.aaEdit,
+          (s) => AaEditPage(args: s.extra as AaEditPageArgs),
+          state,
+        ),
+        transitionDuration: kAppTransitionDuration,
+        // 退场下滑时长硬编码，不跟随全局转场参数，保证与 sheet 收起动画同步
+        reverseTransitionDuration: kAaPageSlideDuration,
+        transitionsBuilder: aaPageTransitionBuilder,
+      ),
+    ),
+    // AA 成员账单详情：参数由分摊统计页经 extra 传入，必填强转。
+    extraRoute(
+      Routes.aaMemberDetail,
+      (state) => AaMemberDetailPage(args: state.extra as AaMemberDetailArgs),
+    ),
+    plain(Routes.authLogin, (_) => const AuthPage()),
+    plain(Routes.authRegister, (_) => const RegisterPage()),
+    plain(Routes.profile, (_) => const ProfilePage()),
+    plain(Routes.profileName, (_) => const EditNicknamePage()),
+    plain(Routes.profileAvatar, (_) => const AvatarPreviewPage()),
+    plain(Routes.profileGender, (_) => const EditGenderPage()),
+    plain(Routes.accountPassword, (_) => const ChangePasswordPage()),
+    plain(Routes.cloudService, (_) => const CloudServicePage()),
+    plain(Routes.ledgers, (_) => const LedgersPage()),
+    plain(Routes.archivedLedgers, (_) => const LedgersPage(archived: true)),
+    // 参数经 extra 传 LedgerDisplayItem?；null = 新建模式。
+    extraRoute(
+      Routes.ledgerEdit,
+      (state) => LedgerEditPage(ledger: state.extra as LedgerDisplayItem?),
+    ),
+    plain(Routes.joinSharedLedger, (_) => const JoinSharedLedgerPage()),
+    // 参数经 extra 传分类展示项与可选父分类展示项。
+    extraRoute(Routes.categoryEdit, (state) {
+      final args = state.extra as (CategoryDisplay?, CategoryDisplay?);
+      return CategoryEditPage(
+        category: args.$1,
+        parentCategory: args.$2,
+        ledgerId: state.uri.queryParameters['ledgerId'],
+      );
+    }),
+    plain(Routes.currencyManage, (_) => const CurrencyManagePage()),
+    plain(Routes.exchangeRate, (_) => const ExchangeRatePage()),
+    // 参数经 extra 传 RecurringTransactionDisplay?；null = 新建。
+    extraRoute(
+      Routes.recurringTransactionEdit,
+      (state) => RecurringTransactionEditPage(
+        ledgerId: state.uri.queryParameters['ledgerId'],
+        draftCurrency: state.uri.queryParameters['draftCurrency'],
+        recurring: state.extra is RecurringTransactionDisplay
+            ? state.extra as RecurringTransactionDisplay
+            : null,
+      ),
+    ),
+    // 参数经 extra 传 (String, String, DateTime?, DateTime?, String?)
+    // = (categoryId, categoryName, startDate, endDate, periodLabel)。
+    extraRoute(Routes.categoryDetail, (state) {
+      final args =
+          state.extra as (String, String, DateTime?, DateTime?, String?);
+      return CategoryDetailPage(
+        categoryId: args.$1,
+        categoryName: args.$2,
+        ledgerId: state.uri.queryParameters['ledgerId'],
+        startDate: args.$3,
+        endDate: args.$4,
+        periodLabel: args.$5,
+      );
+    }),
+    plain(Routes.reminderSettings, (_) => const ReminderSettingsPage()),
+    plain(Routes.languageSettings, (_) => const LanguageSettingsPage()),
+    GoRoute(
+      path: Routes.memoEditor,
+      name: Routes.memoEditor,
+      pageBuilder: (context, state) {
+        final args =
+            productAnalyticsArguments(state.extra)
+                as ({
+                  MemoBook book,
+                  PrivateBookTarget target,
+                  String entryId,
+                  MemoEntry? entry,
+                });
+        final child =
+            stubs[Routes.memoEditor]?.call(context) ??
+            MemoEditorPage(
+              analyticsContext: state.extra is ProductAnalyticsNavigation
+                  ? (state.extra as ProductAnalyticsNavigation).context
+                  : null,
+              book: args.book,
+              target: args.target,
+              entryId: args.entryId,
+              entry: args.entry,
+            );
+        return args.book.type == 'credentials'
+            ? AppSheetPage<dynamic>(
+                key: state.pageKey,
+                name: Routes.memoEditor,
+                child: child,
+              )
+            : AppRouterPage<dynamic>(
+                key: state.pageKey,
+                name: Routes.memoEditor,
+                child: child,
+              );
+      },
+    ),
+    plain(Routes.memoBooks, (_) => const MemoBooksPage()),
+    plain(Routes.memoCredentials, (_) => const MemoCredentialsPage()),
+    extraRoute(
+      Routes.memoBookEdit,
+      (state) => MemoBookForm(book: state.extra as MemoBook?),
+    ),
+    plain(Routes.dayBooks, (_) => const DayBooksPage()),
+    extraRoute(
+      Routes.dayBookEdit,
+      (state) => DayBookEditPage(book: state.extra as DayBook?),
+    ),
+    GoRoute(
+      path: Routes.dayEventDetail,
+      name: Routes.dayEventDetail,
+      pageBuilder: (context, state) => AppSheetPage<dynamic>(
+        key: state.pageKey,
+        name: Routes.dayEventDetail,
+        child: page(context, Routes.dayEventDetail, (state) {
+          final (bookId, eventId) =
+              productAnalyticsArguments(state.extra) as (String, String);
+          return DayEventDetailPage(dayBookId: bookId, eventId: eventId);
+        }, state),
+      ),
+    ),
+    GoRoute(
+      path: Routes.dayEventEdit,
+      name: Routes.dayEventEdit,
+      pageBuilder: (context, state) => AppSheetPage<dynamic>(
+        key: state.pageKey,
+        name: Routes.dayEventEdit,
+        child:
+            stubs[Routes.dayEventEdit]?.call(context) ??
+            DayEventEditor(
+              args: productAnalyticsArguments(state.extra) as DayEditorArgs,
+              analyticsContext: state.extra is ProductAnalyticsNavigation
+                  ? (state.extra as ProductAnalyticsNavigation).context
+                  : null,
+            ),
+      ),
+    ),
+    plain(Routes.themeSettings, (_) => const ThemeSettingsPage()),
+    plain(Routes.appLockSettings, (_) => const AppLockSettingsPage()),
+    // 模式经 extra 传 PinSetupMode?；缺失默认 create。
+    // 返回 bool（设置成功与否），调用方据此决定开关回弹。
+    extraRoute(
+      Routes.pinSetup,
+      (state) => PinSetupPage(
+        mode: state.extra is PinSetupMode
+            ? state.extra as PinSetupMode
+            : PinSetupMode.create,
+      ),
+    ),
+    plain(Routes.detailImportExport, (_) => const DetailImportExportPage()),
+    plain(Routes.detailExport, (_) => const DetailExportPage()),
+    // 四类导入共用独立路由，目标随文件固定，不借用当前首页业务状态。
+    extraRoute(Routes.importConfirm, (state) {
+      final args = state.extra as (String, TransferKind, DataImportTarget);
+      return ImportConfirmPage(
+        csvText: args.$1,
+        kind: args.$2,
+        target: args.$3,
+      );
+    }),
+    // 参数经 extra 传外部 .snbak 路径（本机备份页/云端恢复传入），可空。
+    extraRoute(
+      Routes.backupRestore,
+      (state) => RestoreBackupPage(
+        initialBackupPath: state.extra is String ? state.extra as String : null,
+      ),
+    ),
+    plain(Routes.localBackup, (_) => const LocalBackupPage()),
+  ];
+}
+
+/// 创建全局 GoRouter 实例。
+///
+/// [home] 为 '/' 根路由页面工厂（MainApp 的欢迎/初始化/锁屏状态机）；
+/// [navigatorKey] 供 service 层（无 BuildContext）取导航器；[stubs] 仅测试用。
+GoRouter createAppRouter({
+  required Widget Function() home,
+  GlobalKey<NavigatorState>? navigatorKey,
+  Map<String, WidgetBuilder> stubs = const {},
+}) {
+  return GoRouter(
+    navigatorKey: navigatorKey,
+    initialLocation: '/',
+    routes: [
+      // 根路由：欢迎页/初始化闸门/锁屏由 home 工厂按状态机决定渲染。
+      GoRoute(path: '/', builder: (context, state) => home()),
+      ...buildAppRoutes(stubs: stubs),
+    ],
+  );
+}

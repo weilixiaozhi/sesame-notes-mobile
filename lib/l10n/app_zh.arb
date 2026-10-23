@@ -1,0 +1,2247 @@
+{
+  "startupPreparationTitle": "暂时无法完成启动",
+  "startupPreparationMessage": "本地设置暂时无法读取，请重试后继续使用。",
+  "startupPreparing": "正在准备数据",
+  "appUpdateCancelDownload": "取消下载",
+  "appUpdateReady": "更新已下载，可继续安装。",
+  "appUpdatePaused": "等待网络恢复或系统重试。",
+  "appUpdateBackground": "正在后台下载，可关闭此窗口。",
+  "calendarAnniversary": "纪念日",
+  "calendarNote": "笔记",
+  "calendarCredential": "账号密码",
+  "calendarTraining": "训练",
+  "calendarTemplate": "模板",
+  "calendarPlan": "计划",
+  "syncCenterSubtitle": "查看同步状态，处理冲突、失败和待完成的操作",
+  "calendarEmptyDay": "当天暂无记录",
+  "fitnessHomeSyncing": "正在刷新健身数据",
+  "fitnessPullLocalSuccess": "已刷新本地健身数据",
+  "fitnessPullCloudSuccess": "已同步云端健身数据",
+  "fitnessPullCloudFailedButLocalOk": "本地健身数据已刷新，云端同步失败",
+  "fitnessDetailEmptyExercises": "暂无动作",
+  "fitnessWorkoutMissing": "暂时找不到这次训练",
+  "fitnessTemplateMissing": "暂时找不到这个模板",
+  "fitnessMissingDetailHint": "请返回上一页重新选择。",
+  "fitnessReorderHint": "长按标题拖动排序",
+  "fitnessHomeExerciseLabel": "动作",
+  "fitnessSetRestTime": "设置休息时间",
+  "fitnessWarmupLabel": "热身",
+  "fitnessRepUnit": "次",
+  "fitnessSideWeight": "单边重量",
+  "fitnessTotalWeight": "总重量",
+  "fitnessLeftKg": "左kg",
+  "fitnessRightKg": "右kg",
+  "fitnessSideWeightValue": "左 {left} / 右 {right} kg",
+  "@fitnessSideWeightValue": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      },
+      "right": {
+        "type": "String"
+      }
+    }
+  },
+  "fitnessPlanTrainingDays": "训练 {count} 天",
+  "fitnessPlanRestDays": "休息 {count} 天",
+  "@fitnessPlanTrainingDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@fitnessPlanRestDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessExerciseTotal": "动作数",
+  "fitnessSetCount": "{count}组",
+  "@fitnessSetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessFinishConfirm": "确定结束训练并保存当前用时和完成情况？之后可以重新开始。",
+  "fitnessStartUsingTemplate": "使用该模板开始训练",
+  "fitnessEdit": "编辑",
+  "fitnessMyPlans": "我的计划",
+  "fitnessMyTemplates": "我的模板",
+  "fitnessViewAll": "查看全部",
+  "fitnessCreateBlank": "添加训练",
+  "fitnessSelectedTraining": "我的训练",
+  "fitnessNoSelectedTraining": "当天暂无训练",
+  "fitnessNoPlans": "暂无训练计划",
+  "fitnessNoTemplates": "暂无训练模板",
+  "memoBackupLocalOnly": "本机备份已保存，云端上传失败，请稍后重试。",
+  "@@locale": "zh",
+  "appTitle": "芝麻记",
+  "@appTitle": {
+    "description": "The application title"
+  },
+  "tabHome": "记账",
+  "tabAnalytics": "统计",
+  "tabCalendar": "日历",
+  "tabMine": "我",
+  "commonCancel": "取消",
+  "commonConfirm": "确定",
+  "commonSave": "保存",
+  "commonDelete": "删除",
+  "commonAdd": "添加",
+  "commonOk": "确定",
+  "commonDone": "完成",
+  "homeSelectBillMonth": "选择账单月份",
+  "homePickerHint": "上下滑动数字以选择时间",
+  "homeBackToCurrentMonth": "回到当月",
+  "homeTodayExpense": "今日",
+  "homeWeekExpense": "本周",
+  "homeMonthExpense": "本月支出",
+  "homeDetailCategory": "分类",
+  "homeDetailDate": "记账日期",
+  "homeDetailAmount": "记账金额",
+  "homeDetailCurrency": "货币",
+  "homeDetailNativeAmount": "折合主货币",
+  "homeDetailMembers": "协作成员",
+  "homeDetailCreator": "创建者",
+  "homeDetailLastEditor": "最后编辑",
+  "homeDetailEditHistory": "编辑记录",
+  "homeDetailEditHistoryHint": "仅供查看",
+  "homeDetailEditButton": "编辑记账",
+  "homeDetailNoHistory": "暂无编辑历史",
+  "homeDeleteDetailTitle": "删除这条明细?",
+  "homeDeleteDetailMessage": "将删除\"{name}\"记录,此操作不可撤销。",
+  "commonEmpty": "暂无内容",
+  "commonError": "错误",
+  "commonFailed": "失败",
+  "commonOperationFailed": "操作失败，请稍后重试",
+  "commonRetry": "重试",
+  "commonBack": "返回",
+  "commonNext": "下一步",
+  "commonFinish": "完成",
+  "commonOther": "其他",
+  "commonSearch": "搜索",
+  "commonNoteHint": "备注…",
+  "commonSettings": "设置",
+  "commonCurrent": "当前",
+  "commonConfigure": "配置",
+  "commonPressAgainToExit": "再按一次退出应用",
+  "commonWeekdayMonday": "星期一",
+  "commonWeekdayTuesday": "星期二",
+  "commonWeekdayWednesday": "星期三",
+  "commonWeekdayThursday": "星期四",
+  "commonWeekdayFriday": "星期五",
+  "commonWeekdaySaturday": "星期六",
+  "commonWeekdaySunday": "星期日",
+  "homeExpense": "支出",
+  "homeNoRecords": "暂无记账记录",
+  "homeSelectDate": "选择日期",
+  "homeYear": "{year}年",
+  "@homeYear": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "homeMonth": "{month}月",
+  "@homeMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "homeMonthExpenseOf": "{month}月支出",
+  "@homeMonthExpenseOf": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "homeBaseCurrencyNeedLedger": "请先创建账本",
+  "homeBaseCurrencySwitched": "已切换账本币种为 {code}",
+  "@homeBaseCurrencySwitched": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "homePullCloudSuccess": "已同步云端账本数据",
+  "homePullCloudFailed": "刷新失败，请稍后重试",
+  "homePullLocalSuccess": "已刷新本地账本数据与配置",
+  "homePullCloudFailedButLocalOk": "云端同步失败，已刷新本地数据（汇率/配置）",
+  "homeSyncing": "正在刷新账本数据",
+  "dayHomeSyncing": "正在刷新纪念日本数据",
+  "dayPullLocalSuccess": "已刷新本地纪念日本数据",
+  "dayPullCloudSuccess": "已同步云端纪念日本数据",
+  "dayPullCloudFailedButLocalOk": "云端同步失败，已刷新本地纪念日本数据",
+  "dayPullLocalFailed": "本地纪念日本刷新失败，请稍后重试",
+  "dayPullCloudFailed": "云端纪念日本刷新失败，请稍后重试",
+  "analyticsMonth": "月",
+  "analyticsYear": "年",
+  "analyticsWeek": "周",
+  "analyticsTotalExpenseLabel": "总支出",
+  "analyticsCategoryLabel": "分类统计",
+  "analyticsExpenseRatio": "支出占比",
+  "analyticsThisWeek": "本周",
+  "analyticsBackToThisWeek": "回到本周",
+  "analyticsBackToThisMonth": "回到本月",
+  "analyticsBackToThisYear": "回到今年",
+  "analyticsWeekN": "第{week}周",
+  "@analyticsWeekN": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "analyticsSelectWeek": "选择周",
+  "ledgersTitle": "账本管理",
+  "ledgersArchivedTitle": "归档账本",
+  "ledgersArchivedLabel": "已归档",
+  "ledgersArchive": "归档账本",
+  "ledgersRestore": "恢复使用",
+  "ledgersArchiveSuccess": "账本已归档",
+  "ledgersRestoreSuccess": "账本已恢复使用",
+  "ledgersArchivedRestoreRequired": "账本已归档，请先恢复使用",
+  "ledgersNew": "添加账本",
+  "ledgersClear": "清空账本",
+  "ledgersClearMessage": "确定要清空账本\"{name}\"的所有账单吗？此操作不可恢复。\\n账本本身会保留，仅删除账单数据。",
+  "@ledgersClearMessage": {
+    "placeholders": {
+      "name": {
+        "type": "Object"
+      }
+    }
+  },
+  "ledgerDefaultName": "默认账本",
+  "ledgersEdit": "编辑账本",
+  "ledgersDelete": "删除账本",
+  "ledgersDeleteConfirm": "删除账本",
+  "ledgersDeleteMessage": "确定要删除该账本及其全部记录吗？此操作不可恢复。\\n若云端存在备份，也会一并删除。",
+  "ledgersDeleted": "已删除",
+  "ledgersClearTitle": "清空账本",
+  "ledgersClearSuccess": "账本已清空",
+  "ledgersCreateSuccess": "账本创建成功",
+  "ledgerNameLabel": "账本名称",
+  "ledgerNameHint": "请输入账本名称",
+  "ledgersDefaultLedgerName": "默认账本",
+  "ledgersCurrency": "币种",
+  "ledgersMonthStartDay": "每月起始日",
+  "ledgersMonthStartDayHint": "统计与预算以所选日期（1~31日）作为每月周期起点。当月没有该日期时，自动取当月最后一天（30、29或28日）。",
+  "ledgersMonthStartDayNatural": "1日（自然月）",
+  "ledgersMonthStartDayValue": "每月{day}日",
+  "@ledgersMonthStartDayValue": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "ledgersSearchCurrency": "搜索：中文或代码",
+  "ledgersCreate": "添加账本",
+  "ledgersRecords": "笔数：{count}",
+  "@ledgersRecords": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersExpense": "支出：{expense}",
+  "@ledgersExpense": {
+    "placeholders": {
+      "expense": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersEmpty": "暂无账本",
+  "ledgersSectionLocal": "本地账本",
+  "ledgersSectionCloud": "云端账本",
+  "joinSharedTitle": "加入共享账本",
+  "joinSharedCodeHint": "输入邀请码",
+  "joinSharedQuery": "查询",
+  "joinSharedQueryFailed": "邀请码无效或已过期",
+  "joinSharedAlreadyOwner": "你已经是该账本的 Owner，无需通过邀请码加入",
+  "joinSharedAccept": "接受邀请",
+  "joinSharedSuccess": "已加入账本",
+  "joinSharedNeedLogin": "加入共享账本需先登录",
+  "joinSharedPreviewTitle": "邀请详情",
+  "ledgersActionMoveToCloud": "移动到云端",
+  "ledgersActionMoveToLocal": "移动到本地",
+  "ledgersActionCopyToLocal": "复制到本地",
+  "ledgersMoveToCloudMessage": "账本\"{name}\"的数据将上传到云端，并在各设备间同步。",
+  "@ledgersMoveToCloudMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersMoveToLocalMessage": "账本\"{name}\"将从云端删除，仅保留在这台设备上，其他设备将不再能看到它。",
+  "@ledgersMoveToLocalMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersCopyToLocalMessage": "将账本\"{name}\"复制一份到本地，云端原账本保持不变。",
+  "@ledgersCopyToLocalMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersMoveToCloudSuccess": "已移动到云端",
+  "ledgersMoveToLocalSuccess": "已移动到本地",
+  "ledgersCopyToLocalSuccess": "已复制到本地",
+  "ledgersSwitched": "已切换到账本\"{name}\"",
+  "@ledgersSwitched": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryTitle": "分类管理",
+  "categoryExpense": "支出",
+  "categoryEmpty": "暂无分类",
+  "importReading": "读取文件中…",
+  "importPreparing": "准备中…",
+  "importConfirmMapping": "确认映射",
+  "importCategoryMapping": "分类映射",
+  "importNoDataParsed": "未解析到任何数据，请返回上一页检查 CSV 内容或分隔符。",
+  "importFieldAmount": "金额",
+  "importFieldNote": "备注",
+  "importKeepOriginalName": "保持原名（自动创建/合并）",
+  "importNextStep": "下一步",
+  "importPreviousStep": "上一步",
+  "importStartImport": "开始导入",
+  "importInProgress": "正在导入…",
+  "importFetchingRates": "正在获取汇率…",
+  "importXlsxFormulaError": "检测到公式单元格，请先在 Excel 中另存为值后重试",
+  "importPrecheckTitle": "导入预检查",
+  "importProgressRunning": "已处理：{done}/{total}",
+  "importCancelled": "（已取消）",
+  "mineTitle": "我的",
+  "mineLanguageSettings": "语言设置",
+  "languageTitle": "语言设置",
+  "languageChinese": "简体中文",
+  "languageEnglish": "English",
+  "languageSystemDefault": "跟随系统",
+  "mineCloudService": "备份与云同步",
+  "cloudBackupUrlLabel": "服务地址",
+  "cloudBackupAnonKeyLabel": "Anon Key",
+  "cloudBackupBucketLabel": "存储桶",
+  "cloudBackupAccountLabel": "账号",
+  "cloudBackupPasswordLabel": "密码",
+  "cloudBackupUsernameLabel": "用户名",
+  "cloudBackupRemotePathLabel": "远程路径",
+  "cloudBackupEndpointLabel": "Endpoint",
+  "cloudBackupRegionLabel": "Region",
+  "cloudBackupAccessKeyLabel": "Access Key",
+  "cloudBackupSecretKeyLabel": "Secret Key",
+  "cloudBackupSslLabel": "使用 SSL",
+  "cloudBackupPortLabel": "端口",
+  "cloudBackupNotConfigured": "未配置",
+  "cloudBackupConfiguredInactive": "已配置，当前未使用",
+  "cloudBackupActiveNoSuccess": "当前使用 · 尚无成功备份",
+  "cloudBackupActiveLastSuccess": "当前使用 · 上次成功 {time}",
+  "@cloudBackupActiveLastSuccess": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "mineCategoryManagement": "分类管理",
+  "mineReminderSettings": "通知设置",
+  "categoryEditTitle": "编辑分类",
+  "categoryNewTitle": "添加分类",
+  "categoryDetailTooltip": "分类汇总",
+  "categoryDefaultTitle": "默认分类",
+  "categoryNameLabel": "分类名称",
+  "categoryNameHint": "请输入分类名称",
+  "categoryNameDuplicate": "分类名称已存在",
+  "categoryIconLabel": "分类图标",
+  "categoryCurrentIcon": "当前图标",
+  "categorySaveError": "保存失败",
+  "categoryUpdated": "分类\"{name}\"已更新",
+  "categoryCreated": "分类\"{name}\"已创建",
+  "categoryCannotDelete": "无法删除",
+  "categoryClearUnused": "清理未使用分类",
+  "categoryClearUnusedMessage": "确定要删除 {count} 个未使用的分类吗？此操作无法撤销。",
+  "@categoryClearUnusedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "categoryClearUnusedListTitle": "将被删除的分类：",
+  "categoryClearUnusedEmpty": "暂无未使用的分类",
+  "categoryClearUnusedSuccess": "已删除 {count} 个分类",
+  "@categoryClearUnusedSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "categoryClearUnusedFailed": "清空失败",
+  "categoryDeleteError": "删除失败",
+  "categorySubCategoryCreated": "已添加二级分类：{name}",
+  "categoryParentCategoryTitle": "所属分类",
+  "categorySelectParentHint": "请选择所属分类",
+  "categorySelectParentTitle": "选择所属分类",
+  "categoryHasSubCategories": "此分类包含二级分类，无法修改",
+  "categorySearchCategory": "搜索分类",
+  "categoryTopLevelLabel": "一级分类",
+  "categorySecondLevelLabel": "二级分类",
+  "categoryExpenseList": "餐饮-交通-购物-娱乐-居家-家庭-通讯-水电-住房-医疗-教育-宠物-运动-数码-旅行-烟酒-母婴-美容-维修-社交-学习-汽车-打车-地铁-外卖-物业-停车-捐赠-送礼-纳税-饮料-服装-零食-发红包-水果-游戏-书籍-爱人-装修-日用品-彩票-股票-社保-快递-工作-转账-其他",
+  "categoryExpenseDining": "餐饮-早餐-午餐-晚餐-美团外卖-饿了么外卖-京东外卖-餐厅-美食",
+  "categoryExpenseSnacks": "零食-饼干-薯片-糖果-巧克力-坚果",
+  "categoryExpenseFruit": "水果-苹果-香蕉-橙子-葡萄-西瓜-其他水果",
+  "categoryExpenseBeverage": "饮料-奶茶-咖啡-果汁-汽水-矿泉水",
+  "categoryExpensePastry": "糕点-蛋糕-面包-甜点-曲奇",
+  "categoryExpenseCooking": "做饭食材-蔬菜-肉类-水产-调料-粮油",
+  "categoryExpenseShopping": "购物-超市-日用百货-服装-鞋子-包包",
+  "categoryExpensePets": "宠物-宠物食品-宠物用品-宠物医疗-宠物美容",
+  "categoryExpenseTransport": "交通-交通卡充值-打车-停车费-加油",
+  "categoryExpenseCar": "汽车-汽车保养-汽车维修-汽车保险-洗车-违章罚款",
+  "categoryExpenseClothing": "服装-上衣-裤子-裙子-鞋子-服饰配件",
+  "categoryExpenseDailyGoods": "日用品-洗护用品-纸品-清洁用品-厨房用品",
+  "categoryExpenseEducation": "教育-学费-培训费-书籍-文具-办公用品-学习",
+  "categoryExpenseInvestLoss": "投资亏损-股票亏损-基金亏损-其他投资亏损",
+  "categoryExpenseEntertainment": "娱乐-电影-KTV-游乐场-酒吧-其他娱乐",
+  "categoryExpenseGame": "游戏-游戏充值-游戏装备-游戏会员",
+  "categoryExpenseHealthProducts": "保健品-维生素-保健食品-营养品",
+  "categoryExpenseSubscription": "订阅服务-视频会员-音乐会员-云存储-其他订阅",
+  "categoryExpenseSports": "运动-健身房-运动装备-运动课程-户外活动",
+  "categoryExpenseHousing": "住房-水电煤-物业费-房租-房贷-装修-宽带",
+  "categoryExpenseHome": "居家-家具-家电-装饰品-床上用品",
+  "categoryExpenseBeauty": "美容-护肤品-化妆品-剪发-美甲",
+  "categoryExpenseTransfer": "转账-生活费-家庭-父母-恋人-借钱",
+  "appearanceThemeMode": "显示模式",
+  "appearanceThemeModeSystem": "跟随系统",
+  "appearanceThemeModeLight": "亮色模式",
+  "appearanceThemeModeDark": "暗黑模式",
+  "reminderTitle": "记账提醒",
+  "reminderBody": "别忘了记录今天的支出哦 💰",
+  "reminderDailyTitle": "记账提醒",
+  "reminderTimeTitle": "每日提醒时间",
+  "commonSelectTime": "选择时间",
+  "reminderPermissionRequired": "请在系统设置中允许通知，并开启对应提醒渠道",
+  "reminderCheckBattery": "耗电管理",
+  "reminderStatusUnavailable": "暂时无法读取状态，请稍后重试",
+  "reminderStatusLoading": "正在读取系统设置…",
+  "reminderChannelNotCreated": "尚未创建",
+  "reminderBatteryIgnored": "耗电管理：已豁免系统省电限制",
+  "reminderBatteryNotIgnored": "耗电管理：未豁免系统省电限制",
+  "reminderCheckChannel": "通知管理",
+  "reminderStatusNotificationLabel": "通知",
+  "reminderStatusImportanceLabel": "重要性",
+  "reminderStatusSoundLabel": "声音",
+  "reminderStatusVibrationLabel": "振动",
+  "reminderStatusDndLabel": "勿扰",
+  "reminderStatusOn": "开启",
+  "reminderStatusOff": "关闭",
+  "reminderStatusDndBypass": "允许打扰",
+  "reminderStatusDndFollow": "遵循系统",
+  "reminderImportanceHigh": "高",
+  "reminderImportanceDefault": "默认",
+  "reminderImportanceLow": "低",
+  "reminderImportanceMin": "最低",
+  "reminderImportanceNone": "关闭",
+  "reminderImportanceUnknown": "未知",
+  "reminderOpenAppSettings": "应用设置",
+  "reminderAutoStartSettings": "自启动设置",
+  "reminderAutoStartAdvice": "当前设备无法直接打开自启动页面，请在系统设置中手动开启。\n\n一加、OPPO、realme：设置 → 应用 → 自启动 → 芝麻记。\n\n其他设备：搜索“自启动”或“应用启动管理”，允许芝麻记自启动。菜单名称可能因系统版本不同。",
+  "reminderDescription": "设置仅对当前设备生效。关闭通知会暂停所有提醒，并保留各项配置。纪念日按天合并提醒，预先安排未来一年，在打开应用、日期或记录变化时更新。",
+  "reminderAndroidInstructions": "• 在通知管理中分别开启记账、纪念日和健身休息提醒，声音与振动也在此设置。\n• 允许“闹钟和提醒”权限，减少提醒延迟。系统可能显示下一次闹钟标志；记账和纪念日使用普通通知，健身休息结束按设置发出声音或振动。\n• 后台运行和自启动需分别开启。耗电管理状态仅反映系统省电豁免，厂商限制需单独检查。\n• 强行停止应用可能清除提醒排期，重新打开芝麻记可恢复未来提醒。静音和勿扰模式可能影响提示声音。",
+  "categoryDetailLoadFailed": "加载失败，请重试",
+  "categoryDetailSummaryTitle": "分类汇总",
+  "categoryDetailTotalCount": "总笔数",
+  "categoryDetailTotalAmount": "总金额",
+  "categoryDetailAverageAmount": "平均金额",
+  "categoryDetailSortTitle": "排序",
+  "categoryDetailSortTimeDesc": "时间↓",
+  "categoryDetailSortTimeAsc": "时间↑",
+  "categoryDetailSortAmountDesc": "金额↓",
+  "categoryDetailSortAmountAsc": "金额↑",
+  "categoryDetailNoTransactions": "暂无交易记录",
+  "categoryDetailNoTransactionsSubtext": "该分类下暂无交易记录",
+  "categoryDetailDeleteFailed": "删除失败",
+  "categoryMigrationTransactionLabel": "{count}笔",
+  "@categoryMigrationTransactionLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTemplateEntryFlat": "一级模板",
+  "categoryTemplateEntryHierarchical": "二级模板",
+  "categoryTemplateFlatTitle": "一级分类模板",
+  "categoryTemplateHierarchicalTitle": "二级分类模板",
+  "categoryTemplateSelectedCount": "本次已勾选 {count} 项",
+  "@categoryTemplateSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTemplateSelectAll": "全选",
+  "categoryTemplateDeselectAll": "取消全选",
+  "categoryTemplateAlreadyAdded": "已添加",
+  "categoryTemplateAlreadyAddedHint": "已添加的分类会保持勾选，不能取消",
+  "categoryTemplateConfirmTitle": "确认添加",
+  "categoryTemplateConfirmMessage": "确定将勾选的 {count} 个分类加入分类表吗？",
+  "@categoryTemplateConfirmMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTemplateAddSuccess": "已添加 {count} 个分类",
+  "@categoryTemplateAddSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTemplateAddFailed": "添加失败：{error}",
+  "categoryTemplatePartiallyCompleted": "{completed}\n剩余分类未处理完成，请重试。",
+  "@categoryTemplatePartiallyCompleted": {
+    "description": "已提交的模板处理摘要及剩余操作未完成提示。",
+    "placeholders": {
+      "completed": {
+        "type": "String"
+      }
+    }
+  },
+  "@categoryTemplateAddFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryManageAdd": "添加分类",
+  "categoryManageDelete": "批量删除分类",
+  "categoryManageConfirmDelete": "确认删除",
+  "categoryManageReorderHint": "长按调整分类顺序",
+  "categorySelectParentsTitle": "选择父分类",
+  "categoryChildrenTitle": "子分类",
+  "categoryManageSubcategoryCount": "子分类：{count}",
+  "@categoryManageSubcategoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categorySubcategoryCount": "{count} 个子分类",
+  "@categorySubcategoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryTransactionBreakdown": "直属交易 {direct} 笔 · 共 {total} 笔",
+  "@categoryTransactionBreakdown": {
+    "placeholders": {
+      "direct": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "categorySharedManageBannerOwner": "共享账本：分类的新增、修改、删除会同步给所有成员",
+  "categorySharedManageBannerEditor": "共享账本记账使用所有者的分类；此处的编辑仅影响你的个人分类",
+  "categorySortSaveFailed": "排序保存失败，请重试",
+  "categoryDeleteOptionAll": "删除分类和分类下的所有数据（含二级）",
+  "categoryDeleteOptionMigrate": "删除分类及其子分类并迁移所有数据到其他分类",
+  "categoryDeleteOptionPromote": "删除分类和分类下的所有数据（不含二级分类，二级分类将变为一级分类）",
+  "categoryDeleteSelectedTitle": "删除选中的分类",
+  "categoryDeleteSelectedSubtitleWithSub": "确定要删除 {count} 个选中分类并且清空分类下的数据吗？（包含二级分类和数据）此操作无法撤销。",
+  "@categoryDeleteSelectedSubtitleWithSub": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryDeleteSelectedSubtitleWithoutSub": "确定要删除 {count} 个选中分类并且清空分类下的数据吗？（不含二级分类和数据）此操作无法撤销。",
+  "@categoryDeleteSelectedSubtitleWithoutSub": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryMigrateSelectTargetTitle": "选择数据迁移到的分类",
+  "categoryMigrateConfirmButton": "确定（迁移分类数据并删除分类）",
+  "categoryMigrateChildLabel": "二级 · {parent}",
+  "@categoryMigrateChildLabel": {
+    "placeholders": {
+      "parent": {
+        "type": "Object"
+      }
+    }
+  },
+  "subcategoryAdd": "添加子分类",
+  "subcategoryDelete": "批量删除",
+  "subcategoryDeleteOptionAll": "删除分类和分类下的所有数据",
+  "subcategoryDeleteOptionMigrate": "删除分类并迁移分类下的所有数据到其他分类",
+  "subcategoryDeleteSelectedSubtitle": "确定要删除 {count} 个选中分类并且清空分类下的数据吗？此操作无法撤销。",
+  "@subcategoryDeleteSelectedSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "subcategoryEmpty": "暂无子分类",
+  "cloudFirstSaveSwitchTitle": "配置已保存",
+  "cloudFirstSaveSwitchMessage": "是否立即切换到该云服务作为当前同步配置?",
+  "cloudSaveOnlyNoSwitch": "暂不切换",
+  "cloudSaveAndSwitch": "立即切换",
+  "cloudClearConfig": "清除配置",
+  "cloudClearConfigConfirmTitle": "清除云端配置",
+  "cloudClearConfigConfirmMessage": "确定要清除该云端服务的配置吗？\n云端已备份的数据不会被删除，你可以随时重新配置并恢复。",
+  "cloudClearConfigDone": "配置已清除",
+  "authLogin": "登录",
+  "authPassword": "密码",
+  "authErrorInvalidCredentials": "手机号或密码错误",
+  "authErrorRateLimit": "操作过于频繁，请稍后再试。",
+  "authErrorNetworkIssue": "网络异常，请检查网络后重试。",
+  "authErrorServerNotConfigured": "此版本未配置账号服务器，暂时无法登录或注册。你可以返回并继续使用本地功能。",
+  "exportCsvHeaderType": "类型",
+  "exportCsvHeaderCategory": "分类",
+  "exportCsvHeaderSubCategory": "二级分类",
+  "exportCsvHeaderAmount": "金额",
+  "exportCsvHeaderNote": "备注",
+  "exportCsvHeaderTime": "时间",
+  "exportSuccessTitle": "导出成功",
+  "exportFailedTitle": "导出失败",
+  "exportTypeExpense": "支出",
+  "currencyCNY": "人民币",
+  "currencyUSD": "美元",
+  "currencyEUR": "欧元",
+  "currencyJPY": "日元",
+  "currencyHKD": "港币",
+  "currencyTWD": "新台币",
+  "currencyGBP": "英镑",
+  "currencyAUD": "澳元",
+  "currencyCAD": "加元",
+  "currencyKRW": "韩元",
+  "currencySGD": "新加坡元",
+  "currencyMYR": "马来西亚林吉特",
+  "currencyTHB": "泰铢",
+  "currencyIDR": "印尼卢比",
+  "currencyPHP": "菲律宾比索",
+  "currencyVND": "越南盾",
+  "currencyINR": "印度卢比",
+  "currencyRUB": "俄罗斯卢布",
+  "currencyBYN": "白俄罗斯卢布",
+  "currencyNZD": "新西兰元",
+  "currencyCHF": "瑞士法郎",
+  "currencySEK": "瑞典克朗",
+  "currencyNOK": "挪威克朗",
+  "currencyDKK": "丹麦克朗",
+  "currencyBRL": "巴西雷亚尔",
+  "currencyMXN": "墨西哥比索",
+  "currencyTRY": "土耳其里拉",
+  "currencyZAR": "南非兰特",
+  "currencyAED": "阿联酋迪拉姆",
+  "currencySAR": "沙特里亚尔",
+  "currencyPLN": "波兰兹罗提",
+  "currencyCZK": "捷克克朗",
+  "currencyHUF": "匈牙利福林",
+  "currencyARS": "阿根廷比索",
+  "currencyCLP": "智利比索",
+  "currencyCOP": "哥伦比亚比索",
+  "currencyPEN": "秘鲁索尔",
+  "currencyEGP": "埃及镑",
+  "currencyNGN": "尼日利亚奈拉",
+  "currencyKZT": "哈萨克斯坦坚戈",
+  "currencyUAH": "乌克兰格里夫纳",
+  "currencyILS": "以色列新谢克尔",
+  "currencyPKR": "巴基斯坦卢比",
+  "currencyBDT": "孟加拉塔卡",
+  "currencyLKR": "斯里兰卡卢比",
+  "currencyMMK": "缅甸元",
+  "recurringTransactionEnabled": "启用",
+  "recurringTransactionDisabled": "关闭",
+  "recurringTransactionTitle": "周期账单",
+  "recurringTransactionAdd": "添加周期账单",
+  "recurringTransactionEdit": "编辑周期账单",
+  "recurringTransactionFrequency": "周期频率",
+  "recurringTransactionDaily": "每天",
+  "recurringTransactionWeekly": "每周",
+  "recurringTransactionMonthly": "每月",
+  "recurringTransactionYearly": "每年",
+  "recurringTransactionInterval": "间隔",
+  "recurringTransactionDayOfMonth": "每月第几天",
+  "recurringTransactionStartDate": "开始日期",
+  "recurringTransactionEndDate": "结束日期",
+  "recurringTransactionNoEndDate": "永久周期",
+  "recurringTransactionDeleteConfirm": "确定要删除这个周期账单吗？",
+  "recurringTransactionEndBeforeStart": "结束日期不能早于开始日期",
+  "recurringTransactionEveryNDays": "每 {n} 天",
+  "@recurringTransactionEveryNDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "recurringTransactionEveryNWeeks": "每 {n} 周",
+  "@recurringTransactionEveryNWeeks": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "recurringTransactionEveryNMonths": "每 {n} 个月",
+  "@recurringTransactionEveryNMonths": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "recurringTransactionEveryNYears": "每 {n} 年",
+  "@recurringTransactionEveryNYears": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ledgerSelectTitle": "选择账本",
+  "cloudTestConnection": "测试连接",
+  "cloudLastTestTime": "上次测试时间：{time}",
+  "@cloudLastTestTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudLocalStorageTitle": "本地存储",
+  "cloudLocalStorageSubtitle": "数据仅保存在本地设备",
+  "localBackupPageTitle": "本地存储",
+  "localBackupAutoTitle": "自动本地备份",
+  "localBackupAutoSubtitle": "每天首次打开应用时自动备份数据库快照",
+  "localBackupNowTooltip": "立即备份",
+  "localBackupSuccess": "备份成功",
+  "localBackupFailed": "备份失败，请检查可用存储空间",
+  "localBackupListHint": "选择一个数据进行恢复：",
+  "localBackupImportFromFile": "导入文件恢复",
+  "localBackupImportInvalidFile": "请选择 .snbak 格式的备份文件",
+  "localBackupListEmpty": "暂无备份",
+  "cloudCustomSupabaseTitle": "自定义 Supabase",
+  "cloudCustomSupabaseSubtitle": "点击配置自建Supabase服务",
+  "cloudCustomWebdavTitle": "自定义 WebDAV",
+  "cloudCustomWebdavSubtitle": "点击配置坚果云/Nextcloud等",
+  "cloudCustomS3Title": "S3 协议存储",
+  "cloudCustomS3Subtitle": "AWS S3 / Cloudflare R2 / MinIO",
+  "cloudTabOffline": "离线模式",
+  "cloudTabBackup": "备份同步",
+  "cloudBackupEntryLocalOnly": "仅本地备份",
+  "cloudBackupEntryFailed": "上次备份失败，将自动重试",
+  "cloudBackupStatusTitle": "备份状态",
+  "cloudBackupUploadNow": "立即上传到云端",
+  "cloudBackupUploading": "正在上传…",
+  "cloudBackupUploadSuccess": "上传成功",
+  "cloudBackupRestoreFromCloud": "从云端恢复",
+  "cloudBackupDownloading": "正在下载…",
+  "cloudBackupDownloadSuccess": "已下载，即将打开恢复页",
+  "cloudBackupDownloadFailed": "下载失败，请检查云端配置与网络",
+  "cloudBackupNoRemote": "云端暂无备份",
+  "cloudBackupAutoSyncTitle": "自动备份到云端",
+  "cloudBackupAutoSyncSubtitle": "每次自动备份时同步上传到云端",
+  "localBackupRestoreHint": "点击备份进入恢复流程",
+  "cloudStatusNotTested": "未测试",
+  "cloudStatusNormal": "连接正常",
+  "cloudStatusFailed": "连接失败",
+  "cloudTestSuccessMessage": "连接正常,配置有效",
+  "cloudTestFailedMessage": "连接失败",
+  "cloudSwitchConfirmTitle": "切换云服务",
+  "cloudSwitchConfirmMessage": "切换云服务将登出当前账号,确认切换?",
+  "cloudSwitchFailedTitle": "切换失败",
+  "cloudSwitchFailedConfigMissing": "请先配置该云服务",
+  "cloudConfigInvalidMessage": "请填写完整信息",
+  "cloudSaveFailed": "保存失败",
+  "cloudSwitchedTo": "已切换到{type}",
+  "@cloudSwitchedTo": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudConfigureSupabaseTitle": "配置 Supabase",
+  "cloudConfigureWebdavTitle": "配置 WebDAV",
+  "cloudConfigureS3Title": "配置 S3",
+  "welcomeHomeBookkeeping": "记账",
+  "welcomeHomeAnniversary": "纪念日",
+  "welcomeHomeFitness": "健身",
+  "welcomeHomeMemo": "备忘录",
+  "calendarToday": "回到今天",
+  "commonUncategorized": "未分类",
+  "appLockTitle": "应用上锁",
+  "appLockEnable": "启用应用锁",
+  "appLockEnableDesc": "启动和切回应用时需要验证身份",
+  "appLockSetPin": "设置密码",
+  "appLockChangePin": "修改密码",
+  "appLockVerifyPin": "验证密码",
+  "appLockVerifyCurrentPin": "请输入当前密码",
+  "appLockSetNewPin": "请设置新密码",
+  "appLockConfirmPin": "请再次输入密码",
+  "appLockEnterPin": "请输入密码",
+  "appLockPinSetSuccess": "密码设置成功",
+  "appLockDisabled": "应用锁已关闭",
+  "appLockBiometric": "生物识别解锁",
+  "appLockBiometricDesc": "使用Face ID或指纹快速解锁",
+  "appLockBiometricReason": "请验证身份以解锁芝麻记",
+  "appLockTimeout": "自动锁定时间",
+  "appLockTimeoutImmediate": "立即",
+  "appLockTimeout1Min": "1分钟后",
+  "appLockTimeout5Min": "5分钟后",
+  "appLockTimeout15Min": "15分钟后",
+  "dayOfMonth": "每月{day}日",
+  "@dayOfMonth": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedRoleOwner": "所有者",
+  "sharedRoleEditor": "编辑者",
+  "commonCopied": "已复制",
+  "sharedInviteFormRole": "角色",
+  "sharedInviteFormExpiry": "有效期",
+  "sharedInviteExpiryDays": "{n} 天",
+  "@sharedInviteExpiryDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedInviteGenerate": "生成邀请码",
+  "sharedInviteGenerateAnother": "重新生成邀请码",
+  "sharedInviteCopyCode": "复制邀请码",
+  "sharedInviteShareCode": "分享邀请码",
+  "sharedInviteExpiresAt": "邀请将在 {dt} 失效",
+  "@sharedInviteExpiresAt": {
+    "placeholders": {
+      "dt": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedInviteWarning": "邀请码仅可使用一次。重新生成将使本账本此前尚未使用的邀请码失效。",
+  "sharedInviteInstruction": "请对方从记账首页进入账本列表，再选择加入共享账本。 新邀请码生成成功后，此账本之前未使用的邀请码自动失效。",
+  "sharedInviteShareText": "邀请你加入芝麻记共享账本「{ledger}」\n\n邀请码:{code}\n\n打开芝麻记 → 我的 → 加入共享账本，输入此码即可。",
+  "@sharedInviteShareText": {
+    "placeholders": {
+      "ledger": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgerAaDescription": "记录成员各自承担的费用",
+  "ledgerMemberCount": "{count} 人",
+  "@ledgerMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ledgerOwnerDescription": "管理账本与成员",
+  "ledgerEditorDescription": "共同记账与编辑",
+  "ledgerInviteDescription": "邀请朋友加入「{ledger}」，一起记账。",
+  "@ledgerInviteDescription": {
+    "placeholders": {
+      "ledger": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgerInviteRoleDescription": "可查看和编辑账本中的记录。",
+  "ledgerInviteMembers": "邀请成员",
+  "sharedMembersStatsAllTime": "全部时间",
+  "sharedMembersStatsSummary": "{memberCount} 位支出人 · {txCount} 笔支出 · {currency}",
+  "@sharedMembersStatsSummary": {
+    "placeholders": {
+      "memberCount": {
+        "type": "int"
+      },
+      "txCount": {
+        "type": "int"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedMembersStatsDistribution": "支出分布",
+  "sharedMembersStatsSortHint": "按支出金额从高到低",
+  "sharedMembersStatsScopeHint": "按支出人统计，金额折算为本位币；未指定支出人的记录不计入。此处为实际支出，不代表 AA 应摊金额。",
+  "ledgerBasicSettings": "基本设置",
+  "ledgerAaLabel": "AA 分摊",
+  "ledgerMembersTitle": "账本成员",
+  "ledgerVirtualMembersTitle": "虚拟成员",
+  "sharedMembersExpenseTotal": "成员支出合计",
+  "sharedMembersPageTitle": "成员管理",
+  "ledgersLeaveAndDelete": "退出并删除",
+  "ledgersLeaveAndDeleteConfirm": "退出并删除账本",
+  "ledgersLeaveAndDeleteMessage": "确定要退出并删除共享账本「{name}」吗？\\n退出后云端将移除你的成员身份，本地数据全部清空，且无法再访问其中的交易。",
+  "@ledgersLeaveAndDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersLeaveAndDeleteSuccess": "已退出并删除账本",
+  "ledgersDeleteShared": "删除共享账本",
+  "ledgersDeleteSharedConfirm": "删除共享账本",
+  "ledgersDeleteSharedMessage": "确定要删除共享账本「{name}」吗？\\n此操作会一并移除所有协作者并清空他们的本地数据，不可恢复。",
+  "@ledgersDeleteSharedMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgersDeleteSharedSuccess": "已删除共享账本",
+  "sharedMembersRemoveTitle": "移除成员",
+  "sharedMembersRemoveCta": "移除该成员",
+  "sharedMembersRemoveConfirm": "确定移除 {name}?ta 将立即失去对该账本的访问。",
+  "@sharedMembersRemoveConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedMembersRemoved": "已移除成员",
+  "sharedMembersRemoveFailed": "移除成员失败，请稍后重试",
+  "sharedMembersSaveFirst": "请先保存账本",
+  "sharedMembersLoadFailed": "成员列表加载失败",
+  "sharedMembersRetry": "重试",
+  "sharedTxCreatedBy": "{name} 创建",
+  "@sharedTxCreatedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedTxEditedBy": "{name} 最后编辑",
+  "@sharedTxEditedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedTxCreatedAndEditedBy": "{name} 创建并编辑",
+  "@sharedTxCreatedAndEditedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedMembersStatsTitle": "成员支出",
+  "sharedMembersStatsEmpty": "暂无记账",
+  "sharedMembersStatsTxCount": "{count}笔",
+  "@sharedMembersStatsTxCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeRatePageTitle": "汇率管理",
+  "rateSourceAuto": "自动",
+  "rateSourceManual": "手动",
+  "rateUpdatedAt": "{date} 更新",
+  "@rateUpdatedAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "rateNotFetched": "未获取",
+  "rateEditTitle": "编辑汇率",
+  "rateInverseHint": "反向参考:1 {base} ≈ {rate} {quote}",
+  "@rateInverseHint": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      },
+      "quote": {
+        "type": "String"
+      }
+    }
+  },
+  "rateResetToAuto": "恢复自动",
+  "rateRefreshSuccess": "汇率已更新",
+  "rateRefreshFailed": "获取失败,可手动设置汇率",
+  "rateDisclaimer": "数据来源:开源汇率数据,每日更新;折算仅供参考,可能与银行实际牌价有差异。",
+  "txRateLabel": "汇率",
+  "txRateMissingHint": "请手动填写本笔汇率后保存",
+  "ledgerBaseCurrencyLabel": "账本币种",
+  "statsConvertedFootnote": "含外币,已按各笔记账时汇率折算为 {currency}",
+  "@statsConvertedFootnote": {
+    "placeholders": {
+      "currency": {}
+    }
+  },
+  "ledgerCurrencyChangeRecalcHint": "修改本位币将按当前汇率重算全部历史交易的折算值",
+  "ledgerCurrencyChangeRecalcWarning": "历史折算值将按最新汇率重算并覆盖，往返切换（切走再切回）也无法还原原始折算值",
+  "recalcForeignTxBanner": "检测到该账本有未折算的外币交易",
+  "recalcForeignTxAction": "按当前汇率重算折算",
+  "recalcForeignTxDone": "已重算 {count} 笔外币交易的折算值",
+  "@recalcForeignTxDone": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "txCurrencyPickerTitle": "选择币种",
+  "txAddEntryTitle": "记一笔",
+  "txDeleteLongPress": "长按清空",
+  "txSelectDateTimeTitle": "选择交易时间",
+  "txSelectDateTimeHint": "上下滑动数字以选择时间",
+  "txEditCategory": "编辑分类",
+  "txEditCategoryReadOnly": "编辑分类（共享账本只读）",
+  "txLedgerBaseCurrency": "账本币种",
+  "recalcSyncCountHint": "将重算并同步 {count} 笔交易",
+  "@recalcSyncCountHint": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "analyticsLoadFailed": "加载失败，请重试",
+  "analyticsRetry": "重试",
+  "exportCsvHeaderCurrency": "币种",
+  "importFieldCurrency": "币种",
+  "currencyMOP": "澳门元",
+  "currencyMNT": "蒙古图格里克",
+  "currencyKPW": "朝鲜元",
+  "currencyKHR": "柬埔寨瑞尔",
+  "currencyLAK": "老挝基普",
+  "currencyBND": "文莱元",
+  "currencyNPR": "尼泊尔卢比",
+  "currencyBTN": "不丹努尔特鲁姆",
+  "currencyMVR": "马尔代夫拉菲亚",
+  "currencyAFN": "阿富汗尼",
+  "currencyUZS": "乌兹别克斯坦索姆",
+  "currencyTJS": "塔吉克斯坦索莫尼",
+  "currencyTMT": "土库曼斯坦马纳特",
+  "currencyKGS": "吉尔吉斯斯坦索姆",
+  "currencyQAR": "卡塔尔里亚尔",
+  "currencyKWD": "科威特第纳尔",
+  "currencyBHD": "巴林第纳尔",
+  "currencyOMR": "阿曼里亚尔",
+  "currencyJOD": "约旦第纳尔",
+  "currencyLBP": "黎巴嫩镑",
+  "currencyIQD": "伊拉克第纳尔",
+  "currencyIRR": "伊朗里亚尔",
+  "currencyYER": "也门里亚尔",
+  "currencySYP": "叙利亚镑",
+  "currencyGEL": "格鲁吉亚拉里",
+  "currencyAMD": "亚美尼亚德拉姆",
+  "currencyAZN": "阿塞拜疆马纳特",
+  "currencyRON": "罗马尼亚列伊",
+  "currencyBGN": "保加利亚列弗",
+  "currencyRSD": "塞尔维亚第纳尔",
+  "currencyISK": "冰岛克朗",
+  "currencyMDL": "摩尔多瓦列伊",
+  "currencyALL": "阿尔巴尼亚列克",
+  "currencyMKD": "北马其顿第纳尔",
+  "currencyBAM": "波黑可兑换马克",
+  "currencyGIP": "直布罗陀镑",
+  "currencyGTQ": "危地马拉格查尔",
+  "currencyHNL": "洪都拉斯伦皮拉",
+  "currencyNIO": "尼加拉瓜科多巴",
+  "currencyCRC": "哥斯达黎加科朗",
+  "currencyPAB": "巴拿马巴波亚",
+  "currencyDOP": "多米尼加比索",
+  "currencyCUP": "古巴比索",
+  "currencyJMD": "牙买加元",
+  "currencyTTD": "特立尼达和多巴哥元",
+  "currencyBSD": "巴哈马元",
+  "currencyBBD": "巴巴多斯元",
+  "currencyBZD": "伯利兹元",
+  "currencyHTG": "海地古德",
+  "currencyKYD": "开曼群岛元",
+  "currencyAWG": "阿鲁巴弗罗林",
+  "currencyBMD": "百慕大元",
+  "currencyUYU": "乌拉圭比索",
+  "currencyPYG": "巴拉圭瓜拉尼",
+  "currencyBOB": "玻利维亚诺",
+  "currencyVES": "委内瑞拉玻利瓦尔",
+  "currencyGYD": "圭亚那元",
+  "currencySRD": "苏里南元",
+  "currencyFJD": "斐济元",
+  "currencyPGK": "巴布亚新几内亚基那",
+  "currencySBD": "所罗门群岛元",
+  "currencyTOP": "汤加潘加",
+  "currencyVUV": "瓦努阿图瓦图",
+  "currencyWST": "萨摩亚塔拉",
+  "currencyKES": "肯尼亚先令",
+  "currencyGHS": "加纳塞地",
+  "currencyMAD": "摩洛哥迪拉姆",
+  "currencyDZD": "阿尔及利亚第纳尔",
+  "currencyTND": "突尼斯第纳尔",
+  "currencyLYD": "利比亚第纳尔",
+  "currencyETB": "埃塞俄比亚比尔",
+  "currencyUGX": "乌干达先令",
+  "currencyTZS": "坦桑尼亚先令",
+  "currencyRWF": "卢旺达法郎",
+  "currencyMUR": "毛里求斯卢比",
+  "currencyBWP": "博茨瓦纳普拉",
+  "currencyNAD": "纳米比亚元",
+  "currencyZMW": "赞比亚克瓦查",
+  "currencyMWK": "马拉维克瓦查",
+  "currencyMZN": "莫桑比克梅蒂卡尔",
+  "currencyAOA": "安哥拉宽扎",
+  "currencyCDF": "刚果法郎",
+  "currencyGMD": "冈比亚达拉西",
+  "currencyGNF": "几内亚法郎",
+  "currencyLRD": "利比里亚元",
+  "currencySLE": "塞拉利昂利昂",
+  "currencySDG": "苏丹镑",
+  "currencySSP": "南苏丹镑",
+  "currencySOS": "索马里先令",
+  "currencyDJF": "吉布提法郎",
+  "currencyERN": "厄立特里亚纳克法",
+  "currencyBIF": "布隆迪法郎",
+  "currencyCVE": "佛得角埃斯库多",
+  "currencySTN": "圣多美多布拉",
+  "currencySCR": "塞舌尔卢比",
+  "currencyKMF": "科摩罗法郎",
+  "currencyLSL": "莱索托洛蒂",
+  "currencySZL": "斯威士兰里兰吉尼",
+  "currencyMGA": "马达加斯加阿里亚里",
+  "currencyMRU": "毛里塔尼亚乌吉亚",
+  "detailImportExportTitle": "数据导入导出",
+  "detailImportExportImportTitle": "导入数据",
+  "detailImportExportImportSubtitle": "选择业务和目标，确认文件内容后导入",
+  "detailImportExportExportTitle": "导出数据",
+  "detailImportExportExportSubtitle": "选择业务和数据来源，导出全部内容",
+  "detailImportExportImportPoint1": "先选择业务和目标本或健身空间，再选择文件并确认导入。",
+  "detailImportExportImportPoint2": "支持 CSV、TSV、TXT、XLSX、JSON。各类数据均可修改字段映射、选择记录并查看导入进度；无需文件版本、来源应用或内部标识。",
+  "detailImportExportImportPoint3": "重复导入同一文件会跳过已导入记录；预览后可勾选导入内容。健身计划支持表格导入，导入偏好会替换目标空间的偏好。",
+  "detailImportExportExportPoint1": "默认勾选记账、纪念日、备忘录和健身，各选择一个本或健身空间，导出其中的全部内容。",
+  "detailImportExportExportPoint2": "记账导出全部明细，纪念日导出全部事项，备忘录导出全部内容；健身导出空间内的训练记录、计划、模板和健身偏好（含计时状态）。",
+  "detailImportExportExportPoint3": "记账和纪念日导出为 CSV，备忘录和完整健身数据导出为 JSON；各业务生成独立文件，通过系统面板保存或分享。",
+  "detailExportAction": "导出",
+  "exchangeRateCurrentLedger": "当前账本：{name}",
+  "@exchangeRateCurrentLedger": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "exchangeRateInfoTitle": "关于账本币种",
+  "exchangeRateInfoMessage": "账本币种是当前账本的本位币：账本内的外币交易会按汇率折算成账本币种，在统计页和资产总览中统一汇总比较。每个账本各有自己的账本币种，你可以随时切换；切换后将按最新汇率重算本账本全部交易的折算值。\n\n汇率默认从公开数据源每日自动拉取，也支持你点击下方列表中的「编辑」为任意币种手动设置汇率——手动汇率会覆盖自动数据并立即生效。",
+  "rateEditLabel": "编辑",
+  "rateInvalidInput": "请输入有效的汇率值（大于 0 的数字）",
+  "currencyManageTitle": "管理展示币种",
+  "currencyManageEntry": "币种管理",
+  "currencyManageCount": "已选 {count} 个币种",
+  "currencyManageBaseLocked": "账本本位币，不可隐藏",
+  "currencyManageHint": "隐藏的币种不影响已有交易记录，可随时在此重新启用。",
+  "detailImportExportMigrateTitle": "迁移提示",
+  "detailImportExportMigrateTip": "导出后可导入另一个本或健身空间；复制、转为本地或转为云端可在对应的管理页面操作。",
+  "ledgerMetaReadOnlyToast": "协作者无权修改账本信息",
+  "aaStatisticsTitle": "分摊统计",
+  "aaStatisticsTotalAmount": "分摊总额",
+  "aaStatisticsPerPerson": "分摊详情",
+  "aaStatisticsPaid": "分摊实付",
+  "aaStatisticsPaidAll": "总付",
+  "aaStatisticsShare": "应摊",
+  "aaStatisticsNet": "差额",
+  "aaStatisticsNetReceive": "应收",
+  "aaStatisticsNetPay": "应付",
+  "aaStatisticsTransferPlan": "转账方案",
+  "aaStatisticsTransferSeparator": "付给",
+  "aaStatisticsNoTransfers": "已结清，无需转账",
+  "aaStatisticsExcluded": "不分摊",
+  "aaStatisticsParticipantCount": "分摊人数 {count} 人",
+  "@aaStatisticsParticipantCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aaStatisticsExcludedEmpty": "暂无不分摊的交易",
+  "aaStatisticsViewDetails": "查看详情",
+  "aaStatisticsBillSummary": "账单汇总",
+  "aaStatisticsNetReceiveAmount": "应收金额",
+  "aaStatisticsNetPayAmount": "应付金额",
+  "aaStatisticsSettled": "已结清",
+  "aaStatisticsModePerPerson": "人均分摊",
+  "aaStatisticsModeCustom": "指定金额",
+  "aaStatisticsSplitDetail": "分摊明细",
+  "aaStatisticsPayerPrefix": "付款",
+  "aaStatisticsMemberTxEmpty": "暂无该成员的账单",
+  "aaEditTitle": "编辑分摊",
+  "aaEditSplitButton": "编辑分摊",
+  "aaPayer": "支出人",
+  "aaSplitMode": "分摊方式",
+  "aaParticipants": "参与人",
+  "aaModePerPerson": "人均分摊",
+  "aaModeCustom": "指定分摊",
+  "aaModeNoSplit": "不分摊",
+  "aaParticipantsAll": "全部成员",
+  "aaParticipantsUnit": "人",
+  "aaVirtualUserNameHint": "输入昵称",
+  "aaVirtualUserDeleteConfirm": "确定删除虚拟用户「{name}」吗？",
+  "@aaVirtualUserDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aaVirtualUserInUse": "该虚拟用户名下有账，不可删除",
+  "aaVirtualUserDefaultName": "虚拟用户{index}",
+  "@aaVirtualUserDefaultName": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "aaUnknownUser": "未知",
+  "ledgerAaStatisticsEntry": "分摊统计",
+  "aaNoParticipants": "请先添加参与人",
+  "aaSplitAmountIncomplete": "请填写全部参与人的金额",
+  "restoreStep2Title": "备份内容",
+  "restoreApply": "立即恢复",
+  "restoreApplying": "正在应用…",
+  "restoreDone": "恢复完成",
+  "restoreOpenFailed": "无法打开备份：文件已损坏或不是备份文件",
+  "restoreApplyFailed": "恢复失败，未做任何更改（已整体回滚）",
+  "restoreCloudForkHint": "这是云账本，但不是当前账号，将恢复为本地副本",
+  "restoreFileNotFound": "备份文件不存在",
+  "restoreSectionLocal": "本地账本",
+  "restoreSectionCloud": "云端账本",
+  "restoreMemberCount": "{count} 位成员",
+  "@restoreMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreConflictWarning": "有 {count} 个未解决冲突（按备份时状态恢复）",
+  "@restoreConflictWarning": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreSchemaUnsupported": "备份结构版本不受支持，请选择当前版本创建的备份",
+  "authWelcomeBack": "欢迎回来",
+  "authWelcomeSubtitle": "登录你的芝麻记账号",
+  "authPhone": "手机号",
+  "authPhoneHint": "请输入手机号",
+  "authPasswordHint": "请输入密码",
+  "authRegisterPasswordHint": "设置登录密码",
+  "authConfirmPasswordHint": "再次输入密码",
+  "authPasswordShow": "显示",
+  "authPasswordHide": "隐藏",
+  "authRegionSheetTitle": "选择区号",
+  "authRegionCancel": "取消",
+  "authNoAccount": "还没有账号？立即注册",
+  "authInvalidPhone": "请输入有效的手机号",
+  "authInvalidPassword": "请输入密码",
+  "authPasswordMismatch": "两次输入的密码不一致",
+  "authErrorPhoneAlreadyRegistered": "该手机号已注册",
+  "authErrorServer": "服务暂时不可用，请稍后重试",
+  "authErrorOther": "操作失败，请稍后重试",
+  "authConfirmPassword": "确认密码",
+  "authAlreadyHaveAccount": "已有账号？立即登录",
+  "authRegister": "注册",
+  "mineLocalName": "单机芝麻仔",
+  "mineLocalSubtitle": "本地使用 · 未登录",
+  "mineLoginRegister": "登录 / 注册",
+  "mineLoginValue": "登录后可使用云账本和共享功能",
+  "mineSesameNumber": "芝麻号 {number}",
+  "@mineSesameNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "profileTitle": "个人资料",
+  "profileNickname": "昵称",
+  "profileSesameNumber": "芝麻号",
+  "profileGender": "性别",
+  "profilePhone": "手机号",
+  "profileGenderUnset": "未设置",
+  "profileGenderMale": "男",
+  "profileGenderFemale": "女",
+  "profileChangePassword": "修改密码",
+  "profileLogout": "退出登录",
+  "profileLogoutHint": "退出账号会保留这台设备上的所有本地本。云端本仍保存在账号中，重新登录后可同步恢复。",
+  "profileLogoutConfirmTitle": "退出登录",
+  "profileLogoutConfirmMessage": "确定要退出当前账号吗？",
+  "profileLogoutPendingTitle": "有尚未同步的修改",
+  "profileLogoutPendingMessage": "这些云端本还有未同步的修改。选择「保留本地副本」会先将受影响的本子复制到本地。分类的未确认修改会按账号保留，重新登录后可继续处理。",
+  "profileLogoutSyncFirst": "先同步",
+  "profileLogoutKeepLocalCopy": "保留本地副本并退出",
+  "profileBasicInfo": "基本资料",
+  "profileAccountInfo": "账号信息",
+  "editNameTitle": "编辑昵称",
+  "editNameSave": "保存",
+  "editNameEmpty": "昵称不能为空",
+  "editNameHint": "昵称无唯一要求，可与其他人重名。支持中文、英文、数字和 Emoji。",
+  "editNameClear": "清空昵称",
+  "editNameSaved": "昵称已保存",
+  "editNameSaveFailed": "保存失败，请稍后重试",
+  "editGenderTitle": "性别",
+  "editGenderSaved": "性别已保存",
+  "editGenderPrivacyHint": "性别仅本人可见，不对共享账本其他成员展示。",
+  "avatarPreviewTitle": "头像",
+  "avatarClose": "关闭",
+  "avatarFromGallery": "从相册选择",
+  "avatarRestoreDefault": "恢复默认头像",
+  "avatarUploadFailed": "头像上传失败，请稍后重试",
+  "avatarRestored": "已恢复默认头像",
+  "avatarTooLarge": "图片过大，请选择较小的图片",
+  "avatarInvalid": "无法识别该图片，请重新选择",
+  "changePasswordTitle": "修改密码",
+  "changePasswordCurrent": "当前密码",
+  "changePasswordCurrentHint": "输入当前密码",
+  "changePasswordNew": "新密码",
+  "changePasswordNewHint": "设置新密码",
+  "changePasswordConfirm": "确认新密码",
+  "changePasswordConfirmHint": "再次输入新密码",
+  "changePasswordHint": "密码最多 128 个字符。修改后其他设备会退出登录，当前设备保持登录。",
+  "changePasswordNewRequired": "请输入新密码",
+  "changePasswordTooLong": "密码最多 128 个字符",
+  "changePasswordMismatch": "两次输入的新密码不一致",
+  "changePasswordCurrentInvalid": "当前密码错误",
+  "changePasswordSuccess": "密码已修改",
+  "changePasswordSubmit": "保存",
+  "changePasswordFailed": "修改失败，请稍后重试",
+  "daysTools": "工具",
+  "dayBooksTitle": "纪念日本管理",
+  "dayBookNew": "添加纪念日本",
+  "dayBookEdit": "编辑纪念日本",
+  "dayBookEmpty": "暂无纪念日本",
+  "dayEventsEmpty": "暂无纪念日",
+  "dayNoNext": "支持范围内暂无下一次日期",
+  "dayBirthday": "生日",
+  "dayAnniversary": "纪念日",
+  "dayCountdown": "倒数日",
+  "dayStage": "阶段记录",
+  "dayAdd": "添加纪念日",
+  "dayEdit": "编辑纪念日",
+  "dayName": "名称",
+  "dayDate": "日期",
+  "dayBirthDate": "出生日期",
+  "dayStart": "开始时间",
+  "dayEnd": "结束时间",
+  "dayNextDate": "下次时间",
+  "daySolar": "公历",
+  "dayLunar": "农历",
+  "dayLeapMonth": "闰月",
+  "dayRepeat": "循环",
+  "dayNoRepeat": "不循环",
+  "dayYearly": "每年",
+  "dayFixedDate": "具体日期",
+  "dayIntervalDays": "X 天倒数",
+  "dayStatistic": "统计",
+  "dayAge": "周岁",
+  "dayYears": "年 / 月 / 日",
+  "dayDays": "天数",
+  "dayToday": "今天",
+  "daySaveFailed": "保存失败，请重试",
+  "dayInvalid": "请检查名称、日期与循环设置",
+  "dayRecordInvalid": "日期数据异常，请重新确认日期",
+  "dayDateOutOfRange": "计算结果超出支持范围：{first} 至 {last}",
+  "@dayDateOutOfRange": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "dayTargetUnavailable": "所属纪念日本已不可用，请保留输入后重试",
+  "dayDifference": "日期间隔",
+  "dayOffset": "日期推算",
+  "dayHolidays": "节日",
+  "dayLocal": "本地纪念日本",
+  "dayCloud": "云端纪念日本",
+  "dayBookPending": "待同步",
+  "dayBookStale": "同步身份失效",
+  "dayDay": "日",
+  "dayCalculate": "计算",
+  "dayRemaining": "还有{count}天",
+  "@dayRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayElapsed": "已过{count}天",
+  "@dayElapsed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayAgeValue": "{count}周岁",
+  "@dayAgeValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayDeleteEvent": "确定删除「{name}」吗？",
+  "@dayDeleteEvent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dayDeleteBook": "确定删除纪念日本「{name}」及其中的 {count} 条纪念日吗？",
+  "@dayDeleteBook": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayCloudDeleteHint": "删除将同步到其他设备",
+  "dayNewYear": "元旦",
+  "dayLabour": "劳动节",
+  "dayNational": "国庆节",
+  "daySpring": "春节",
+  "dayLantern": "元宵",
+  "dayDragonBoat": "端午",
+  "dayQixi": "七夕",
+  "dayMidAutumn": "中秋",
+  "dayDoubleNinth": "重阳",
+  "dayNewYearsEve": "除夕",
+  "dayQingming": "清明",
+  "commonPrevious": "上一步",
+  "dayBackupSection": "纪念日",
+  "dayCsvImportSummary": "导入预览",
+  "dayDefaultBookName": "默认纪念日",
+  "dayExportSection": "导出纪念日",
+  "exportSelectAtLeastOne": "请至少选择一项",
+  "importContentDays": "纪念日",
+  "importContentLedger": "记账",
+  "importContentTitle": "选择导入内容",
+  "ledgerExportSection": "导出记账",
+  "daySyncPending": "待同步 {count} 项",
+  "@daySyncPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daySyncRejected": "需修正 {count} 项",
+  "@daySyncRejected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daySyncConflicts": "{count} 个同步冲突",
+  "@daySyncConflicts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayRestorePending": "本地恢复已完成，选中的云端本正在恢复",
+  "shareHandedToSystem": "文件已交给系统分享，请在目标应用确认保存结果",
+  "startupDatabaseTitle": "无法打开当前数据",
+  "startupDatabaseMessage": "当前数据结构与此版本不一致，或数据库暂时无法读取。请保留原数据库文件，从与此版本兼容的备份恢复后重新启动。应用不会自动清空或修改原文件。",
+  "dayCachedExportWarning": "此云端本同步尚未完成或曾发生错误，导出内容可能不是最新。是否继续导出本设备已有内容？",
+  "dayType": "类型",
+  "dayUpcomingTitle": "即将到来的纪念日",
+  "dayAnniversaryValue": "{count}周年",
+  "dayDaysValue": "{count}天",
+  "dayRemainingDuration": "还有{duration}",
+  "dayElapsedDuration": "已过{duration}",
+  "dayTotalDuration": "共{duration}",
+  "@dayAnniversaryValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@dayDaysValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@dayRemainingDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "@dayElapsedDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "@dayTotalDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "dayYearsValue": "{count}年",
+  "dayMonthsValue": "{count}个月",
+  "@dayYearsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@dayMonthsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayRepeatQuestion": "是否循环",
+  "dayCalculationResult": "计算结果：",
+  "dayOffsetBefore": "{count} 天前",
+  "@dayOffsetBefore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayOffsetAfter": "{count} 天后",
+  "@dayOffsetAfter": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayNameHint": "请输入纪念日名称",
+  "dayDaysHint": "请输入天数",
+  "dayDifferenceFullSpan": "相差{years}年{months}个月{days}天",
+  "dayDifferenceTotalDays": "相差{days}天",
+  "@dayDifferenceFullSpan": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      },
+      "months": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@dayDifferenceTotalDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "memosTab": "备忘录",
+  "memoNormal": "普通本",
+  "memoCredentials": "账号密码本",
+  "memoEditCard": "编辑账号密码",
+  "memoName": "名称",
+  "memoEnterName": "请输入名称",
+  "memoDefaultBookName": "默认备忘录",
+  "memoBooks": "备忘录本",
+  "memoBooksManagement": "备忘录本管理",
+  "memoBookType": "备忘录类型",
+  "memoCreateBookTitle": "添加本子",
+  "memoStorageLocal": "本机",
+  "memoStorageCloud": "云端",
+  "memoBookName": "备忘录名称",
+  "memoRename": "重命名",
+  "memoNoBooks": "暂无备忘录本，请先添加一本",
+  "memoNoEntries": "暂无内容",
+  "memoNoSearchResult": "没有匹配的账号密码",
+  "memoUntitled": "未命名笔记",
+  "memoNewNote": "添加笔记",
+  "memoNewCard": "添加账号密码",
+  "memoCredentialsTitle": "账号密码",
+  "memoAccount": "账号",
+  "memoPassword": "密码",
+  "memoFieldIndex": "字段 {index}",
+  "@memoFieldIndex": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "memoFieldName": "字段名称",
+  "memoFieldValue": "内容",
+  "memoAddField": "添加字段",
+  "memoRemoveField": "删除字段",
+  "memoNewField": "新字段",
+  "memoFieldNameRequired": "请先填写字段名称",
+  "memoCardEmpty": "请填写名称或至少一个字段",
+  "memoPhone": "手机号",
+  "memoEmail": "邮箱",
+  "memoLoadFailed": "加载失败，请重试",
+  "memoUnavailable": "本子或账号已变化，请返回重新打开；未保存输入仍按原账号保留",
+  "memoDownloadRequired": "内容尚未完整下载，请联网补全",
+  "memoEditing": "编辑中",
+  "memoSaving": "保存中",
+  "memoSaveFailed": "保存失败，输入已保留，请重试",
+  "memoDeleteEntry": "删除这条记录？",
+  "memoDeleteEntryMessage": "删除后无法恢复。",
+  "memoCopy": "复制",
+  "memoCopied": "已复制",
+  "memoExport": "导出",
+  "memoSelectEntry": "选择笔记",
+  "memoSelectFormat": "选择导出格式",
+  "memoExportFailed": "文档生成失败，可重试当前篇章和格式",
+  "memoExportCancelled": "已取消导出",
+  "memoExportReady": "文件已生成",
+  "memoLocal": "本地备忘录",
+  "memoCloud": "云端备忘录",
+  "memoSearchHint": "搜索字段名称或内容",
+  "memoSortManual": "手动顺序",
+  "memoSortUpdated": "最近编辑",
+  "memoReorder": "拖动排序",
+  "memoReorderFailed": "顺序保存失败，请重试",
+  "memoOrderChanged": "卡片已发生变化，请刷新后再调整",
+  "memoOrderCapacity": "卡片顺序编号已达上限，暂时无法新建，当前草稿已保留",
+  "memoMore": "加载更多",
+  "memoConflictCopy": "冲突副本",
+  "memoDeleteBookMessage": "将删除本子及其 {count} 条内容",
+  "@memoDeleteBookMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memoEntryCount": "{count} 条内容",
+  "@memoEntryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayExpired": "已过期",
+  "dayPresent": "至今",
+  "dayMilestone": "周年",
+  "dayStatisticExample": "示例：{value}",
+  "memoHomeSyncing": "正在刷新备忘录数据",
+  "memoHomeEmpty": "暂无备忘录",
+  "memoSelectBook": "选择备忘录",
+  "memoPullLocalSuccess": "已刷新本地备忘录本数据",
+  "memoPullCloudSuccess": "已同步云端备忘录本数据",
+  "memoPullCloudFailedButLocalOk": "云端同步失败，已刷新本地备忘录本数据",
+  "memoPullLocalFailed": "本地备忘录本刷新失败，请稍后重试",
+  "memoPullCloudFailed": "云端备忘录本刷新失败，请稍后重试",
+  "memoExportSection": "导出备忘录",
+  "fitnessTitle": "健身",
+  "fitnessContinue": "继续训练",
+  "fitnessStart": "开始训练",
+  "fitnessFinish": "结束训练",
+  "fitnessRestart": "重新开始",
+  "fitnessNoData": "暂无内容",
+  "fitnessPlans": "训练计划",
+  "fitnessNewPlan": "添加训练计划",
+  "fitnessTemplates": "训练模板",
+  "fitnessNewTemplate": "添加训练模板",
+  "fitnessPlanLibrary": "计划库",
+  "fitnessTemplateLibrary": "模板库",
+  "fitnessAddToMyPlan": "添加到我的计划",
+  "fitnessAddToMyTemplate": "添加到我的模板",
+  "fitnessAddAgain": "再次添加",
+  "fitnessReuseForTemplate": "复用「{name}」",
+  "@fitnessReuseForTemplate": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "fitnessCreateCopies": "添加副本",
+  "fitnessOfficialSource": "来源：官方训练内容库",
+  "fitnessLibraryAdded": "已添加到当前训练空间",
+  "fitnessExercises": "动作库",
+  "fitnessAddExercises": "添加动作",
+  "fitnessReplace": "替换动作",
+  "fitnessNoExercises": "搜索或调整筛选查找动作",
+  "fitnessName": "名称",
+  "fitnessSearch": "搜索名称与别名",
+  "fitnessPlanned": "未开始",
+  "fitnessActive": "进行中",
+  "fitnessFinished": "已完成",
+  "fitnessDate": "安排日期",
+  "fitnessTime": "时间",
+  "fitnessVolume": "训练量",
+  "fitnessSets": "组数",
+  "fitnessDuration": "时长（秒）",
+  "fitnessAddSet": "添加训练组",
+  "fitnessKeypadAddSet": "添加训练组",
+  "fitnessFillSets": "一键改",
+  "fitnessFillAbove": "向上",
+  "fitnessFillBelow": "向下",
+  "fitnessNextInput": "下一项",
+  "fitnessCopySet": "复制本组",
+  "fitnessDeleteSet": "删除本组",
+  "fitnessRest": "休息计时",
+  "fitnessRestSeconds": "休息时长（秒）",
+  "fitnessWarmupRest": "热身休息（秒）",
+  "fitnessPause": "暂停",
+  "fitnessResume": "继续",
+  "fitnessSkip": "跳过",
+  "fitnessRestRestart": "重新开始",
+  "fitnessRestEnd": "结束",
+  "fitnessRepeatRest": "重复休息",
+  "fitnessStartTimer": "开始计时",
+  "fitnessCopy": "复制",
+  "fitnessMoveUp": "上移",
+  "fitnessMoveDown": "下移",
+  "fitnessUpdateTemplate": "更新模板",
+  "fitnessUpdateTemplateConfirm": "使用本次训练的动作与组配置更新来源模板？模板名称和已有训练记录保持不变。",
+  "fitnessSaveTemplate": "另存模板",
+  "fitnessDeleteMessage": "删除此项目？已生成训练与历史会保留。",
+  "fitnessCompletedChange": "此动作已有完成组，确认替换或移除？",
+  "fitnessInvalidSet": "请填写有效数据后确认此组。",
+  "fitnessIncompleteSet": "此组数据不完整，修改后请重新确认完成。",
+  "fitnessInvalidForm": "请检查名称、数值与必需的动作。",
+  "fitnessActiveExists": "已有进行中训练，请继续或先结束它。",
+  "fitnessPaused": "已暂停",
+  "fitnessStartDate": "开始日期",
+  "fitnessCycleDays": "计划循环周期（含休息）",
+  "fitnessRestDay": "休息日",
+  "fitnessPin": "置顶动作",
+  "fitnessUnpin": "取消置顶",
+  "fitnessPinned": "置顶",
+  "fitnessRecent": "最近使用",
+  "fitnessAll": "全部",
+  "fitnessBodyPart": "部位",
+  "fitnessEquipment": "器械",
+  "fitnessInstructions": "教学步骤",
+  "fitnessPlay": "播放示范",
+  "fitnessPauseMedia": "暂停示范",
+  "fitnessDefaultRest": "默认休息时长",
+  "fitnessTrainingDays": "训练天数",
+  "fitnessShowMore": "加载更多",
+  "fitnessLoadFailed": "加载失败，请重试",
+  "fitnessSaveFailed": "保存失败，输入已保留，请重试。",
+  "fitnessDetails": "明细",
+  "fitnessIncomplete": "健身数据尚未完整下载，请同步完成后重试。",
+  "fitnessReminderPermissionDenied": "系统未允许提醒，不影响训练记录。",
+  "fitnessChest": "胸部",
+  "fitnessBack": "背部",
+  "fitnessShoulders": "肩部",
+  "fitnessBiceps": "肱二头肌",
+  "fitnessTriceps": "肱三头肌",
+  "fitnessAbs": "腹部",
+  "fitnessGlutes": "臀部",
+  "fitnessHamstrings": "腘绳肌",
+  "fitnessQuadriceps": "股四头肌",
+  "fitnessCalves": "小腿",
+  "fitnessUpperArms": "上臂",
+  "fitnessLowerArms": "前臂",
+  "fitnessUpperLegs": "大腿",
+  "fitnessLowerLegs": "小腿",
+  "fitnessWaist": "腰腹",
+  "fitnessCardio": "有氧",
+  "fitnessBarbell": "杠铃",
+  "fitnessDumbbell": "哑铃",
+  "fitnessKettlebell": "壶铃",
+  "fitnessCable": "绳索器械",
+  "fitnessMachine": "固定器械",
+  "fitnessSledMachine": "腿举器械",
+  "fitnessBodyWeightEquipment": "自重",
+  "fitnessWeightedEquipment": "负重器材",
+  "fitnessLats": "背阔肌",
+  "fitnessSpine": "竖脊肌",
+  "fitnessUpperBack": "上背部",
+  "fitnessLowerBack": "下背部",
+  "fitnessRearDeltoids": "三角肌后束",
+  "fitnessRhomboids": "菱形肌",
+  "fitnessTraps": "斜方肌",
+  "fitnessHipFlexors": "髋屈肌群",
+  "fitnessCore": "核心",
+  "fitnessFeet": "足部",
+  "fitnessAnkles": "踝部",
+  "fitnessConflicts": "同步冲突",
+  "fitnessRestCompletedTitle": "休息结束",
+  "fitnessRestCompletedBody": "本次休息已结束，可以继续训练或结束本次训练。",
+  "fitnessUnknownPart": "未知部位",
+  "fitnessBodyFront": "正面",
+  "fitnessBodyBack": "背面",
+  "fitnessNeck": "颈部",
+  "fitnessAdductors": "内收肌",
+  "fitnessAbductors": "外展肌",
+  "fitnessSerratus": "前锯肌",
+  "fitnessLevatorScapulae": "肩胛提肌",
+  "fitnessBand": "弹力带",
+  "fitnessResistanceBand": "阻力带",
+  "fitnessAssistedEquipment": "辅助器械",
+  "fitnessBosu": "半球平衡球",
+  "fitnessElliptical": "椭圆机",
+  "fitnessEzBar": "曲杆杠铃",
+  "fitnessHammer": "锤子",
+  "fitnessMedicineBall": "药球",
+  "fitnessOlympicBarbell": "奥林匹克杠铃",
+  "fitnessRoller": "泡沫轴",
+  "fitnessRope": "绳索",
+  "fitnessSkiErg": "滑雪训练机",
+  "fitnessSmithMachine": "史密斯机",
+  "fitnessStabilityBall": "健身球",
+  "fitnessStationaryBike": "健身单车",
+  "fitnessStepmill": "登阶机",
+  "fitnessTire": "轮胎",
+  "fitnessTrapBar": "六角杠铃",
+  "fitnessUpperBodyErgometer": "上肢功率车",
+  "fitnessAbWheel": "健腹轮",
+  "fitnessAnkleStabilizers": "踝关节稳定肌",
+  "fitnessBrachialis": "肱肌",
+  "fitnessGripMuscles": "握力肌群",
+  "fitnessGroin": "腹股沟",
+  "fitnessHands": "手部",
+  "fitnessLowerAbs": "下腹部",
+  "fitnessObliques": "腹斜肌",
+  "fitnessRotatorCuff": "肩袖肌群",
+  "fitnessShins": "胫前肌群",
+  "fitnessSoleus": "比目鱼肌",
+  "fitnessSternocleidomastoid": "胸锁乳突肌",
+  "fitnessUpperChest": "上胸部",
+  "fitnessWristExtensors": "伸腕肌群",
+  "fitnessWristFlexors": "屈腕肌群",
+  "fitnessWrists": "手腕",
+  "fitnessExerciseCount": "{count} 个动作",
+  "@fitnessExerciseCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessBodyChestRegions": "上胸\n中下胸",
+  "fitnessBodyFrontShoulderRegions": "前束\n中束",
+  "fitnessBodyBackShoulderRegions": "中束\n后束",
+  "fitnessTrainingTime": "训练时间",
+  "fitnessTrainingDuration": "训练时长",
+  "fitnessTrainingBodyParts": "训练部位",
+  "fitnessDurationHours": "{hours}小时",
+  "@fitnessDurationHours": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "fitnessClosed": "已关闭",
+  "fitnessPlanNoStartDate": "未选择",
+  "fitnessExerciseDetail": "动作详情",
+  "fitnessExerciseHistory": "训练历史",
+  "fitnessNoExerciseHistory": "暂无该动作已勾选完成的训练组",
+  "fitnessRestNotRecorded": "-",
+  "fitnessRestInProgress": "计时尚未结束",
+  "fitnessPlanSchedule": "周期安排",
+  "fitnessDeletePlan": "删除计划",
+  "fitnessDeletePlanMessage": "仅删除此计划？已经生成的全部训练与休息记录将保留，包含已完成训练。",
+  "fitnessPlanEnabled": "计划启动",
+  "fitnessPlanStartDateRequired": "请选择开始日期后启动计划",
+  "syncCenterTitle": "同步处理",
+  "syncCenterLoadFailed": "无法读取同步状态，请重试",
+  "syncCenterActionFailed": "操作未完成，数据已保留，请重试",
+  "syncCenterUseRemote": "采用云端",
+  "syncCenterKeepLocal": "保留本地",
+  "syncCenterDecisionConfirm": "确认使用所选版本？云端已删除的内容不会以原身份重新创建，本机内容可以保留为副本。",
+  "syncCenterConflict": "内容冲突，需要选择版本",
+  "syncCenterRejected": "上传被拒绝，需要处理",
+  "syncCenterStale": "同步绑定失效",
+  "syncCenterDeleting": "等待云端确认删除",
+  "syncCenterMoving": "转为本机尚未完成",
+  "syncCenterIncomplete": "尚未完整下载",
+  "syncCenterDeleted": "已删除",
+  "syncCenterCompare": "查看两个版本",
+  "syncCenterLocal": "本地版本",
+  "syncCenterRemote": "云端版本",
+  "syncCenterEmpty": "暂无待处理的同步问题",
+  "syncCenterEdit": "编辑原记录",
+  "syncCenterProtect": "保留为本机副本",
+  "syncCenterDownload": "保护内容并重新下载",
+  "syncCenterPending": "有 {count} 项同步操作需要处理",
+  "@syncCenterPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncCenterUploading": "等待上传",
+  "fitnessPlanUnfilled": "待填充",
+  "fitnessPlanFillHint": "点击模板填充到日期中",
+  "fitnessPlanFillDays": "请为每天选择训练模板或休息",
+  "fitnessPlanSetRest": "设为休息日",
+  "fitnessPlanReplaceHint": "点击模板替换当前安排",
+  "syncCenterDeleteReview": "确认删除「{name}」？云端当前有 {count} 条记录，本机对此本尚未同步的修改也将一并删除。",
+  "@syncCenterDeleteReview": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncCenterMoveReview": "继续将「{name}」转为本机？云端当前有 {count} 条记录，完整副本保存且云端删除确认后才会完成。",
+  "@syncCenterMoveReview": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncCenterDeleteGone": "云端已没有「{name}」，确认结束这次删除？已有保护副本会保留。",
+  "@syncCenterDeleteGone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syncCenterBudget": "内容超过同步大小限制，请缩小内容后重试。",
+  "dataTransferInfoTitle": "功能说明",
+  "daySelectBook": "选择纪念日本",
+  "fitnessExportSection": "导出健身",
+  "fitnessRecordCount": "共 {count} 项数据",
+  "fitnessDefaultSpaceName": "默认健身空间",
+  "fitnessSelectSpace": "选择健身空间",
+  "fitnessNoSpaces": "暂无健身空间",
+  "fitnessSpacesManagement": "健身空间管理",
+  "fitnessCreateSpace": "添加健身空间",
+  "fitnessSpaceName": "空间名称",
+  "fitnessLocalSpaces": "本地健身空间",
+  "fitnessCloudSpaces": "云端健身空间",
+  "fitnessDeleteSpaceMessage": "删除此健身空间及其中的 {count} 项数据？",
+  "privateBookDownloadRequired": "请先完成数据同步",
+  "privateBookMoveToCloudMessage": "「{name}」的数据将上传到云端，并在各设备间同步。",
+  "@privateBookMoveToCloudMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "privateBookMoveToLocalMessage": "「{name}」将从云端删除，仅保留在这台设备上，其他设备将不再能看到它。",
+  "@privateBookMoveToLocalMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "privateBookCopyToLocalMessage": "将「{name}」复制一份到本地，云端原本保持不变。",
+  "@privateBookCopyToLocalMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reminderGlobalTitle": "开启通知",
+  "reminderPlatformUnsupported": "当前平台暂不支持提醒通知。",
+  "reminderDaysTitle": "纪念日提醒",
+  "reminderDaySame": "当天",
+  "reminderDayBefore": "前一天",
+  "reminderThreeDaysBefore": "前三天",
+  "reminderWeekBefore": "前一周",
+  "reminderChooseOneDay": "请至少保留一个提醒日期",
+  "reminderDaysTimeTitle": "提醒时间",
+  "reminderRestTitle": "健身休息结束提醒",
+  "reminderSystemSettings": "提醒说明",
+  "transferCommitting": "正在提交，请稍候",
+  "transferBookTypeMismatch": "该文件来自「{fileType}」，当前目标是「{targetType}」；请返回上一步选择同类型的备忘录本。",
+  "transferDefaultValue": "默认值",
+  "transferDefaultValueHelp": "该字段不从文件读取时使用此值，留空表示空值。",
+  "transferIgnoreField": "不读取该字段",
+  "transferDuplicate": "已导入，将跳过",
+  "transferExportProgress": "正在生成导出文件 · 已生成 {count} 个",
+  "transferFailed": "导入未完成，请检查数据或重试。已成功记录不会重复导入。",
+  "transferFitnessHint": "每项包含完整计划／训练及其动作和组；导入偏好会替换当前健身偏好。",
+  "transferMappingHelp": "自动识别结果均可修改：选择「不读取该字段」时不会从文件取值，改用下方默认值。* 表示必填。",
+  "transferMatchingTitle": "动作匹配",
+  "transferPendingSync": "本地导入已完成，云同步由同步队列继续处理。",
+  "transferRecord": "第 {lines} 条 · {title}",
+  "transferRequired": "请选择字段",
+  "transferResult": "导入 {imported} 条 · 跳过 {skipped} 条 · 失败 {failed} 条",
+  "transferSelectAll": "全选有效记录",
+  "transferSelectCategory": "请选择已有分类",
+  "transferSelectExercise": "请选择动作",
+  "transferSummary": "共 {total} 条 · 有效 {valid} · 重复 {duplicates} · 错误 {errors} · 已选 {selected}",
+  "transferTarget": "目标：{name}",
+  "transferUnnamed": "未命名",
+  "transferValid": "可以导入",
+  "transferFieldLabel": "{field, select, faccount {账号} famount {金额} fbody {正文} fcalendar {历法} fcategory {分类} fcategory_icon {分类图标} fcompleted {完成} fcountdown_mode {倒数方式} fcreated_at {创建时间} fcurrency {币种} fcycle_days {循环天数} fdate {日期} fday {训练日（从 1 开始）} fdays {训练日安排} femail {邮箱} fend_calendar {结束历法} fend_date {结束日期} fend_is_leap_month {结束闰月} fentity_type {数据类型} fexercise {动作} fexercises {动作与组} fgeneration_state {计划执行状态} fid {记录关联标识} finterval_days {间隔天数} fis_leap_month {闰月} fkind {组类型} fname {名称} fnote {备注} foccurrence_key {计划发生标识} fpassword {密码} fpending_schedule {待生效安排} fphone {电话} fpreferences {健身偏好} fremark {备注} frepeat_type {重复规则} freps {次数} frest_seconds {休息秒数} frest_timer {计时状态} frun_segments {执行时段} fscheduled_date {训练日期} fset_count {组数} fsource_kind {训练来源} fsource_plan_id {关联计划} fsource_plan_name {关联计划名称} fsource_template_id {关联模板} fstart_calendar {开始历法} fstart_date {开始日期} fstart_is_leap_month {开始闰月} fstatistic_type {统计方式} fstatus {状态} fsub_category {二级分类} fsub_category_icon {二级分类图标} ftitle {标题} ftype {类型} fupdated_at {修改时间} fweight {重量} fsets {组明细} fslot {训练安排} fday_index {训练日序号（从 0 开始）} other {欄位}}",
+  "transferCardFields": "卡片字段",
+  "transferCardFieldsHelp": "每列都可作为卡片字段：关闭开关或清空名称即不导入该列，字段名可改成你习惯的叫法。",
+  "transferCardFieldName": "字段名",
+  "transferJsonRoot": "整个 JSON 对象",
+  "fitnessCustom": "自定义",
+  "fitnessCustomCreate": "添加自定义动作",
+  "fitnessCustomEdit": "编辑自定义动作",
+  "fitnessCustomName": "动作名称",
+  "fitnessCustomRequired": "请填写此必填项",
+  "fitnessCustomUpload": "上传图片",
+  "fitnessCustomImageTooLarge": "请选择小于 48 KB 的图片",
+  "fitnessCustomDeleteConfirm": "删除这个自定义动作？已有训练记录会保留。",
+  "fitnessCustomLimit": "自定义动作容量已满，请删除不用的动作，或将图片换为图标。",
+  "commonNameInvalid": "名称需包含可见文字，且不超过 {max} 个字符",
+  "@commonNameInvalid": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appUpdateTitle": "检查更新",
+  "appUpdateNotConfigured": "此版本尚未配置更新源。",
+  "appUpdateUnsupported": "应用内更新仅支持 Android arm64 正式版。",
+  "appUpdatePermission": "请在系统设置中允许本应用安装更新，然后返回继续。",
+  "appUpdateFailed": "更新失败，请检查网络和剩余存储空间后重试。",
+  "appUpdateCurrentVersion": "当前版本",
+  "appUpdateWorking": "正在处理…",
+  "appUpdateDownloading": "正在下载",
+  "appUpdateLatest": "当前已是最新版本。",
+  "appUpdateClose": "关闭",
+  "appUpdateDownload": "更新",
+  "appUpdateInstall": "安装",
+  "syncCenterPullFailed": "下载的记录未能应用，请重试同步",
+  "localBookMigrationTitle": "迁移本地本到云端？",
+  "localBookMigrationMessage": "检测到记账、纪念日、备忘录和健身中共有 {count} 个本地本。是否全部迁移到当前账号的云端，并在各设备间同步？选择“保留本地”则继续仅保存在这台设备上。",
+  "localBookMigrationConfirm": "迁移到云端",
+  "localBookMigrationKeepLocal": "保留本地",
+  "localBookMigrationFailed": "迁移未完成，本地内容已保留，请重试。",
+  "localBookMigrationSuccess": "迁移成功",
+  "reminderExactPermissionTitle": "允许准时提醒",
+  "memoSelectCredentials": "选择账号记录",
+  "memoSelectedEntries": "已选择 {count} 条",
+  "@memoSelectedEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memoPng": "图片（PNG）",
+  "memoPngTooLarge": "内容过长，无法生成单张图片，请选择 PDF、Word 或 Markdown。",
+  "shellMemos": "备忘",
+  "shellAddMoney": "记一笔",
+  "shellAddDay": "记日子",
+  "shellMoneyDetails": "明细",
+  "shellAddMemo": "写备忘",
+  "shellFitnessTraining": "训练",
+  "shellMemoNotes": "备忘录",
+  "homeViewAnalytics": "查看统计",
+  "shellFitnessPlans": "计划",
+  "homeMonthlyBills": "{month}月账单",
+  "shellMoney": "记账",
+  "shellDays": "日子",
+  "shellFitness": "健身",
+  "shellChooseBook": "切换本子",
+  "homeDailyExpenseTrend": "每日支出",
+  "shellChooseSpace": "切换训练空间",
+  "welcomeDomainsTitle": "记录生活的每一面",
+  "appearanceThemeJournal": "温暖手账",
+  "appearanceThemeClassicDescription": "品牌蓝与柔和圆角",
+  "appearanceThemeMinimal": "极简清单",
+  "appearanceThemeClassic": "经典蓝",
+  "appearanceThemeTitle": "外观与主题",
+  "appearanceThemeMinimalDescription": "冷白蓝灰与清晰边界",
+  "appearanceThemeJournalDescription": "米纸森林绿与轻纸感",
+  "appearanceThemeSaveFailed": "外观已应用，但偏好保存失败，请重试",
+  "shellAddFitness": "新建",
+  "shellAddCalendar": "记录这一天",
+  "fitnessCalendarPlanned": "计划",
+  "fitnessCalendarRest": "休息",
+  "txEditorContextUnavailable": "账本或账号已变化，请返回后重新打开；本次输入仍保留",
+  "appearanceThemeIntro": "选择喜欢的视觉风格",
+  "appearanceThemeNote": "风格与显示模式独立设置，选择后立即生效。",
+  "dayHeroDaysBefore": "天前",
+  "dayHeroDaysAfter": "天后",
+  "homeSummaryLoadFailed": "支出汇总读取失败",
+  "homeSummaryCachedFailure": "读取失败，显示上次结果",
+  "txAmountInvalid": "请输入大于 0 且最多两位小数的金额",
+  "txDivisionByZero": "不能除以 0，请修改金额",
+  "txExpressionInvalid": "请输入完整有效的算式",
+  "@categoryTemplateRestoreMessage": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryConflictCloud": "云端版本",
+  "@categoryTemplatePending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryConflictChooseLocal": "采用已提交的本地版本？之后的本机编辑会单独保留，等待继续同步。",
+  "categoryTemplateRestoreTitle": "恢复原分类",
+  "recurringTransactionTimeZone": "记账时区",
+  "categoryConflictSubmitted": "已提交的本地版本",
+  "categoryTemplateRestoreMessage": "以下模板对应的原分类曾被删除：\n{names}\n是否恢复原分类及原有设置？不会创建第二个分类，也不会恢复已删除的交易。",
+  "recurringTransactionTimeZoneInvalid": "请选择有效的 IANA 时区",
+  "categoryTemplateRestoreConfirm": "恢复原分类",
+  "categoryConflictRefreshRequired": "版本信息尚未就绪，请先重新读取。",
+  "recurringTransactionAmountPrecision": "金额需大于 0，最多 28 位整数和 10 位小数。",
+  "categoryConflictExplanation": "本地版本来自这次上传，不包含之后的编辑。请选择此分类要采用的版本。",
+  "categoryConflictRestoreTitle": "恢复云端已删除分类",
+  "recurringTransactionTimeZoneLocked": "已生成过交易，不能更改时区；如需调整，请新建周期规则。",
+  "categoryTemplatePendingLabel": "等待确认",
+  "categoryConflictRetry": "重试确认",
+  "recurringTransactionDayOfWeek": "每周星期几",
+  "categoryConflictChooseCloud": "采用所示云端版本？本次冲突的本地提交将不再应用，之后的本机编辑会单独保留。",
+  "categoryTemplateNoChanges": "没有新增或恢复分类",
+  "categoryConflictDeleteTitle": "确认删除分类",
+  "categoryConflictType": "分类类型",
+  "categoryConflictUnavailable": "此版本内容暂不可读，请重新读取。",
+  "categoryTemplateBlockedParentHierarchy": "原父分类的层级已改变，不能添加此子分类",
+  "categoryTemplateBlockedDuplicate": "同名分类已存在，未添加此模板",
+  "categoryConflictChanged": "分类版本已变化，请重新比较后确认。",
+  "categoryConflictUseLocal": "采用本地版本",
+  "categoryTemplateBlockedParentDuplicate": "同名父分类已存在，未添加此模板",
+  "categoryConflictPosition": "排序值：{value}",
+  "categoryConflictRestoreMessage": "云端已删除此分类。是否按已提交的本地版本恢复同一分类？不会创建第二个分类。",
+  "@categoryConflictPosition": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryTemplateBlockedLabel": "未添加",
+  "categoryConflictRestore": "确认恢复",
+  "categoryConflictParentMissing": "父分类尚未下载",
+  "categoryConflictRefresh": "重新读取",
+  "categoryTemplatePending": "{count} 个分类等待云端确认，请到同步处理查看",
+  "recurringTransactionIntervalInvalid": "间隔须为 1 到 10000 的整数。",
+  "categoryConflictDeleteMessage": "本地提交是删除操作。采用后将删除云端此分类，请先核对两个版本。",
+  "recurringTransactionMonthOfYear": "每年第几个月",
+  "categoryTemplateRestored": "已恢复 {count} 个原分类",
+  "recurringTransactionTimeZoneHint": "按此时区的日历日期生成，各设备保持一致。",
+  "categoryConflictPending": "确认结果尚未收到。请重试原确认，暂时不能选择其他版本。",
+  "@categoryTemplateRestored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryConflictUseCloud": "采用云端版本",
+  "reminderDaysDailyTitle": "每日提醒",
+  "reminderDaysDailyHint": "使用共用提醒时间，固定提醒节点优先，不重复提醒。",
+  "reminderDaysDailySelect": "选择纪念日（可多选）",
+  "reminderDaysDailyChooseOne": "请至少选择一个生日、纪念日或倒数日。",
+  "reminderDaysDailyEmpty": "暂无可用于每日提醒的纪念日。",
+  "reminderDaysDailyLoadFailed": "纪念日加载失败，请重试。",
+  "reminderDaysDailyAccountChanged": "账号已切换，请关闭后重新选择。",
+  "syncCenterTransactionTitle": "记账记录 · {category}",
+  "syncCenterCategoryTitle": "分类 · {name}",
+  "syncCenterBookContext": "账本：{name}",
+  "syncCenterUnknownCategory": "无法读取分类名称",
+  "syncCenterEntityTitle": "{type} · {name}",
+  "syncCenterTypeLedger": "账本",
+  "syncCenterTypeDayBook": "纪念日本",
+  "syncCenterTypeDayEvent": "纪念日记录",
+  "syncCenterTypeMemoBook": "备忘录本",
+  "syncCenterTypeMemoEntry": "备忘录记录",
+  "syncCenterTypeFitnessSpace": "健身空间",
+  "syncCenterTypeFitnessWorkout": "健身记录",
+  "syncCenterTypeFitnessPlan": "训练计划",
+  "syncCenterTypeFitnessTemplate": "训练模板",
+  "syncCenterTypeMember": "账本成员",
+  "syncCenterTypeRecurring": "周期记账",
+  "syncCenterTypeExchangeRate": "汇率",
+  "syncCenterTypeRecord": "记录",
+  "syncCenterPendingRecordHint": "内容已保存在本机，等待上传到云端。",
+  "syncCenterAwaitingReceiptHint": "上传结果尚未确认，重试会使用原请求继续同步。本机内容仍保留。",
+  "syncCenterRecordUnavailable": "原内容已删除或暂时无法读取，请重新同步后检查。",
+  "syncCenterLastFailure": "上次同步未完成：{reason}"
+}

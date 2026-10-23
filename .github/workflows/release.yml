@@ -1,0 +1,189 @@
+name: Release
+run-name: "chore: 发布客户端 v${{ inputs.version }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "发布版本号（例如 1.1.0，必须与 pubspec.yaml 一致）"
+        required: true
+        type: string
+      prerelease:
+        description: "是否 Pre-release"
+        required: false
+        default: "false"
+      draft:
+        description: "保存为草稿，后端切换确认后再公开"
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: "3.47.2"
+  APP_NAME: "Sesame-Notes-prod"
+
+jobs:
+  android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: 写入并校验发布配置
+        shell: pwsh
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          UPDATE_MANIFEST_URL: ${{ secrets.UPDATE_MANIFEST_URL }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          try {
+            $null = New-Item -ItemType Directory -Force -Path Temp
+            # 空服务地址允许使用本地功能；空更新地址禁用更新，配置只保存在本轮构建目录。
+            @{
+              APP_ENV = 'prod'
+              API_BASE_URL = [string]$env:API_BASE_URL
+              UPDATE_MANIFEST_URL = [string]$env:UPDATE_MANIFEST_URL
+            } | ConvertTo-Json | Set-Content -LiteralPath Temp/release-config.json -Encoding utf8
+            ./scripts/build_android.ps1 -Environment prod -ConfigPath Temp/release-config.json -ValidateOnly
+          } catch {
+            Write-Error "发布配置校验失败：$($_.Exception.Message)"
+            exit 1
+          }
+
+      - name: 从应用配置读取发布版本
+        id: meta
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          VERSION=$(sed -n 's/^version: //p' pubspec.yaml)
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+\+[0-9]+$ ]] || { echo "无效的应用版本号"; exit 1; }
+          # 手动输入仅用于运行标题，实际发布版本必须与应用配置一致。
+          if [[ "$RELEASE_VERSION" != "${VERSION%%+*}" ]]; then
+            echo "::error::输入版本与 pubspec.yaml 不一致，请填写 ${VERSION%%+*}"
+            exit 1
+          fi
+          TAG_NAME="v${VERSION%%+*}"
+          if [[ "$GITHUB_REF" == refs/tags/* && "${GITHUB_REF#refs/tags/}" != "$TAG_NAME" ]]; then
+            echo "发布标签与 pubspec.yaml 版本不一致"
+            exit 1
+          fi
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          # 上游默认的 'tools' 包已从 SDK 仓库下线，照默认值安装会直接失败；
+          # 这里只装 platform-tools，其余组件由下一步显式安装。
+          packages: "platform-tools"
+
+      - name: 安装 Android SDK 组件
+        run: |
+          # JNI/通知插件分别固定 compileSdk 35/36，flutter_secure_storage 11 要求 37。
+          # API 37 在 SDK 仓库里的包名带小版本号：platforms;android-37.0（不存在 platforms;android-37）。
+          sdkmanager --install "platform-tools" "platforms;android-35" "platforms;android-36" "platforms;android-37.0" "build-tools;36.0.0"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
+          cache: true
+
+      - name: 安装依赖
+        run: flutter pub get
+
+      - name: 还原生产 keystore 并写入 key.properties
+        shell: pwsh
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./scripts/android_keystore/restore_android_keystore.ps1
+
+      - name: 构建 Release APK
+        shell: pwsh
+        run: |
+          # 限定 arm64-v8a，避免默认 universal 包同时包含四个 ABI 而扩大体积。
+          # 公网 API 与可选更新地址来自私有发布配置。
+          ./scripts/build_android.ps1 -Environment prod -ConfigPath Temp/release-config.json
+
+      - name: 检查完整 APK 原生架构
+        run: python3 -B scripts/check_apk_architecture.py --apk build/prod/${{ env.APP_NAME }}-${{ steps.meta.outputs.tag_name }}.apk --abi arm64-v8a
+
+      - name: 从提交历史生成 Release Notes
+        run: |
+          set -euo pipefail
+          # 只列上一个版本标签之后的提交；首个版本没有上一个标签，退回完整历史。
+          PREVIOUS=$(git describe --tags --abbrev=0 --match 'v*' HEAD^ 2>/dev/null || true)
+          if [[ -n "$PREVIOUS" ]]; then
+            RANGE="$PREVIOUS..HEAD"
+          else
+            RANGE="HEAD"
+          fi
+          COMMITS=$(git log --no-merges --pretty=format:"- %s (%an)" "$RANGE")
+
+          # 使用花括号组逐行写入，避免 heredoc 终止符与 YAML 缩进冲突。
+          {
+            echo "## 变更记录"
+            echo "$COMMITS"
+          } > "$RUNNER_TEMP/sesame-release-notes.md"
+
+      - name: 生成应用内更新元数据
+        env:
+          TAG_NAME: ${{ steps.meta.outputs.tag_name }}
+        run: |
+          VERSION=$(sed -n 's/^version: //p' pubspec.yaml)
+          python3 scripts/generate_update_manifest.py \
+            --apk "build/prod/${APP_NAME}-${TAG_NAME}.apk" \
+            --version "$VERSION" \
+            --repository "$GITHUB_REPOSITORY" \
+            --notes "$RUNNER_TEMP/sesame-release-notes.md" \
+            --output build/prod/update.prod.json
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.meta.outputs.tag_name }}
+          name: ${{ steps.meta.outputs.tag_name }}
+          target_commitish: ${{ github.sha }}
+          draft: ${{ inputs.draft }}
+          prerelease: ${{ github.event.inputs.prerelease == 'true' }}
+          body_path: ${{ runner.temp }}/sesame-release-notes.md
+          files: |
+            build/prod/${{ env.APP_NAME }}-*.apk
+            build/prod/update.prod.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 清理本轮私有发布配置
+        if: always()
+        shell: pwsh
+        run: |
+          try {
+            if (Test-Path -LiteralPath Temp/release-config.json) {
+              Remove-Item -LiteralPath Temp/release-config.json -ErrorAction Stop
+            }
+          } catch {
+            Write-Error "清理发布配置失败：$($_.Exception.Message)"
+            exit 1
+          }

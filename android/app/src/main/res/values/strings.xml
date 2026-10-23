@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 通用资源 -->
+    <string name="app_name">芝麻记</string>
+
+    <string name="update_download_channel">更新下载</string>
+    <string name="update_download_background">正在后台下载，可继续使用应用</string>
+    <string name="update_download_running">正在下载更新</string>
+    <string name="update_download_waiting">正在等待下载</string>
+    <string name="update_download_paused">等待网络恢复后继续下载</string>
+    <string name="update_download_progress">已下载 %1$d%%，点击返回应用</string>
+    <string name="update_download_ready">更新已下载</string>
+    <string name="update_download_install">点击打开应用并安装更新</string>
+    <string name="update_download_failed">更新下载失败</string>
+    <string name="update_download_retry">可在应用中重试下载</string>
+</resources>

@@ -1,0 +1,130 @@
+import 'package:flutter/material.dart';
+import 'package:sesame_notes/data/models.dart';
+import 'package:sesame_notes/l10n/app_localizations.dart';
+import 'member_avatar.dart';
+
+/// 协作头像「单个槽位」:无头像、缓存加载中或失败统一回退全局默认头像资产。
+///
+/// 头像经 [MemberAvatar] 按 linkedAccountId(云端 userId)走本地磁盘缓存,
+/// 断网时也能显示已缓存过的成员头像。
+class CollaboratorAvatarSlot extends StatelessWidget {
+  final LedgerMemberDisplay? member;
+  final double radius;
+
+  const CollaboratorAvatarSlot({
+    super.key,
+    required this.member,
+    this.radius = 11,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final m = member;
+    if (m == null) {
+      return MemberAvatar(userId: null, size: radius * 2);
+    }
+    final uid = m.linkedAccountId;
+    return MemberAvatar(
+      userId: uid,
+      version: m.avatarVersion,
+      hasAvatar:
+          uid != null &&
+          uid.isNotEmpty &&
+          m.avatarUrl != null &&
+          m.avatarUrl!.trim().isNotEmpty,
+      size: radius * 2,
+    );
+  }
+}
+
+/// 创建人和编辑人重叠头像；同人合并，两人均为空时隐藏。
+class CollaboratorAvatarGroup extends StatelessWidget {
+  final LedgerMemberDisplay? creator;
+  final LedgerMemberDisplay? editor;
+  final String? creatorUserId;
+  final String? editorUserId;
+  final double radius;
+  final bool membersLoading;
+
+  const CollaboratorAvatarGroup({
+    super.key,
+    required this.creator,
+    required this.editor,
+    required this.creatorUserId,
+    required this.editorUserId,
+    this.radius = 11,
+    this.membersLoading = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    // 成员表尚未加载:统一显示默认头像占位(数量与最终一致),
+    // 数据到位后再切换真实头像。
+    if (membersLoading) {
+      if (creatorUserId == null && editorUserId == null) {
+        return const SizedBox.shrink();
+      }
+      final samePerson = creatorUserId == editorUserId;
+      final overlap = radius * 0.32;
+      final placeholder = CollaboratorAvatarSlot(member: null, radius: radius);
+      if (!samePerson) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            placeholder,
+            Transform.translate(
+              offset: Offset(-overlap, 0),
+              child: placeholder,
+            ),
+          ],
+        );
+      }
+      return placeholder;
+    }
+
+    // 两者 userId 都为空(如历史数据无协作字段)→ 不展示
+    if (creatorUserId == null && editorUserId == null) {
+      return const SizedBox.shrink();
+    }
+
+    final samePerson = creatorUserId == editorUserId;
+
+    // Tooltip 展示名:昵称恒非空(账号注册即分配);解析不到时统一「未知」,
+    // 禁止裸显 member id / user id。
+    final creatorName = creator?.displayName.isNotEmpty == true
+        ? creator!.displayName
+        : l10n.aaUnknownUser;
+    final editorName = editor?.displayName.isNotEmpty == true
+        ? editor!.displayName
+        : l10n.aaUnknownUser;
+
+    // 同一人 → 1 个头像
+    if (samePerson) {
+      return Tooltip(
+        message: l10n.sharedTxCreatedAndEditedBy(creatorName),
+        child: CollaboratorAvatarSlot(member: creator, radius: radius),
+      );
+    }
+
+    // 两人 → 2 个重叠头像(编辑者左移叠放在创建者之上)
+    final overlap = radius * 0.32;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Tooltip(
+          message: l10n.sharedTxCreatedBy(creatorName),
+          child: CollaboratorAvatarSlot(member: creator, radius: radius),
+        ),
+        Transform.translate(
+          offset: Offset(-overlap, 0),
+          child: Tooltip(
+            message: l10n.sharedTxEditedBy(editorName),
+            child: CollaboratorAvatarSlot(member: editor, radius: radius),
+          ),
+        ),
+      ],
+    );
+  }
+}

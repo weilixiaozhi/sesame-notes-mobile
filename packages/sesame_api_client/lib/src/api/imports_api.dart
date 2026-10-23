@@ -1,0 +1,152 @@
+//
+// AUTO-GENERATED FILE, DO NOT MODIFY!
+//
+
+import 'dart:async';
+
+import 'package:built_value/json_object.dart';
+import 'package:built_value/serializer.dart';
+import 'package:dio/dio.dart';
+
+import 'package:sesame_api_client/src/api_util.dart';
+import 'package:sesame_api_client/src/model/error.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports200_response.dart';
+import 'package:sesame_api_client/src/model/post_ledgers_by_ledger_id_imports_request.dart';
+
+class ImportsApi {
+  final Dio _dio;
+
+  final Serializers _serializers;
+
+  const ImportsApi(this._dio, this._serializers);
+
+  /// postLedgersByLedgerIdImports
+  ///
+  ///
+  /// Parameters:
+  /// * [expectedSyncId]
+  /// * [expectedCurrency]
+  /// * [requireUnarchived]
+  /// * [ledgerId]
+  /// * [postLedgersByLedgerIdImportsRequest]
+  /// * [idempotencyKey]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [PostLedgersByLedgerIdImports200Response] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<PostLedgersByLedgerIdImports200Response>>
+      postLedgersByLedgerIdImports({
+    required String expectedSyncId,
+    required String expectedCurrency,
+    required bool requireUnarchived,
+    required String ledgerId,
+    required PostLedgersByLedgerIdImportsRequest
+        postLedgersByLedgerIdImportsRequest,
+    String? idempotencyKey,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/v1/ledgers/{ledger_id}/imports'.replaceAll(
+        '{' r'ledger_id' '}',
+        encodeQueryParameter(_serializers, ledgerId, const FullType(String))
+            .toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        if (idempotencyKey != null) r'idempotency-key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'expected_sync_id': encodeQueryParameter(
+          _serializers, expectedSyncId, const FullType(String)),
+      r'expected_currency': encodeQueryParameter(
+          _serializers, expectedCurrency, const FullType(String)),
+      r'require_unarchived': encodeQueryParameter(
+          _serializers, requireUnarchived, const FullType(bool)),
+    };
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(PostLedgersByLedgerIdImportsRequest);
+      _bodyData = _serializers.serialize(postLedgersByLedgerIdImportsRequest,
+          specifiedType: _type);
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(
+          _dio.options,
+          _path,
+          queryParameters: _queryParameters,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    PostLedgersByLedgerIdImports200Response? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType:
+                  const FullType(PostLedgersByLedgerIdImports200Response),
+            ) as PostLedgersByLedgerIdImports200Response;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<PostLedgersByLedgerIdImports200Response>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+}

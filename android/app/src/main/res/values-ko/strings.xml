@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 韩文启动器显示「芝麻记」 -->
+    <string name="app_name">芝麻記</string>
+    <string name="update_download_channel">앱 업데이트</string>
+    <string name="update_download_background">백그라운드에서 다운로드 중</string>
+    <string name="update_download_ready">업데이트 다운로드 완료</string>
+    <string name="update_download_install">앱을 열어 업데이트 설치</string>
+    <string name="update_download_failed">업데이트 다운로드 실패</string>
+    <string name="update_download_retry">앱에서 다운로드를 다시 시도할 수 있습니다</string>
+</resources>
