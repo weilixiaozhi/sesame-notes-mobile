@@ -75,8 +75,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    // 使用与 MainApp 相同的常驻装配，注册会话生命周期监听。
-    container.read(appSessionLifecycleProvider);
+    // 持续订阅模拟 MainApp 的 ref.watch，让常驻装配始终有活跃所有者。
+    final lifecycle = container.listen(appSessionLifecycleProvider, (_, _) {});
+    addTearDown(lifecycle.close);
     final coordinator =
         container.read(realtimeCoordinatorProvider) as _RecordingCoordinator;
     expect(coordinator.startCalls, 0, reason: '未登录不得启动实时通知');
@@ -88,13 +89,13 @@ void main() {
         .signIn(
           const AuthSession(accessToken: 'at', userId: 'u1', deviceId: 'd1'),
         );
-    await Future<void>.delayed(Duration.zero);
+    await container.pump();
 
     expect(coordinator.startCalls, 1, reason: '登录成功必须启动实时通知');
 
     // 登出：清空会话。
     container.read(authSessionProvider.notifier).signOut();
-    await Future<void>.delayed(Duration.zero);
+    await container.pump();
 
     expect(coordinator.stopCalls, 2, reason: '登出必须再次停止已启动的实时通知');
   });
@@ -121,12 +122,14 @@ void main() {
         container.read(realtimeCoordinatorProvider) as _RecordingCoordinator;
     expect(coordinator.startCalls, 0);
 
-    container.read(appSessionLifecycleProvider);
-    await Future<void>.delayed(Duration.zero);
+    // 首帧挂载时建立持续所有者，之后的会话清空仍由同一装配接收。
+    final lifecycle = container.listen(appSessionLifecycleProvider, (_, _) {});
+    addTearDown(lifecycle.close);
+    await container.pump();
 
     expect(coordinator.startCalls, 1, reason: '启动恢复不能依赖未来的会话变化');
     container.read(authSessionProvider.notifier).signOut();
-    await Future<void>.delayed(Duration.zero);
+    await container.pump();
     expect(coordinator.stopCalls, 1);
   });
 }
