@@ -104,6 +104,9 @@ void main() {
     );
     container = ProviderContainer(
       overrides: [
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'http://test.local'),
+        ),
         databaseProvider.overrideWithValue(database),
         repositoryProvider.overrideWithValue(repository),
         apiClientProvider.overrideWithValue(client),

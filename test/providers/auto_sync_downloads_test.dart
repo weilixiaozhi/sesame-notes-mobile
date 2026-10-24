@@ -153,6 +153,10 @@ void main() {
     disposed = false;
     container = ProviderContainer(
       overrides: [
+        // 自动同步测试声明服务配置，具体轮次仍由测试同步器控制。
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'https://sync.test'),
+        ),
         databaseProvider.overrideWithValue(db),
         apiClientProvider.overrideWithValue(SesameApiClient()),
         cloudNetworkEventsProvider.overrideWithValue(network.stream),

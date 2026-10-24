@@ -5,11 +5,14 @@ import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:sesame_notes/infrastructure/account/cloud_profile_cache.dart';
+import 'package:sesame_notes/infrastructure/api/api_client_provider.dart';
 import 'package:sesame_notes/infrastructure/api/cloud_connection.dart';
 import 'package:sesame_notes/infrastructure/sharing/sharing_service.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/features/ledgers/application/ledger_actions.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/sync/storage/change_recorder_impl.dart';
 
@@ -26,10 +29,14 @@ void main() {
     final sharing = _Sharing();
     final repo = LocalRepository(
       db,
+      accountIdGetter: () => 'account',
       changeTracker: ChangeRecorderImpl(db, accountIdGetter: () => 'account'),
     );
     final container = ProviderContainer(
       overrides: [
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'https://example.test'),
+        ),
         cloudNetworkEventsProvider.overrideWithValue(events.stream),
         databaseProvider.overrideWithValue(db),
         repositoryProvider.overrideWithValue(repo),
@@ -41,6 +48,11 @@ void main() {
       await events.close();
       await db.close();
     });
+    // 断网启动保留缓存账号，但没有可用于发起云请求的内存会话。
+    container
+        .read(accountStateProvider.notifier)
+        .restoreFromCache(const CloudProfile(userId: 'account'));
+    expect(container.read(authSessionProvider), isNull);
     container.read(cloudConnectionProvider);
     events.add(false);
     final actions = container.read(ledgerActionsProvider);

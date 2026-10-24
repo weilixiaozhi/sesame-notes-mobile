@@ -46,6 +46,7 @@ class _MemorySecureStore implements SecureStore {
 /// 测试账号（与跨端 golden 测试同 ownerId）。
 const testUserId = '018f7f95-4b8a-4f5e-8d0c-2ebf4682c761';
 
+/// 验证账本归属转换及同步队列在已配置云服务下的行为。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => resetGlobalTestState());
@@ -73,6 +74,10 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     container = ProviderContainer(
       overrides: [
+        // 服务能力与账本同步夹具使用同一个模拟地址。
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'https://sync.test'),
+        ),
         databaseProvider.overrideWithValue(db),
         repositoryProvider.overrideWithValue(repo),
         syncServiceProvider.overrideWithValue(sync.service),

@@ -50,6 +50,7 @@ days.DayEvent _event(String name) => days.DayEvent(
   updatedAt: DateTime.utc(2026, 9, 7),
 );
 
+/// 验证日子变更上传、拒收重试及云本转本地的完整数据保留。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late SesameDatabase db;
@@ -494,6 +495,9 @@ void main() {
   test('转换被拒绝后协调器可重试，完整下载并发布原隐藏副本', () async {
     final container = ProviderContainer(
       overrides: [
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'http://test.local'),
+        ),
         databaseProvider.overrideWithValue(db),
         dayRepositoryProvider.overrideWithValue(repository),
         dayDefinitionValidatorProvider.overrideWithValue(validateAndProject),

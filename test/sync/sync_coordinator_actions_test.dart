@@ -21,6 +21,7 @@ import '../helpers/test_isolation.dart';
 
 class _MockSyncService extends Mock implements SyncService {}
 
+/// 验证已配置账号服务的同步调度与用户决策顺序。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late SesameDatabase db;
@@ -41,7 +42,9 @@ void main() {
     when(() => service.refreshCategoryConflicts()).thenAnswer((_) async {});
     when(() => service.fitnessEnabled).thenReturn(false);
     when(() => service.currentAccountIdGetter).thenReturn(() => 'account-a');
-    client = SesameApiClient(dio: Dio());
+    client = SesameApiClient(
+      dio: Dio(BaseOptions(baseUrl: 'http://test.local')),
+    );
     client.dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -79,6 +82,9 @@ void main() {
     });
     container = ProviderContainer(
       overrides: [
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'http://test.local'),
+        ),
         databaseProvider.overrideWithValue(db),
         apiClientProvider.overrideWithValue(client),
         syncServiceProvider.overrideWithValue(service),
@@ -318,6 +324,9 @@ void main() {
   test('同一账号刷新令牌时在途同步服务保持有效，换号才重建', () async {
     final actual = ProviderContainer(
       overrides: [
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'http://test.local'),
+        ),
         databaseProvider.overrideWithValue(db),
         apiClientProvider.overrideWithValue(client),
       ],

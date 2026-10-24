@@ -34,6 +34,9 @@ void main() {
   test('读取账号事实不会隐式启动实时连接', () async {
     final container = ProviderContainer(
       overrides: [
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'https://example.test'),
+        ),
         cloudNetworkEventsProvider.overrideWithValue(
           const Stream<bool>.empty(),
         ),
@@ -59,6 +62,9 @@ void main() {
   test('会话建立后启动实时通知，会话清空后停止', () async {
     final container = ProviderContainer(
       overrides: [
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'https://example.test'),
+        ),
         cloudNetworkEventsProvider.overrideWithValue(
           const Stream<bool>.empty(),
         ),
@@ -74,6 +80,7 @@ void main() {
     final coordinator =
         container.read(realtimeCoordinatorProvider) as _RecordingCoordinator;
     expect(coordinator.startCalls, 0, reason: '未登录不得启动实时通知');
+    expect(coordinator.stopCalls, 1, reason: '常驻装配接管未登录状态时必须保持连接停止');
 
     // 登录：写入内存会话。
     container
@@ -89,12 +96,15 @@ void main() {
     container.read(authSessionProvider.notifier).signOut();
     await Future<void>.delayed(Duration.zero);
 
-    expect(coordinator.stopCalls, 1, reason: '登出必须停止实时通知');
+    expect(coordinator.stopCalls, 2, reason: '登出必须再次停止已启动的实时通知');
   });
 
   test('常驻装配接管首帧之前已经恢复的会话', () async {
     final container = ProviderContainer(
       overrides: [
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'https://example.test'),
+        ),
         cloudNetworkEventsProvider.overrideWithValue(
           const Stream<bool>.empty(),
         ),

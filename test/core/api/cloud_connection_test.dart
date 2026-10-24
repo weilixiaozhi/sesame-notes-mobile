@@ -25,6 +25,9 @@ void main() {
     network = StreamController<bool>.broadcast();
     container = ProviderContainer(
       overrides: [
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'https://example.test'),
+        ),
         cloudNetworkEventsProvider.overrideWithValue(network.stream),
         syncCoordinatorProvider.overrideWith(_SyncSpy.new),
       ],

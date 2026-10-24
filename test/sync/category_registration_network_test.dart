@@ -8,6 +8,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/infrastructure/account/auth_session.dart';
 import 'package:sesame_notes/infrastructure/api/api_client_provider.dart';
 import 'package:sesame_notes/infrastructure/api/cloud_connection.dart';
 import 'package:sesame_notes/sync/sync_service.dart';
@@ -79,6 +80,16 @@ void main() {
         ),
       ],
     );
+    // 同步请求具备有效会话后进入模拟传输，网络故障仍由适配器产生。
+    container
+        .read(authSessionProvider.notifier)
+        .signIn(
+          const AuthSession(
+            accessToken: 'test-token',
+            userId: _account,
+            deviceId: 'network-device',
+          ),
+        );
     service = SyncService(
       client: container.read(apiClientProvider),
       db: db,

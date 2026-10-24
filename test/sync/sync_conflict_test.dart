@@ -127,6 +127,7 @@ PostSyncPush200ResponseOutcomesInner _outcome(
         : null,
 );
 
+/// 验证模拟云服务下的同步冲突处理和拒收数据保留。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(_registerPushFallback);
@@ -242,6 +243,9 @@ void main() {
     );
     final container = ProviderContainer(
       overrides: [
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'http://test.local'),
+        ),
         databaseProvider.overrideWithValue(db),
         repositoryProvider.overrideWithValue(repo),
         syncServiceProvider.overrideWithValue(service),

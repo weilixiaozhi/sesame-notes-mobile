@@ -117,6 +117,7 @@ class _DelayedSyncAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
+/// 验证认证失效与迟到同步响应交错时，账号数据隔离保持完整。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const credential = ActiveCredential(
@@ -162,6 +163,10 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     container = ProviderContainer(
       overrides: [
+        // 刷新测试配置与内存 HTTP 适配器的服务地址保持一致。
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'http://test.local'),
+        ),
         databaseProvider.overrideWithValue(db),
         repositoryProvider.overrideWithValue(repo),
         apiClientProvider.overrideWithValue(client),

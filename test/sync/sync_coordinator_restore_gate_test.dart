@@ -10,6 +10,8 @@ import 'package:uuid/uuid.dart';
 
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_ledger_repository.dart';
+import 'package:sesame_notes/infrastructure/account/auth_session.dart';
+import 'package:sesame_notes/infrastructure/api/api_client_provider.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/restore_gate_provider.dart';
@@ -71,6 +73,7 @@ Map<String, Object> _fullLedgerJson(String id) => _ledgerJson(id)
   ..remove('role')
   ..remove('member_count');
 
+/// 验证有效云会话下恢复闸门、快照落库和尾随同步的顺序。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -88,6 +91,10 @@ void main() {
     final client = SesameApiClient(dio: dio);
     container = ProviderContainer(
       overrides: [
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'http://test.local'),
+        ),
+        apiClientProvider.overrideWithValue(client),
         databaseProvider.overrideWithValue(db),
         // 同步闸门用例建立已恢复的账号身份，避免进入未登录的本机模式。
         accountStateProvider.overrideWithBuild(
@@ -108,6 +115,15 @@ void main() {
         ),
       ],
     );
+    container
+        .read(authSessionProvider.notifier)
+        .signIn(
+          const AuthSession(
+            accessToken: 'test-token',
+            userId: 'user-1',
+            deviceId: 'dev-1',
+          ),
+        );
     ledgerId = const Uuid().v4();
   });
 

@@ -119,7 +119,9 @@ void main() {
   setUp(() async {
     resetGlobalTestState();
     db = SesameDatabase.withExecutor(NativeDatabase.memory());
-    client = SesameApiClient(dio: Dio());
+    client = SesameApiClient(
+      dio: Dio(BaseOptions(baseUrl: 'https://example.test')),
+    );
     service = _MockSyncService();
     when(() => service.client).thenReturn(client);
     when(() => service.fitnessEnabled).thenReturn(false);
@@ -136,6 +138,9 @@ void main() {
     );
     container = ProviderContainer(
       overrides: [
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'https://example.test'),
+        ),
         databaseProvider.overrideWithValue(db),
         repositoryProvider.overrideWithValue(repo),
         apiClientProvider.overrideWithValue(client),

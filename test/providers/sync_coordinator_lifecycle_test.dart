@@ -62,6 +62,10 @@ void main() {
   ProviderContainer createContainer() {
     final result = ProviderContainer(
       overrides: [
+        // 云端生命周期依赖服务配置，实际同步请求由内存夹具替代。
+        apiConfigProvider.overrideWithValue(
+          const ApiConfig(baseUrl: 'https://sync.test'),
+        ),
         databaseProvider.overrideWithValue(db),
         apiClientProvider.overrideWithValue(SesameApiClient()),
         syncServiceProvider.overrideWithValue(service),
