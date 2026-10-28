@@ -40,6 +40,7 @@ import 'package:uuid/uuid.dart';
 import '../test/helpers/test_isolation.dart';
 import 'category_roundtrip.dart';
 import 'historical_member_roundtrip.dart';
+import 'long_term_restore_roundtrip.dart';
 import 'request_observation.dart';
 
 const _backendMode = String.fromEnvironment(
@@ -377,6 +378,7 @@ void main() {
         await _fitnessRoundtrip(syncA, syncB, accountId, baseUrl);
         await _recurringRoundtrip(syncA, syncB, clientA, clientB, accountId);
         await runCategoryConflictRoundtrip(syncA, syncB, accountId);
+        await runLongTermRestoreRoundtrip(syncA, syncB, accountId);
       } catch (error, stackTrace) {
         printOnFailure('真实测试后端往返失败，请检查断言和后端日志：$error\n$stackTrace');
         if (error is DioException) {
