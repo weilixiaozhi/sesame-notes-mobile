@@ -16,10 +16,7 @@ const _supabaseCfg = CloudServiceConfig(
   },
 );
 
-/// 工厂只负责分派，提供方初始化由注册构建器完成。
-class _Provider extends Fake implements CloudProvider {}
-
-/// 验证工厂返回原提供方，配置无效和构建失败均保留准确边界。
+/// 配置无效时不建立连接，初始化失败保留原始原因。
 void main() {
   setUp(registerTestBackends);
   tearDown(unregisterTestBackends);
@@ -42,7 +39,7 @@ void main() {
     var called = false;
     CloudProviderRegistry.register(testSupabaseBackend, (_) async {
       called = true;
-      return _Provider();
+      return null;
     });
     final provider = await createCloudProvider(invalid);
     expect(provider, isNull);
