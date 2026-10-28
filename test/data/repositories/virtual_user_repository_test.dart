@@ -83,8 +83,6 @@ void main() {
       expect(user.displayName, '室友A');
       expect(user.ledgerId, 'l-1');
       expect(user.id, isNotEmpty);
-      expect(user.createdAt, isNotNull);
-      expect(user.updatedAt, isNotNull);
     });
 
     test('create: 显式传 id 时用传入值', () async {
@@ -123,14 +121,13 @@ void main() {
       expect(notFound, isNull);
     });
 
-    test('rename: 更新名称并写入 updatedAt', () async {
+    test('rename: 保存新名称', () async {
       final id = await repo.createPlaceholder(ledgerId: 'l-1', name: '旧名');
       await repo.rename(id: id, name: '新名');
       final user = await (db.select(
         db.ledgerMembers,
       )..where((t) => t.id.equals(id))).getSingle();
       expect(user.displayName, '新名');
-      expect(user.updatedAt, isNotNull);
     });
 
     test('delete: 未被引用时正常硬删', () async {

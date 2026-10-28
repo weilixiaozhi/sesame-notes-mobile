@@ -21,34 +21,6 @@ void main() {
     return repo.createLedger(name: '测试账本', monthStartDay: 1);
   }
 
-  test('区间金额汇总全部支出', () async {
-    final lid = await seedLedger();
-    // 正常支出 100
-    await repo.addTransaction(
-      ledgerId: lid,
-      type: 'expense',
-      amount: '100.00',
-      happenedAt: DateTime(2026, 6, 18),
-    );
-    // 第二笔支出与第一笔一起进入统计。
-    await repo.addTransaction(
-      ledgerId: lid,
-      type: 'expense',
-      amount: '500.00',
-      happenedAt: DateTime(2026, 6, 18),
-    );
-
-    // totalsInRange 返回参与统计的支出金额。
-    final expense = await repo.totalsInRange(
-      ledgerId: lid,
-      start: DateTime(2026, 6, 1),
-      end: DateTime(2026, 7, 1),
-    );
-
-    // 两笔支出按 Decimal 精确合并。
-    expect(expense, 600.0);
-  });
-
   test('区间统计覆盖全部交易并遵守日期、账本、删除边界', () async {
     final lid = await seedLedger();
     final start = DateTime(2026, 6);
@@ -135,5 +107,13 @@ void main() {
     // 账本总览覆盖全部未删除交易。
     expect(stats.expenseTotal, 600.0);
     expect(stats.transactionCount, 2);
+    expect(
+      await repo.totalsInRange(
+        ledgerId: lid,
+        start: DateTime(2026, 6, 1),
+        end: DateTime(2026, 7, 1),
+      ),
+      600.0,
+    );
   });
 }

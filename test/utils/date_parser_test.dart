@@ -68,16 +68,14 @@ void main() {
   group('DateParser.parse — 空与兜底', () {
     final fallback = DateTime(2020, 1, 2, 3, 4, 5);
 
-    test('null 返回 fallback', () {
-      expect(DateParser.parse(null, fallback: fallback), fallback);
-    });
-
-    test('空白字符串返回 fallback', () {
-      expect(DateParser.parse('   ', fallback: fallback), fallback);
-    });
-
-    test('无法识别的字符串返回 fallback', () {
-      expect(DateParser.parse('not a date', fallback: fallback), fallback);
+    test('空值、空白和无法识别的日期使用显式fallback', () {
+      for (final value in [null, '   ', 'not a date']) {
+        expect(
+          DateParser.parse(value, fallback: fallback),
+          fallback,
+          reason: '$value',
+        );
+      }
     });
   });
 

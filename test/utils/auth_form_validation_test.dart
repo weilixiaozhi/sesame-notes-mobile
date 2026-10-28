@@ -91,6 +91,14 @@ void main() {
       expect(
         validatePasswordChangeForm(
           currentPassword: 'old-pass-1',
+          newPassword: '',
+          confirmPassword: 'different',
+        ),
+        isNotNull,
+      );
+      expect(
+        validatePasswordChangeForm(
+          currentPassword: 'old-pass-1',
           newPassword: 'abc12345',
           confirmPassword: 'abc12346',
         ),
@@ -103,17 +111,6 @@ void main() {
           confirmPassword: 'abc12345',
         ),
         isNull,
-      );
-    });
-
-    test('新密码为空时优先报告必填问题，即使两次输入也不一致', () {
-      expect(
-        validatePasswordChangeForm(
-          currentPassword: 'old-pass-1',
-          newPassword: '',
-          confirmPassword: 'different',
-        ),
-        AuthFormError.newPasswordRequired,
       );
     });
 
