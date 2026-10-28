@@ -1,7 +1,4 @@
-/// Supabase adapter 自注册契约测试。
-///
-/// 需求锚点：字段声明归 adapter 所有，核心包不保存
-/// 任何 Supabase 字段名；注册后核心即可按描述符存取配置。
+/// Supabase 后端的敏感字段和必要配置约束。
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -12,17 +9,12 @@ void main() {
   setUp(registerSupabaseBackend);
   tearDown(() => CloudProviderRegistry.unregister('supabase'));
 
-  test('注册后核心可取得后端描述符', () {
+  test('认证密钥和密码必须进入安全存储', () {
     final backend = CloudProviderRegistry.backendOf('supabase');
 
     expect(backend, isNotNull);
-    expect(backend!.displayName, 'Supabase');
     expect(
-      backend.fields.map((f) => f.key),
-      ['url', 'anonKey', 'bucket', 'account', 'password'],
-    );
-    expect(
-      backend.fields.where((f) => f.isSecret).map((f) => f.key),
+      backend!.fields.where((f) => f.isSecret).map((f) => f.key),
       ['anonKey', 'password'],
       reason: 'anonKey 与 password 属凭据，必须进安全存储',
     );

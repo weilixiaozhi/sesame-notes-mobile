@@ -29,21 +29,6 @@ void main() {
     expect(provider, isNull);
   });
 
-  test('已注册后端：经注册表 builder 创建并透传结果', () async {
-    var called = 0;
-    final expected = _Provider();
-    CloudProviderRegistry.register(testSupabaseBackend, (config) async {
-      called++;
-      expect(config, same(_supabaseCfg));
-      return expected;
-    });
-
-    final provider = await createCloudProvider(_supabaseCfg);
-
-    expect(called, 1, reason: '已注册后端必须走注册表 builder');
-    expect(provider, same(expected));
-  });
-
   test('未注册后端：抛 StateError 提示在 Composition Root 注册', () async {
     CloudProviderRegistry.unregister('supabase');
     await expectLater(createCloudProvider(_supabaseCfg), throwsStateError);

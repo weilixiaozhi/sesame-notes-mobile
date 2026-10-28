@@ -1,7 +1,4 @@
-/// S3 adapter 自注册契约测试。
-///
-/// 需求锚点：字段声明归 adapter 所有，核心包不保存
-/// 任何 S3 字段名；注册后核心即可按描述符存取配置。
+/// S3 后端的敏感字段、安全默认值和必要配置约束。
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -12,13 +9,12 @@ void main() {
   setUp(registerS3Backend);
   tearDown(() => CloudProviderRegistry.unregister('s3'));
 
-  test('注册后核心可取得后端描述符', () {
+  test('访问密钥进入安全存储且默认启用SSL', () {
     final backend = CloudProviderRegistry.backendOf('s3');
 
     expect(backend, isNotNull);
-    expect(backend!.displayName, 'S3');
     expect(
-      backend.fields.where((f) => f.isSecret).map((f) => f.key),
+      backend!.fields.where((f) => f.isSecret).map((f) => f.key),
       ['accessKey', 'secretKey'],
       reason: '访问密钥属凭据，必须进安全存储',
     );

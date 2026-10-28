@@ -165,7 +165,8 @@ void main() {
       expect((await store.loadActive()).backendId, 'webdav');
 
       await store.clearConfig('webdav');
-      // 配置 key 缺失 → 回退 local
+      final preferences = await SharedPreferences.getInstance();
+      expect(preferences.getString(CloudServiceStore.activeTypeKey), 'local');
       final active = await store.loadActive();
       expect(active.isLocal, isTrue);
     });
@@ -187,11 +188,14 @@ void main() {
         credentialStorage: SharedPreferencesCredentialStorage(),
       );
       await store.saveOnly(_webdavCfg());
-      await store.saveOnly(_s3Cfg());
+      await activateTestCloudConfig(store, _s3Cfg());
 
       await store.clearConfig('webdav');
       expect(await store.load('webdav'), isNull);
       expect(await store.load('s3'), isNotNull);
+      expect((await store.loadActive()).backendId, 's3');
+      await store.clearConfig('supabase');
+      expect((await store.loadActive()).backendId, 's3');
     });
   });
 

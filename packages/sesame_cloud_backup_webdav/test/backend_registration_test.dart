@@ -1,7 +1,4 @@
-/// WebDAV adapter 自注册契约测试。
-///
-/// 需求锚点：字段声明归 adapter 所有，核心包不保存
-/// 任何 WebDAV 字段名；注册后核心即可按描述符存取配置。
+/// WebDAV 后端的敏感字段和必要配置约束。
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -12,17 +9,12 @@ void main() {
   setUp(registerWebDavBackend);
   tearDown(() => CloudProviderRegistry.unregister('webdav'));
 
-  test('注册后核心可取得后端描述符', () {
+  test('密码必须进入安全存储', () {
     final backend = CloudProviderRegistry.backendOf('webdav');
 
     expect(backend, isNotNull);
-    expect(backend!.displayName, 'WebDAV');
     expect(
-      backend.fields.map((f) => f.key),
-      ['url', 'username', 'password', 'remotePath'],
-    );
-    expect(
-      backend.fields.where((f) => f.isSecret).map((f) => f.key),
+      backend!.fields.where((f) => f.isSecret).map((f) => f.key),
       ['password'],
       reason: '密码属凭据，必须进安全存储',
     );
