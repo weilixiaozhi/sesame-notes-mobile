@@ -40,10 +40,20 @@ import 'package:sesame_notes/utils/date/month_range.dart';
 Future<void> initializeLocalApp(ProviderContainer container) async {
   try {
     container.read(appInitStateProvider.notifier).set(AppInitState.loading);
-    await container.read(accountBootstrapProvider.future);
+    // 启动尚未挂载界面，等待期间保持订阅，使依赖变化后的有效版本继续重建。
+    await readProviderFutureFromContainer(
+      container,
+      accountBootstrapProvider.future,
+    );
     // 欢迎状态也是必需的本地事实；只有这些读取结束，启屏用例才能发布 ready。
-    await container.read(welcomeCheckProvider.future);
-    await container.read(appSplashInitProvider.future);
+    await readProviderFutureFromContainer(
+      container,
+      welcomeCheckProvider.future,
+    );
+    await readProviderFutureFromContainer(
+      container,
+      appSplashInitProvider.future,
+    );
   } catch (error, stackTrace) {
     container.read(appInitStateProvider.notifier).set(AppInitState.failed);
     logger.error('App', '本地启动数据准备失败', safeErrorSummary(error), stackTrace);
