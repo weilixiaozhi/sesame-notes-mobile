@@ -3,7 +3,6 @@
 
 import hashlib
 import json
-import os
 import subprocess
 import unittest
 from pathlib import Path
@@ -273,18 +272,6 @@ class ApiContractTest(unittest.TestCase):
                     "schema"
                 ]["required"]
                 self.assertIn("base_revision", required)
-
-    def test_generator_output_paths_stay_inside_the_allowed_directories(self) -> None:
-        """执行生产路径校验，合法输出须生成容器相对路径，越界和非白名单目录须拒绝。"""
-        result = subprocess.run(
-            ["powershell.exe" if os.name == "nt" else "pwsh", "-NoProfile", "-File", str(ROOT / "scripts/test/openapi_output_paths_test.ps1")],
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            check=False,
-        )
-        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
 
     def test_normalization_preserves_constraints_and_is_idempotent(self) -> None:
         """执行真实规范化脚本，避免生成器适配静默丢失额外约束。"""

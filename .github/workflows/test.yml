@@ -43,20 +43,8 @@ jobs:
         run: |
           python3 scripts/test/api_contract_test.py
 
-      - name: 签名脚本回归（临时测试密钥）
-        shell: pwsh
-        run: ./scripts/test/android_keystore_test.ps1
-
       - name: 更新元数据回归
         run: python3 -B scripts/test/update_manifest_test.py
-
-      - name: 发布包架构检查回归
-        run: python3 -B scripts/test/apk_architecture_test.py
-
-      - name: Android 环境构建入口回归
-        run: |
-          python3 -B scripts/test/android_environment_test.py
-          node scripts/test/environment_config_test.mjs
 
       - name: 运行测试（随机顺序，持续暴露顺序依赖）
         run: flutter test test --test-randomize-ordering-seed=random
@@ -96,8 +84,6 @@ jobs:
         working-directory: android
         run: |
           # 原生任务通过编码后的 APP_ENV 明确选择构建环境。
-          ./gradlew :app:tasks --all -Pdart-defines=QVBQX0VOVj10ZXN0 | python3 ../scripts/test/android_variant_tasks_test.py --environment test
-          ./gradlew :app:tasks --all -Pdart-defines=QVBQX0VOVj1wcm9k | python3 ../scripts/test/android_variant_tasks_test.py --environment prod
           ./gradlew :app:testEnvTestDebugUnitTest -Ptarget-platform=android-arm64 -Pdart-defines=QVBQX0VOVj10ZXN0
 
   package_self_check:

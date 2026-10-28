@@ -125,20 +125,16 @@ dart scripts/audit/orphans.dart
 
 ## 检查与验收
 
-以下检查依赖已安装工具，失败返回非零。
+自动测试保留业务规则、数据持久化、权限与账号隔离、同步和接口契约；界面样式、布局和页面交互通过人工验收。以下检查依赖已安装工具，失败返回非零。
 
 | 命令                                                           | 范围与边界                                                                                                                                                              |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `python -B scripts/test/android_environment_test.py`           | 临时 PowerShell 函数接收 Flutter 调用，检查 test/prod 风味、配置、参数与失败传播；不构建 APK、不读写签名，仅使用根 `Temp/`。优先 PowerShell 7，Windows 可回退 5.1。     |
-| `node scripts/test/environment_config_test.mjs`                | 环境配置与原生构建约束。                                                                                                                                                |
-| `python -B scripts/test/apk_architecture_test.py`              | 用隔离夹具验证 APK 架构检查，不创建真实发布包。                                                                                                                         |
 | `python -B scripts/test/update_manifest_test.py`               | 用隔离夹具验证正式 APK 版本与更新摘要。                                                                                                                                 |
-| `python scripts/test/api_contract_test.py`                     | 固定 Artifact 摘要、枚举、OpenAPI 元数据、统一错误和乐观锁；还运行 OpenAPI 路径与规范化测试。需 Python 3、Node.js，Windows 使用 PowerShell 5.1，其他平台 PowerShell 7。 |
-| `pwsh -NoProfile -File scripts/test/android_keystore_test.ps1` | 已有 JDK `java/keytool` 在根 `Temp/` 隔离 checkout 创建测试密钥，验证读取、转义、覆盖保护与失败路径，结束清理本轮目录。                                                 |
+| `python scripts/test/api_contract_test.py`                     | 固定 Artifact 摘要、枚举、OpenAPI 元数据、统一错误和乐观锁；同时验证 SDK 规范化后的业务约束。需 Python 3、Node.js。 |
 
-[OpenAPI 路径测试](test/openapi_output_paths_test.ps1)通过 PowerShell AST 加载正式函数，用虚拟文件系统验证越界、相邻前缀与非白名单目录，不执行删除或 Docker 生成。[规范化测试](openapi/normalize_openapi.test.mjs)验证转换约束、幂等性和源文件不变。统一错误检查匹配 Error 引用或必填 `code/message/request_id`，不验证所有字段类型。
+[规范化测试](openapi/normalize_openapi.test.mjs)验证转换约束、幂等性和源文件不变。统一错误检查匹配 Error 引用或必填 `code/message/request_id`，不验证所有字段类型。
 
-原生任务检查需将真实 `:app:tasks --all` 输出交给 `scripts/test/android_variant_tasks_test.py --environment test` 或 `--environment prod`；缺少环境、无真实任务图或跨环境任务均失败。任务图、原生单测及其他检查入口见[手动测试工作流](../.github/workflows/test.yml)。
+原生通知排期单测及其他检查入口见[手动测试工作流](../.github/workflows/test.yml)。
 
 直接验收已有 APK 可用 `python -B scripts/check_apk_architecture.py --apk <APK路径> --abi arm64-v8a`。生成更新清单用 `python -B scripts/generate_update_manifest.py --apk <正式APK路径> --version <版本> --repository <owner/repository> --notes <发布说明文件> --output <清单路径>`，它会校验命名、计算摘要并写输出文件。
 
