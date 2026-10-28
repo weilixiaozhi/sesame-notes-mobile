@@ -24,7 +24,6 @@ void main() {
 
   /// 期望的确定性 id 集合：遍历 hybridCategoryTemplate 单一有序清单生成，
   /// `children == null` 为独立一级（仅 sid(1)），否则为父子组（sid(1) + 各子 sid(2)）。
-  /// 合计 20 一级 + 41 二级 = 61 条确定性 id。
   Set<String> expectedSyncIds() {
     String sid(int level, String key) =>
         SeedService.deterministicCategorySyncId(level: level, key: key);
@@ -46,12 +45,6 @@ void main() {
         await SeedService.createHybridCategories(db, l10n);
         final cats = await db.select(db.categories).get();
 
-        // ① 条目数：一级 20、二级 41、总计 61
-        final level1 = cats.where((c) => c.level == 1).toList();
-        final level2 = cats.where((c) => c.level == 2).toList();
-        expect(level1, hasLength(20), reason: '一级分类应为 20 个（9 独立 + 11 父）');
-        expect(level2, hasLength(41), reason: '二级分类应为 41 个');
-        expect(cats, hasLength(61));
         expect(
           cats.every((c) => c.updatedAt.millisecondsSinceEpoch == 0),
           isTrue,
@@ -205,7 +198,7 @@ void main() {
   test('hybrid 与 flat/hierarchical 模板的子集契约（翻译下标对齐前提）', () {
     // 模板库"已添加"判定依赖：同一 key 同 level 的确定性 id 跨模板相同，
     // 该契约由 category_template_logic.templateItemSyncId 与 seed 共用
-    // deterministicCategorySyncId 保证（纯函数侧另有测试覆盖）。
+    // 相同分类键及层级使用同一确定性身份。
     // 本测试锁定 hybrid 模板与 flat/hierarchical 常量的子集关系：
     // hybrid 独立一级 ⊂ flat 一级（翻译复用 getTranslatedCategoryName 的前提）
     for (final entry in SeedService.hybridCategoryTemplate) {

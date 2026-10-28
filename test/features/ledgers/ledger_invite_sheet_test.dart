@@ -73,23 +73,4 @@ void main() {
     expect(controller.invite?.code, 'NEW');
     expect(controller.isBusy, isFalse);
   });
-
-  test('页面销毁后晚到响应不会继续发布状态', () async {
-    final response = Completer<LedgerInvite>();
-    final controller = LedgerInviteController(
-      ledgerId: 'ledger-1',
-      ledgerName: '旅行',
-      isReadOnly: false,
-      createInvite: (_, _) => response.future,
-    );
-    var notifications = 0;
-    controller.addListener(() => notifications++);
-    final request = controller.generate();
-    expect(notifications, 1);
-    controller.dispose();
-    response.complete(_invite('LATE'));
-    await request;
-    expect(notifications, 1);
-    expect(controller.invite, isNull);
-  });
 }

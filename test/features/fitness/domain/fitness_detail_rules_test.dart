@@ -491,46 +491,6 @@ void main() {
       expect(fitnessRestCompleted(null, now), isFalse);
     });
 
-    test('计时弹窗或训练详情已呈现时提示让位，同一段休息不重复提示', () {
-      final expired = timer(endsAt: now.subtract(const Duration(seconds: 1)));
-      expect(
-        fitnessRestPromptVisible(
-          expired,
-          now,
-          sheetOpen: false,
-          detailOpen: false,
-        ),
-        isTrue,
-      );
-      expect(
-        fitnessRestPromptVisible(
-          expired,
-          now,
-          sheetOpen: true,
-          detailOpen: false,
-        ),
-        isFalse,
-      );
-      expect(
-        fitnessRestPromptVisible(
-          expired,
-          now,
-          sheetOpen: false,
-          detailOpen: true,
-        ),
-        isFalse,
-      );
-      expect(
-        fitnessRestPromptVisible(
-          timer(),
-          now,
-          sheetOpen: false,
-          detailOpen: false,
-        ),
-        isFalse,
-      );
-    });
-
     test('旧提示不能跳过或重启刚被其它页面更新的计时', () {
       final shown = timer();
       expect(

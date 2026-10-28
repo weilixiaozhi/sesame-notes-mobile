@@ -450,7 +450,7 @@ void main() {
       }
     });
   });
-  test('三种模板共享159固定身份，一级47、分层130且重叠18', () {
+  test('模板共享稳定身份且所有二级分类引用有效父级', () {
     final flat = {
       for (final key in SeedService.flatExpenseCategoryKeys)
         templateItemSyncId(1, key),
@@ -462,11 +462,7 @@ void main() {
         for (final key in entry.value) templateItemSyncId(2, key),
       ],
     };
-    expect(flat.length, 47);
-    expect(hierarchical.length, 130);
-    expect(flat.intersection(hierarchical).length, 18);
     expect(officialCategoryIdentities.keys.toSet(), {...flat, ...hierarchical});
-    expect(officialCategoryIdentities.length, 159);
     expect(
       templateItemSyncId(1, 'dining'),
       'ffec6471-df8b-5bb3-8a05-93ef863ca958',

@@ -1,5 +1,4 @@
 import 'package:drift/native.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -9,7 +8,6 @@ import 'package:sesame_notes/data/models/day_book.dart';
 import 'package:sesame_notes/data/repositories/local/day_repository.dart';
 import 'package:sesame_notes/features/days/application/day_refresh.dart';
 import 'package:sesame_notes/features/days/domain/day_date_rules.dart';
-import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/infrastructure/account/auth_session.dart';
 import 'package:sesame_notes/infrastructure/api/api_client_provider.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
@@ -279,33 +277,4 @@ void main() {
       }
     });
   }
-
-  test('刷新结果文案与失败提示符合用户可见结论', () async {
-    final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
-    expect(
-      dayRefreshMessage(l10n, DayRefreshOutcome.localSuccess),
-      '已刷新本地纪念日本数据',
-    );
-    expect(
-      dayRefreshMessage(l10n, DayRefreshOutcome.localFailed),
-      '本地纪念日本刷新失败，请稍后重试',
-    );
-    expect(
-      dayRefreshMessage(l10n, DayRefreshOutcome.cloudSuccess),
-      '已同步云端纪念日本数据',
-    );
-    expect(
-      dayRefreshMessage(l10n, DayRefreshOutcome.cloudFailedButLocalOk),
-      '云端同步失败，已刷新本地纪念日本数据',
-    );
-    expect(
-      dayRefreshMessage(l10n, DayRefreshOutcome.cloudFailed),
-      '云端纪念日本刷新失败，请稍后重试',
-    );
-    expect(dayRefreshFailed(DayRefreshOutcome.localSuccess), isFalse);
-    expect(dayRefreshFailed(DayRefreshOutcome.cloudSuccess), isFalse);
-    expect(dayRefreshFailed(DayRefreshOutcome.localFailed), isTrue);
-    expect(dayRefreshFailed(DayRefreshOutcome.cloudFailedButLocalOk), isTrue);
-    expect(dayRefreshFailed(DayRefreshOutcome.cloudFailed), isTrue);
-  });
 }

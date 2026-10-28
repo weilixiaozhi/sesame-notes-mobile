@@ -49,6 +49,37 @@ void main() {
     verify(service.getMe).called(1);
   });
 
+  test('资料刷新失败保留内存状态与离线缓存', () async {
+    SharedPreferences.setMockInitialValues({});
+    final service = _MockProfileService();
+    const profile = CloudProfile(userId: 'u1', displayName: '已保存昵称');
+    final cache = CloudProfileCache(await SharedPreferences.getInstance());
+    await cache.write(profile);
+    when(service.getMe).thenThrow(StateError('offline'));
+    final container = ProviderContainer(
+      overrides: [
+        profileServiceProvider.overrideWithValue(service),
+        cloudProfileCacheProvider.overrideWithValue(cache),
+      ],
+    );
+    try {
+      container.read(accountStateProvider.notifier).restoreFromCache(profile);
+      await expectLater(
+        container.read(authActionsProvider).refreshProfile(),
+        throwsStateError,
+      );
+      expect(
+        container.read(accountStateProvider).profile?.displayName,
+        profile.displayName,
+      );
+      expect(cache.read('u1')?.displayName, profile.displayName);
+    } catch (error, stackTrace) {
+      fail('资料刷新失败后的缓存保留验证未通过：$error\n$stackTrace');
+    } finally {
+      container.dispose();
+    }
+  });
+
   test('恢复默认头像清空内存与离线缓存的 URL，并同步成员展示快照', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();

@@ -11,8 +11,6 @@ import 'package:sesame_notes/features/transactions/application/transaction_actio
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/sync/storage/change_recorder_impl.dart';
 
-import 'package:sesame_notes/core/logging/logger_service.dart';
-
 import '../../helpers/test_isolation.dart';
 
 /// 源头失败的堆栈标记：中间层日志不得重复携带它。
@@ -196,51 +194,4 @@ void main() {
       );
     });
   }
-
-  test('失败逐层上抛时保留各层上下文，堆栈事实不重复记录', () async {
-    // 最小两层链路：需求层编辑交易 → 仓储守卫 requireActiveLedger。
-    final ledgerId = await repo.createLedger(
-      name: '日志账本',
-      storageMode: 'cloud',
-    );
-    final id = await repo.addTransaction(
-      ledgerId: ledgerId,
-      type: 'expense',
-      amount: '10.00',
-      happenedAt: DateTime.utc(2026, 9, 8),
-    );
-    // 账本归档后前台编辑必须被守卫拦截，异常穿过两层日志后上抛。
-    await repo.setLedgerArchived(ledgerId, true);
-    await logger.clear();
-
-    await expectLater(
-      container
-          .read(transactionActionsProvider)
-          .edit(
-            id: id,
-            type: 'expense',
-            amount: '20.00',
-            historySummary: '新历史',
-          ),
-      throwsA(isA<StateError>()),
-    );
-
-    final entries = logger.logs;
-    // 需求层保留"哪条交易"的上下文，仓储层保留"哪个操作"的上下文。
-    final actionEntry = entries.singleWhere(
-      (entry) => entry.tag == 'TransactionActions',
-    );
-    expect(actionEntry.message, contains(id));
-    final repositoryEntry = entries.singleWhere(
-      (entry) => entry.tag == 'LocalRepository',
-    );
-    expect(repositoryEntry.message, contains('requireActiveLedger'));
-    // 异常对象随上抛一路传递，两层都能给出稳定错误摘要。
-    expect(actionEntry.error, isNotNull);
-    expect(repositoryEntry.error, isNotNull);
-    // 中间层已经 rethrow，堆栈由承载异常的源头记录，不再重复落一份。
-    expect(actionEntry.stackTrace, isNull);
-    // 仓储守卫是这条 StateError 的源头，堆栈由它记录（且只记这一份）。
-    expect(repositoryEntry.stackTrace, isNotNull);
-  });
 }

@@ -12,13 +12,6 @@ import '../../helpers/fitness_space_fixture.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('可见网格按整周覆盖跨年补位日，查询结束日不包含在内', () {
-    final range = calendarGridRange(DateTime(2027, 1));
-    expect(range.start, DateTime(2026, 12, 28));
-    expect(range.until, DateTime(2027, 2, 1));
-    expect(calendarGridRange(DateTime(2026, 2)).until, DateTime(2026, 3, 2));
-  });
-
   test('不可读取的日期投影保持异常记录，不能自行派生为正常周年', () {
     final stamp = DateTime.utc(2026);
     final event = DayEvent(

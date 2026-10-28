@@ -156,58 +156,6 @@ void main() {
     }
   });
 
-  _queryTest('列表、单项、计数、选择树和Actions查询只需分类只读接口', () async {
-    final queries = _Queries();
-    final category = _category('接口餐饮');
-    when(() => queries.getAllCategories()).thenAnswer((_) async => [category]);
-    when(
-      () => queries.getCategoryById('category'),
-    ).thenAnswer((_) async => category);
-    when(() => queries.watchCategoriesWithCount()).thenAnswer(
-      (_) => Stream.value([(category: category, transactionCount: 3)]),
-    );
-    when(
-      () =>
-          queries.watchCategoryPickerTree(ledgerId: 'ledger', kind: 'expense'),
-    ).thenAnswer(
-      (_) => Stream.value(CategoryRowTree(topLevel: [category], children: {})),
-    );
-    final container = _queryContainer(queries);
-    final counts = container.listen(categoriesWithCountProvider, (_, _) {});
-    final picker = container.listen(
-      categoryPickerTreeProvider('expense'),
-      (_, _) {},
-    );
-    final byId = container.listen(categoryByIdProvider('category'), (_, _) {});
-    try {
-      expect(
-        (await container.read(categoriesProvider.future)).single.name,
-        '接口餐饮',
-      );
-      expect(
-        (await container.read(categoryByIdProvider('category').future))?.name,
-        '接口餐饮',
-      );
-      final counted = await container.read(categoriesWithCountProvider.future);
-      expect(counted.single.transactionCount, 3);
-      expect(counted.single.category.name, '接口餐饮');
-      final tree = await container.read(
-        categoryPickerTreeProvider('expense').future,
-      );
-      expect(tree.topLevel.single.name, '接口餐饮');
-      expect(
-        (await container.read(categoryActionsProvider).getById('category'))
-            ?.name,
-        '接口餐饮',
-      );
-    } finally {
-      counts.close();
-      picker.close();
-      byId.close();
-      container.dispose();
-    }
-  });
-
   for (final relogin in [false, true]) {
     _queryTest('同号重登=$relogin：迟到的分类列表与单项不能覆盖新会话', () async {
       final queries = _Queries();

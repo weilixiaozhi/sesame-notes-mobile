@@ -157,14 +157,3 @@ adb shell am start -n com.sesame.notes.test.probe/com.sesame.notes.MainActivity
 5. `am force-stop` 仅作独立限制对照，会清除系统任务；产品重新打开后才恢复未来提醒。探针启动和恢复不自动重排。“读取通知中心和缓存”可查看系统通知及登记/到期时间；原生日志标签为 `ReminderAlarm`、`FitnessRestAlarm`。
 
 结束用“清理本探针 ID”撤销任务，在授权范围内卸载测试包；不能通过清除生产包数据复现问题。
-
-### PDF 字符保真验收
-
-需要 Python 3 与已有 `pypdf`，先由正式 writer 与已入库字体生成样本，再验收：
-
-```sh
-flutter test test/data/memo_document_test.dart --no-pub --dart-define=MEMO_PDF_PROBE=true
-python scripts/test/memo_pdf_probe.py Temp/memos-p0
-```
-
-生成 `probe.pdf`、`pdf-expectations.json` 后，[验收器](test/memo_pdf_probe.py)验证长中英文、Unicode、首尾空格、空段落和嵌入字体空白轮廓，写入 `pdf-result.json`；任一检查失败返回非零。PDF 存在不代表保真；此项按需运行，不属于常规 CI。
