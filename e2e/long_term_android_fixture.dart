@@ -90,7 +90,11 @@ Future<void> seedAndroidProbeData(
     final fixed = anchor.toUtc();
     final first = fixed.subtract(const Duration(days: 3650));
     final localAnchor = anchor.toLocal();
-    final today = DateTime(localAnchor.year, localAnchor.month, localAnchor.day);
+    final today = DateTime(
+      localAnchor.year,
+      localAnchor.month,
+      localAnchor.day,
+    );
     final self = localSelfMemberId(androidProbeLedgerId, localSelfId);
     final template = FitnessTemplate(
       id: androidProbeTemplateId,
