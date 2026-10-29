@@ -548,9 +548,12 @@ class _SesameNotesAppState extends ConsumerState<SesameNotesApp>
             ),
           ],
         ),
-        floatingActionButton: idx == 3
-            ? null
-            : _buildFloatingActions(mode: mode, idx: idx),
+        // 保持浮动操作挂载，设置页即时隐藏，返回业务页时直接显示。
+        floatingActionButton: Visibility(
+          visible: idx != 3,
+          maintainState: true,
+          child: _buildFloatingActions(mode: mode, idx: idx),
+        ),
         bottomNavigationBar: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
