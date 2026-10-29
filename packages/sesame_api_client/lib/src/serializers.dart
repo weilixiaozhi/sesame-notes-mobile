@@ -61,6 +61,8 @@ import 'package:sesame_api_client/src/model/get_admin_users200_response_items_in
 import 'package:sesame_api_client/src/model/get_admin_users_by_user_id200_response.dart';
 import 'package:sesame_api_client/src/model/get_admin_users_by_user_id_devices200_response.dart';
 import 'package:sesame_api_client/src/model/get_admin_users_by_user_id_devices200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_app_banners200_response.dart';
+import 'package:sesame_api_client/src/model/get_app_banners200_response_items_inner.dart';
 import 'package:sesame_api_client/src/model/get_category_conflicts200_response.dart';
 import 'package:sesame_api_client/src/model/get_day_books_by_day_book_id_events200_response.dart';
 import 'package:sesame_api_client/src/model/get_devices200_response_inner.dart';
@@ -335,7 +337,10 @@ import 'package:sesame_api_client/src/model/put_profile_avatar_request.dart';
 import 'package:sesame_api_client/src/model/recurring_transaction.dart';
 import 'package:sesame_api_client/src/model/transaction.dart';
 import 'package:sesame_api_client/src/model/transaction_split.dart';
+import 'package:sesame_api_client/src/model/update_admin_banner_request.dart';
 import 'package:sesame_api_client/src/model/update_official_fitness_taxonomy_request.dart';
+import 'package:sesame_api_client/src/model/upload_admin_banner_image201_response.dart';
+import 'package:sesame_api_client/src/model/upload_admin_banner_image_request.dart';
 import 'package:sesame_api_client/src/model/upload_official_fitness_media201_response.dart';
 import 'package:sesame_api_client/src/model/upload_official_fitness_media_request.dart';
 
@@ -389,6 +394,8 @@ part 'serializers.g.dart';
   GetAdminUsersByUserId200Response,
   GetAdminUsersByUserIdDevices200Response,
   GetAdminUsersByUserIdDevices200ResponseItemsInner,
+  GetAppBanners200Response,
+  GetAppBanners200ResponseItemsInner,
   GetCategoryConflicts200Response,
   GetDayBooksByDayBookIdEvents200Response,
   GetDevices200ResponseInner,
@@ -663,7 +670,10 @@ part 'serializers.g.dart';
   RecurringTransaction,
   Transaction,
   TransactionSplit,
+  UpdateAdminBannerRequest,
   UpdateOfficialFitnessTaxonomyRequest,
+  UploadAdminBannerImage201Response,
+  UploadAdminBannerImageRequest,
   UploadOfficialFitnessMedia201Response,
   UploadOfficialFitnessMediaRequest,
 ])
@@ -1080,6 +1090,11 @@ Serializers serializers = (_$serializers.toBuilder()
         ]),
         () => ListBuilder<
             GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInnerRestDaysInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetAppBanners200ResponseItemsInner)]),
+        () => ListBuilder<GetAppBanners200ResponseItemsInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [

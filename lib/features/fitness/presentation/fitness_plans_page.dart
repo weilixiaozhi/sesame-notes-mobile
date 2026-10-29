@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sesame_notes/data/models/fitness.dart';
+import 'package:sesame_notes/data/models/app_banner.dart';
+import 'package:sesame_notes/shared/widgets/app_banner_entry.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
@@ -47,11 +49,10 @@ class FitnessPlansPage extends ConsumerWidget {
               AppDimens.p8,
               0,
             ),
-            child: EntryBarButton(
+            child: AppBannerEntry(
               key: const ValueKey('fitness-plan-library-entry'),
-              icon: AppIcons.book,
-              label: l.fitnessPlanLibrary,
-              onTap: () => _open(context, Routes.fitnessPlanLibrary),
+              slot: AppBannerSlot.fitnessPlanLibrary,
+              onOpen: (route) => _open(context, route),
             ),
           ),
           Expanded(

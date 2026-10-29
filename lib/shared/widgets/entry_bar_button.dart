@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 
 /// 描边入口占满父布局分配的宽度，支持整行或并列的图标加文案按钮。
-/// 计划库、模板库、账号密码与分摊统计入口共用同一版式；
+/// 账号密码与分摊统计入口共用同一版式；
 /// 组件自身不带外边距，外边距统一由调用方按 p8 给出。
 class EntryBarButton extends StatelessWidget {
   /// 业务提供入口内容与跳转动作，外观由按钮主题和统一高度控制。

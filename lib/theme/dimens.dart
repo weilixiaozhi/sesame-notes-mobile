@@ -25,6 +25,9 @@ class AppDimens {
   static const double p32 = 32;
   static const double p36 = 36;
   static const double p40 = 40;
+
+  /// 图片入口采用统一横幅比例，避免在不同管理页面挤占过多列表空间。
+  static const double bannerAspectRatio = 3;
   static const double sheetGrabHandleRadius = 2;
   static const double progressStrokeWidth = 2;
   // 品牌、头像和状态插图保留各自展示尺度。

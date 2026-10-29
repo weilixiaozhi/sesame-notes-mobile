@@ -6,10 +6,12 @@ lib/src/api/accounting_api.dart
 lib/src/api/admin_accounts_api.dart
 lib/src/api/admin_api.dart
 lib/src/api/admin_auth_api.dart
+lib/src/api/admin_banners_api.dart
 lib/src/api/admin_fitness_api.dart
 lib/src/api/admin_groups_api.dart
 lib/src/api/analytics_api.dart
 lib/src/api/auth_api.dart
+lib/src/api/banners_api.dart
 lib/src/api/categories_api.dart
 lib/src/api/days_api.dart
 lib/src/api/devices_api.dart
@@ -79,6 +81,8 @@ lib/src/model/get_admin_users200_response_items_inner.dart
 lib/src/model/get_admin_users_by_user_id200_response.dart
 lib/src/model/get_admin_users_by_user_id_devices200_response.dart
 lib/src/model/get_admin_users_by_user_id_devices200_response_items_inner.dart
+lib/src/model/get_app_banners200_response.dart
+lib/src/model/get_app_banners200_response_items_inner.dart
 lib/src/model/get_category_conflicts200_response.dart
 lib/src/model/get_day_books_by_day_book_id_events200_response.dart
 lib/src/model/get_devices200_response_inner.dart
@@ -353,7 +357,10 @@ lib/src/model/put_profile_avatar_request.dart
 lib/src/model/recurring_transaction.dart
 lib/src/model/transaction.dart
 lib/src/model/transaction_split.dart
+lib/src/model/update_admin_banner_request.dart
 lib/src/model/update_official_fitness_taxonomy_request.dart
+lib/src/model/upload_admin_banner_image201_response.dart
+lib/src/model/upload_admin_banner_image_request.dart
 lib/src/model/upload_official_fitness_media201_response.dart
 lib/src/model/upload_official_fitness_media_request.dart
 lib/src/serializers.dart

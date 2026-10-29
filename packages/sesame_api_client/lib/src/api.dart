@@ -13,10 +13,12 @@ import 'package:sesame_api_client/src/api/accounting_api.dart';
 import 'package:sesame_api_client/src/api/admin_api.dart';
 import 'package:sesame_api_client/src/api/admin_accounts_api.dart';
 import 'package:sesame_api_client/src/api/admin_auth_api.dart';
+import 'package:sesame_api_client/src/api/admin_banners_api.dart';
 import 'package:sesame_api_client/src/api/admin_fitness_api.dart';
 import 'package:sesame_api_client/src/api/admin_groups_api.dart';
 import 'package:sesame_api_client/src/api/analytics_api.dart';
 import 'package:sesame_api_client/src/api/auth_api.dart';
+import 'package:sesame_api_client/src/api/banners_api.dart';
 import 'package:sesame_api_client/src/api/categories_api.dart';
 import 'package:sesame_api_client/src/api/days_api.dart';
 import 'package:sesame_api_client/src/api/devices_api.dart';
@@ -176,6 +178,12 @@ class SesameApiClient {
     return AdminAuthApi(dio, serializers);
   }
 
+  /// Get AdminBannersApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  AdminBannersApi getAdminBannersApi() {
+    return AdminBannersApi(dio, serializers);
+  }
+
   /// Get AdminFitnessApi instance, base route and serializer can be overridden by a given but be careful,
   /// by doing that all interceptors will not be executed
   AdminFitnessApi getAdminFitnessApi() {
@@ -198,6 +206,12 @@ class SesameApiClient {
   /// by doing that all interceptors will not be executed
   AuthApi getAuthApi() {
     return AuthApi(dio, serializers);
+  }
+
+  /// Get BannersApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  BannersApi getBannersApi() {
+    return BannersApi(dio, serializers);
   }
 
   /// Get CategoriesApi instance, base route and serializer can be overridden by a given but be careful,

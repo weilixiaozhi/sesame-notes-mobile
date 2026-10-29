@@ -1,4 +1,7 @@
 import 'widgets/fitness_home_cards.dart';
+import 'widgets/fitness_widgets.dart' show fitnessRun;
+import 'package:sesame_notes/data/models/app_banner.dart';
+import 'package:sesame_notes/shared/widgets/app_banner_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -38,11 +41,12 @@ class FitnessTemplatesPage extends ConsumerWidget {
               AppDimens.p8,
               0,
             ),
-            child: EntryBarButton(
+            child: AppBannerEntry(
               key: const ValueKey('fitness-template-library-entry'),
-              icon: AppIcons.book,
-              label: l.fitnessTemplateLibrary,
-              onTap: () => context.pushNamed(Routes.fitnessTemplateLibrary),
+              slot: AppBannerSlot.fitnessTemplateLibrary,
+              onOpen: (route) => fitnessRun(context, () async {
+                await context.pushNamed(route);
+              }),
             ),
           ),
           Expanded(

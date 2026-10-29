@@ -87,6 +87,10 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(GetAdminUsersByUserId200ResponseGenderEnum.serializer)
       ..add(GetAdminUsersByUserIdDevices200Response.serializer)
       ..add(GetAdminUsersByUserIdDevices200ResponseItemsInner.serializer)
+      ..add(GetAppBanners200Response.serializer)
+      ..add(GetAppBanners200ResponseItemsInner.serializer)
+      ..add(GetAppBanners200ResponseItemsInnerSlotEnum.serializer)
+      ..add(GetAppBanners200ResponseItemsInnerTargetEnum.serializer)
       ..add(GetCategoryConflicts200Response.serializer)
       ..add(GetDayBooksByDayBookIdEvents200Response.serializer)
       ..add(GetDevices200ResponseInner.serializer)
@@ -691,7 +695,11 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(TransactionCategoryKindEnum.serializer)
       ..add(TransactionSplit.serializer)
       ..add(TransactionTxTypeEnum.serializer)
+      ..add(UpdateAdminBannerRequest.serializer)
+      ..add(UpdateAdminBannerRequestTargetEnum.serializer)
       ..add(UpdateOfficialFitnessTaxonomyRequest.serializer)
+      ..add(UploadAdminBannerImage201Response.serializer)
+      ..add(UploadAdminBannerImageRequest.serializer)
       ..add(UploadOfficialFitnessMedia201Response.serializer)
       ..add(UploadOfficialFitnessMediaRequest.serializer)
       ..addBuilderFactory(
@@ -782,6 +790,10 @@ Serializers _$serializers = (Serializers().toBuilder()
           ]),
           () =>
               ListBuilder<GetAdminUsersByUserIdDevices200ResponseItemsInner>())
+      ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(GetAppBanners200ResponseItemsInner)]),
+          () => ListBuilder<GetAppBanners200ResponseItemsInner>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [
             const FullType(GetFitnessCatalog200ResponseExercisesInner)
