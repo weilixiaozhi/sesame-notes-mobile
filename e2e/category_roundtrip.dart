@@ -12,6 +12,8 @@ import 'package:sesame_notes/utils/default_category_ids.dart';
 import 'package:uuid/uuid.dart';
 import 'package:sesame_notes/data/models/transaction_split_input.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
+import 'package:sesame_notes/data/repositories/contracts/accounting_repositories.dart'
+    show CategoryCreateDraft;
 import 'package:sesame_notes/data/repositories/support/category_scope.dart';
 import 'package:sesame_notes/data/repositories/support/ledger_category_catalog.dart';
 import 'package:sesame_notes/sync/storage/change_recorder_impl.dart';
@@ -487,18 +489,12 @@ Future<void> runCategoryConflictRoundtrip(
   await a.full(ledgerId: ledgerId);
   final parentId = defaultCategoryId(level: 1, key: 'dining');
   final childId = defaultCategoryId(level: 2, key: 'dining_dinner');
-  await repoA.insertCanonicalCategory(
-    id: parentId,
-    name: '饮食',
-    kind: 'expense',
-    level: 1,
-  );
-  await repoA.insertCanonicalCategory(
-    id: childId,
-    name: '晚餐',
-    kind: 'expense',
-    level: 2,
-    parentId: parentId,
+  // 固定身份用于候选确认兼容场景；批量重试保留已存在分类的内容和身份。
+  await repoA.createCategoryBatch(
+    items: [
+      CategoryCreateDraft(id: parentId, name: '饮食'),
+      CategoryCreateDraft(id: childId, name: '晚餐', parentId: parentId),
+    ],
   );
   await a.push();
   await _expectAcknowledged(a);
