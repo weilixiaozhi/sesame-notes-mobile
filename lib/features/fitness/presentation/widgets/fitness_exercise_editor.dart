@@ -65,12 +65,14 @@ class _FitnessExerciseEditorState extends State<FitnessExerciseEditor> {
   /// 输入会话固定同动作口径，清空最后一个重量字段时保持焦点与输入框。
   final _editingWeightModes = <String, bool>{};
 
+  /// 模板首次展示首个动作，训练单动作时直接展开，后续沿用用户的展开选择。
   @override
   void initState() {
     super.initState();
-    // 只有一个动作时默认展开，进入页面即可填写组数据。
-    _expandedId = widget.exercises.length == 1
-        ? widget.exercises.single.id
+    _expandedId =
+        widget.exercises.isNotEmpty &&
+            (!widget.execution || widget.exercises.length == 1)
+        ? widget.exercises.first.id
         : null;
     widget.keyboard?.addListener(_keyboardChanged);
   }
@@ -906,93 +908,108 @@ class _FitnessNumericInputState extends State<FitnessNumericInput> {
     super.dispose();
   }
 
+  /// 点击单位或数值均聚焦当前字段，并让训练键盘显示对应输入内容。
+  void _activateInput() {
+    if (widget.readOnly) return;
+    _focus.requestFocus();
+    if (_target != null) widget.keyboard!.activate(_target!);
+  }
+
+  /// 单位与数值按实际文字高度纵向排版，字体缩放时仍保留独立间距。
   @override
-  Widget build(BuildContext context) => Semantics(
-    label: widget.label,
-    textField: true,
-    child: Stack(
-      children: [
-        TextFormField(
-          controller: _controller,
-          focusNode: _focus,
-          scrollController: _scroll,
-          textAlign: widget.compact ? TextAlign.center : TextAlign.start,
-          style: widget.compact
-              ? AppTextTokens.title(context).copyWith(
-                  color: widget.completed
-                      ? AppTokens.textOnPrimary(context)
-                      : widget.readOnly
-                      ? AppTokens.textDisabled(context)
-                      : AppTokens.textPrimary(context),
-                )
-              : null,
-          readOnly: widget.readOnly,
-          keyboardType: widget.keyboard != null || widget.readOnly
-              ? TextInputType.none
-              : TextInputType.numberWithOptions(decimal: widget.decimal),
-          onTap: () {
-            if (!widget.readOnly && _target != null) {
-              widget.keyboard!.activate(_target!);
-            }
-          },
-          decoration: InputDecoration(
-            isDense: true,
-            labelText: widget.compact ? null : widget.label,
-            labelStyle: AppTextTokens.label(context).copyWith(
+  Widget build(BuildContext context) {
+    final field = TextFormField(
+      controller: _controller,
+      focusNode: _focus,
+      scrollController: _scroll,
+      textAlign: widget.compact ? TextAlign.center : TextAlign.start,
+      style: widget.compact
+          ? AppTextTokens.title(context).copyWith(
               color: widget.completed
                   ? AppTokens.textOnPrimary(context)
-                  : AppTokens.textSecondary(context),
-            ),
-            filled: widget.compact ? false : null,
-            border: widget.compact ? InputBorder.none : null,
-            enabledBorder: widget.compact ? InputBorder.none : null,
-            focusedBorder: widget.compact ? InputBorder.none : null,
-            contentPadding: widget.compact
-                ? const EdgeInsets.fromLTRB(
-                    AppDimens.p8,
-                    AppDimens.p12,
-                    AppDimens.p8,
-                    AppDimens.p4,
-                  )
-                : null,
-            hintText: '—',
-            errorText: widget.errorText,
-            errorMaxLines: 5,
-          ),
-          onChanged: (raw) => widget.onChanged(
-            widget.keyboard == null
-                ? raw
-                : FitnessKeyboardController.value(raw),
-          ),
-          validator: (value) {
-            if (widget.errorText != null) return widget.errorText;
-            if (value == null || value.isEmpty) return null;
-            return (widget.decimal
-                    ? fitnessValidWeight(value)
-                    : fitnessPositiveInt(value) != null)
-                ? null
-                : AppLocalizations.of(context).fitnessInvalidSet;
-          },
-          autovalidateMode: AutovalidateMode.onUserInteraction,
+                  : widget.readOnly
+                  ? AppTokens.textDisabled(context)
+                  : AppTokens.textPrimary(context),
+            )
+          : null,
+      readOnly: widget.readOnly,
+      keyboardType: widget.keyboard != null || widget.readOnly
+          ? TextInputType.none
+          : TextInputType.numberWithOptions(decimal: widget.decimal),
+      onTap: _activateInput,
+      decoration: InputDecoration(
+        isDense: true,
+        labelText: widget.compact ? null : widget.label,
+        labelStyle: AppTextTokens.label(context).copyWith(
+          color: widget.completed
+              ? AppTokens.textOnPrimary(context)
+              : AppTokens.textSecondary(context),
         ),
-        if (widget.compact)
-          Positioned(
-            left: AppDimens.p8,
-            top: AppDimens.p4,
-            child: IgnorePointer(
-              child: Text(
-                widget.label,
-                style: AppTextTokens.caption(context).copyWith(
-                  color: widget.completed
-                      ? AppTokens.textOnPrimary(context)
-                      : AppTokens.textTertiary(context),
-                ),
+        filled: widget.compact ? false : null,
+        border: widget.compact ? InputBorder.none : null,
+        enabledBorder: widget.compact ? InputBorder.none : null,
+        focusedBorder: widget.compact ? InputBorder.none : null,
+        contentPadding: widget.compact
+            ? const EdgeInsets.fromLTRB(
+                AppDimens.p8,
+                AppDimens.p4,
+                AppDimens.p8,
+                AppDimens.p4,
+              )
+            : null,
+        hintText: '—',
+        errorText: widget.errorText,
+        errorMaxLines: 5,
+      ),
+      onChanged: (raw) => widget.onChanged(
+        widget.keyboard == null ? raw : FitnessKeyboardController.value(raw),
+      ),
+      validator: (value) {
+        if (widget.errorText != null) return widget.errorText;
+        if (value == null || value.isEmpty) return null;
+        return (widget.decimal
+                ? fitnessValidWeight(value)
+                : fitnessPositiveInt(value) != null)
+            ? null
+            : AppLocalizations.of(context).fitnessInvalidSet;
+      },
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+    );
+    return Semantics(
+      label: widget.label,
+      textField: true,
+      child: widget.compact
+          ? GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: widget.readOnly ? null : _activateInput,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 标签参与正常布局，数值输入框的顶部留白提供两行之间的间距。
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppDimens.p8,
+                      AppDimens.p4,
+                      AppDimens.p8,
+                      0,
+                    ),
+                    child: Text(
+                      widget.label,
+                      style: AppTextTokens.caption(context).copyWith(
+                        color: widget.completed
+                            ? AppTokens.textOnPrimary(context)
+                            : AppTokens.textTertiary(context),
+                      ),
+                    ),
+                  ),
+                  field,
+                ],
               ),
-            ),
-          ),
-      ],
-    ),
-  );
+            )
+          : field,
+    );
+  }
 }
 
 class _AddSetBorder extends CustomPainter {
