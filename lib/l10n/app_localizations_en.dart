@@ -4825,25 +4825,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryTemplateCreateHint =>
-      'Select a category to create it, or expand it to choose subcategories.';
+      'Tap to select a category and show its subcategories.';
 
   @override
-  String get categoryTemplateAppendHint =>
-      'Choose a category first. Each selected item will be added directly under it.';
-
-  @override
-  String get categoryTemplateChooseTarget => 'Choose a category';
-
-  @override
-  String get categoryTemplateNoChildren => 'No subcategories';
-
-  @override
-  String get categoryTemplateShowChildren => 'Show or hide subcategories';
-
-  @override
-  String categoryTemplateChildrenCount(int selected, int total) {
-    return '$selected/$total subcategories selected';
-  }
+  String get categoryTemplateChooseTarget => 'Choose existing category';
 
   @override
   String categoryTemplateAppendConfirm(int count, String name) {
@@ -4864,11 +4849,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get categoryTemplateTargetUnavailable =>
       'The selected category is no longer available. Choose another.';
-
-  @override
-  String categoryTemplateChildCount(int count) {
-    return '$count subcategories';
-  }
 
   @override
   String get categoryNameDining => 'Dining';
@@ -5346,4 +5326,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryNameSubscriptionOther => 'Other Subscription';
+
+  @override
+  String get categoryTemplateTargetPrefix => 'Add to';
+
+  @override
+  String get categoryTemplateChangeTarget => 'Change';
+
+  @override
+  String categoryTemplateCompactSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String categoryTemplateAddCount(int count) {
+    return 'Add $count';
+  }
 }

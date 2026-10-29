@@ -3,49 +3,16 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/theme/colors.dart';
-import 'package:sesame_notes/shared/widgets/category_icon.dart';
-import 'package:sesame_notes/shared/widgets/selectable_card.dart';
 import 'package:sesame_notes/shared/widgets/app_primary_button.dart';
 import 'package:sesame_notes/features/categories/application/category_template_logic.dart';
+import 'widgets/compact_category_tile.dart';
 
-/// 普通手机显示三至四列，大字号根据可读卡宽自动减少列数。
-int categoryTemplateColumns(BuildContext context, double width) {
-  final scale = MediaQuery.textScalerOf(context).scale(12) / 12;
-  final minimum = (AppDimens.icon40 * 2) * scale.clamp(1.0, 2.0);
-  return ((width + AppDimens.p8) / (minimum + AppDimens.p8)).floor().clamp(
-    2,
-    5,
-  );
-}
-
-/// 图标与文字高度随系统字体缩放，避免窄屏标签溢出。
-double categoryTemplateTileHeight(
-  BuildContext context, {
-  bool compact = false,
-}) {
-  final painter = TextPainter(
-    text: TextSpan(text: '分类 Ag', style: AppTextTokens.label(context)),
-    textDirection: Directionality.of(context),
-    textScaler: MediaQuery.textScalerOf(context),
-    maxLines: 2,
-  );
-  try {
-    painter.layout(maxWidth: AppDimens.p40 * 2);
-    return (compact ? AppDimens.icon20 : AppDimens.icon22) * 1.5 +
-        painter.height * 2 +
-        AppDimens.p32;
-  } finally {
-    painter.dispose();
-  }
-}
-
-/// 模板卡片只表达本次选择，模板没有已添加或重名阻挡状态。
+/// 模板卡片只描述本次选择，内容布局与已有分类候选保持一致。
 class TemplateItemTile extends StatelessWidget {
   final CategoryTemplateItem item;
   final bool selected;
   final bool enabled;
   final VoidCallback onToggle;
-  final bool compact;
 
   const TemplateItemTile({
     super.key,
@@ -53,54 +20,16 @@ class TemplateItemTile extends StatelessWidget {
     required this.selected,
     required this.onToggle,
     this.enabled = true,
-    this.compact = false,
   });
 
-  /// 用统一选择角标表达本次选择，图标与名称使用项目主题。
+  /// 纯内容卡片不显示原有父子结构或已添加状态。
   @override
-  Widget build(BuildContext context) => Semantics(
-    checked: selected,
+  Widget build(BuildContext context) => CompactCategoryTile(
+    name: item.name,
+    iconName: item.iconName,
+    selected: selected,
     enabled: enabled,
-    child: Material(
-      color: AppTokens.surface(context),
-      shape: selectableCardShape(
-        context,
-        selected: selected,
-        unselectedBorder: BorderSide(color: AppTokens.borderStrong(context)),
-      ),
-      child: InkWell(
-        onTap: enabled ? onToggle : null,
-        customBorder: selectableCardShape(context),
-        child: Stack(
-          children: [
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppDimens.p4),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CategoryIconWidget(
-                      iconName: item.iconName,
-                      showBackground: true,
-                      size: compact ? AppDimens.icon20 : AppDimens.icon22,
-                    ),
-                    const SizedBox(height: AppDimens.p8),
-                    Text(
-                      item.name,
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextTokens.label(context),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (selected) const SelectableCardCheckBadge(),
-          ],
-        ),
-      ),
-    ),
+    onTap: onToggle,
   );
 }
 
@@ -150,7 +79,7 @@ class TemplateBottomBar extends StatelessWidget {
         AppDimens.p16,
         AppDimens.p8,
         AppDimens.p16,
-        AppDimens.p16,
+        AppDimens.p8,
       ),
       decoration: BoxDecoration(
         color: AppTokens.surface(context),
@@ -161,7 +90,7 @@ class TemplateBottomBar extends StatelessWidget {
           // 左：本次已勾选计数
           Expanded(
             child: Text(
-              l10n.categoryTemplateSelectedCount(selectedCount),
+              l10n.categoryTemplateCompactSelectedCount(selectedCount),
               style: AppTextTokens.label(
                 context,
               ).copyWith(color: AppTokens.textSecondary(context)),

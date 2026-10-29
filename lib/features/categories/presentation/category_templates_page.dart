@@ -13,10 +13,10 @@ import 'package:sesame_notes/shared/widgets/app_form_section.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
-import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import 'category_template_widgets.dart';
 import 'widgets/category_selector_dialog.dart';
+import 'widgets/compact_category_tile.dart';
 
 /// 模板库的两个明确操作：新建父子组，或向用户指定的已有父分类添加子项。
 class CategoryTemplatesPage extends ConsumerStatefulWidget {
@@ -34,8 +34,7 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
   bool _writing = false;
   bool _failed = false;
   bool _expired = false;
-  String _search = '';
-  final _expanded = <String>{};
+  String? _expandedKey;
   Set<String> _selected = {};
   db.CategoryDisplay? _target;
   TemplateInsertPlan? _attempt;
@@ -51,7 +50,7 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
 
   bool get _locked => _busy || _attempt != null || _expired;
 
-  /// 页面不订阅用户分类来判断模板状态，只有选择已有父分类时读取个人目录。
+  /// 新建模式展示分类树；追加模式仅展示独立节点，已有目录不参与模板状态判断。
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -61,16 +60,6 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
       selectedKeys: _selected,
       appendToParent: _append,
     );
-    final shown = groups
-        .where(
-          (group) =>
-              (_search.isEmpty ||
-              group.parent.name.toLowerCase().contains(_search) ||
-              group.children.any(
-                (child) => child.name.toLowerCase().contains(_search),
-              )),
-        )
-        .toList();
     final allKeys = {
       for (final group in groups) ...[
         group.parent.key,
@@ -111,24 +100,25 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
                             _selected = {};
                           }),
                   ),
-                  const SizedBox(height: AppDimens.p8),
-                  Text(
-                    _append
-                        ? l.categoryTemplateAppendHint
-                        : l.categoryTemplateCreateHint,
-                    style: AppTextTokens.caption(context),
-                  ),
                   if (_append) ...[
                     const SizedBox(height: AppDimens.p12),
                     AppSelectionField(
+                      key: const ValueKey('template-target'),
                       enabled: !_locked,
                       onTap: _chooseTarget,
                       child: Row(
                         children: [
+                          Text(
+                            l.categoryTemplateTargetPrefix,
+                            style: AppTextTokens.caption(context),
+                          ),
+                          const SizedBox(width: AppDimens.p8),
                           if (_target != null) ...[
                             CategoryIconWidget(
                               iconName: _target!.icon,
                               size: AppDimens.icon22,
+                              showBackground: true,
+                              backgroundSize: AppDimens.icon28,
                             ),
                             const SizedBox(width: AppDimens.p8),
                           ],
@@ -138,73 +128,27 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
                               style: AppTextTokens.body(context),
                             ),
                           ),
+                          if (_target != null)
+                            Text(
+                              l.categoryTemplateChangeTarget,
+                              style: AppTextTokens.label(
+                                context,
+                              ).copyWith(color: AppTokens.textLink(context)),
+                            ),
                         ],
                       ),
                     ),
-                  ],
-                  const SizedBox(height: AppDimens.p12),
-                  TextField(
-                    enabled: !_locked,
-                    decoration: InputDecoration(
-                      hintText: l.commonSearch,
-                      prefixIcon: const Icon(AppIcons.search),
+                  ] else ...[
+                    const SizedBox(height: AppDimens.p8),
+                    Text(
+                      l.categoryTemplateCreateHint,
+                      style: AppTextTokens.caption(context),
                     ),
-                    onChanged: (text) =>
-                        setState(() => _search = text.trim().toLowerCase()),
-                  ),
+                  ],
                 ],
               ),
             ),
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final width = constraints.maxWidth - AppDimens.p16 * 2;
-                  final columns = categoryTemplateColumns(context, width);
-                  final rowCount = (shown.length / columns).ceil();
-                  return ListView.separated(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimens.p16,
-                    ),
-                    itemCount: rowCount,
-                    separatorBuilder: (_, _) =>
-                        const SizedBox(height: AppDimens.p12),
-                    itemBuilder: (context, rowIndex) {
-                      final start = rowIndex * columns;
-                      final row = shown.sublist(
-                        start,
-                        (start + columns).clamp(0, shown.length),
-                      );
-                      return Column(
-                        children: [
-                          GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            padding: EdgeInsets.zero,
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: columns,
-                                  crossAxisSpacing: AppDimens.p8,
-                                  mainAxisSpacing: AppDimens.p8,
-                                  mainAxisExtent:
-                                      categoryTemplateTileHeight(context) +
-                                      AppDimens.p40,
-                                ),
-                            itemCount: row.length,
-                            itemBuilder: (context, index) =>
-                                _categoryCard(row[index], selected),
-                          ),
-                          for (final group in row)
-                            if (group.children.isNotEmpty &&
-                                (_expanded.contains(group.parent.key) ||
-                                    _search.isNotEmpty))
-                              _childrenPanel(group, columns),
-                        ],
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
+            Expanded(child: _catalogue(groups, selected)),
             if (_failed)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppDimens.p16),
@@ -222,7 +166,11 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
                 isWriting: _writing,
                 selectionLocked: _locked,
                 canSubmit: !_expired && (!_append || _target != null),
-                addLabel: _failed ? l.commonRetry : null,
+                addLabel: _failed
+                    ? l.commonRetry
+                    : _append
+                    ? l.categoryTemplateAddCount(selected.length)
+                    : null,
                 onToggleSelectAll: () => setState(
                   () => _selected = selected.length == allKeys.length
                       ? {}
@@ -237,139 +185,117 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
     );
   }
 
-  /// 分类卡片主体选择当前节点，独立的子分类按钮只展开内容。
+  /// 两种操作共用尺寸令牌，追加网格完全移除原模板的分组与展开信息。
+  Widget _catalogue(List<CategoryTemplateGroup> groups, Set<String> selected) =>
+      LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth - AppDimens.p16 * 2;
+          final columns = compactCategoryColumns(context, width);
+          if (_append) {
+            final items = [
+              for (final group in groups) ...[group.parent, ...group.children],
+            ];
+            return GridView.builder(
+              key: const ValueKey('template-flat-grid'),
+              padding: const EdgeInsets.fromLTRB(
+                AppDimens.p16,
+                0,
+                AppDimens.p16,
+                AppDimens.p8,
+              ),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                crossAxisSpacing: AppDimens.p8,
+                mainAxisSpacing: AppDimens.p8,
+                mainAxisExtent: compactCategoryTileHeight(context),
+              ),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final item = items[index];
+                return TemplateItemTile(
+                  key: ValueKey('template-flat-${item.key}'),
+                  item: item,
+                  selected: _selected.contains(item.key),
+                  enabled: !_locked,
+                  onToggle: () => setState(
+                    () => _selected = toggleTemplateSelection(
+                      _selected,
+                      item.key,
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+          final rowCount = (groups.length / columns).ceil();
+          return ListView.separated(
+            key: const ValueKey('template-group-grid'),
+            padding: const EdgeInsets.fromLTRB(
+              AppDimens.p16,
+              0,
+              AppDimens.p16,
+              AppDimens.p8,
+            ),
+            itemCount: rowCount,
+            separatorBuilder: (_, _) => const SizedBox(height: AppDimens.p8),
+            itemBuilder: (context, rowIndex) {
+              final start = rowIndex * columns;
+              final row = groups.sublist(
+                start,
+                (start + columns).clamp(0, groups.length),
+              );
+              return Column(
+                children: [
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.zero,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: columns,
+                      crossAxisSpacing: AppDimens.p8,
+                      mainAxisSpacing: AppDimens.p8,
+                      mainAxisExtent: compactCategoryTileHeight(context),
+                    ),
+                    itemCount: row.length,
+                    itemBuilder: (context, index) =>
+                        _categoryCard(row[index], selected),
+                  ),
+                  for (final group in row)
+                    if (group.children.isNotEmpty &&
+                        _expandedKey == group.parent.key)
+                      _childrenPanel(group, columns),
+                ],
+              );
+            },
+          );
+        },
+      );
+
+  /// 点击具有子项的分类时始终展示其内容，单独维护展开与本次多选状态。
   Widget _categoryCard(CategoryTemplateGroup group, Set<String> effective) {
     final item = group.parent;
     final checked = effective.contains(item.key);
-    final open = _expanded.contains(item.key) || _search.isNotEmpty;
-    final l = AppLocalizations.of(context);
-    final shape = selectableCardShape(
-      context,
+    return CompactCategoryTile(
+      key: ValueKey('template-category-${item.key}'),
+      name: item.name,
+      iconName: item.iconName,
       selected: checked,
-      unselectedBorder: BorderSide(color: AppTokens.borderStrong(context)),
-    );
-    return Material(
-      color: AppTokens.surface(context),
-      shape: shape,
-      child: Stack(
-        children: [
-          Column(
-            children: [
-              Expanded(
-                child: Semantics(
-                  checked: checked,
-                  enabled: !_locked,
-                  child: InkWell(
-                    key: ValueKey('template-category-${item.key}'),
-                    customBorder: shape,
-                    onTap: _locked
-                        ? null
-                        : () => setState(() {
-                            if (!_append && checked) {
-                              _selected.remove(item.key);
-                              _selected.removeAll(
-                                group.children.map((child) => child.key),
-                              );
-                            } else {
-                              _selected = toggleTemplateSelection(
-                                _selected,
-                                item.key,
-                              );
-                            }
-                          }),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppDimens.p8),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CategoryIconWidget(
-                              iconName: item.iconName,
-                              showBackground: true,
-                              size: AppDimens.icon22,
-                            ),
-                            const SizedBox(height: AppDimens.p8),
-                            Text(
-                              item.name,
-                              style: AppTextTokens.label(context),
-                              maxLines: 2,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: AppDimens.p40 + AppDimens.p8,
-                width: double.infinity,
-                child: group.children.isEmpty
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimens.p4,
-                          ),
-                          child: Text(
-                            l.categoryTemplateNoChildren,
-                            style: AppTextTokens.caption(context),
-                            maxLines: 2,
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      )
-                    : Tooltip(
-                        message: l.categoryTemplateShowChildren,
-                        child: InkWell(
-                          key: ValueKey('template-expand-${item.key}'),
-                          borderRadius: BorderRadius.circular(
-                            AppTokens.cardRadius(context),
-                          ),
-                          onTap: () => setState(() {
-                            if (!_expanded.add(item.key)) {
-                              _expanded.remove(item.key);
-                            }
-                          }),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppDimens.p4,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    l.categoryTemplateChildCount(
-                                      group.children.length,
-                                    ),
-                                    style: AppTextTokens.caption(context),
-                                    maxLines: 2,
-                                    textAlign: TextAlign.center,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                Icon(
-                                  open
-                                      ? AppIcons.chevronUp
-                                      : AppIcons.chevronDown,
-                                  size: AppDimens.icon12,
-                                  color: AppTokens.iconTertiary(context),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-              ),
-            ],
-          ),
-          if (checked) const SelectableCardCheckBadge(),
-        ],
-      ),
+      enabled: !_locked,
+      hasChildren: group.children.isNotEmpty,
+      expanded: _expandedKey == item.key,
+      onTap: () {
+        if (_locked) return;
+        setState(() {
+          // 所选节点只影响本次添加，已有分类与展开位置互不认领。
+          if (checked) {
+            _selected.remove(item.key);
+            _selected.removeAll(group.children.map((child) => child.key));
+          } else {
+            _selected.add(item.key);
+          }
+          _expandedKey = group.children.isEmpty ? null : item.key;
+        });
+      },
     );
   }
 
@@ -393,9 +319,19 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: AppDimens.p8),
-            child: Text(
-              '${group.parent.name} · ${l.categoryTemplateChildrenCount(childCount, group.children.length)}',
-              style: AppTextTokens.caption(context),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    group.parent.name,
+                    style: AppTextTokens.caption(context),
+                  ),
+                ),
+                Text(
+                  l.categoryTemplateCompactSelectedCount(childCount),
+                  style: AppTextTokens.caption(context),
+                ),
+              ],
             ),
           ),
           GridView.builder(
@@ -406,10 +342,7 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
               crossAxisCount: columns,
               crossAxisSpacing: AppDimens.p8,
               mainAxisSpacing: AppDimens.p8,
-              mainAxisExtent: categoryTemplateTileHeight(
-                context,
-                compact: true,
-              ),
+              mainAxisExtent: compactCategoryTileHeight(context),
             ),
             itemCount: group.children.length,
             itemBuilder: (context, index) {
@@ -419,7 +352,6 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
                 item: child,
                 selected: _selected.contains(child.key),
                 enabled: !_locked,
-                compact: true,
                 onToggle: () => setState(
                   () =>
                       _selected = toggleTemplateSelection(_selected, child.key),
@@ -441,6 +373,8 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
         context,
         initialSelection: _target,
         categoryActions: actions,
+        compact: true,
+        title: AppLocalizations.of(context).categoryTemplateChooseTarget,
       );
       _session.assertCurrent();
       if (!mounted || target == null) return;

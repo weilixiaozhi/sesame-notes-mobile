@@ -8759,38 +8759,14 @@ abstract class AppLocalizations {
   /// No description provided for @categoryTemplateCreateHint.
   ///
   /// In en, this message translates to:
-  /// **'Select a category to create it, or expand it to choose subcategories.'**
+  /// **'Tap to select a category and show its subcategories.'**
   String get categoryTemplateCreateHint;
-
-  /// No description provided for @categoryTemplateAppendHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a category first. Each selected item will be added directly under it.'**
-  String get categoryTemplateAppendHint;
 
   /// No description provided for @categoryTemplateChooseTarget.
   ///
   /// In en, this message translates to:
-  /// **'Choose a category'**
+  /// **'Choose existing category'**
   String get categoryTemplateChooseTarget;
-
-  /// No description provided for @categoryTemplateNoChildren.
-  ///
-  /// In en, this message translates to:
-  /// **'No subcategories'**
-  String get categoryTemplateNoChildren;
-
-  /// No description provided for @categoryTemplateShowChildren.
-  ///
-  /// In en, this message translates to:
-  /// **'Show or hide subcategories'**
-  String get categoryTemplateShowChildren;
-
-  /// No description provided for @categoryTemplateChildrenCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{selected}/{total} subcategories selected'**
-  String categoryTemplateChildrenCount(int selected, int total);
 
   /// No description provided for @categoryTemplateAppendConfirm.
   ///
@@ -8821,12 +8797,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The selected category is no longer available. Choose another.'**
   String get categoryTemplateTargetUnavailable;
-
-  /// No description provided for @categoryTemplateChildCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} subcategories'**
-  String categoryTemplateChildCount(int count);
 
   /// No description provided for @categoryNameDining.
   ///
@@ -9781,6 +9751,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other Subscription'**
   String get categoryNameSubscriptionOther;
+
+  /// No description provided for @categoryTemplateTargetPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to'**
+  String get categoryTemplateTargetPrefix;
+
+  /// No description provided for @categoryTemplateChangeTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get categoryTemplateChangeTarget;
+
+  /// No description provided for @categoryTemplateCompactSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String categoryTemplateCompactSelectedCount(int count);
+
+  /// No description provided for @categoryTemplateAddCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {count}'**
+  String categoryTemplateAddCount(int count);
 }
 
 class _AppLocalizationsDelegate

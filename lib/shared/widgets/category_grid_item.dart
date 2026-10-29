@@ -65,6 +65,75 @@ class CategoryGridTile extends StatelessWidget {
   );
 }
 
+/// 分类网格共用图标及子项标识，资源模板可直接提供图标名称。
+class CategoryGridIcon extends StatelessWidget {
+  final CategoryDisplay? category;
+  final String? iconName;
+  final bool selected;
+  final bool isSubCategory;
+  final bool hasChildren;
+
+  /// 用户分类与模板节点共用图标绘制，不需要互相转换数据身份。
+  const CategoryGridIcon({
+    super.key,
+    this.category,
+    this.iconName,
+    this.selected = false,
+    this.isSubCategory = false,
+    this.hasChildren = false,
+  });
+
+  /// 子项标记叠加在图标边缘，不改变图标或名称占位。
+  @override
+  Widget build(BuildContext context) {
+    final iconSize = isSubCategory ? AppDimens.p36 : AppDimens.icon40;
+    final iconBg = selected
+        ? AppTokens.buttonPrimary(context)
+        : AppTokens.surfaceCategoryIcon(context);
+    final iconColor = selected
+        ? AppTokens.buttonPrimaryText(context)
+        : AppTokens.iconCategory(context);
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        CategoryIconWidget(
+          category: category,
+          iconName: iconName,
+          size: isSubCategory ? AppDimens.icon18 : AppDimens.icon20,
+          color: iconColor,
+          showBackground: true,
+          backgroundSize: iconSize,
+          backgroundColor: iconBg,
+        ),
+        if (hasChildren && !isSubCategory)
+          Positioned(
+            right: -AppDimens.p4,
+            bottom: -AppDimens.selectionBadgeGap,
+            child: Container(
+              width: AppDimens.icon16,
+              height: AppDimens.icon16,
+              decoration: BoxDecoration(
+                color: iconBg,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppTokens.surface(context),
+                  width: AppDimens.selectionIndicatorWidth,
+                ),
+              ),
+              child: Center(
+                child: Icon(
+                  AppIcons.moreVertical,
+                  size: AppDimens.categoryBadgeIconSize,
+                  color: iconColor,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 /// 分类图标和名称；父分类含子项时显示省略号标识。
 class CategoryGridItem extends StatelessWidget {
   /// 父项、子项共用点击和选择语义，展开状态由分类区维护。
@@ -90,13 +159,6 @@ class CategoryGridItem extends StatelessWidget {
   /// 选中的父项与子项分别高亮，父项角标和展开语义始终对应同一树节点。
   @override
   Widget build(BuildContext context) {
-    final iconSize = isSubCategory ? AppDimens.p36 : AppDimens.icon40;
-    final iconBg = selected
-        ? AppTokens.buttonPrimary(context)
-        : AppTokens.surfaceCategoryIcon(context);
-    final iconColor = selected
-        ? AppTokens.buttonPrimaryText(context)
-        : AppTokens.iconCategory(context);
     final labelColor = selected
         ? AppTokens.primary(context)
         : isSubCategory
@@ -109,46 +171,11 @@ class CategoryGridItem extends StatelessWidget {
       selected: selected,
       expanded: hasChildren ? expanded : null,
       labelColor: labelColor,
-      icon: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          CategoryIconWidget(
-            category: category,
-            size: isSubCategory ? AppDimens.icon18 : AppDimens.icon20,
-            color: iconColor,
-            showBackground: true,
-            backgroundSize: iconSize,
-            backgroundColor: iconBg,
-          ),
-          if (hasChildren && !isSubCategory)
-            Positioned(
-              right: -AppDimens.p4,
-              bottom: -AppDimens.selectionBadgeGap,
-              child: Container(
-                width: AppDimens.icon16,
-                height: AppDimens.icon16,
-                decoration: BoxDecoration(
-                  color: selected
-                      ? AppTokens.buttonPrimary(context)
-                      : AppTokens.surfaceCategoryIcon(context),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppTokens.surface(context),
-                    width: 2,
-                  ),
-                ),
-                child: Center(
-                  child: Icon(
-                    AppIcons.moreVertical,
-                    size: AppDimens.categoryBadgeIconSize,
-                    color: selected
-                        ? AppTokens.buttonPrimaryText(context)
-                        : AppTokens.iconCategory(context),
-                  ),
-                ),
-              ),
-            ),
-        ],
+      icon: CategoryGridIcon(
+        category: category,
+        selected: selected,
+        isSubCategory: isSubCategory,
+        hasChildren: hasChildren,
       ),
     );
   }

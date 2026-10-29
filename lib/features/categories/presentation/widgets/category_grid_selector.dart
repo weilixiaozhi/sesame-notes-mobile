@@ -8,12 +8,13 @@ import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
+import 'compact_category_tile.dart';
 
 /// 分类迁移与周期账单共用的分类网格：父分类与子分类都可直接选择。
 ///
 /// - 顶部搜索框：按分类显示名过滤（大小写不敏感）
-/// - 排列顺序：先父后子——列完一个一级分类及其全部二级分类，再列下一个
-/// - 每个分类标注层级：一级分类 / 二级·所属父分类名
+/// - 排列顺序：先展示分类，再展示其子项。
+/// - 标准模式保留所属关系提示；模板模式使用无搜索的纯图标网格。
 ///
 /// 返回选中的目标分类 id；未选择直接关闭时返回 null。
 Future<String?> showCategoryGridSelector(
@@ -23,6 +24,7 @@ Future<String?> showCategoryGridSelector(
   String? title,
   String? initialSelection,
   bool showTransactionCount = true,
+  bool compact = false,
 }) {
   return showAppSheet<String>(
     context: context,
@@ -31,11 +33,12 @@ Future<String?> showCategoryGridSelector(
       title: title,
       initialSelection: initialSelection,
       showTransactionCount: showTransactionCount,
+      compact: compact,
     ),
   );
 }
 
-/// 迁移目标选择 BottomSheet 内容：搜索框 + 父子排序网格 + 确定按钮
+/// 分类候选弹层：标准模式保留搜索与所属关系，紧凑模式仅选择明确实例。
 class _CategoryGridSelectorSheet extends StatefulWidget {
   /// 可选的迁移目标分类（调用方已完成排除过滤）
   final List<({db.CategoryDisplay category, int transactionCount})>
@@ -44,12 +47,14 @@ class _CategoryGridSelectorSheet extends StatefulWidget {
   final String? title;
   final String? initialSelection;
   final bool showTransactionCount;
+  final bool compact;
 
   const _CategoryGridSelectorSheet({
     required this.availableCategories,
     this.title,
     this.initialSelection,
     required this.showTransactionCount,
+    required this.compact,
   });
 
   @override
@@ -80,8 +85,7 @@ class _CategoryGridSelectorSheetState
     super.dispose();
   }
 
-  /// 父 → 子 有序排列：每个一级分类后紧跟其全部二级分类，再排下一个一级分类；
-  /// 同级内部按 sortOrder 排序，与分类管理页展示顺序保持一致。
+  /// 每个分类后紧跟其子项，同一所属关系内按 sortOrder 排序。
   List<({db.CategoryDisplay category, int transactionCount})>
   _buildOrderedList() => orderCategoriesParentFirst(widget.availableCategories);
 
@@ -98,7 +102,7 @@ class _CategoryGridSelectorSheetState
     }).toList();
   }
 
-  /// 查子分类所属父分类的本地化显示名（层级标注"二级 · 父名"用）。
+  /// 读取子分类所属分类的显示名，供标准选择模式说明位置。
   /// 调用方的过滤规则保证候选中子分类的父必定同在候选内。
   String _parentDisplayName(String parentId) {
     for (final i in widget.availableCategories) {
@@ -112,6 +116,7 @@ class _CategoryGridSelectorSheetState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    if (widget.compact) return _compactSheet(context);
     final filtered = _filteredList();
 
     return AppSheet(
@@ -167,7 +172,7 @@ class _CategoryGridSelectorSheetState
                     item: item,
                     showTransactionCount: widget.showTransactionCount,
                     isSelected: isSelected,
-                    // 层级标注：一级分类 / 二级 · 所属父分类名
+                    // 标准模式保留所属分类信息，避免跨分类的同名项混淆。
                     badgeLabel: category.parentId == null
                         ? l10n.categoryTopLevelLabel
                         : l10n.categoryMigrateChildLabel(
@@ -185,10 +190,75 @@ class _CategoryGridSelectorSheetState
       ),
     );
   }
+
+  /// 模板只选择所属分类，使用固定列宽的纯图标名称网格，不提供多余的搜索与关系标签。
+  Widget _compactSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final items = _buildOrderedList();
+    return AppSheet(
+      header: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppDimens.p16,
+          AppDimens.p4,
+          AppDimens.p16,
+          AppDimens.p8,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                widget.title ?? l10n.categoryMigrateSelectTargetTitle,
+                style: AppTextTokens.strongTitle(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+      footer: AppPrimaryButton(
+        label: l10n.commonConfirm,
+        onPressed: _selectedTargetId == null
+            ? null
+            : () => Navigator.pop(context, _selectedTargetId),
+      ),
+      contentPadding: const EdgeInsets.fromLTRB(
+        AppDimens.p16,
+        0,
+        AppDimens.p16,
+        AppDimens.p16,
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) => GridView.builder(
+          key: const ValueKey('category-compact-target-grid'),
+          shrinkWrap: true,
+          padding: EdgeInsets.zero,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: compactCategoryColumns(
+              context,
+              constraints.maxWidth,
+            ),
+            crossAxisSpacing: AppDimens.p8,
+            mainAxisSpacing: AppDimens.p8,
+            mainAxisExtent: compactCategoryTileHeight(context),
+          ),
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            final category = items[index].category;
+            return CompactCategoryTile(
+              key: ValueKey('category-target-${category.id}'),
+              name: CategoryUtils.getDisplayName(category.name, context),
+              iconName: category.icon,
+              selected: _selectedTargetId == category.id,
+              onTap: () => setState(() => _selectedTargetId = category.id),
+            );
+          },
+        ),
+      ),
+    );
+  }
 }
 
 /// 迁移目标 BottomSheet 中的单个分类选项卡片
-/// （管理页一级分类迁移与子分类弹窗迁移共用）
+/// 管理页与子分类弹窗迁移共用。
 class _MigrateCategoryChip extends StatelessWidget {
   final ({db.CategoryDisplay category, int transactionCount}) item;
 
@@ -197,7 +267,7 @@ class _MigrateCategoryChip extends StatelessWidget {
   final bool showTransactionCount;
   final VoidCallback onTap;
 
-  /// 层级标注：一级分类显示"一级分类"，二级分类显示"二级 · 所属父分类名"
+  /// 标准模式下说明分类的所属位置。
   final String badgeLabel;
 
   const _MigrateCategoryChip({

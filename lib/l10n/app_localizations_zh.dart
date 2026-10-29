@@ -4679,24 +4679,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get categoryTemplateAppendMode => '添加到已有分类';
 
   @override
-  String get categoryTemplateCreateHint => '选择分类可单独创建，展开后可按需选择子分类。';
+  String get categoryTemplateCreateHint => '点击分类可选择，有子分类时自动展开。';
 
   @override
-  String get categoryTemplateAppendHint => '先选择所属分类，勾选的每一项都会添加到它下面。';
-
-  @override
-  String get categoryTemplateChooseTarget => '选择所属分类';
-
-  @override
-  String get categoryTemplateNoChildren => '无子分类';
-
-  @override
-  String get categoryTemplateShowChildren => '展开或收起子分类';
-
-  @override
-  String categoryTemplateChildrenCount(int selected, int total) {
-    return '子分类 $selected/$total 已选';
-  }
+  String get categoryTemplateChooseTarget => '选择已有分类';
 
   @override
   String categoryTemplateAppendConfirm(int count, String name) {
@@ -4714,11 +4700,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get categoryTemplateTargetUnavailable => '所属分类已不可用，请重新选择。';
-
-  @override
-  String categoryTemplateChildCount(int count) {
-    return '$count 项子分类';
-  }
 
   @override
   String get categoryNameDining => '餐饮';
@@ -5196,6 +5177,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get categoryNameSubscriptionOther => '其他订阅';
+
+  @override
+  String get categoryTemplateTargetPrefix => '添加到';
+
+  @override
+  String get categoryTemplateChangeTarget => '更换';
+
+  @override
+  String categoryTemplateCompactSelectedCount(int count) {
+    return '已选 $count 项';
+  }
+
+  @override
+  String categoryTemplateAddCount(int count) {
+    return '添加 $count 项';
+  }
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -9871,24 +9868,10 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get categoryTemplateAppendMode => '加入現有分類';
 
   @override
-  String get categoryTemplateCreateHint => '選擇分類可單獨建立，展開後可按需選擇子分類。';
+  String get categoryTemplateCreateHint => '點擊分類即可選擇，有子分類時自動展開。';
 
   @override
-  String get categoryTemplateAppendHint => '先選擇所屬分類，勾選的每一項都會加入其下。';
-
-  @override
-  String get categoryTemplateChooseTarget => '選擇所屬分類';
-
-  @override
-  String get categoryTemplateNoChildren => '無子分類';
-
-  @override
-  String get categoryTemplateShowChildren => '展開或收起子分類';
-
-  @override
-  String categoryTemplateChildrenCount(int selected, int total) {
-    return '子分類 $selected/$total 已選';
-  }
+  String get categoryTemplateChooseTarget => '選擇已有分類';
 
   @override
   String categoryTemplateAppendConfirm(int count, String name) {
@@ -9906,11 +9889,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get categoryTemplateTargetUnavailable => '所屬分類已無法使用，請重新選擇。';
-
-  @override
-  String categoryTemplateChildCount(int count) {
-    return '$count 項子分類';
-  }
 
   @override
   String get categoryNameDining => '餐飲';
@@ -10388,4 +10366,20 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get categoryNameSubscriptionOther => '其他訂閱';
+
+  @override
+  String get categoryTemplateTargetPrefix => '加入到';
+
+  @override
+  String get categoryTemplateChangeTarget => '更換';
+
+  @override
+  String categoryTemplateCompactSelectedCount(int count) {
+    return '已選 $count 項';
+  }
+
+  @override
+  String categoryTemplateAddCount(int count) {
+    return '新增 $count 項';
+  }
 }

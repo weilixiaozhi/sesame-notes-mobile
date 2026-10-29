@@ -2227,24 +2227,10 @@
   "categoryTemplateLibraryTitle": "Category templates",
   "categoryTemplateCreateMode": "Create categories",
   "categoryTemplateAppendMode": "Add to a category",
-  "categoryTemplateCreateHint": "Select a category to create it, or expand it to choose subcategories.",
-  "categoryTemplateAppendHint": "Choose a category first. Each selected item will be added directly under it.",
-  "categoryTemplateChooseTarget": "Choose a category",
-  "categoryTemplateNoChildren": "No subcategories",
-  "categoryTemplateShowChildren": "Show or hide subcategories",
-  "categoryTemplateChildrenCount": "{selected}/{total} subcategories selected",
+  "categoryTemplateCreateHint": "Tap to select a category and show its subcategories.",
+  "categoryTemplateChooseTarget": "Choose existing category",
   "categoryTemplateAppendConfirm": "Add {count} subcategories to “{name}”?",
   "categoryTemplateRetryHint": "Adding is not complete. Retry this operation.",
-  "@categoryTemplateChildrenCount": {
-    "placeholders": {
-      "selected": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "@categoryTemplateAppendConfirm": {
     "placeholders": {
       "count": {
@@ -2258,14 +2244,6 @@
   "categoryTemplatePersonalScope": "Add to my category list",
   "categoryTemplateScopeChanged": "The account or ledger changed. Go back and reopen templates.",
   "categoryTemplateTargetUnavailable": "The selected category is no longer available. Choose another.",
-  "categoryTemplateChildCount": "{count} subcategories",
-  "@categoryTemplateChildCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "categoryNameDining": "Dining",
   "categoryNameDiningBreakfast": "Breakfast",
   "categoryNameDiningLunch": "Lunch",
@@ -2424,5 +2402,23 @@
   "categoryNameSubscriptionVideo": "Video Membership",
   "categoryNameSubscriptionMusic": "Music Membership",
   "categoryNameSubscriptionCloud": "Cloud Storage",
-  "categoryNameSubscriptionOther": "Other Subscription"
+  "categoryNameSubscriptionOther": "Other Subscription",
+  "categoryTemplateTargetPrefix": "Add to",
+  "categoryTemplateChangeTarget": "Change",
+  "categoryTemplateCompactSelectedCount": "{count} selected",
+  "categoryTemplateAddCount": "Add {count}",
+  "@categoryTemplateCompactSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@categoryTemplateAddCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

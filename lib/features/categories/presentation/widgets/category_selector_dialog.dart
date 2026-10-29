@@ -11,7 +11,7 @@ import 'package:sesame_notes/core/logging/logger_service.dart';
 typedef CategoryFilterCallback =
     Future<bool> Function(CategoryDisplay category);
 
-/// 所属分类直接复用迁移网格，候选仍按一级分类业务规则过滤。
+/// 所属分类候选沿用明确身份与关系过滤，模板场景使用紧凑网格。
 Future<CategoryDisplay?> showParentCategorySelector(
   BuildContext context, {
   CategoryDisplay? initialSelection,
@@ -19,6 +19,8 @@ Future<CategoryDisplay?> showParentCategorySelector(
   CategoryFilterCallback? categoryFilter,
   String? ledgerId,
   CategoryActions? categoryActions,
+  bool compact = false,
+  String? title,
 }) async {
   try {
     final CategoryActions actions =
@@ -41,8 +43,9 @@ Future<CategoryDisplay?> showParentCategorySelector(
           (category: category, transactionCount: 0),
       ],
       initialSelection: initialSelection?.id,
-      title: AppLocalizations.of(context).categorySelectParentTitle,
+      title: title ?? AppLocalizations.of(context).categorySelectParentTitle,
       showTransactionCount: false,
+      compact: compact,
     );
     if (selected == null) return null;
     return available.firstWhere((category) => category.id == selected);

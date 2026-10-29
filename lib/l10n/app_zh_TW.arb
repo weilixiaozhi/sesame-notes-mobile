@@ -2147,24 +2147,10 @@
   "categoryTemplateLibraryTitle": "分類範本庫",
   "categoryTemplateCreateMode": "新增分類",
   "categoryTemplateAppendMode": "加入現有分類",
-  "categoryTemplateCreateHint": "選擇分類可單獨建立，展開後可按需選擇子分類。",
-  "categoryTemplateAppendHint": "先選擇所屬分類，勾選的每一項都會加入其下。",
-  "categoryTemplateChooseTarget": "選擇所屬分類",
-  "categoryTemplateNoChildren": "無子分類",
-  "categoryTemplateShowChildren": "展開或收起子分類",
-  "categoryTemplateChildrenCount": "子分類 {selected}/{total} 已選",
+  "categoryTemplateCreateHint": "點擊分類即可選擇，有子分類時自動展開。",
+  "categoryTemplateChooseTarget": "選擇已有分類",
   "categoryTemplateAppendConfirm": "將 {count} 個子分類加入「{name}」？",
   "categoryTemplateRetryHint": "新增尚未完成，請重試本次操作。",
-  "@categoryTemplateChildrenCount": {
-    "placeholders": {
-      "selected": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "@categoryTemplateAppendConfirm": {
     "placeholders": {
       "count": {
@@ -2178,14 +2164,6 @@
   "categoryTemplatePersonalScope": "加入我的分類目錄",
   "categoryTemplateScopeChanged": "帳號或帳本已變更，請返回後重新開啟範本庫。",
   "categoryTemplateTargetUnavailable": "所屬分類已無法使用，請重新選擇。",
-  "categoryTemplateChildCount": "{count} 項子分類",
-  "@categoryTemplateChildCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "categoryNameDining": "餐飲",
   "categoryNameDiningBreakfast": "早餐",
   "categoryNameDiningLunch": "午餐",
@@ -2344,5 +2322,23 @@
   "categoryNameSubscriptionVideo": "視頻會員",
   "categoryNameSubscriptionMusic": "音樂會員",
   "categoryNameSubscriptionCloud": "雲端儲存",
-  "categoryNameSubscriptionOther": "其他訂閱"
+  "categoryNameSubscriptionOther": "其他訂閱",
+  "categoryTemplateTargetPrefix": "加入到",
+  "categoryTemplateChangeTarget": "更換",
+  "categoryTemplateCompactSelectedCount": "已選 {count} 項",
+  "categoryTemplateAddCount": "新增 {count} 項",
+  "@categoryTemplateCompactSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@categoryTemplateAddCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
