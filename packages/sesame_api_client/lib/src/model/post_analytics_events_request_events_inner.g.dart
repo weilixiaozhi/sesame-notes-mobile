@@ -576,6 +576,13 @@ final BuiltSet<PostAnalyticsEventsRequestEventsInnerPlatformEnum>
 ]);
 
 const PostAnalyticsEventsRequestEventsInnerEventNameEnum
+    _$postAnalyticsEventsRequestEventsInnerEventNameEnum_bannerImpression =
+    const PostAnalyticsEventsRequestEventsInnerEventNameEnum._(
+        'bannerImpression');
+const PostAnalyticsEventsRequestEventsInnerEventNameEnum
+    _$postAnalyticsEventsRequestEventsInnerEventNameEnum_bannerClick =
+    const PostAnalyticsEventsRequestEventsInnerEventNameEnum._('bannerClick');
+const PostAnalyticsEventsRequestEventsInnerEventNameEnum
     _$postAnalyticsEventsRequestEventsInnerEventNameEnum_homeView =
     const PostAnalyticsEventsRequestEventsInnerEventNameEnum._('homeView');
 const PostAnalyticsEventsRequestEventsInnerEventNameEnum
@@ -1107,6 +1114,10 @@ const PostAnalyticsEventsRequestEventsInnerEventNameEnum
 PostAnalyticsEventsRequestEventsInnerEventNameEnum
     _$postAnalyticsEventsRequestEventsInnerEventNameEnumValueOf(String name) {
   switch (name) {
+    case 'bannerImpression':
+      return _$postAnalyticsEventsRequestEventsInnerEventNameEnum_bannerImpression;
+    case 'bannerClick':
+      return _$postAnalyticsEventsRequestEventsInnerEventNameEnum_bannerClick;
     case 'homeView':
       return _$postAnalyticsEventsRequestEventsInnerEventNameEnum_homeView;
     case 'accountingView':
@@ -1383,6 +1394,8 @@ PostAnalyticsEventsRequestEventsInnerEventNameEnum
 final BuiltSet<PostAnalyticsEventsRequestEventsInnerEventNameEnum>
     _$postAnalyticsEventsRequestEventsInnerEventNameEnumValues = BuiltSet<
         PostAnalyticsEventsRequestEventsInnerEventNameEnum>(const <PostAnalyticsEventsRequestEventsInnerEventNameEnum>[
+  _$postAnalyticsEventsRequestEventsInnerEventNameEnum_bannerImpression,
+  _$postAnalyticsEventsRequestEventsInnerEventNameEnum_bannerClick,
   _$postAnalyticsEventsRequestEventsInnerEventNameEnum_homeView,
   _$postAnalyticsEventsRequestEventsInnerEventNameEnum_accountingView,
   _$postAnalyticsEventsRequestEventsInnerEventNameEnum_accountingTransactionView,
@@ -1519,6 +1532,61 @@ final BuiltSet<PostAnalyticsEventsRequestEventsInnerEventNameEnum>
   _$postAnalyticsEventsRequestEventsInnerEventNameEnum_settingsReminderChanged,
 ]);
 
+const PostAnalyticsEventsRequestEventsInnerBannerSlotEnum
+    _$postAnalyticsEventsRequestEventsInnerBannerSlotEnum_fitnessPlanLibrary =
+    const PostAnalyticsEventsRequestEventsInnerBannerSlotEnum._(
+        'fitnessPlanLibrary');
+const PostAnalyticsEventsRequestEventsInnerBannerSlotEnum
+    _$postAnalyticsEventsRequestEventsInnerBannerSlotEnum_fitnessTemplateLibrary =
+    const PostAnalyticsEventsRequestEventsInnerBannerSlotEnum._(
+        'fitnessTemplateLibrary');
+
+PostAnalyticsEventsRequestEventsInnerBannerSlotEnum
+    _$postAnalyticsEventsRequestEventsInnerBannerSlotEnumValueOf(String name) {
+  switch (name) {
+    case 'fitnessPlanLibrary':
+      return _$postAnalyticsEventsRequestEventsInnerBannerSlotEnum_fitnessPlanLibrary;
+    case 'fitnessTemplateLibrary':
+      return _$postAnalyticsEventsRequestEventsInnerBannerSlotEnum_fitnessTemplateLibrary;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<PostAnalyticsEventsRequestEventsInnerBannerSlotEnum>
+    _$postAnalyticsEventsRequestEventsInnerBannerSlotEnumValues = BuiltSet<
+        PostAnalyticsEventsRequestEventsInnerBannerSlotEnum>(const <PostAnalyticsEventsRequestEventsInnerBannerSlotEnum>[
+  _$postAnalyticsEventsRequestEventsInnerBannerSlotEnum_fitnessPlanLibrary,
+  _$postAnalyticsEventsRequestEventsInnerBannerSlotEnum_fitnessTemplateLibrary,
+]);
+
+const PostAnalyticsEventsRequestEventsInnerBannerSourceEnum
+    _$postAnalyticsEventsRequestEventsInnerBannerSourceEnum_builtin =
+    const PostAnalyticsEventsRequestEventsInnerBannerSourceEnum._('builtin');
+const PostAnalyticsEventsRequestEventsInnerBannerSourceEnum
+    _$postAnalyticsEventsRequestEventsInnerBannerSourceEnum_remote =
+    const PostAnalyticsEventsRequestEventsInnerBannerSourceEnum._('remote');
+
+PostAnalyticsEventsRequestEventsInnerBannerSourceEnum
+    _$postAnalyticsEventsRequestEventsInnerBannerSourceEnumValueOf(
+        String name) {
+  switch (name) {
+    case 'builtin':
+      return _$postAnalyticsEventsRequestEventsInnerBannerSourceEnum_builtin;
+    case 'remote':
+      return _$postAnalyticsEventsRequestEventsInnerBannerSourceEnum_remote;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<PostAnalyticsEventsRequestEventsInnerBannerSourceEnum>
+    _$postAnalyticsEventsRequestEventsInnerBannerSourceEnumValues = BuiltSet<
+        PostAnalyticsEventsRequestEventsInnerBannerSourceEnum>(const <PostAnalyticsEventsRequestEventsInnerBannerSourceEnum>[
+  _$postAnalyticsEventsRequestEventsInnerBannerSourceEnum_builtin,
+  _$postAnalyticsEventsRequestEventsInnerBannerSourceEnum_remote,
+]);
+
 Serializer<PostAnalyticsEventsRequestEventsInnerKindEnum>
     _$postAnalyticsEventsRequestEventsInnerKindEnumSerializer =
     _$PostAnalyticsEventsRequestEventsInnerKindEnumSerializer();
@@ -1531,6 +1599,12 @@ Serializer<PostAnalyticsEventsRequestEventsInnerPlatformEnum>
 Serializer<PostAnalyticsEventsRequestEventsInnerEventNameEnum>
     _$postAnalyticsEventsRequestEventsInnerEventNameEnumSerializer =
     _$PostAnalyticsEventsRequestEventsInnerEventNameEnumSerializer();
+Serializer<PostAnalyticsEventsRequestEventsInnerBannerSlotEnum>
+    _$postAnalyticsEventsRequestEventsInnerBannerSlotEnumSerializer =
+    _$PostAnalyticsEventsRequestEventsInnerBannerSlotEnumSerializer();
+Serializer<PostAnalyticsEventsRequestEventsInnerBannerSourceEnum>
+    _$postAnalyticsEventsRequestEventsInnerBannerSourceEnumSerializer =
+    _$PostAnalyticsEventsRequestEventsInnerBannerSourceEnumSerializer();
 
 class _$PostAnalyticsEventsRequestEventsInnerKindEnumSerializer
     implements
@@ -1788,6 +1862,8 @@ class _$PostAnalyticsEventsRequestEventsInnerEventNameEnumSerializer
         PrimitiveSerializer<
             PostAnalyticsEventsRequestEventsInnerEventNameEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
+    'bannerImpression': 'banner_impression',
+    'bannerClick': 'banner_click',
     'homeView': 'home_view',
     'accountingView': 'accounting_view',
     'accountingTransactionView': 'accounting_transaction_view',
@@ -1927,6 +2003,8 @@ class _$PostAnalyticsEventsRequestEventsInnerEventNameEnumSerializer
     'settingsReminderChanged': 'settings_reminder_changed',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
+    'banner_impression': 'bannerImpression',
+    'banner_click': 'bannerClick',
     'home_view': 'homeView',
     'accounting_view': 'accountingView',
     'accounting_transaction_view': 'accountingTransactionView',
@@ -2087,6 +2165,75 @@ class _$PostAnalyticsEventsRequestEventsInnerEventNameEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
+class _$PostAnalyticsEventsRequestEventsInnerBannerSlotEnumSerializer
+    implements
+        PrimitiveSerializer<
+            PostAnalyticsEventsRequestEventsInnerBannerSlotEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'fitnessPlanLibrary': 'fitness-plan-library',
+    'fitnessTemplateLibrary': 'fitness-template-library',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'fitness-plan-library': 'fitnessPlanLibrary',
+    'fitness-template-library': 'fitnessTemplateLibrary',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    PostAnalyticsEventsRequestEventsInnerBannerSlotEnum
+  ];
+  @override
+  final String wireName = 'PostAnalyticsEventsRequestEventsInnerBannerSlotEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          PostAnalyticsEventsRequestEventsInnerBannerSlotEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PostAnalyticsEventsRequestEventsInnerBannerSlotEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PostAnalyticsEventsRequestEventsInnerBannerSlotEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$PostAnalyticsEventsRequestEventsInnerBannerSourceEnumSerializer
+    implements
+        PrimitiveSerializer<
+            PostAnalyticsEventsRequestEventsInnerBannerSourceEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'builtin': 'builtin',
+    'remote': 'remote',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'builtin': 'builtin',
+    'remote': 'remote',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    PostAnalyticsEventsRequestEventsInnerBannerSourceEnum
+  ];
+  @override
+  final String wireName =
+      'PostAnalyticsEventsRequestEventsInnerBannerSourceEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          PostAnalyticsEventsRequestEventsInnerBannerSourceEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PostAnalyticsEventsRequestEventsInnerBannerSourceEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PostAnalyticsEventsRequestEventsInnerBannerSourceEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$PostAnalyticsEventsRequestEventsInner
     extends PostAnalyticsEventsRequestEventsInner {
   @override
@@ -2109,6 +2256,14 @@ class _$PostAnalyticsEventsRequestEventsInner
   final int eventSequence;
   @override
   final String? flowId;
+  @override
+  final PostAnalyticsEventsRequestEventsInnerBannerSlotEnum? bannerSlot;
+  @override
+  final String? bannerId;
+  @override
+  final PostAnalyticsEventsRequestEventsInnerBannerSourceEnum? bannerSource;
+  @override
+  final int? bannerVersion;
 
   factory _$PostAnalyticsEventsRequestEventsInner(
           [void Function(PostAnalyticsEventsRequestEventsInnerBuilder)?
@@ -2126,7 +2281,11 @@ class _$PostAnalyticsEventsRequestEventsInner
       this.eventName,
       required this.sessionId,
       required this.eventSequence,
-      this.flowId})
+      this.flowId,
+      this.bannerSlot,
+      this.bannerId,
+      this.bannerSource,
+      this.bannerVersion})
       : super._();
   @override
   PostAnalyticsEventsRequestEventsInner rebuild(
@@ -2151,7 +2310,11 @@ class _$PostAnalyticsEventsRequestEventsInner
         eventName == other.eventName &&
         sessionId == other.sessionId &&
         eventSequence == other.eventSequence &&
-        flowId == other.flowId;
+        flowId == other.flowId &&
+        bannerSlot == other.bannerSlot &&
+        bannerId == other.bannerId &&
+        bannerSource == other.bannerSource &&
+        bannerVersion == other.bannerVersion;
   }
 
   @override
@@ -2167,6 +2330,10 @@ class _$PostAnalyticsEventsRequestEventsInner
     _$hash = $jc(_$hash, sessionId.hashCode);
     _$hash = $jc(_$hash, eventSequence.hashCode);
     _$hash = $jc(_$hash, flowId.hashCode);
+    _$hash = $jc(_$hash, bannerSlot.hashCode);
+    _$hash = $jc(_$hash, bannerId.hashCode);
+    _$hash = $jc(_$hash, bannerSource.hashCode);
+    _$hash = $jc(_$hash, bannerVersion.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -2184,7 +2351,11 @@ class _$PostAnalyticsEventsRequestEventsInner
           ..add('eventName', eventName)
           ..add('sessionId', sessionId)
           ..add('eventSequence', eventSequence)
-          ..add('flowId', flowId))
+          ..add('flowId', flowId)
+          ..add('bannerSlot', bannerSlot)
+          ..add('bannerId', bannerId)
+          ..add('bannerSource', bannerSource)
+          ..add('bannerVersion', bannerVersion))
         .toString();
   }
 }
@@ -2243,6 +2414,30 @@ class PostAnalyticsEventsRequestEventsInnerBuilder
   String? get flowId => _$this._flowId;
   set flowId(String? flowId) => _$this._flowId = flowId;
 
+  PostAnalyticsEventsRequestEventsInnerBannerSlotEnum? _bannerSlot;
+  PostAnalyticsEventsRequestEventsInnerBannerSlotEnum? get bannerSlot =>
+      _$this._bannerSlot;
+  set bannerSlot(
+          PostAnalyticsEventsRequestEventsInnerBannerSlotEnum? bannerSlot) =>
+      _$this._bannerSlot = bannerSlot;
+
+  String? _bannerId;
+  String? get bannerId => _$this._bannerId;
+  set bannerId(String? bannerId) => _$this._bannerId = bannerId;
+
+  PostAnalyticsEventsRequestEventsInnerBannerSourceEnum? _bannerSource;
+  PostAnalyticsEventsRequestEventsInnerBannerSourceEnum? get bannerSource =>
+      _$this._bannerSource;
+  set bannerSource(
+          PostAnalyticsEventsRequestEventsInnerBannerSourceEnum?
+              bannerSource) =>
+      _$this._bannerSource = bannerSource;
+
+  int? _bannerVersion;
+  int? get bannerVersion => _$this._bannerVersion;
+  set bannerVersion(int? bannerVersion) =>
+      _$this._bannerVersion = bannerVersion;
+
   PostAnalyticsEventsRequestEventsInnerBuilder() {
     PostAnalyticsEventsRequestEventsInner._defaults(this);
   }
@@ -2260,6 +2455,10 @@ class PostAnalyticsEventsRequestEventsInnerBuilder
       _sessionId = $v.sessionId;
       _eventSequence = $v.eventSequence;
       _flowId = $v.flowId;
+      _bannerSlot = $v.bannerSlot;
+      _bannerId = $v.bannerId;
+      _bannerSource = $v.bannerSource;
+      _bannerVersion = $v.bannerVersion;
       _$v = null;
     }
     return this;
@@ -2298,6 +2497,10 @@ class PostAnalyticsEventsRequestEventsInnerBuilder
           eventSequence: BuiltValueNullFieldError.checkNotNull(eventSequence,
               r'PostAnalyticsEventsRequestEventsInner', 'eventSequence'),
           flowId: flowId,
+          bannerSlot: bannerSlot,
+          bannerId: bannerId,
+          bannerSource: bannerSource,
+          bannerVersion: bannerVersion,
         );
     replace(_$result);
     return _$result;

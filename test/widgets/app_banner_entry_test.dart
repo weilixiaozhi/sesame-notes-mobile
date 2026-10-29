@@ -22,7 +22,7 @@ void main() {
   Widget page({
     required AppBannerSlot slot,
     required ValueChanged<String> onOpen,
-    Future<Map<AppBannerSlot, ResolvedAppBanner>> Function()? load,
+    Future<Map<AppBannerSlot, List<ResolvedAppBanner>>> Function()? load,
     Locale locale = const Locale('zh'),
   }) => ProviderScope(
     overrides: [
@@ -65,7 +65,7 @@ void main() {
   });
 
   testWidgets('远端加载悬挂时不阻塞本地图片与默认入口', (tester) async {
-    final pending = Completer<Map<AppBannerSlot, ResolvedAppBanner>>();
+    final pending = Completer<Map<AppBannerSlot, List<ResolvedAppBanner>>>();
     String? opened;
     await tester.pumpWidget(
       page(
@@ -94,10 +94,14 @@ void main() {
         onOpen: (value) => opened = value,
         locale: const Locale('en'),
         load: () async => {
-          AppBannerSlot.fitnessPlanLibrary: ResolvedAppBanner(
-            bytes: bytes,
-            target: AppBannerTarget.fitnessTemplateLibrary,
-          ),
+          AppBannerSlot.fitnessPlanLibrary: [
+            ResolvedAppBanner(
+              id: '11111111-1111-4111-8111-111111111111',
+              version: 1,
+              bytes: bytes,
+              target: AppBannerTarget.fitnessTemplateLibrary,
+            ),
+          ],
         },
       ),
     );
@@ -122,10 +126,14 @@ void main() {
         slot: AppBannerSlot.fitnessPlanLibrary,
         onOpen: (value) => opened = value,
         load: () async => {
-          AppBannerSlot.fitnessPlanLibrary: ResolvedAppBanner(
-            bytes: Uint8List.fromList([1, 2, 3]),
-            target: AppBannerTarget.fitnessTemplates,
-          ),
+          AppBannerSlot.fitnessPlanLibrary: [
+            ResolvedAppBanner(
+              id: '11111111-1111-4111-8111-111111111111',
+              version: 1,
+              bytes: Uint8List.fromList([1, 2, 3]),
+              target: AppBannerTarget.fitnessTemplates,
+            ),
+          ],
         },
       ),
     );

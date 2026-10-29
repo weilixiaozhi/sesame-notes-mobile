@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../core/logging/logger_service.dart';
 import '../models/app_banner.dart';
@@ -19,13 +20,13 @@ class AppBannerRepository {
   final Dio dio;
   final Future<void> Function(Uint8List) validateImage;
   static const _maxImageBytes = 8 * 1024 * 1024;
-  static const _maxConfigBytes = 64 * 1024;
+  static const _maxConfigBytes = 128 * 1024;
   static const _timeout = Duration(seconds: 8);
   static final _imagePath = RegExp(r'^/api/v1/banners/media/[0-9a-f]{64}$');
 
   /// 配置和所有有效图片一起返回，单个位置失败不会影响另一个入口。
-  Future<Map<AppBannerSlot, ResolvedAppBanner>> load() async {
-    final result = <AppBannerSlot, ResolvedAppBanner>{};
+  Future<Map<AppBannerSlot, List<ResolvedAppBanner>>> load() async {
+    final result = <AppBannerSlot, List<ResolvedAppBanner>>{};
     try {
       final origin = Uri.tryParse(dio.options.baseUrl);
       if (origin == null ||
@@ -39,13 +40,14 @@ class AppBannerRepository {
         '/api/v1/banners',
         ResponseType.json,
         _maxConfigBytes,
+        queryParameters: const {'format': 'carousel'},
       );
       final body = response.data;
       if (body is! Map || body['items'] is! List) {
         throw const FormatException('BANNER_RESPONSE_INVALID');
       }
       final items = body['items'] as List;
-      if (items.length > 20) {
+      if (items.length > 100) {
         throw const FormatException('BANNER_RESPONSE_TOO_MANY_ITEMS');
       }
       final grouped = <AppBannerSlot, List<Map>>{};
@@ -54,12 +56,23 @@ class AppBannerRepository {
         final slot = AppBannerSlot.parse(item['slot']);
         if (slot != null) (grouped[slot] ??= []).add(item);
       }
-      // 重复位置不猜测优先级；每个位置必须只有一份明确、启用的配置。
+      // 每个位置按服务端顺序逐张校验，坏图片不挤占轮播位置或产生曝光。
       await Future.wait(
         grouped.entries.map((entry) async {
-          if (entry.value.length != 1) return;
-          final banner = await _resolve(entry.key, entry.value.single);
-          if (banner != null) result[entry.key] = banner;
+          final banners = <ResolvedAppBanner>[];
+          for (final item in entry.value) {
+            if (entry.value
+                    .where((other) => other['id'] == item['id'])
+                    .length !=
+                1) {
+              continue;
+            }
+            final banner = await _resolve(entry.key, item);
+            if (banner != null) banners.add(banner);
+          }
+          if (banners.isNotEmpty) {
+            result[entry.key] = List.unmodifiable(banners);
+          }
         }),
       );
     } catch (error, stackTrace) {
@@ -77,14 +90,16 @@ class AppBannerRepository {
   Future<Response<T>> _get<T>(
     String path,
     ResponseType type,
-    int maxBytes,
-  ) async {
+    int maxBytes, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
     final cancel = CancelToken();
     try {
       return await dio
           .get<T>(
             path,
             cancelToken: cancel,
+            queryParameters: queryParameters,
             options: Options(
               responseType: type,
               followRedirects: false,
@@ -111,15 +126,26 @@ class AppBannerRepository {
   /// 图片摘要、协议字段与完整解码全部通过后才启用对应跳转。
   Future<ResolvedAppBanner?> _resolve(AppBannerSlot slot, Map item) async {
     try {
-      if (item['is_enabled'] != true) return null;
+      if (item['is_enabled'] == false) return null;
       final path = item['image_path'];
       final target = AppBannerTarget.parse(item['target']);
       final version = item['version'];
+      final id = item['id'];
+      final targetId = item['target_id'];
+      final detail =
+          target == AppBannerTarget.officialPlan ||
+          target == AppBannerTarget.officialTemplate;
       if (path is! String ||
           !_imagePath.hasMatch(path) ||
           target == null ||
           version is! int ||
-          version < 1) {
+          version < 1 ||
+          version > 2147483647 ||
+          id is! String ||
+          !Uuid.isValidUUID(fromString: id) ||
+          (detail
+              ? targetId is! String || !Uuid.isValidUUID(fromString: targetId)
+              : targetId != null)) {
         throw const FormatException('BANNER_ENTRY_INVALID');
       }
       final response = await _get<List<int>>(
@@ -134,7 +160,13 @@ class AppBannerRepository {
         throw const FormatException('BANNER_IMAGE_INTEGRITY');
       }
       await validateImage(bytes);
-      return ResolvedAppBanner(bytes: bytes, target: target);
+      return ResolvedAppBanner(
+        id: id,
+        targetId: targetId as String?,
+        bytes: bytes,
+        target: target,
+        version: version,
+      );
     } catch (error, stackTrace) {
       logger.error(
         'AppBanner',

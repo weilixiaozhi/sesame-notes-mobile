@@ -30,7 +30,9 @@ enum AppBannerTarget {
   fitnessTemplateLibrary('fitness-template-library'),
   fitnessExercises('fitness-exercises'),
   fitnessPlans('fitness-plans'),
-  fitnessTemplates('fitness-templates');
+  fitnessTemplates('fitness-templates'),
+  officialPlan('official-plan'),
+  officialTemplate('official-template');
 
   /// 跳转标识是两端共享的受控协议值。
   const AppBannerTarget(this.id);
@@ -44,7 +46,16 @@ enum AppBannerTarget {
 /// 只有已完整校验和解码的图片才能与跳转目标一起交给页面。
 class ResolvedAppBanner {
   /// 图片字节与目标形成一个不可拆分的展示结果。
-  const ResolvedAppBanner({required this.bytes, required this.target});
+  const ResolvedAppBanner({
+    required this.id,
+    required this.bytes,
+    required this.target,
+    required this.version,
+    this.targetId,
+  });
+  final String id;
+  final String? targetId;
   final Uint8List bytes;
   final AppBannerTarget target;
+  final int version;
 }

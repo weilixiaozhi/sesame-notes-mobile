@@ -19,6 +19,8 @@ void main() {
   /// 生成一条启用配置，测试可覆盖单个异常字段。
   Map<String, Object?> entry([Map<String, Object?> overrides = const {}]) => {
     'slot': 'fitness-plan-library',
+    'id': '11111111-1111-4111-8111-111111111111',
+    'target_id': null,
     'image_path': mediaPath,
     'target': 'fitness-template-library',
     'is_enabled': true,
@@ -65,6 +67,9 @@ void main() {
     final repo = repository(
       (options) {
         calls.add(options.path);
+        if (options.path == '/api/v1/banners') {
+          expect(options.queryParameters, {'format': 'carousel'});
+        }
         expect(options.followRedirects, isFalse);
         expect(options.headers['Authorization'], isNull);
         expect(options.headers['Cookie'], isNull);
@@ -82,11 +87,39 @@ void main() {
     final result = await repo.load();
     expect(validated, isTrue);
     expect(calls, ['/api/v1/banners', mediaPath]);
-    expect(result[AppBannerSlot.fitnessPlanLibrary]!.bytes, bytes);
+    expect(result[AppBannerSlot.fitnessPlanLibrary]!.single.bytes, bytes);
     expect(
-      result[AppBannerSlot.fitnessPlanLibrary]!.target,
+      result[AppBannerSlot.fitnessPlanLibrary]!.single.target,
       AppBannerTarget.fitnessTemplateLibrary,
     );
+  });
+
+  test('同位置多张按返回顺序保留，坏图跳过，具体官方目标保留身份', () async {
+    const secondId = '22222222-2222-4222-8222-222222222222';
+    const thirdId = '33333333-3333-4333-8333-333333333333';
+    const officialId = '44444444-4444-4444-8444-444444444444';
+    final repo = repository(
+      (options) => options.path == '/api/v1/banners'
+          ? configuration({
+              'items': [
+                entry(),
+                entry({'id': secondId, 'image_path': null}),
+                entry({
+                  'id': thirdId,
+                  'target': 'official-plan',
+                  'target_id': officialId,
+                }),
+              ],
+            })
+          : ResponseBody.fromBytes(bytes, 200),
+    );
+    final rows = (await repo.load())[AppBannerSlot.fitnessPlanLibrary]!;
+    expect(rows.map((value) => value.id), [
+      '11111111-1111-4111-8111-111111111111',
+      thirdId,
+    ]);
+    expect(rows.last.target, AppBannerTarget.officialPlan);
+    expect(rows.last.targetId, officialId);
   });
 
   test('禁用、未知目标、外站图片与缺失图片均不启用覆盖', () async {
@@ -155,7 +188,7 @@ void main() {
     final result = await repo.load();
     expect(result.containsKey(AppBannerSlot.fitnessPlanLibrary), isFalse);
     expect(
-      result[AppBannerSlot.fitnessTemplateLibrary]!.target,
+      result[AppBannerSlot.fitnessTemplateLibrary]!.single.target,
       AppBannerTarget.fitnessExercises,
     );
   });

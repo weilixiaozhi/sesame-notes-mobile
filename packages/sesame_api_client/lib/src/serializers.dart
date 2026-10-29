@@ -18,10 +18,13 @@ import 'package:sesame_api_client/src/model/category.dart';
 import 'package:sesame_api_client/src/model/category_conflict.dart';
 import 'package:sesame_api_client/src/model/category_conflict_local_payload.dart';
 import 'package:sesame_api_client/src/model/category_resolution.dart';
+import 'package:sesame_api_client/src/model/create_admin_banner_request.dart';
 import 'package:sesame_api_client/src/model/create_official_fitness_taxonomy_request.dart';
 import 'package:sesame_api_client/src/model/day_book.dart';
 import 'package:sesame_api_client/src/model/day_event.dart';
 import 'package:sesame_api_client/src/model/day_original_date.dart';
+import 'package:sesame_api_client/src/model/delete_admin_banner200_response.dart';
+import 'package:sesame_api_client/src/model/delete_admin_banner_request.dart';
 import 'package:sesame_api_client/src/model/delete_admin_groups_by_group_id_request.dart';
 import 'package:sesame_api_client/src/model/delete_admin_users_by_user_id_avatar_request.dart';
 import 'package:sesame_api_client/src/model/delete_ledgers_by_ledger_id_transactions_by_transaction_id_request.dart';
@@ -38,11 +41,16 @@ import 'package:sesame_api_client/src/model/get_admin_analytics_catalog200_respo
 import 'package:sesame_api_client/src/model/get_admin_analytics_catalog200_response_events_inner_source_pages_inner.dart';
 import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response.dart';
 import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response_events_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response_exposures_inner.dart';
 import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response_pages_inner.dart';
 import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response_series_inner.dart';
 import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response_summary.dart';
 import 'package:sesame_api_client/src/model/get_admin_audit_logs200_response.dart';
 import 'package:sesame_api_client/src/model/get_admin_audit_logs200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_banner_statistics200_response.dart';
+import 'package:sesame_api_client/src/model/get_admin_banner_statistics200_response_coverage.dart';
+import 'package:sesame_api_client/src/model/get_admin_banner_statistics200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_banner_statistics200_response_range.dart';
 import 'package:sesame_api_client/src/model/get_admin_groups200_response.dart';
 import 'package:sesame_api_client/src/model/get_admin_groups200_response_items_inner.dart';
 import 'package:sesame_api_client/src/model/get_admin_groups_by_group_id_members200_response.dart';
@@ -62,7 +70,10 @@ import 'package:sesame_api_client/src/model/get_admin_users_by_user_id200_respon
 import 'package:sesame_api_client/src/model/get_admin_users_by_user_id_devices200_response.dart';
 import 'package:sesame_api_client/src/model/get_admin_users_by_user_id_devices200_response_items_inner.dart';
 import 'package:sesame_api_client/src/model/get_app_banners200_response.dart';
-import 'package:sesame_api_client/src/model/get_app_banners200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_app_banners200_response_any_of.dart';
+import 'package:sesame_api_client/src/model/get_app_banners200_response_any_of1.dart';
+import 'package:sesame_api_client/src/model/get_app_banners200_response_any_of1_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_app_banners200_response_any_of_items_inner.dart';
 import 'package:sesame_api_client/src/model/get_category_conflicts200_response.dart';
 import 'package:sesame_api_client/src/model/get_day_books_by_day_book_id_events200_response.dart';
 import 'package:sesame_api_client/src/model/get_devices200_response_inner.dart';
@@ -154,6 +165,11 @@ import 'package:sesame_api_client/src/model/get_sync_memo_books_full200_response
 import 'package:sesame_api_client/src/model/get_sync_pull200_response.dart';
 import 'package:sesame_api_client/src/model/get_sync_pull200_response_changes_inner.dart';
 import 'package:sesame_api_client/src/model/ledger.dart';
+import 'package:sesame_api_client/src/model/list_admin_banner_targets200_response.dart';
+import 'package:sesame_api_client/src/model/list_admin_banner_targets200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/list_admin_banner_targets200_response_items_inner_name.dart';
+import 'package:sesame_api_client/src/model/list_admin_banners200_response.dart';
+import 'package:sesame_api_client/src/model/list_admin_banners200_response_items_inner.dart';
 import 'package:sesame_api_client/src/model/list_official_exercises200_response.dart';
 import 'package:sesame_api_client/src/model/list_official_exercises200_response_items_inner.dart';
 import 'package:sesame_api_client/src/model/list_official_exercises200_response_items_inner_content.dart';
@@ -335,6 +351,8 @@ import 'package:sesame_api_client/src/model/put_admin_users_by_user_id_avatar_re
 import 'package:sesame_api_client/src/model/put_admin_users_by_user_id_phone_request.dart';
 import 'package:sesame_api_client/src/model/put_profile_avatar_request.dart';
 import 'package:sesame_api_client/src/model/recurring_transaction.dart';
+import 'package:sesame_api_client/src/model/reset_admin_banner_slot_request.dart';
+import 'package:sesame_api_client/src/model/reset_admin_banner_slot_request_revisions_inner.dart';
 import 'package:sesame_api_client/src/model/transaction.dart';
 import 'package:sesame_api_client/src/model/transaction_split.dart';
 import 'package:sesame_api_client/src/model/update_admin_banner_request.dart';
@@ -351,10 +369,13 @@ part 'serializers.g.dart';
   CategoryConflict,
   CategoryConflictLocalPayload,
   CategoryResolution,
+  CreateAdminBannerRequest,
   CreateOfficialFitnessTaxonomyRequest,
   DayBook,
   DayEvent,
   DayOriginalDate,
+  DeleteAdminBanner200Response,
+  DeleteAdminBannerRequest,
   DeleteAdminGroupsByGroupIdRequest,
   DeleteAdminUsersByUserIdAvatarRequest,
   DeleteLedgersByLedgerIdTransactionsByTransactionIdRequest,
@@ -371,11 +392,16 @@ part 'serializers.g.dart';
   GetAdminAnalyticsCatalog200ResponseEventsInnerSourcePagesInner,
   GetAdminAnalyticsDetails200Response,
   GetAdminAnalyticsDetails200ResponseEventsInner,
+  GetAdminAnalyticsDetails200ResponseExposuresInner,
   GetAdminAnalyticsDetails200ResponsePagesInner,
   GetAdminAnalyticsDetails200ResponseSeriesInner,
   GetAdminAnalyticsDetails200ResponseSummary,
   GetAdminAuditLogs200Response,
   GetAdminAuditLogs200ResponseItemsInner,
+  GetAdminBannerStatistics200Response,
+  GetAdminBannerStatistics200ResponseCoverage,
+  GetAdminBannerStatistics200ResponseItemsInner,
+  GetAdminBannerStatistics200ResponseRange,
   GetAdminGroups200Response,
   GetAdminGroups200ResponseItemsInner,
   GetAdminGroupsByGroupIdMembers200Response,
@@ -395,7 +421,10 @@ part 'serializers.g.dart';
   GetAdminUsersByUserIdDevices200Response,
   GetAdminUsersByUserIdDevices200ResponseItemsInner,
   GetAppBanners200Response,
-  GetAppBanners200ResponseItemsInner,
+  GetAppBanners200ResponseAnyOf,
+  GetAppBanners200ResponseAnyOf1,
+  GetAppBanners200ResponseAnyOf1ItemsInner,
+  GetAppBanners200ResponseAnyOfItemsInner,
   GetCategoryConflicts200Response,
   GetDayBooksByDayBookIdEvents200Response,
   GetDevices200ResponseInner,
@@ -487,6 +516,11 @@ part 'serializers.g.dart';
   GetSyncPull200Response,
   GetSyncPull200ResponseChangesInner,
   Ledger,
+  ListAdminBannerTargets200Response,
+  ListAdminBannerTargets200ResponseItemsInner,
+  ListAdminBannerTargets200ResponseItemsInnerName,
+  ListAdminBanners200Response,
+  ListAdminBanners200ResponseItemsInner,
   ListOfficialExercises200Response,
   ListOfficialExercises200ResponseItemsInner,
   ListOfficialExercises200ResponseItemsInnerContent,
@@ -668,6 +702,8 @@ part 'serializers.g.dart';
   PutAdminUsersByUserIdPhoneRequest,
   PutProfileAvatarRequest,
   RecurringTransaction,
+  ResetAdminBannerSlotRequest,
+  ResetAdminBannerSlotRequestRevisionsInner,
   Transaction,
   TransactionSplit,
   UpdateAdminBannerRequest,
@@ -696,6 +732,285 @@ Serializers serializers = (_$serializers.toBuilder()
             GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInnerExerciseRestSettingsValue>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(MemoEntry)]),
+        () => ListBuilder<MemoEntry>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetAdminAnalytics200ResponseSeriesInner)]),
+        () => ListBuilder<GetAdminAnalytics200ResponseSeriesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(PostSyncPush200ResponseOutcomesInner)]),
+        () => ListBuilder<PostSyncPush200ResponseOutcomesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetFitnessLibrary200ResponsePlansInner)]),
+        () => ListBuilder<GetFitnessLibrary200ResponsePlansInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInnerSetsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInnerSetsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(ListOfficialFitnessReferences200ResponseExercisesInner)]),
+        () => ListBuilder<
+            ListOfficialFitnessReferences200ResponseExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminAnalyticsDetails200ResponsePagesInner)]),
+        () => ListBuilder<GetAdminAnalyticsDetails200ResponsePagesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PostSyncPushRequestChangesInner)]),
+        () => ListBuilder<PostSyncPushRequestChangesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminPermissionCatalog200ResponsePermissionsInner)]),
+        () =>
+            ListBuilder<GetAdminPermissionCatalog200ResponsePermissionsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetAdminGroups200ResponseItemsInner)]),
+        () => ListBuilder<GetAdminGroups200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminGroupsByGroupIdMembers200ResponseItemsInner)]),
+        () =>
+            ListBuilder<GetAdminGroupsByGroupIdMembers200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(PostLedgersByLedgerIdTransactionsRequestSplitsInner)]),
+        () =>
+            ListBuilder<PostLedgersByLedgerIdTransactionsRequestSplitsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(GetFitnessLibrary200ResponseTemplatesInnerExercisesInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessLibrary200ResponseTemplatesInnerExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetSyncFull200ResponseRecurringStateOccurrencesInner)]),
+        () =>
+            ListBuilder<GetSyncFull200ResponseRecurringStateOccurrencesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminAnalyticsDetails200ResponseExposuresInner)]),
+        () => ListBuilder<GetAdminAnalyticsDetails200ResponseExposuresInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerRunSegmentsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerRunSegmentsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltMap, [FullType(String), FullType(String)]),
+        () => MapBuilder<String, String>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetSyncFitnessSpaces200ResponseFitnessSpacesInner)]),
+        () => ListBuilder<GetSyncFitnessSpaces200ResponseFitnessSpacesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetSyncAccountingFull200ResponseLedgerSnapshotsInner)]),
+        () =>
+            ListBuilder<GetSyncAccountingFull200ResponseLedgerSnapshotsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetAdminPermissionCatalog200ResponseIdentitiesInner)]),
+        () =>
+            ListBuilder<GetAdminPermissionCatalog200ResponseIdentitiesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(GetMemoBooksByMemoBookIdCalendarCounts200ResponseDaysInner)
+        ]),
+        () => ListBuilder<
+            GetMemoBooksByMemoBookIdCalendarCounts200ResponseDaysInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              PostFitnessSpacesByFitnessSpaceIdPlansByPlanIdCommandRequestTemplateCopiesInner)
+        ]),
+        () => ListBuilder<
+            PostFitnessSpacesByFitnessSpaceIdPlansByPlanIdCommandRequestTemplateCopiesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetFitnessCatalog200ResponseExercisesInner)]),
+        () => ListBuilder<GetFitnessCatalog200ResponseExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetAdminUsers200ResponseItemsInner)]),
+        () => ListBuilder<GetAdminUsers200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(PostLedgersByLedgerIdCategoriesReorderRequestItemsInner)
+        ]),
+        () => ListBuilder<
+            PostLedgersByLedgerIdCategoriesReorderRequestItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(ListOfficialPlans200ResponseItemsInner)]),
+        () => ListBuilder<ListOfficialPlans200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetAdminAnalyticsCatalog200ResponseEventsInnerSourcePagesInner)
+        ]),
+        () => ListBuilder<
+            GetAdminAnalyticsCatalog200ResponseEventsInnerSourcePagesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadExercisesInner)
+        ]),
+        () => ListBuilder<
+            PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(CategoryConflict)]),
+        () => ListBuilder<CategoryConflict>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(ListAdminBannerTargets200ResponseItemsInner)]),
+        () => ListBuilder<ListAdminBannerTargets200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInnerRestDaysInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInnerRestDaysInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              PostLedgersByLedgerIdRecurringTransactionsGenerateDue200ResponseRuleCursorsInner)
+        ]),
+        () => ListBuilder<
+            PostLedgersByLedgerIdRecurringTransactionsGenerateDue200ResponseRuleCursorsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetFitnessLibrary200ResponsePlansInnerDaysInner)]),
+        () => ListBuilder<GetFitnessLibrary200ResponsePlansInnerDaysInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerGenerationStateGeneratedCyclesInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerGenerationStateGeneratedCyclesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdExport200ResponseRecordsInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdExport200ResponseRecordsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(ExchangeRateOverride)]),
+        () => ListBuilder<ExchangeRateOverride>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(ListAdminBanners200ResponseItemsInner)]),
+        () => ListBuilder<ListAdminBanners200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(RecurringTransaction)]),
+        () => ListBuilder<RecurringTransaction>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdStatistics200ResponseByDateInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdStatistics200ResponseByDateInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(
+              GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInnerCustomExercisesInner)
+        ]),
+        () => ListBuilder<
+            GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInnerCustomExercisesInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltSet, [FullType(ResetAdminBannerSlotRequestRevisionsInner)]),
+        () => SetBuilder<ResetAdminBannerSlotRequestRevisionsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(TransactionSplit)]),
+        () => ListBuilder<TransactionSplit>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
+        () => MapBuilder<String, JsonObject?>(),
+      )
+      ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetLedgersByLedgerIdMembers200ResponseInner)]),
+        () => ListBuilder<GetLedgersByLedgerIdMembers200ResponseInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(String)]),
+        () => ListBuilder<String>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [
           FullType(
               GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInner)
@@ -712,10 +1027,6 @@ Serializers serializers = (_$serializers.toBuilder()
         const FullType(BuiltList,
             [FullType(GetSyncFull200ResponseRecurringStateRulesInner)]),
         () => ListBuilder<GetSyncFull200ResponseRecurringStateRulesInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(MemoEntry)]),
-        () => ListBuilder<MemoEntry>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [
@@ -751,11 +1062,6 @@ Serializers serializers = (_$serializers.toBuilder()
       )
       ..addBuilderFactory(
         const FullType(
-            BuiltList, [FullType(GetAdminAnalytics200ResponseSeriesInner)]),
-        () => ListBuilder<GetAdminAnalytics200ResponseSeriesInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(
             BuiltList, [FullType(ListOfficialTemplates200ResponseItemsInner)]),
         () => ListBuilder<ListOfficialTemplates200ResponseItemsInner>(),
       )
@@ -763,11 +1069,6 @@ Serializers serializers = (_$serializers.toBuilder()
         const FullType(
             BuiltList, [FullType(PostAnalyticsEventsRequestEventsInner)]),
         () => ListBuilder<PostAnalyticsEventsRequestEventsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(
-            BuiltList, [FullType(PostSyncPush200ResponseOutcomesInner)]),
-        () => ListBuilder<PostSyncPush200ResponseOutcomesInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList,
@@ -784,31 +1085,12 @@ Serializers serializers = (_$serializers.toBuilder()
             GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerExercisesInnerSetsInner>(),
       )
       ..addBuilderFactory(
-        const FullType(
-            BuiltList, [FullType(GetFitnessLibrary200ResponsePlansInner)]),
-        () => ListBuilder<GetFitnessLibrary200ResponsePlansInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(
-              GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInnerSetsInner)
-        ]),
-        () => ListBuilder<
-            GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInnerSetsInner>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [
           FullType(
               GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInnerSlotExercisesInnerSetsInner)
         ]),
         () => ListBuilder<
             GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInnerSlotExercisesInnerSetsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList,
-            [FullType(ListOfficialFitnessReferences200ResponseExercisesInner)]),
-        () => ListBuilder<
-            ListOfficialFitnessReferences200ResponseExercisesInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [
@@ -819,45 +1101,18 @@ Serializers serializers = (_$serializers.toBuilder()
             GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInnerSlotExercisesInner>(),
       )
       ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetAppBanners200ResponseAnyOfItemsInner)]),
+        () => ListBuilder<GetAppBanners200ResponseAnyOfItemsInner>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltSet, [FullType(String)]),
         () => SetBuilder<String>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList,
-            [FullType(GetAdminAnalyticsDetails200ResponsePagesInner)]),
-        () => ListBuilder<GetAdminAnalyticsDetails200ResponsePagesInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(PostSyncPushRequestChangesInner)]),
-        () => ListBuilder<PostSyncPushRequestChangesInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList,
-            [FullType(GetAdminPermissionCatalog200ResponsePermissionsInner)]),
-        () =>
-            ListBuilder<GetAdminPermissionCatalog200ResponsePermissionsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList,
             [FullType(PostAdminGroupsByGroupIdMembersRequestMembersInner)]),
         () => ListBuilder<PostAdminGroupsByGroupIdMembersRequestMembersInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(
-            BuiltList, [FullType(GetAdminGroups200ResponseItemsInner)]),
-        () => ListBuilder<GetAdminGroups200ResponseItemsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList,
-            [FullType(GetAdminGroupsByGroupIdMembers200ResponseItemsInner)]),
-        () =>
-            ListBuilder<GetAdminGroupsByGroupIdMembers200ResponseItemsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList,
-            [FullType(PostLedgersByLedgerIdTransactionsRequestSplitsInner)]),
-        () =>
-            ListBuilder<PostLedgersByLedgerIdTransactionsRequestSplitsInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [
@@ -875,17 +1130,9 @@ Serializers serializers = (_$serializers.toBuilder()
             PostSyncPushRequestChangesInnerAnyOf6AnyOfPayloadInitialStateOccurrencesInner>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(GetFitnessLibrary200ResponseTemplatesInnerExercisesInner)
-        ]),
-        () => ListBuilder<
-            GetFitnessLibrary200ResponseTemplatesInnerExercisesInner>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList,
-            [FullType(GetSyncFull200ResponseRecurringStateOccurrencesInner)]),
-        () =>
-            ListBuilder<GetSyncFull200ResponseRecurringStateOccurrencesInner>(),
+            [FullType(GetAdminBannerStatistics200ResponseItemsInner)]),
+        () => ListBuilder<GetAdminBannerStatistics200ResponseItemsInner>(),
       )
       ..addBuilderFactory(
         const FullType(
@@ -898,38 +1145,14 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<ListOfficialExercises200ResponseItemsInner>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(
-              GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerRunSegmentsInner)
-        ]),
-        () => ListBuilder<
-            GetFitnessSpacesByFitnessSpaceIdWorkouts200ResponseItemsInnerRunSegmentsInner>(),
-      )
-      ..addBuilderFactory(
         const FullType(
             BuiltList, [FullType(PostLedgersByLedgerIdCategoriesRequest)]),
         () => ListBuilder<PostLedgersByLedgerIdCategoriesRequest>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(
-              GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInner)
-        ]),
-        () => ListBuilder<
-            GetFitnessSpacesByFitnessSpaceIdTemplates200ResponseItemsInnerExercisesInner>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList,
             [FullType(PostAdminAnalyticsFunnel200ResponseStepsInner)]),
         () => ListBuilder<PostAdminAnalyticsFunnel200ResponseStepsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(
-              GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInner)
-        ]),
-        () => ListBuilder<
-            GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [
@@ -939,36 +1162,8 @@ Serializers serializers = (_$serializers.toBuilder()
             GetLedgersByLedgerIdTransactionStats200ResponseByDayInner>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltMap, [FullType(String), FullType(String)]),
-        () => MapBuilder<String, String>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList,
-            [FullType(GetSyncFitnessSpaces200ResponseFitnessSpacesInner)]),
-        () => ListBuilder<GetSyncFitnessSpaces200ResponseFitnessSpacesInner>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(GetDevices200ResponseInner)]),
         () => ListBuilder<GetDevices200ResponseInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList,
-            [FullType(GetSyncAccountingFull200ResponseLedgerSnapshotsInner)]),
-        () =>
-            ListBuilder<GetSyncAccountingFull200ResponseLedgerSnapshotsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList,
-            [FullType(GetAdminPermissionCatalog200ResponseIdentitiesInner)]),
-        () =>
-            ListBuilder<GetAdminPermissionCatalog200ResponseIdentitiesInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(GetMemoBooksByMemoBookIdCalendarCounts200ResponseDaysInner)
-        ]),
-        () => ListBuilder<
-            GetMemoBooksByMemoBookIdCalendarCounts200ResponseDaysInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [
@@ -997,14 +1192,6 @@ Serializers serializers = (_$serializers.toBuilder()
             GetLedgersByLedgerIdTransactionStats200ResponseByCategoryInner>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(
-              PostFitnessSpacesByFitnessSpaceIdPlansByPlanIdCommandRequestTemplateCopiesInner)
-        ]),
-        () => ListBuilder<
-            PostFitnessSpacesByFitnessSpaceIdPlansByPlanIdCommandRequestTemplateCopiesInner>(),
-      )
-      ..addBuilderFactory(
         const FullType(
             BuiltList, [FullType(GetFitnessLibrary200ResponseTemplatesInner)]),
         () => ListBuilder<GetFitnessLibrary200ResponseTemplatesInner>(),
@@ -1012,11 +1199,6 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Transaction)]),
         () => ListBuilder<Transaction>(),
-      )
-      ..addBuilderFactory(
-        const FullType(
-            BuiltList, [FullType(GetFitnessCatalog200ResponseExercisesInner)]),
-        () => ListBuilder<GetFitnessCatalog200ResponseExercisesInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList,
@@ -1029,31 +1211,6 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<GetAdminIdentityTypes200ResponseItemsInner>(),
       )
       ..addBuilderFactory(
-        const FullType(
-            BuiltList, [FullType(GetAdminUsers200ResponseItemsInner)]),
-        () => ListBuilder<GetAdminUsers200ResponseItemsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(PostLedgersByLedgerIdCategoriesReorderRequestItemsInner)
-        ]),
-        () => ListBuilder<
-            PostLedgersByLedgerIdCategoriesReorderRequestItemsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(
-            BuiltList, [FullType(ListOfficialPlans200ResponseItemsInner)]),
-        () => ListBuilder<ListOfficialPlans200ResponseItemsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(
-              GetAdminAnalyticsCatalog200ResponseEventsInnerSourcePagesInner)
-        ]),
-        () => ListBuilder<
-            GetAdminAnalyticsCatalog200ResponseEventsInnerSourcePagesInner>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [
           FullType(
               PostLedgersByLedgerIdCategoriesAddBatchRequestAnyOfItemsInner)
@@ -1062,39 +1219,19 @@ Serializers serializers = (_$serializers.toBuilder()
             PostLedgersByLedgerIdCategoriesAddBatchRequestAnyOfItemsInner>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(
-              PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadExercisesInner)
-        ]),
-        () => ListBuilder<
-            PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadExercisesInner>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList,
             [FullType(ListOfficialFitnessTaxonomies200ResponseItemsInner)]),
         () => ListBuilder<ListOfficialFitnessTaxonomies200ResponseItemsInner>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(CategoryConflict)]),
-        () => ListBuilder<CategoryConflict>(),
+        const FullType(
+            BuiltList, [FullType(GetAppBanners200ResponseAnyOf1ItemsInner)]),
+        () => ListBuilder<GetAppBanners200ResponseAnyOf1ItemsInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList,
             [FullType(GetAdminUsersByUserIdDevices200ResponseItemsInner)]),
         () => ListBuilder<GetAdminUsersByUserIdDevices200ResponseItemsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(
-              GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInnerRestDaysInner)
-        ]),
-        () => ListBuilder<
-            GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInnerRestDaysInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(
-            BuiltList, [FullType(GetAppBanners200ResponseItemsInner)]),
-        () => ListBuilder<GetAppBanners200ResponseItemsInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [
@@ -1107,23 +1244,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [
           FullType(
-              PostLedgersByLedgerIdRecurringTransactionsGenerateDue200ResponseRuleCursorsInner)
-        ]),
-        () => ListBuilder<
-            PostLedgersByLedgerIdRecurringTransactionsGenerateDue200ResponseRuleCursorsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(
               GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInner)
         ]),
         () => ListBuilder<
             GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList,
-            [FullType(GetFitnessLibrary200ResponsePlansInnerDaysInner)]),
-        () => ListBuilder<GetFitnessLibrary200ResponsePlansInnerDaysInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [
@@ -1136,22 +1260,6 @@ Serializers serializers = (_$serializers.toBuilder()
         const FullType(
             BuiltList, [FullType(GetAdminAuditLogs200ResponseItemsInner)]),
         () => ListBuilder<GetAdminAuditLogs200ResponseItemsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(
-              GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerGenerationStateGeneratedCyclesInner)
-        ]),
-        () => ListBuilder<
-            GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerGenerationStateGeneratedCyclesInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(
-              GetFitnessSpacesByFitnessSpaceIdExport200ResponseRecordsInner)
-        ]),
-        () => ListBuilder<
-            GetFitnessSpacesByFitnessSpaceIdExport200ResponseRecordsInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Category)]),
@@ -1175,22 +1283,6 @@ Serializers serializers = (_$serializers.toBuilder()
             PostSyncPushRequestChangesInnerAnyOf13AnyOfPayloadExercisesInnerSetsInner>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(ExchangeRateOverride)]),
-        () => ListBuilder<ExchangeRateOverride>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(RecurringTransaction)]),
-        () => ListBuilder<RecurringTransaction>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(
-              GetFitnessSpacesByFitnessSpaceIdStatistics200ResponseByDateInner)
-        ]),
-        () => ListBuilder<
-            GetFitnessSpacesByFitnessSpaceIdStatistics200ResponseByDateInner>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [
           FullType(
               GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInnerWorkoutsInner)
@@ -1204,24 +1296,12 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<GetAdminAnalyticsDetails200ResponseSeriesInner>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(
-              GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInnerCustomExercisesInner)
-        ]),
-        () => ListBuilder<
-            GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInnerCustomExercisesInner>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(int)]),
         () => ListBuilder<int>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Member)]),
         () => ListBuilder<Member>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(TransactionSplit)]),
-        () => ListBuilder<TransactionSplit>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList,
@@ -1235,22 +1315,8 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<GetSyncPull200ResponseChangesInner>(),
       )
       ..addBuilderFactory(
-        const FullType(
-            BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
-        () => MapBuilder<String, JsonObject?>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltMap, [FullType(String), FullType(bool)]),
         () => MapBuilder<String, bool>(),
-      )
-      ..addBuilderFactory(
-        const FullType(
-            BuiltList, [FullType(GetLedgersByLedgerIdMembers200ResponseInner)]),
-        () => ListBuilder<GetLedgersByLedgerIdMembers200ResponseInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(String)]),
-        () => ListBuilder<String>(),
       )
       ..add(const OneOfSerializer())
       ..add(const AnyOfSerializer())

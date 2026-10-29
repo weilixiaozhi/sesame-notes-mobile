@@ -10,6 +10,7 @@ import 'package:sesame_api_client/src/model/get_admin_analytics200_response_rang
 import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response_series_inner.dart';
 import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response_summary.dart';
 import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response_pages_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_analytics_details200_response_exposures_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -23,6 +24,7 @@ part 'get_admin_analytics_details200_response.g.dart';
 /// * [series]
 /// * [pages]
 /// * [events]
+/// * [exposures]
 /// * [coverage]
 @BuiltValue()
 abstract class GetAdminAnalyticsDetails200Response
@@ -43,6 +45,9 @@ abstract class GetAdminAnalyticsDetails200Response
 
   @BuiltValueField(wireName: r'events')
   BuiltList<GetAdminAnalyticsDetails200ResponseEventsInner> get events;
+
+  @BuiltValueField(wireName: r'exposures')
+  BuiltList<GetAdminAnalyticsDetails200ResponseExposuresInner>? get exposures;
 
   @BuiltValueField(wireName: r'coverage')
   GetAdminAnalytics200ResponseCoverage get coverage;
@@ -105,6 +110,14 @@ class _$GetAdminAnalyticsDetails200ResponseSerializer
       specifiedType: const FullType(BuiltList,
           [FullType(GetAdminAnalyticsDetails200ResponseEventsInner)]),
     );
+    if (object.exposures != null) {
+      yield r'exposures';
+      yield serializers.serialize(
+        object.exposures,
+        specifiedType: const FullType(BuiltList,
+            [FullType(GetAdminAnalyticsDetails200ResponseExposuresInner)]),
+      );
+    }
     yield r'coverage';
     yield serializers.serialize(
       object.coverage,
@@ -173,6 +186,15 @@ class _$GetAdminAnalyticsDetails200ResponseSerializer
                 [FullType(GetAdminAnalyticsDetails200ResponseEventsInner)]),
           ) as BuiltList<GetAdminAnalyticsDetails200ResponseEventsInner>;
           result.events.replace(valueDes);
+          break;
+        case r'exposures':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BuiltList,
+                [FullType(GetAdminAnalyticsDetails200ResponseExposuresInner)]),
+          ) as BuiltList<GetAdminAnalyticsDetails200ResponseExposuresInner>?;
+          if (valueDes == null) continue;
+          result.exposures.replace(valueDes);
           break;
         case r'coverage':
           final valueDes = serializers.deserialize(

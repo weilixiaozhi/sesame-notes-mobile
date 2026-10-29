@@ -14,6 +14,7 @@ import 'package:sesame_notes/theme/icons/app_icons.dart';
 import '../application/fitness_providers.dart';
 import 'widgets/fitness_home_cards.dart';
 import 'widgets/fitness_widgets.dart';
+import 'fitness_banner_navigation.dart';
 
 /// 计划页保留计划库与所有计划的管理入口。
 class FitnessPlansPage extends ConsumerWidget {
@@ -53,6 +54,8 @@ class FitnessPlansPage extends ConsumerWidget {
               key: const ValueKey('fitness-plan-library-entry'),
               slot: AppBannerSlot.fitnessPlanLibrary,
               onOpen: (route) => _open(context, route),
+              onOpenOfficial: (target, id) =>
+                  openFitnessBannerContent(context, ref, target, id),
             ),
           ),
           Expanded(

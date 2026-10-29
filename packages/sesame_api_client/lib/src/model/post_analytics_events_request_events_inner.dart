@@ -22,6 +22,10 @@ part 'post_analytics_events_request_events_inner.g.dart';
 /// * [sessionId]
 /// * [eventSequence]
 /// * [flowId]
+/// * [bannerSlot]
+/// * [bannerId]
+/// * [bannerSource]
+/// * [bannerVersion]
 @BuiltValue()
 abstract class PostAnalyticsEventsRequestEventsInner
     implements
@@ -50,7 +54,7 @@ abstract class PostAnalyticsEventsRequestEventsInner
 
   @BuiltValueField(wireName: r'event_name')
   PostAnalyticsEventsRequestEventsInnerEventNameEnum? get eventName;
-  // enum eventNameEnum {  home_view,  accounting_view,  accounting_transaction_view,  accounting_transaction_editor_view,  accounting_statistics_view,  accounting_categories_view,  accounting_aa_split_editor_view,  accounting_aa_statistics_view,  accounting_member_statistics_view,  accounting_ledgers_edit_view,  accounting_sharing_view,  fitness_view,  fitness_exercises_view,  fitness_exercise_view,  fitness_templates_view,  fitness_template_view,  fitness_plans_view,  fitness_plan_view,  fitness_workouts_view,  fitness_workout_view,  fitness_statistics_view,  fitness_calendar_view,  fitness_templates_library_view,  fitness_templates_library_detail_view,  fitness_plans_library_detail_view,  fitness_library_view,  fitness_workouts_editor_view,  memos_view,  memos_detail_view,  memos_editor_view,  credentials_view,  credentials_detail_view,  credentials_editor_view,  credentials_books_edit_view,  days_view,  days_detail_view,  days_editor_view,  days_calendar_view,  calendar_view,  settings_view,  settings_profile_view,  accounting_categories_edit_view,  accounting_categories_templates_flat_view,  accounting_categories_templates_hierarchical_view,  accounting_categories_detail_view,  accounting_aa_member_detail_view,  accounting_ledgers_view,  accounting_ledgers_archived_view,  accounting_ledgers_join_view,  accounting_currency_view,  accounting_exchange_rate_view,  accounting_recurring_editor_view,  fitness_spaces_view,  fitness_spaces_edit_view,  fitness_exercises_edit_view,  fitness_templates_edit_view,  fitness_plans_library_view,  fitness_plans_edit_view,  memos_tools_view,  memos_books_view,  memos_books_edit_view,  days_tools_view,  days_books_view,  days_books_edit_view,  settings_profile_name_view,  settings_profile_avatar_view,  settings_profile_gender_view,  settings_reminder_view,  settings_language_view,  settings_theme_view,  settings_app_lock_view,  settings_cloud_view,  settings_sync_view,  navigation_mode_select,  navigation_tab_select,  accounting_ledger_select,  accounting_transaction_create_click,  accounting_transaction_open_click,  accounting_transaction_edit_click,  accounting_transaction_save_click,  accounting_transaction_created,  accounting_transaction_updated,  accounting_transaction_deleted,  accounting_statistics_open_click,  accounting_categories_open_click,  fitness_tab_select,  fitness_space_select,  fitness_workout_create_click,  fitness_workout_open_click,  fitness_workout_save_click,  fitness_workout_created,  fitness_workout_updated,  fitness_workout_start_click,  fitness_workout_started,  fitness_workout_pause_click,  fitness_workout_paused,  fitness_workout_finish_click,  fitness_workout_completed,  fitness_template_save_click,  fitness_template_saved,  fitness_plan_save_click,  fitness_plan_saved,  fitness_template_add_click,  fitness_template_added,  fitness_plan_add_click,  fitness_plan_added,  memos_note_create_click,  memos_note_open_click,  memos_note_save_click,  memos_note_saved,  memos_note_created,  memos_note_deleted,  memos_book_select,  credentials_create_click,  credentials_open_click,  credentials_save_click,  credentials_saved,  credentials_created,  credentials_deleted,  credentials_book_select,  days_event_create_click,  days_event_open_click,  days_event_save_click,  days_event_saved,  days_event_created,  days_event_deleted,  days_book_select,  calendar_day_select,  calendar_section_open_click,  calendar_create_click,  settings_theme_changed,  settings_language_changed,  settings_app_lock_changed,  settings_reminder_changed,  };
+  // enum eventNameEnum {  banner_impression,  banner_click,  home_view,  accounting_view,  accounting_transaction_view,  accounting_transaction_editor_view,  accounting_statistics_view,  accounting_categories_view,  accounting_aa_split_editor_view,  accounting_aa_statistics_view,  accounting_member_statistics_view,  accounting_ledgers_edit_view,  accounting_sharing_view,  fitness_view,  fitness_exercises_view,  fitness_exercise_view,  fitness_templates_view,  fitness_template_view,  fitness_plans_view,  fitness_plan_view,  fitness_workouts_view,  fitness_workout_view,  fitness_statistics_view,  fitness_calendar_view,  fitness_templates_library_view,  fitness_templates_library_detail_view,  fitness_plans_library_detail_view,  fitness_library_view,  fitness_workouts_editor_view,  memos_view,  memos_detail_view,  memos_editor_view,  credentials_view,  credentials_detail_view,  credentials_editor_view,  credentials_books_edit_view,  days_view,  days_detail_view,  days_editor_view,  days_calendar_view,  calendar_view,  settings_view,  settings_profile_view,  accounting_categories_edit_view,  accounting_categories_templates_flat_view,  accounting_categories_templates_hierarchical_view,  accounting_categories_detail_view,  accounting_aa_member_detail_view,  accounting_ledgers_view,  accounting_ledgers_archived_view,  accounting_ledgers_join_view,  accounting_currency_view,  accounting_exchange_rate_view,  accounting_recurring_editor_view,  fitness_spaces_view,  fitness_spaces_edit_view,  fitness_exercises_edit_view,  fitness_templates_edit_view,  fitness_plans_library_view,  fitness_plans_edit_view,  memos_tools_view,  memos_books_view,  memos_books_edit_view,  days_tools_view,  days_books_view,  days_books_edit_view,  settings_profile_name_view,  settings_profile_avatar_view,  settings_profile_gender_view,  settings_reminder_view,  settings_language_view,  settings_theme_view,  settings_app_lock_view,  settings_cloud_view,  settings_sync_view,  navigation_mode_select,  navigation_tab_select,  accounting_ledger_select,  accounting_transaction_create_click,  accounting_transaction_open_click,  accounting_transaction_edit_click,  accounting_transaction_save_click,  accounting_transaction_created,  accounting_transaction_updated,  accounting_transaction_deleted,  accounting_statistics_open_click,  accounting_categories_open_click,  fitness_tab_select,  fitness_space_select,  fitness_workout_create_click,  fitness_workout_open_click,  fitness_workout_save_click,  fitness_workout_created,  fitness_workout_updated,  fitness_workout_start_click,  fitness_workout_started,  fitness_workout_pause_click,  fitness_workout_paused,  fitness_workout_finish_click,  fitness_workout_completed,  fitness_template_save_click,  fitness_template_saved,  fitness_plan_save_click,  fitness_plan_saved,  fitness_template_add_click,  fitness_template_added,  fitness_plan_add_click,  fitness_plan_added,  memos_note_create_click,  memos_note_open_click,  memos_note_save_click,  memos_note_saved,  memos_note_created,  memos_note_deleted,  memos_book_select,  credentials_create_click,  credentials_open_click,  credentials_save_click,  credentials_saved,  credentials_created,  credentials_deleted,  credentials_book_select,  days_event_create_click,  days_event_open_click,  days_event_save_click,  days_event_saved,  days_event_created,  days_event_deleted,  days_book_select,  calendar_day_select,  calendar_section_open_click,  calendar_create_click,  settings_theme_changed,  settings_language_changed,  settings_app_lock_changed,  settings_reminder_changed,  };
 
   @BuiltValueField(wireName: r'session_id')
   String get sessionId;
@@ -60,6 +64,20 @@ abstract class PostAnalyticsEventsRequestEventsInner
 
   @BuiltValueField(wireName: r'flow_id')
   String? get flowId;
+
+  @BuiltValueField(wireName: r'banner_slot')
+  PostAnalyticsEventsRequestEventsInnerBannerSlotEnum? get bannerSlot;
+  // enum bannerSlotEnum {  fitness-plan-library,  fitness-template-library,  };
+
+  @BuiltValueField(wireName: r'banner_id')
+  String? get bannerId;
+
+  @BuiltValueField(wireName: r'banner_source')
+  PostAnalyticsEventsRequestEventsInnerBannerSourceEnum? get bannerSource;
+  // enum bannerSourceEnum {  builtin,  remote,  };
+
+  @BuiltValueField(wireName: r'banner_version')
+  int? get bannerVersion;
 
   PostAnalyticsEventsRequestEventsInner._();
 
@@ -151,6 +169,36 @@ class _$PostAnalyticsEventsRequestEventsInnerSerializer
       yield serializers.serialize(
         object.flowId,
         specifiedType: const FullType(String),
+      );
+    }
+    if (object.bannerSlot != null) {
+      yield r'banner_slot';
+      yield serializers.serialize(
+        object.bannerSlot,
+        specifiedType:
+            const FullType(PostAnalyticsEventsRequestEventsInnerBannerSlotEnum),
+      );
+    }
+    if (object.bannerId != null) {
+      yield r'banner_id';
+      yield serializers.serialize(
+        object.bannerId,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.bannerSource != null) {
+      yield r'banner_source';
+      yield serializers.serialize(
+        object.bannerSource,
+        specifiedType: const FullType(
+            PostAnalyticsEventsRequestEventsInnerBannerSourceEnum),
+      );
+    }
+    if (object.bannerVersion != null) {
+      yield r'banner_version';
+      yield serializers.serialize(
+        object.bannerVersion,
+        specifiedType: const FullType(int),
       );
     }
   }
@@ -255,6 +303,40 @@ class _$PostAnalyticsEventsRequestEventsInnerSerializer
           ) as String?;
           if (valueDes == null) continue;
           result.flowId = valueDes;
+          break;
+        case r'banner_slot':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(
+                PostAnalyticsEventsRequestEventsInnerBannerSlotEnum),
+          ) as PostAnalyticsEventsRequestEventsInnerBannerSlotEnum?;
+          if (valueDes == null) continue;
+          result.bannerSlot = valueDes;
+          break;
+        case r'banner_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.bannerId = valueDes;
+          break;
+        case r'banner_source':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(
+                PostAnalyticsEventsRequestEventsInnerBannerSourceEnum),
+          ) as PostAnalyticsEventsRequestEventsInnerBannerSourceEnum?;
+          if (valueDes == null) continue;
+          result.bannerSource = valueDes;
+          break;
+        case r'banner_version':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.bannerVersion = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -630,6 +712,13 @@ class PostAnalyticsEventsRequestEventsInnerPlatformEnum extends EnumClass {
 }
 
 class PostAnalyticsEventsRequestEventsInnerEventNameEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'banner_impression')
+  static const PostAnalyticsEventsRequestEventsInnerEventNameEnum
+      bannerImpression =
+      _$postAnalyticsEventsRequestEventsInnerEventNameEnum_bannerImpression;
+  @BuiltValueEnumConst(wireName: r'banner_click')
+  static const PostAnalyticsEventsRequestEventsInnerEventNameEnum bannerClick =
+      _$postAnalyticsEventsRequestEventsInnerEventNameEnum_bannerClick;
   @BuiltValueEnumConst(wireName: r'home_view')
   static const PostAnalyticsEventsRequestEventsInnerEventNameEnum homeView =
       _$postAnalyticsEventsRequestEventsInnerEventNameEnum_homeView;
@@ -1174,4 +1263,51 @@ class PostAnalyticsEventsRequestEventsInnerEventNameEnum extends EnumClass {
   static PostAnalyticsEventsRequestEventsInnerEventNameEnum valueOf(
           String name) =>
       _$postAnalyticsEventsRequestEventsInnerEventNameEnumValueOf(name);
+}
+
+class PostAnalyticsEventsRequestEventsInnerBannerSlotEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'fitness-plan-library')
+  static const PostAnalyticsEventsRequestEventsInnerBannerSlotEnum
+      fitnessPlanLibrary =
+      _$postAnalyticsEventsRequestEventsInnerBannerSlotEnum_fitnessPlanLibrary;
+  @BuiltValueEnumConst(wireName: r'fitness-template-library')
+  static const PostAnalyticsEventsRequestEventsInnerBannerSlotEnum
+      fitnessTemplateLibrary =
+      _$postAnalyticsEventsRequestEventsInnerBannerSlotEnum_fitnessTemplateLibrary;
+
+  static Serializer<PostAnalyticsEventsRequestEventsInnerBannerSlotEnum>
+      get serializer =>
+          _$postAnalyticsEventsRequestEventsInnerBannerSlotEnumSerializer;
+
+  const PostAnalyticsEventsRequestEventsInnerBannerSlotEnum._(String name)
+      : super(name);
+
+  static BuiltSet<PostAnalyticsEventsRequestEventsInnerBannerSlotEnum>
+      get values => _$postAnalyticsEventsRequestEventsInnerBannerSlotEnumValues;
+  static PostAnalyticsEventsRequestEventsInnerBannerSlotEnum valueOf(
+          String name) =>
+      _$postAnalyticsEventsRequestEventsInnerBannerSlotEnumValueOf(name);
+}
+
+class PostAnalyticsEventsRequestEventsInnerBannerSourceEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'builtin')
+  static const PostAnalyticsEventsRequestEventsInnerBannerSourceEnum builtin =
+      _$postAnalyticsEventsRequestEventsInnerBannerSourceEnum_builtin;
+  @BuiltValueEnumConst(wireName: r'remote')
+  static const PostAnalyticsEventsRequestEventsInnerBannerSourceEnum remote =
+      _$postAnalyticsEventsRequestEventsInnerBannerSourceEnum_remote;
+
+  static Serializer<PostAnalyticsEventsRequestEventsInnerBannerSourceEnum>
+      get serializer =>
+          _$postAnalyticsEventsRequestEventsInnerBannerSourceEnumSerializer;
+
+  const PostAnalyticsEventsRequestEventsInnerBannerSourceEnum._(String name)
+      : super(name);
+
+  static BuiltSet<PostAnalyticsEventsRequestEventsInnerBannerSourceEnum>
+      get values =>
+          _$postAnalyticsEventsRequestEventsInnerBannerSourceEnumValues;
+  static PostAnalyticsEventsRequestEventsInnerBannerSourceEnum valueOf(
+          String name) =>
+      _$postAnalyticsEventsRequestEventsInnerBannerSourceEnumValueOf(name);
 }

@@ -19,6 +19,8 @@ class _$GetAdminAnalyticsDetails200Response
   @override
   final BuiltList<GetAdminAnalyticsDetails200ResponseEventsInner> events;
   @override
+  final BuiltList<GetAdminAnalyticsDetails200ResponseExposuresInner>? exposures;
+  @override
   final GetAdminAnalytics200ResponseCoverage coverage;
 
   factory _$GetAdminAnalyticsDetails200Response(
@@ -32,6 +34,7 @@ class _$GetAdminAnalyticsDetails200Response
       required this.series,
       required this.pages,
       required this.events,
+      this.exposures,
       required this.coverage})
       : super._();
   @override
@@ -52,6 +55,7 @@ class _$GetAdminAnalyticsDetails200Response
         series == other.series &&
         pages == other.pages &&
         events == other.events &&
+        exposures == other.exposures &&
         coverage == other.coverage;
   }
 
@@ -63,6 +67,7 @@ class _$GetAdminAnalyticsDetails200Response
     _$hash = $jc(_$hash, series.hashCode);
     _$hash = $jc(_$hash, pages.hashCode);
     _$hash = $jc(_$hash, events.hashCode);
+    _$hash = $jc(_$hash, exposures.hashCode);
     _$hash = $jc(_$hash, coverage.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -76,6 +81,7 @@ class _$GetAdminAnalyticsDetails200Response
           ..add('series', series)
           ..add('pages', pages)
           ..add('events', events)
+          ..add('exposures', exposures)
           ..add('coverage', coverage))
         .toString();
   }
@@ -125,6 +131,15 @@ class GetAdminAnalyticsDetails200ResponseBuilder
               events) =>
       _$this._events = events;
 
+  ListBuilder<GetAdminAnalyticsDetails200ResponseExposuresInner>? _exposures;
+  ListBuilder<GetAdminAnalyticsDetails200ResponseExposuresInner>
+      get exposures => _$this._exposures ??=
+          ListBuilder<GetAdminAnalyticsDetails200ResponseExposuresInner>();
+  set exposures(
+          ListBuilder<GetAdminAnalyticsDetails200ResponseExposuresInner>?
+              exposures) =>
+      _$this._exposures = exposures;
+
   GetAdminAnalytics200ResponseCoverageBuilder? _coverage;
   GetAdminAnalytics200ResponseCoverageBuilder get coverage =>
       _$this._coverage ??= GetAdminAnalytics200ResponseCoverageBuilder();
@@ -143,6 +158,7 @@ class GetAdminAnalyticsDetails200ResponseBuilder
       _series = $v.series.toBuilder();
       _pages = $v.pages.toBuilder();
       _events = $v.events.toBuilder();
+      _exposures = $v.exposures?.toBuilder();
       _coverage = $v.coverage.toBuilder();
       _$v = null;
     }
@@ -173,6 +189,7 @@ class GetAdminAnalyticsDetails200ResponseBuilder
             series: series.build(),
             pages: pages.build(),
             events: events.build(),
+            exposures: _exposures?.build(),
             coverage: coverage.build(),
           );
     } catch (_) {
@@ -188,6 +205,8 @@ class GetAdminAnalyticsDetails200ResponseBuilder
         pages.build();
         _$failedField = 'events';
         events.build();
+        _$failedField = 'exposures';
+        _exposures?.build();
         _$failedField = 'coverage';
         coverage.build();
       } catch (e) {

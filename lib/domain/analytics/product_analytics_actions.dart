@@ -1,5 +1,7 @@
 /// 产品关键操作使用固定标识，统计正文只包含操作名称，不携带业务内容。
 enum ProductAction {
+  bannerImpression('banner_impression'),
+  bannerClick('banner_click'),
   navigationModeSelect('navigation_mode_select'),
   navigationTabSelect('navigation_tab_select'),
   accountingLedgerSelect('accounting_ledger_select'),

@@ -12,26 +12,35 @@ part 'update_admin_banner_request.g.dart';
 /// UpdateAdminBannerRequest
 ///
 /// Properties:
-/// * [version]
+/// * [slot]
 /// * [imageId]
 /// * [target]
-/// * [isEnabled]
+/// * [targetId]
+/// * [sortOrder]
+/// * [version]
 @BuiltValue()
 abstract class UpdateAdminBannerRequest
     implements
         Built<UpdateAdminBannerRequest, UpdateAdminBannerRequestBuilder> {
-  @BuiltValueField(wireName: r'version')
-  int get version;
+  @BuiltValueField(wireName: r'slot')
+  UpdateAdminBannerRequestSlotEnum get slot;
+  // enum slotEnum {  fitness-plan-library,  fitness-template-library,  };
 
   @BuiltValueField(wireName: r'image_id')
-  String? get imageId;
+  String get imageId;
 
   @BuiltValueField(wireName: r'target')
   UpdateAdminBannerRequestTargetEnum get target;
-  // enum targetEnum {  fitness-plan-library,  fitness-template-library,  fitness-exercises,  fitness-plans,  fitness-templates,  };
+  // enum targetEnum {  fitness-plan-library,  fitness-template-library,  fitness-exercises,  fitness-plans,  fitness-templates,  official-plan,  official-template,  };
 
-  @BuiltValueField(wireName: r'is_enabled')
-  bool get isEnabled;
+  @BuiltValueField(wireName: r'target_id')
+  String? get targetId;
+
+  @BuiltValueField(wireName: r'sort_order')
+  int get sortOrder;
+
+  @BuiltValueField(wireName: r'version')
+  int get version;
 
   UpdateAdminBannerRequest._();
 
@@ -63,27 +72,37 @@ class _$UpdateAdminBannerRequestSerializer
     UpdateAdminBannerRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'version';
+    yield r'slot';
     yield serializers.serialize(
-      object.version,
-      specifiedType: const FullType(int),
+      object.slot,
+      specifiedType: const FullType(UpdateAdminBannerRequestSlotEnum),
     );
     yield r'image_id';
-    yield object.imageId == null
-        ? null
-        : serializers.serialize(
-            object.imageId,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield serializers.serialize(
+      object.imageId,
+      specifiedType: const FullType(String),
+    );
     yield r'target';
     yield serializers.serialize(
       object.target,
       specifiedType: const FullType(UpdateAdminBannerRequestTargetEnum),
     );
-    yield r'is_enabled';
+    yield r'target_id';
+    yield object.targetId == null
+        ? null
+        : serializers.serialize(
+            object.targetId,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'sort_order';
     yield serializers.serialize(
-      object.isEnabled,
-      specifiedType: const FullType(bool),
+      object.sortOrder,
+      specifiedType: const FullType(int),
+    );
+    yield r'version';
+    yield serializers.serialize(
+      object.version,
+      specifiedType: const FullType(int),
     );
   }
 
@@ -110,19 +129,18 @@ class _$UpdateAdminBannerRequestSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'version':
+        case r'slot':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.version = valueDes;
+            specifiedType: const FullType(UpdateAdminBannerRequestSlotEnum),
+          ) as UpdateAdminBannerRequestSlotEnum;
+          result.slot = valueDes;
           break;
         case r'image_id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
+            specifiedType: const FullType(String),
+          ) as String;
           result.imageId = valueDes;
           break;
         case r'target':
@@ -132,12 +150,27 @@ class _$UpdateAdminBannerRequestSerializer
           ) as UpdateAdminBannerRequestTargetEnum;
           result.target = valueDes;
           break;
-        case r'is_enabled':
+        case r'target_id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(bool),
-          ) as bool;
-          result.isEnabled = valueDes;
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.targetId = valueDes;
+          break;
+        case r'sort_order':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.sortOrder = valueDes;
+          break;
+        case r'version':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.version = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -168,6 +201,25 @@ class _$UpdateAdminBannerRequestSerializer
   }
 }
 
+class UpdateAdminBannerRequestSlotEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'fitness-plan-library')
+  static const UpdateAdminBannerRequestSlotEnum fitnessPlanLibrary =
+      _$updateAdminBannerRequestSlotEnum_fitnessPlanLibrary;
+  @BuiltValueEnumConst(wireName: r'fitness-template-library')
+  static const UpdateAdminBannerRequestSlotEnum fitnessTemplateLibrary =
+      _$updateAdminBannerRequestSlotEnum_fitnessTemplateLibrary;
+
+  static Serializer<UpdateAdminBannerRequestSlotEnum> get serializer =>
+      _$updateAdminBannerRequestSlotEnumSerializer;
+
+  const UpdateAdminBannerRequestSlotEnum._(String name) : super(name);
+
+  static BuiltSet<UpdateAdminBannerRequestSlotEnum> get values =>
+      _$updateAdminBannerRequestSlotEnumValues;
+  static UpdateAdminBannerRequestSlotEnum valueOf(String name) =>
+      _$updateAdminBannerRequestSlotEnumValueOf(name);
+}
+
 class UpdateAdminBannerRequestTargetEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'fitness-plan-library')
   static const UpdateAdminBannerRequestTargetEnum fitnessPlanLibrary =
@@ -184,6 +236,12 @@ class UpdateAdminBannerRequestTargetEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'fitness-templates')
   static const UpdateAdminBannerRequestTargetEnum fitnessTemplates =
       _$updateAdminBannerRequestTargetEnum_fitnessTemplates;
+  @BuiltValueEnumConst(wireName: r'official-plan')
+  static const UpdateAdminBannerRequestTargetEnum officialPlan =
+      _$updateAdminBannerRequestTargetEnum_officialPlan;
+  @BuiltValueEnumConst(wireName: r'official-template')
+  static const UpdateAdminBannerRequestTargetEnum officialTemplate =
+      _$updateAdminBannerRequestTargetEnum_officialTemplate;
 
   static Serializer<UpdateAdminBannerRequestTargetEnum> get serializer =>
       _$updateAdminBannerRequestTargetEnumSerializer;

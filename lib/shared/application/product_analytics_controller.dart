@@ -6,6 +6,7 @@ import '../../domain/analytics/product_analytics_context.dart';
 import '../../domain/analytics/product_analytics_event.dart';
 import '../../domain/analytics/product_analytics_ports.dart';
 import '../../domain/analytics/product_visit_tracker.dart';
+import '../../domain/analytics/product_banner_dimensions.dart';
 
 /// 采集用例统一管理身份、会话、访问与动作；不依赖界面或传输实现。
 class ProductAnalyticsController {
@@ -25,6 +26,61 @@ class ProductAnalyticsController {
   ProductVisitTracker _visits = ProductVisitTracker();
   bool _disposed = false;
   int _sequence = 0;
+  String? _visiblePage;
+  final _bannerImpressions = <(String, String, String, int)>{};
+  final _visibilityListeners = <void Function()>{};
+
+  /// 图片展示观察者在页面访问或可见性改变后重验当前素材，不自行制造页面访问。
+  void addVisibilityListener(void Function() listener) =>
+      _visibilityListeners.add(listener);
+
+  /// 页面组件释放时移除观察回调，不影响其他采集者。
+  void removeVisibilityListener(void Function() listener) =>
+      _visibilityListeners.remove(listener);
+
+  /// 通知只承载内存可见性，观察失败不得影响已有页面采集。
+  void _notifyVisibility() {
+    for (final listener in _visibilityListeners.toList()) {
+      try {
+        listener();
+      } catch (error, stack) {
+        logger.error('ProductAnalytics', '素材可见性观察失败', error.runtimeType, stack);
+      }
+    }
+  }
+
+  /// 只有当前真实页面的有效前台账号可记录横幅，曝光跟随页面访问周期去重。
+  void trackBanner({
+    required String pageId,
+    required ProductAction action,
+    required ProductBannerDimensions banner,
+  }) {
+    try {
+      final state = _snapshot();
+      if (_disposed ||
+          !state.enabled ||
+          state.identity.account == null ||
+          _visiblePage != pageId ||
+          !banner.isValid ||
+          banner.pageId != pageId ||
+          (action != ProductAction.bannerImpression &&
+              action != ProductAction.bannerClick)) {
+        return;
+      }
+      if (action == ProductAction.bannerImpression &&
+          !_bannerImpressions.add(banner.key)) {
+        return;
+      }
+      _enqueue('action', pageId, captureContext(), action, banner);
+    } catch (error, stack) {
+      logger.error(
+        'ProductAnalytics',
+        '横幅统计暂不可用，入口功能不受影响',
+        error.runtimeType,
+        stack,
+      );
+    }
+  }
 
   /// 无法读取身份时返回不可采集状态，统计异常不阻止业务操作。
   ProductAnalyticsRuntime _snapshot() {
@@ -160,10 +216,16 @@ class ProductAnalyticsController {
       now: _clock(),
       visitKey: visitKey,
     );
+    final nextPage = visible && state.identity.account != null ? pageId : null;
+    final changed = _visiblePage != nextPage || kind == 'page_view';
+    _visiblePage = nextPage;
+    if (kind == 'page_view') _bannerImpressions.clear();
     if (!visible || state.identity.account == null || pageId == null) {
+      if (changed) _notifyVisibility();
       return false;
     }
     if (kind != null) _enqueue(kind, pageId, captureContext(parent: context));
+    if (changed) _notifyVisibility();
     return true;
   }
 
@@ -197,6 +259,7 @@ class ProductAnalyticsController {
     String page,
     ProductAnalyticsContext context, [
     ProductAction? action,
+    ProductBannerDimensions? banner,
   ]) {
     if (_disposed || context.identity.account == null) return;
     if (context.sessionId == null) {
@@ -214,6 +277,7 @@ class ProductAnalyticsController {
         sessionId: context.sessionId!,
         action: action,
         flowId: context.flowId,
+        banner: banner,
       );
       unawaited(_record(event));
     } catch (error, stack) {
@@ -266,6 +330,9 @@ class ProductAnalyticsController {
   void identityChanged() {
     _sessions.reset();
     _visits = ProductVisitTracker();
+    _visiblePage = null;
+    _bannerImpressions.clear();
+    _notifyVisibility();
     if (_activeWriter != null) unawaited(_cancelIdentity());
   }
 
@@ -283,5 +350,7 @@ class ProductAnalyticsController {
   void dispose() {
     _disposed = true;
     _sessions.reset();
+    _visibilityListeners.clear();
+    _bannerImpressions.clear();
   }
 }

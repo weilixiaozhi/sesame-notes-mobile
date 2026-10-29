@@ -1,6 +1,7 @@
 import 'product_analytics_actions.dart';
 import 'product_analytics_context.dart';
 import 'product_analytics_pages.dart';
+import 'product_banner_dimensions.dart';
 
 /// 在真实采集时刻创建的不可变事件，等待存储或上传不能改变发生时间与顺序。
 class ProductAnalyticsEvent {
@@ -15,6 +16,7 @@ class ProductAnalyticsEvent {
     required this.sessionId,
     this.action,
     this.flowId,
+    this.banner,
   });
   final String eventId;
   final DateTime occurredAt;
@@ -25,6 +27,7 @@ class ProductAnalyticsEvent {
   final String sessionId;
   final ProductAction? action;
   final String? flowId;
+  final ProductBannerDimensions? banner;
 
   /// 浏览与操作使用完整事件标识，活跃心跳只携带页面上下文。
   String? get eventName => switch (kind) {

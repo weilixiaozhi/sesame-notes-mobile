@@ -5,6 +5,7 @@ import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
+import '../../domain/analytics/product_banner_dimensions.dart';
 
 import '../../core/logging/logger_service.dart';
 import '../../domain/analytics/product_analytics_actions.dart';
@@ -97,6 +98,11 @@ class ProductAnalyticsService implements ProductAnalyticsEventWriter {
           sequence < 1 ||
           sequence > 2147483647 ||
           !_validOptionalUuid(flowId) ||
+          !ProductBannerDimensions.validEvent(
+            eventName,
+            pageId,
+            event.banner?.toJson() ?? const {},
+          ) ||
           (kind != 'action' && event.action != null) ||
           !_validEventName(kind, pageId, eventName)) {
         throw ArgumentError('统计事件标识无效');
@@ -112,6 +118,7 @@ class ProductAnalyticsService implements ProductAnalyticsEventWriter {
         'session_id': sessionId,
         'event_sequence': sequence,
         'flow_id': ?flowId,
+        ...?event.banner?.toJson(),
       });
       // 只保留有界统计积压，避免长时间离线占用不断增长的偏好文件。
       if (queue.length > 5000) {
@@ -252,6 +259,11 @@ class ProductAnalyticsService implements ProductAnalyticsEventWriter {
             sequence < 1 ||
             sequence > 2147483647 ||
             !_validOptionalUuid(flowId) ||
+            !ProductBannerDimensions.validEvent(
+              eventName is String ? eventName : null,
+              page,
+              row,
+            ) ||
             !_validEventName(kind, page, eventName) ||
             !seen.add(id)) {
           invalid++;
@@ -268,6 +280,7 @@ class ProductAnalyticsService implements ProductAnalyticsEventWriter {
           'session_id': sessionId,
           'event_sequence': sequence,
           'flow_id': ?flowId,
+          ...?ProductBannerDimensions.parse(row)?.toJson(),
         });
       }
       if (invalid > 0) {

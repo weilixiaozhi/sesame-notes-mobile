@@ -1,4 +1,5 @@
 import 'widgets/fitness_home_cards.dart';
+import 'fitness_banner_navigation.dart';
 import 'widgets/fitness_widgets.dart' show fitnessRun;
 import 'package:sesame_notes/data/models/app_banner.dart';
 import 'package:sesame_notes/shared/widgets/app_banner_entry.dart';
@@ -44,6 +45,8 @@ class FitnessTemplatesPage extends ConsumerWidget {
             child: AppBannerEntry(
               key: const ValueKey('fitness-template-library-entry'),
               slot: AppBannerSlot.fitnessTemplateLibrary,
+              onOpenOfficial: (target, id) =>
+                  openFitnessBannerContent(context, ref, target, id),
               onOpen: (route) => fitnessRun(context, () async {
                 await context.pushNamed(route);
               }),

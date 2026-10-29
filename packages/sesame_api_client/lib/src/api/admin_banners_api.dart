@@ -10,9 +10,15 @@ import 'package:dio/dio.dart';
 
 import 'dart:typed_data';
 import 'package:sesame_api_client/src/api_util.dart';
+import 'package:sesame_api_client/src/model/create_admin_banner_request.dart';
+import 'package:sesame_api_client/src/model/delete_admin_banner200_response.dart';
+import 'package:sesame_api_client/src/model/delete_admin_banner_request.dart';
 import 'package:sesame_api_client/src/model/error.dart';
-import 'package:sesame_api_client/src/model/get_app_banners200_response.dart';
-import 'package:sesame_api_client/src/model/get_app_banners200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_admin_banner_statistics200_response.dart';
+import 'package:sesame_api_client/src/model/list_admin_banner_targets200_response.dart';
+import 'package:sesame_api_client/src/model/list_admin_banners200_response.dart';
+import 'package:sesame_api_client/src/model/list_admin_banners200_response_items_inner.dart';
+import 'package:sesame_api_client/src/model/reset_admin_banner_slot_request.dart';
 import 'package:sesame_api_client/src/model/update_admin_banner_request.dart';
 import 'package:sesame_api_client/src/model/upload_admin_banner_image201_response.dart';
 import 'package:sesame_api_client/src/model/upload_admin_banner_image_request.dart';
@@ -23,6 +29,218 @@ class AdminBannersApi {
   final Serializers _serializers;
 
   const AdminBannersApi(this._dio, this._serializers);
+
+  /// createAdminBanner
+  ///
+  ///
+  /// Parameters:
+  /// * [createAdminBannerRequest]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [ListAdminBanners200ResponseItemsInner] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<ListAdminBanners200ResponseItemsInner>> createAdminBanner({
+    required CreateAdminBannerRequest createAdminBannerRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/v1/admin/banners';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'apiKey',
+            'name': 'adminSessionAuth',
+            'keyName': '__Secure-sesame_admin_session',
+            'where': '',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(CreateAdminBannerRequest);
+      _bodyData = _serializers.serialize(createAdminBannerRequest,
+          specifiedType: _type);
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    ListAdminBanners200ResponseItemsInner? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType:
+                  const FullType(ListAdminBanners200ResponseItemsInner),
+            ) as ListAdminBanners200ResponseItemsInner;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<ListAdminBanners200ResponseItemsInner>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// deleteAdminBanner
+  ///
+  ///
+  /// Parameters:
+  /// * [bannerId]
+  /// * [deleteAdminBannerRequest]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [DeleteAdminBanner200Response] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<DeleteAdminBanner200Response>> deleteAdminBanner({
+    required String bannerId,
+    required DeleteAdminBannerRequest deleteAdminBannerRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/v1/admin/banners/{banner_id}'.replaceAll(
+        '{' r'banner_id' '}',
+        encodeQueryParameter(_serializers, bannerId, const FullType(String))
+            .toString());
+    final _options = Options(
+      method: r'DELETE',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'apiKey',
+            'name': 'adminSessionAuth',
+            'keyName': '__Secure-sesame_admin_session',
+            'where': '',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(DeleteAdminBannerRequest);
+      _bodyData = _serializers.serialize(deleteAdminBannerRequest,
+          specifiedType: _type);
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    DeleteAdminBanner200Response? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType: const FullType(DeleteAdminBanner200Response),
+            ) as DeleteAdminBanner200Response;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<DeleteAdminBanner200Response>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
 
   /// getAdminBannerImage
   ///
@@ -106,6 +324,193 @@ class AdminBannersApi {
     );
   }
 
+  /// getAdminBannerStatistics
+  ///
+  ///
+  /// Parameters:
+  /// * [startDate]
+  /// * [endDate]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [GetAdminBannerStatistics200Response] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<GetAdminBannerStatistics200Response>>
+      getAdminBannerStatistics({
+    required String startDate,
+    required String endDate,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/v1/admin/banners/statistics';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'apiKey',
+            'name': 'adminSessionAuth',
+            'keyName': '__Secure-sesame_admin_session',
+            'where': '',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'start_date':
+          encodeQueryParameter(_serializers, startDate, const FullType(String)),
+      r'end_date':
+          encodeQueryParameter(_serializers, endDate, const FullType(String)),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    GetAdminBannerStatistics200Response? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType:
+                  const FullType(GetAdminBannerStatistics200Response),
+            ) as GetAdminBannerStatistics200Response;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<GetAdminBannerStatistics200Response>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// listAdminBannerTargets
+  ///
+  ///
+  /// Parameters:
+  /// * [kind]
+  /// * [q]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [ListAdminBannerTargets200Response] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<ListAdminBannerTargets200Response>> listAdminBannerTargets({
+    required String kind,
+    String? q,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/v1/admin/banners/targets';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'apiKey',
+            'name': 'adminSessionAuth',
+            'keyName': '__Secure-sesame_admin_session',
+            'where': '',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'kind': encodeQueryParameter(_serializers, kind, const FullType(String)),
+      if (q != null)
+        r'q': encodeQueryParameter(_serializers, q, const FullType(String)),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    ListAdminBannerTargets200Response? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType: const FullType(ListAdminBannerTargets200Response),
+            ) as ListAdminBannerTargets200Response;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<ListAdminBannerTargets200Response>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// listAdminBanners
   ///
   ///
@@ -117,9 +522,9 @@ class AdminBannersApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [GetAppBanners200Response] as data
+  /// Returns a [Future] containing a [Response] with a [ListAdminBanners200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<GetAppBanners200Response>> listAdminBanners({
+  Future<Response<ListAdminBanners200Response>> listAdminBanners({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -155,7 +560,7 @@ class AdminBannersApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    GetAppBanners200Response? _responseData;
+    ListAdminBanners200Response? _responseData;
 
     try {
       final rawResponse = _response.data;
@@ -163,8 +568,8 @@ class AdminBannersApi {
           ? null
           : _serializers.deserialize(
               rawResponse,
-              specifiedType: const FullType(GetAppBanners200Response),
-            ) as GetAppBanners200Response;
+              specifiedType: const FullType(ListAdminBanners200Response),
+            ) as ListAdminBanners200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -175,7 +580,115 @@ class AdminBannersApi {
       );
     }
 
-    return Response<GetAppBanners200Response>(
+    return Response<ListAdminBanners200Response>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// resetAdminBannerSlot
+  ///
+  ///
+  /// Parameters:
+  /// * [slot]
+  /// * [resetAdminBannerSlotRequest]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [DeleteAdminBanner200Response] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<DeleteAdminBanner200Response>> resetAdminBannerSlot({
+    required String slot,
+    required ResetAdminBannerSlotRequest resetAdminBannerSlotRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/v1/admin/banners/{slot}/reset'.replaceAll(
+        '{' r'slot' '}',
+        encodeQueryParameter(_serializers, slot, const FullType(String))
+            .toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'apiKey',
+            'name': 'adminSessionAuth',
+            'keyName': '__Secure-sesame_admin_session',
+            'where': '',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(ResetAdminBannerSlotRequest);
+      _bodyData = _serializers.serialize(resetAdminBannerSlotRequest,
+          specifiedType: _type);
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    DeleteAdminBanner200Response? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType: const FullType(DeleteAdminBanner200Response),
+            ) as DeleteAdminBanner200Response;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<DeleteAdminBanner200Response>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -191,7 +704,7 @@ class AdminBannersApi {
   ///
   ///
   /// Parameters:
-  /// * [slot]
+  /// * [bannerId]
   /// * [updateAdminBannerRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -200,10 +713,10 @@ class AdminBannersApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [GetAppBanners200ResponseItemsInner] as data
+  /// Returns a [Future] containing a [Response] with a [ListAdminBanners200ResponseItemsInner] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<GetAppBanners200ResponseItemsInner>> updateAdminBanner({
-    required String slot,
+  Future<Response<ListAdminBanners200ResponseItemsInner>> updateAdminBanner({
+    required String bannerId,
     required UpdateAdminBannerRequest updateAdminBannerRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -212,12 +725,12 @@ class AdminBannersApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/api/v1/admin/banners/{slot}'.replaceAll(
-        '{' r'slot' '}',
-        encodeQueryParameter(_serializers, slot, const FullType(String))
+    final _path = r'/api/v1/admin/banners/{banner_id}'.replaceAll(
+        '{' r'banner_id' '}',
+        encodeQueryParameter(_serializers, bannerId, const FullType(String))
             .toString());
     final _options = Options(
-      method: r'PUT',
+      method: r'PATCH',
       headers: <String, dynamic>{
         ...?headers,
       },
@@ -263,7 +776,7 @@ class AdminBannersApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    GetAppBanners200ResponseItemsInner? _responseData;
+    ListAdminBanners200ResponseItemsInner? _responseData;
 
     try {
       final rawResponse = _response.data;
@@ -271,8 +784,9 @@ class AdminBannersApi {
           ? null
           : _serializers.deserialize(
               rawResponse,
-              specifiedType: const FullType(GetAppBanners200ResponseItemsInner),
-            ) as GetAppBanners200ResponseItemsInner;
+              specifiedType:
+                  const FullType(ListAdminBanners200ResponseItemsInner),
+            ) as ListAdminBanners200ResponseItemsInner;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -283,7 +797,7 @@ class AdminBannersApi {
       );
     }
 
-    return Response<GetAppBanners200ResponseItemsInner>(
+    return Response<ListAdminBanners200ResponseItemsInner>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
