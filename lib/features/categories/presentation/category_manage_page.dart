@@ -165,7 +165,7 @@ class _CategoryManagePageState extends ConsumerState<CategoryManagePage>
     categoriesWithCount,
   ) {
     final parentIds = categoriesWithCount
-        .where((item) => item.category.level == 1)
+        .where((item) => item.category.parentId == null)
         .map((item) => item.category.id)
         .toSet();
     final allSelected =
@@ -220,8 +220,7 @@ class _CategoryManagePageState extends ConsumerState<CategoryManagePage>
     );
   }
 
-  /// 模板库入口区：一级/二级模板两个独立按钮（不是头部文字链），
-  /// 位于"分类管理"标题之下、长按排序提示之上，删除模式下隐藏。
+  /// 统一模板入口同时支持新建父子分类和向已有父分类添加子项。
   Widget _buildTemplateEntries(BuildContext context, AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -230,41 +229,11 @@ class _CategoryManagePageState extends ConsumerState<CategoryManagePage>
         AppDimens.p16,
         0,
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildTemplateEntryButton(
-              context,
-              label: l10n.categoryTemplateEntryFlat,
-              icon: AppIcons.viewWeek,
-              route: Routes.categoryTemplateFlat,
-            ),
-          ),
-          const SizedBox(width: AppDimens.p12),
-          Expanded(
-            child: _buildTemplateEntryButton(
-              context,
-              label: l10n.categoryTemplateEntryHierarchical,
-              icon: AppIcons.checklist,
-              route: Routes.categoryTemplateHierarchical,
-            ),
-          ),
-        ],
+      child: EntryBarButton(
+        onTap: () => context.pushNamed(Routes.categoryTemplates),
+        icon: AppIcons.checklist,
+        label: l10n.categoryTemplateLibraryTitle,
       ),
-    );
-  }
-
-  /// 模板库入口复用统一描边按钮，由外层均分可用宽度。
-  Widget _buildTemplateEntryButton(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required String route,
-  }) {
-    return EntryBarButton(
-      onTap: () => context.pushNamed(route),
-      icon: icon,
-      label: label,
     );
   }
 
@@ -482,7 +451,7 @@ class _CategoryManagePageState extends ConsumerState<CategoryManagePage>
       toDeleteList.add(categoryName);
 
       // 如果是父分类，添加其所有将被删除的子分类
-      if (item.category.level == 1) {
+      if (item.category.parentId == null) {
         final children = unusedCategories
             .where((c) => c.category.parentId == item.category.id)
             .toList();

@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_ledger_repository.dart';
-import 'package:sesame_notes/data/repositories/support/category_clone.dart';
 import 'package:sesame_notes/data/repositories/support/category_scope.dart';
 import 'package:sesame_notes/utils/member_id.dart';
 
@@ -885,7 +884,7 @@ void main() {
     expect(forkTx.categoryId, localCatId, reason: '本地副本引用相同身份的本地域分类');
   });
 
-  test('云转本地隐藏 Fork：目标同名不同身份分类保留冲突，整个副本原子回滚', () async {
+  test('云转本地隐藏 Fork：目标同名不同身份分类独立保留，来源分类和账单不变', () async {
     const localCatId = 'local-cat-2';
     const cloudCatId = 'cloud-cat-2';
     final now = DateTime.utc(2026, 8, 1);
@@ -916,26 +915,37 @@ void main() {
     final categoriesBefore = await db.select(db.categories).get();
     final transactionsBefore = await db.select(db.transactions).get();
     final ledgersBefore = await db.select(db.ledgers).get();
-    await expectLater(
-      repo.forkCloudLedgerToLocalPendingMove(
-        sourceLedgerId: sourceId,
-        newLedgerId: 'fork-2',
-        localSelfId: 'self-device-1',
-        currentAccountId: 'acc-1',
-        originSyncId: 'sync-cat',
-      ),
-      throwsA(isA<CategoryCloneConflict>()),
+    await repo.forkCloudLedgerToLocalPendingMove(
+      sourceLedgerId: sourceId,
+      newLedgerId: 'fork-2',
+      localSelfId: 'self-device-1',
+      currentAccountId: 'acc-1',
+      originSyncId: 'sync-cat',
     );
-    expect(await db.select(db.categories).get(), categoriesBefore);
-    expect(await db.select(db.transactions).get(), transactionsBefore);
-    expect(await db.select(db.ledgers).get(), ledgersBefore);
-    final cloudCat = await (db.select(
-      db.categories,
-    )..where((c) => c.id.equals(cloudCatId))).getSingle();
+    expect(await db.select(db.categories).get(), containsAll(categoriesBefore));
+    expect(
+      await db.select(db.transactions).get(),
+      containsAll(transactionsBefore),
+    );
+    expect(await db.select(db.ledgers).get(), containsAll(ledgersBefore));
+    final cloudCat =
+        await (db.select(db.categories)..where(
+              (c) =>
+                  c.id.equals(cloudCatId) & categoryScopePredicate(c, 'acc-1'),
+            ))
+            .getSingle();
     expect(cloudCat.scopeAccountId, 'acc-1', reason: '账号域原分类仍在原域');
+    final localCats = await (db.select(
+      db.categories,
+    )..where((c) => categoryScopePredicate(c, null))).get();
+    expect(localCats.map((c) => c.id).toSet(), {localCatId, cloudCatId});
+    final forkTx = await (db.select(
+      db.transactions,
+    )..where((t) => t.ledgerId.equals('fork-2'))).getSingle();
+    expect(forkTx.categoryId, cloudCatId);
   });
 
-  test('云转本地隐藏 Fork：来源同名不同身份分类导致冲突，目标目录和交易全部回滚', () async {
+  test('云转本地隐藏 Fork：来源同名不同身份分类均复制并保持各自账单引用', () async {
     final now = DateTime.utc(2026, 8, 1);
     await db.batch((b) {
       b.insertAll(db.categories, [
@@ -968,23 +978,30 @@ void main() {
     final categoriesBefore = await db.select(db.categories).get();
     final transactionsBefore = await db.select(db.transactions).get();
     final ledgersBefore = await db.select(db.ledgers).get();
-    await expectLater(
-      repo.forkCloudLedgerToLocalPendingMove(
-        sourceLedgerId: sourceId,
-        newLedgerId: 'fork-3',
-        localSelfId: 'self-device-1',
-        currentAccountId: 'acc-1',
-        originSyncId: 'sync-cat',
-      ),
-      throwsA(isA<CategoryCloneConflict>()),
+    await repo.forkCloudLedgerToLocalPendingMove(
+      sourceLedgerId: sourceId,
+      newLedgerId: 'fork-3',
+      localSelfId: 'self-device-1',
+      currentAccountId: 'acc-1',
+      originSyncId: 'sync-cat',
     );
     final localCats = await (db.select(
       db.categories,
     )..where((c) => categoryScopePredicate(c, null))).get();
-    expect(localCats, isEmpty);
-    expect(await db.select(db.categories).get(), categoriesBefore);
-    expect(await db.select(db.transactions).get(), transactionsBefore);
-    expect(await db.select(db.ledgers).get(), ledgersBefore);
+    expect(localCats.map((c) => c.id).toSet(), {'cloud-cat-a', 'cloud-cat-b'});
+    final forkTxs = await (db.select(
+      db.transactions,
+    )..where((t) => t.ledgerId.equals('fork-3'))).get();
+    expect(forkTxs.map((t) => t.categoryId).toSet(), {
+      'cloud-cat-a',
+      'cloud-cat-b',
+    });
+    expect(await db.select(db.categories).get(), containsAll(categoriesBefore));
+    expect(
+      await db.select(db.transactions).get(),
+      containsAll(transactionsBefore),
+    );
+    expect(await db.select(db.ledgers).get(), containsAll(ledgersBefore));
   });
 
   test('本地账本恢复：目标库缺失的被引用分类按原 id 从备份导入本地域', () async {

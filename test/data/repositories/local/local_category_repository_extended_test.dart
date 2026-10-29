@@ -79,8 +79,8 @@ void main() {
     return id;
   }
 
-  group('事务与作用域判重', () {
-    test('createCategory 指定父级时按父级作用域判重', () async {
+  group('事务与分类身份', () {
+    test('createCategory 同父同名也保留独立身份', () async {
       final parent = await repo.createCategory(name: '服装', kind: 'expense');
       final child = await repo.createCategory(
         name: '鞋子',
@@ -90,15 +90,16 @@ void main() {
       );
       expect(child, isNotEmpty);
 
-      // 同父级重名抛错
+      final sameName = await repo.createCategory(
+        name: '鞋子',
+        kind: 'expense',
+        parentId: parent,
+        level: 2,
+      );
+      expect(sameName, isNot(child));
       expect(
-        () => repo.createCategory(
-          name: '鞋子',
-          kind: 'expense',
-          parentId: parent,
-          level: 2,
-        ),
-        throwsA(isA<Object>()),
+        (await repo.getSubCategories(parent)).map((row) => row.id).toSet(),
+        {child, sameName},
       );
       // 不同父级允许同名
       final otherParent = await repo.createCategory(
@@ -369,31 +370,24 @@ void main() {
       expect(usable.single.name, '餐饮');
     });
 
-    test('isCategoryNameDuplicate 支持 excludeId 与父级作用域', () async {
+    test('修改为同名后仍按ID编辑原分类', () async {
       final parent = await repo.createCategory(name: '父', kind: 'expense');
-      final child = await repo.createCategory(
+      final first = await repo.createSubCategory(
+        parentId: parent,
         name: '子',
         kind: 'expense',
+      );
+      final second = await repo.createSubCategory(
         parentId: parent,
-        level: 2,
+        name: '另一个子',
+        kind: 'expense',
       );
-
+      await repo.updateCategory(second, name: '子', icon: 'coffee');
+      expect((await repo.getCategoryById(first))!.name, '子');
+      expect((await repo.getCategoryById(second))!.icon, 'coffee');
       expect(
-        await repo.isCategoryNameDuplicate(
-          name: '子',
-          kind: 'expense',
-          parentId: parent,
-        ),
-        isTrue,
-      );
-      expect(
-        await repo.isCategoryNameDuplicate(
-          name: '子',
-          kind: 'expense',
-          parentId: parent,
-          excludeId: child,
-        ),
-        isFalse,
+        (await repo.getSubCategories(parent)).map((row) => row.id).toSet(),
+        {first, second},
       );
     });
 

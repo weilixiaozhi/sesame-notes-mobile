@@ -51,7 +51,7 @@ extension SharedLedgerPickerFilter on SesameDatabase {
             (row) =>
                 row.deletedAt == null &&
                 (kind == null || kind.isEmpty || row.kind == kind) &&
-                (!topLevelOnly || row.level == 1),
+                (!topLevelOnly || row.parentId == null),
           )
           .toList();
     } catch (error, stackTrace) {

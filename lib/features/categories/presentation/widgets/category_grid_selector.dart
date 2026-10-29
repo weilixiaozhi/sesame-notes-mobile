@@ -168,7 +168,7 @@ class _CategoryGridSelectorSheetState
                     showTransactionCount: widget.showTransactionCount,
                     isSelected: isSelected,
                     // 层级标注：一级分类 / 二级 · 所属父分类名
-                    badgeLabel: category.level == 1
+                    badgeLabel: category.parentId == null
                         ? l10n.categoryTopLevelLabel
                         : l10n.categoryMigrateChildLabel(
                             _parentDisplayName(category.parentId ?? ''),
@@ -211,7 +211,7 @@ class _MigrateCategoryChip extends StatelessWidget {
   /// 迁移候选沿用紧凑内容布局，选中时只绘制统一边框和角标。
   @override
   Widget build(BuildContext context) {
-    final isSub = item.category.level == 2;
+    final isSub = item.category.parentId != null;
 
     return Semantics(
       selected: isSelected,

@@ -5,6 +5,7 @@
 
 library;
 
+import 'dart:convert';
 import 'package:decimal/decimal.dart';
 
 /// 导入分类（CSV/云端恢复统一口径）
@@ -15,6 +16,10 @@ class ImportCategory {
   final int sortOrder; // 排序顺序
   final String? icon;
   final String? parentName; // 二级分类的父分类名称
+  /// 来源映射冻结的目标身份；重复提交继续使用相同身份。
+  final String? id;
+  final String? parentId;
+  final String? sourceKey;
 
   const ImportCategory({
     required this.name,
@@ -23,11 +28,53 @@ class ImportCategory {
     this.sortOrder = 0,
     this.icon,
     this.parentName,
+    this.id,
+    this.parentId,
+    this.sourceKey,
   });
 }
 
 /// 导入分类的完整路径键；一级分类的 [parentName] 为 null。
 typedef ImportCategoryPath = ({String kind, String? parentName, String name});
+
+/// 文件中的分类身份；缺少来源身份的行各自确认，不能按相同名称合并。
+class ImportCategorySource {
+  final String name;
+  final String? parentName;
+  final String? icon;
+  final String? sourceId;
+  final String? parentSourceId;
+  final String? sourceScope;
+  final String fileHash;
+  final int rowIndex;
+
+  const ImportCategorySource({
+    required this.name,
+    this.parentName,
+    this.icon,
+    this.sourceId,
+    this.parentSourceId,
+    this.sourceScope,
+    required this.fileHash,
+    required this.rowIndex,
+  });
+
+  String get kind => 'expense';
+  ImportCategoryPath get path =>
+      (kind: kind, parentName: parentName, name: name);
+  String get key => sourceId != null && sourceScope != null
+      ? jsonEncode(['category', sourceScope, sourceId])
+      : jsonEncode(['category-row', fileHash, rowIndex]);
+
+  @override
+  bool operator ==(Object other) =>
+      other is ImportCategorySource && other.key == key;
+  @override
+  int get hashCode => key.hashCode;
+}
+
+/// 用户明确选择新增时使用的映射值，不可与真实分类 UUID 混淆。
+const importCreateCategory = '__create_category__';
 
 /// 导入交易数据
 class ImportTransaction {
@@ -40,6 +87,7 @@ class ImportTransaction {
   final DateTime happenedAt;
   final String? note;
   final String? categoryId; // 预解析的分类ID（UUID，优先于categoryName）
+  final String? categorySourceKey;
   final String? syncId; // 跨设备同步唯一标识
   /// 多币种:CSV 币种列。null → 账本本位币兜底。
   final String? currencyCode;
@@ -62,6 +110,7 @@ class ImportTransaction {
     required this.happenedAt,
     this.note,
     this.categoryId,
+    this.categorySourceKey,
     this.syncId,
   });
 }

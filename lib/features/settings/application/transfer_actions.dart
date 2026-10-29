@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'package:drift/drift.dart' as d;
 import 'package:sesame_notes/data/models/memo.dart';
 
-import 'package:crypto/crypto.dart';
 import 'package:sesame_notes/data/models.dart' as models;
 import 'package:sesame_notes/data/models/fitness_catalog.dart';
 import 'package:sesame_notes/data/models/memo_json.dart';
@@ -28,6 +27,7 @@ import 'import_target.dart';
 import 'day_file_actions.dart';
 import 'fitness_file_actions.dart';
 import 'import_actions.dart';
+import '../domain/import_identity.dart';
 
 /// 应用容器负责创建导入会话，页面只提交已选目标和文件内容。
 final transferActionsFactoryProvider =
@@ -75,7 +75,8 @@ class TransferActions {
   List<models.CategoryDisplay> categories = [];
   List<FitnessExerciseDefinition> catalog = [];
   List<FitnessExerciseDefinition> _targetCatalog = [];
-  final categoryMapping = <models.ImportCategoryPath, String?>{};
+  final categoryMapping = <models.ImportCategorySource, String?>{};
+  String? targetCategoryScope;
   final exerciseMapping = <String, String?>{};
   bool requiresExistingCategories = false;
   String targetName = '';
@@ -95,8 +96,18 @@ class TransferActions {
       final ledger = await read(ledgerActionsProvider).getById(id);
       if (ledger == null || ledger.isArchived) throw StateError('导入目标不可用');
       targetName = ledger.name;
+      final categoryLedger = await read(
+        transferDataAccessProvider,
+      ).getLedgerById(id);
+      if (categoryLedger == null) throw StateError('导入账本归属不可用');
+      targetCategoryScope = ledgerCategorySourceScope(
+        ledgerId: ledger.id,
+        storageMode: ledger.storageMode,
+        ownerAccountId: categoryLedger.ownerAccountId,
+      );
       requiresExistingCategories =
-          ledger.memberCount > 1 && ledger.myRole != 'owner';
+          categoryLedger.storageMode == 'cloud' &&
+          categoryLedger.ownerAccountId != target.ledgerTarget!.accountId;
       categories = await read(
         categoryActionsProvider,
       ).filterForPicker(ledgerId: id, kind: 'expense', topLevelOnly: false);
@@ -138,34 +149,27 @@ class TransferActions {
     ]);
     sourceBookId = transferId([exportId, 'book']);
     if (kind == TransferKind.ledger) {
-      final paths = <models.ImportCategoryPath>{};
-      for (final row in mappedRows) {
-        final parent = transferText(row, 'category').trim();
-        final child = transferText(row, 'sub_category').trim();
-        if (parent.isEmpty) continue;
-        paths.add((
-          kind: 'expense',
-          parentName: child.isEmpty ? null : parent,
-          name: child.isEmpty ? parent : child,
-        ));
+      final fileHash = ledgerCategoryFileHash(mappedRows);
+      final sources = <models.ImportCategorySource>{};
+      for (var index = 0; index < mappedRows.length; index++) {
+        final source = ledgerImportCategorySource(
+          mappedRows[index],
+          fileHash: fileHash,
+          rowIndex: index,
+        );
+        if (source != null) sources.add(source);
       }
-      categoryMapping.removeWhere((key, _) => !paths.contains(key));
-      for (final path in paths) {
-        categoryMapping.putIfAbsent(path, () {
-          final found = categories
-              .where(
-                (c) =>
-                    c.kind == path.kind &&
-                    c.name == path.name &&
-                    (path.parentName == null
-                        ? c.parentId == null
-                        : categories.any(
-                            (p) =>
-                                p.id == c.parentId && p.name == path.parentName,
-                          )),
-              )
-              .toList();
-          return found.length == 1 ? found.single.id : null;
+      categoryMapping.removeWhere((key, _) => !sources.contains(key));
+      for (final source in sources) {
+        categoryMapping.putIfAbsent(source, () {
+          // 只有可验证的同目录来源身份可以自动对应；名字和图标仅供人工判断。
+          if (source.sourceScope != targetCategoryScope ||
+              source.sourceId == null) {
+            return null;
+          }
+          return categories.any((category) => category.id == source.sourceId)
+              ? source.sourceId
+              : null;
         });
       }
     }
@@ -227,7 +231,7 @@ class TransferActions {
   Future<void> buildPreview() async {
     final result = <TransferPreviewRow>[];
     final ledgerHash = kind == TransferKind.ledger
-        ? sha256.convert(utf8.encode(jsonEncode(mappedRows))).toString()
+        ? ledgerTransactionFileHash(mappedRows)
         : '';
     final groups = <String, List<int>>{};
     for (var i = 0; i < mappedRows.length; i++) {
@@ -280,9 +284,11 @@ class TransferActions {
               targetLedgerId: target.ledgerId!,
               mapping: {for (var c = 0; c < keys.length; c++) keys[c]: c},
               categoryMapping: categoryMapping,
+              requireExplicitMapping: true,
               skippedTypes: skipped,
               badRows: bad,
               sourceHash: ledgerHash,
+              categorySourceHash: ledgerCategoryFileHash(mappedRows),
               sourceIndices: [i],
             );
             if (skipped.isNotEmpty) throw const FormatException('类型：仅支持支出');
@@ -436,7 +442,13 @@ class TransferActions {
     if (target.ledgerId case final id?) {
       final ledger = await read(ledgerActionsProvider).getById(id);
       if (ledger == null || ledger.isArchived) throw StateError('导入目标不可用');
-      final restricted = ledger.memberCount > 1 && ledger.myRole != 'owner';
+      final categoryLedger = await read(
+        transferDataAccessProvider,
+      ).getLedgerById(id);
+      if (categoryLedger == null) throw StateError('导入账本归属不可用');
+      final restricted =
+          categoryLedger.storageMode == 'cloud' &&
+          categoryLedger.ownerAccountId != target.ledgerTarget!.accountId;
       var author = ledger.selfMemberId;
       // 缺 self 指针时统一走身份解析链（self_member_id → 绑定账号成员 → 按账本与
       // 账号派生）：云端本同样解析得出成员，不能因为入库顺序差异让整个导入失败。
@@ -455,7 +467,17 @@ class TransferActions {
       for (final row in selected) {
         final data = row.value as models.ImportData;
         for (final c in data.categories) {
-          categoriesByPath[jsonEncode([c.kind, c.parentName, c.name])] = c;
+          final key =
+              c.id ?? c.sourceKey ?? jsonEncode([c.kind, c.parentName, c.name]);
+          final previous = categoriesByPath[key];
+          if (previous != null &&
+              (previous.name != c.name ||
+                  previous.icon != c.icon ||
+                  previous.parentId != c.parentId ||
+                  previous.level != c.level)) {
+            throw StateError('同一来源分类包含不一致内容，请检查导入文件');
+          }
+          categoriesByPath[key] = c;
         }
         transactions.addAll(data.transactions);
       }

@@ -10,7 +10,6 @@ import 'package:sesame_notes/data/models/sync_issue.dart';
 import 'package:sesame_notes/data/models/transaction_split_input.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/data/repositories/local/local_category_repository.dart';
-import 'package:sesame_notes/data/repositories/support/category_clone.dart';
 import 'package:sesame_notes/data/repositories/support/category_scope.dart';
 import 'package:sesame_notes/domain/recurring_schedule.dart';
 import 'package:sesame_notes/infrastructure/account/auth_session.dart';
@@ -1228,31 +1227,40 @@ void main() {
     expect((await repo.getLedgerById(localBook))!.storageMode, 'local');
   });
 
-  test('转云同级同名不同UUID保留比较冲突并整体回滚成员、账本、分类与队列', () async {
+  test('转云同级同名不同UUID分别保留，原分类和账单身份不变', () async {
     final ledger = await localLedger();
     final localCategory = await localCategories.createCategory(
       name: '餐饮',
       kind: 'expense',
       recordChanges: false,
     );
-    await repo.createCategory(
+    final existingOwnCategory = await repo.createCategory(
       name: '餐饮',
       kind: 'expense',
       recordChanges: false,
     );
-    await repo.addTransaction(
+    final transactionId = await repo.addTransaction(
       ledgerId: ledger,
       type: 'expense',
       amount: '10',
       happenedAt: day,
       categoryId: localCategory,
     );
-    final before = await state();
-    await expectLater(
-      actions.promoteLocal(SyncTarget('ledger', ledger)),
-      throwsA(isA<CategoryCloneConflict>()),
-    );
-    expect(await state(), before);
+    final localBefore = await localCategories.getAllCategories();
+    await actions.promoteLocal(SyncTarget('ledger', ledger));
+    expect(await localCategories.getAllCategories(), localBefore);
+    final own = await (db.select(
+      db.categories,
+    )..where((c) => categoryScopePredicate(c, _account))).get();
+    expect(own.where((c) => c.name == '餐饮').map((c) => c.id).toSet(), {
+      localCategory,
+      existingOwnCategory,
+    });
+    final transaction = await (db.select(
+      db.transactions,
+    )..where((t) => t.id.equals(transactionId))).getSingle();
+    expect(transaction.categoryId, localCategory);
+    expect((await repo.getLedgerById(ledger))!.storageMode, 'cloud');
   });
 
   test('转云历史分类前置校验不能用另一账号同UUID替代缺失本地来源', () async {

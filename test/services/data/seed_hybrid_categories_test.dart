@@ -195,40 +195,12 @@ void main() {
     }
   });
 
-  test('hybrid 与 flat/hierarchical 模板的子集契约（翻译下标对齐前提）', () {
-    // 模板库"已添加"判定依赖：同一 key 同 level 的确定性 id 跨模板相同，
-    // 该契约由 category_template_logic.templateItemSyncId 与 seed 共用
-    // 相同分类键及层级使用同一确定性身份。
-    // 本测试锁定 hybrid 模板与 flat/hierarchical 常量的子集关系：
-    // hybrid 独立一级 ⊂ flat 一级（翻译复用 getTranslatedCategoryName 的前提）
+  test('默认初始化选择来自唯一模板树，保留独立的初始化顺序', () {
     for (final entry in SeedService.hybridCategoryTemplate) {
-      if (entry.children != null) continue; // 父子组不走 flat 翻译
-      expect(
-        SeedService.flatExpenseCategoryKeys.contains(entry.key),
-        isTrue,
-        reason: 'hybrid 独立一级 ${entry.key} 必须存在于 flat 清单（翻译/图标复用契约）',
-      );
-    }
-    // hybrid 父子组 ⊂ hierarchical（父 key 与子 key 都必须存在于 hierarchical
-    // 清单：翻译按 key 在 hierarchical map 中的真实下标查找，查不到会 fallback
-    // 成 snake_case key）。hybrid 内部顺序只决定 seed 的 sortOrder，不影响翻译。
-    for (final entry in SeedService.hybridCategoryTemplate) {
-      final children = entry.children;
-      if (children == null) continue; // 独立一级不走 hierarchical 翻译
-      final hierChildren = SeedService.hierarchicalExpenseCategories[entry.key];
-      expect(
-        hierChildren,
-        isNotNull,
-        reason: 'hybrid 父 ${entry.key} 必须存在于 hierarchical 清单',
-      );
-      for (final childKey in children) {
-        expect(
-          hierChildren!.contains(childKey),
-          isTrue,
-          reason:
-              'hybrid 子 $childKey 必须存在于 '
-              'hierarchical[${entry.key}]（翻译下标查找前提）',
-        );
+      final available = SeedService.categoryTemplates[entry.key];
+      expect(available, isNotNull);
+      for (final child in entry.children ?? <String>[]) {
+        expect(available, contains(child));
       }
     }
   });

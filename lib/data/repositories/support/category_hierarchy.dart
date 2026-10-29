@@ -7,7 +7,7 @@ class CategoryHierarchy {
   /// 仅父分类存在于一级列表的子分类可见。
   static List<Category> findOrphanCategories(List<Category> allCategories) {
     final topLevelIds = allCategories
-        .where((c) => c.level == 1 || c.parentId == null)
+        .where((c) => c.parentId == null)
         .map((c) => c.id)
         .toSet();
     return allCategories

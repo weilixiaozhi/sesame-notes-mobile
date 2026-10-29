@@ -1,5 +1,4 @@
 import 'package:sesame_notes/utils/text_validation.dart';
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,14 +42,6 @@ class _CategoryEditPageState extends ConsumerState<CategoryEditPage> {
   late final TextEditingController _nameController;
   String? _selectedIcon;
   bool _saving = false;
-  bool _isDuplicateName = false;
-  String? _duplicateErrorMessage;
-
-  /// 判重查询失败标志:失败时按「不可保存」保守处理,避免重名入库后被 repo 抛错。
-  bool _duplicateCheckFailed = false;
-  int _duplicateCheckGeneration = 0;
-  Timer? _debounceTimer;
-
   // 父分类相关状态
   db.CategoryDisplay? _selectedParentCategory;
   bool _parentLoading = false;
@@ -75,7 +66,7 @@ class _CategoryEditPageState extends ConsumerState<CategoryEditPage> {
     // 初始化父分类状态
     if (widget.category != null) {
       // 编辑模式：加载现有父分类
-      if (widget.category!.level == 2 && widget.category!.parentId != null) {
+      if (widget.category!.parentId != null) {
         _loadParentCategory(widget.category!.parentId!);
       }
       // 异步检查当前分类是否有子分类（决定所属分类行是否可点击）
@@ -84,14 +75,6 @@ class _CategoryEditPageState extends ConsumerState<CategoryEditPage> {
       // 创建二级分类模式：预设父分类
       _selectedParentCategory = widget.parentCategory;
     }
-
-    // 监听输入框文本变化，防抖500毫秒后检查重复
-    _nameController.addListener(() {
-      _debounceTimer?.cancel();
-      _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-        _checkNameDuplicate();
-      });
-    });
   }
 
   /// 异步加载当前编辑分类是否有子分类
@@ -146,77 +129,11 @@ class _CategoryEditPageState extends ConsumerState<CategoryEditPage> {
 
   @override
   void dispose() {
-    _debounceTimer?.cancel();
     _nameController.dispose();
     super.dispose();
   }
 
   bool get isEditing => widget.category != null;
-
-  /// 检查分类名称是否重复
-  Future<void> _checkNameDuplicate() async {
-    if (!mounted) return;
-    final generation = ++_duplicateCheckGeneration;
-    final rawName = _nameController.text;
-    final parentId = _selectedParentCategory?.id;
-    if (!isValidName(rawName)) {
-      setState(() {
-        _isDuplicateName = false;
-        _duplicateErrorMessage = null;
-        _duplicateCheckFailed = false;
-      });
-      return;
-    }
-
-    final name = normalizeName(rawName);
-    try {
-      final excludeId = isEditing ? widget.category!.id : null;
-
-      // 作用域判重:二级分类只和「同一父级下」的兄弟比,一级分类只和其他一级比。
-      // 跨父级允许同名(默认 seed 即有「购物>鞋子」「服装>鞋子」)。
-      final isDuplicate = await _actions.isNameDuplicate(
-        name: name,
-        kind: 'expense',
-        excludeId: excludeId,
-        // 以 _selectedParentCategory 是否为空判定子分类作用域
-        parentId: parentId,
-        ledgerId: widget.ledgerId,
-      );
-
-      if (mounted &&
-          generation == _duplicateCheckGeneration &&
-          _nameController.text == rawName &&
-          _selectedParentCategory?.id == parentId) {
-        setState(() {
-          _isDuplicateName = isDuplicate;
-          _duplicateCheckFailed = false;
-          if (isDuplicate) {
-            final l10n = AppLocalizations.of(context);
-            _duplicateErrorMessage = l10n.categoryNameDuplicate;
-          } else {
-            _duplicateErrorMessage = null;
-          }
-        });
-        // 触发表单验证更新
-        _formKey.currentState?.validate();
-      }
-    } catch (e, st) {
-      // 判重查询失败:禁用保存并提示,避免用户保存后被 repo 抛重名错误。
-      logger.error('CategoryEdit', '检查分类名称重复失败', e, st);
-      if (mounted &&
-          generation == _duplicateCheckGeneration &&
-          _nameController.text == rawName &&
-          _selectedParentCategory?.id == parentId) {
-        setState(() {
-          _duplicateCheckFailed = true;
-          _duplicateErrorMessage = AppLocalizations.of(
-            context,
-          ).commonOperationFailed;
-        });
-        _formKey.currentState?.validate();
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -264,14 +181,12 @@ class _CategoryEditPageState extends ConsumerState<CategoryEditPage> {
                       controller: _nameController,
                       decoration: InputDecoration(
                         hintText: l10n.categoryNameHint,
-                        errorText: _duplicateErrorMessage,
                       ),
                       maxLength: maxNameLength,
                       validator: (value) {
                         if (!isValidName(value ?? '')) {
                           return l10n.commonNameInvalid(maxNameLength);
                         }
-                        if (_isDuplicateName) return _duplicateErrorMessage;
                         return null;
                       },
                     ),
@@ -297,11 +212,7 @@ class _CategoryEditPageState extends ConsumerState<CategoryEditPage> {
           AppEditorFooter(
             label: l10n.commonSave,
             busy: _saving,
-            onPressed:
-                _isDuplicateName ||
-                    _duplicateCheckFailed ||
-                    _parentLoading ||
-                    _parentLoadFailed
+            onPressed: _parentLoading || _parentLoadFailed
                 ? null
                 : _saveCategory,
           ),
@@ -381,32 +292,14 @@ class _CategoryEditPageState extends ConsumerState<CategoryEditPage> {
         _selectedParentCategory,
         ledgerId: widget.ledgerId,
       );
-      // 在所属父分类范围内复核名称，查询期间保持按钮禁用。
       final actions = _actions;
       final name = normalizeName(_nameController.text);
-      final excludeId = isEditing ? widget.category!.id : null;
-      final isDuplicate = await actions.isNameDuplicate(
-        name: name,
-        kind: 'expense',
-        excludeId: excludeId,
-        parentId: _selectedParentCategory?.id,
-        ledgerId: widget.ledgerId,
-      );
-      if (!mounted) return;
-      if (isDuplicate) {
-        await _showSaveError(
-          AppLocalizations.of(context).categoryNameDuplicate,
-        );
-        return;
-      }
-      // 是否为子分类：有父分类 → level 2，无父分类 → level 1
-      final isSubCategory = _selectedParentCategory != null;
 
       if (isEditing) {
         // 编辑现有分类：parentId 空串表示清空父分类（二级降为一级）
         final placement = resolveCategoryPlacement(
           selectedParentId: _selectedParentCategory?.id,
-          currentLevel: widget.category!.level,
+          currentParentId: widget.category!.parentId,
         );
 
         await actions.update(
@@ -414,42 +307,21 @@ class _CategoryEditPageState extends ConsumerState<CategoryEditPage> {
           name: name,
           icon: _selectedIcon,
           ledgerId: widget.ledgerId,
-          parentId: placement.parentId,
-          level: placement.level,
+          parentId: placement,
         );
 
         if (!mounted) return;
         showToast(context, AppLocalizations.of(context).categoryUpdated(name));
       } else {
-        // 新建分类
-        if (isSubCategory) {
-          // 新建二级分类
-          await actions.createSub(
-            parentId: _selectedParentCategory!.id,
-            name: name,
-            kind: 'expense',
-            icon: _selectedIcon,
-            ledgerId: widget.ledgerId,
-          );
-          if (!mounted) return;
-          showToast(
-            context,
-            AppLocalizations.of(context).categorySubCategoryCreated(name),
-          );
-        } else {
-          // 新建一级分类
-          await actions.create(
-            name: name,
-            kind: 'expense',
-            icon: _selectedIcon,
-            ledgerId: widget.ledgerId,
-          );
-          if (!mounted) return;
-          showToast(
-            context,
-            AppLocalizations.of(context).categoryCreated(name),
-          );
-        }
+        await actions.create(
+          name: name,
+          kind: 'expense',
+          icon: _selectedIcon,
+          parentId: _selectedParentCategory?.id,
+          ledgerId: widget.ledgerId,
+        );
+        if (!mounted) return;
+        showToast(context, AppLocalizations.of(context).categoryCreated(name));
       }
 
       // 刷新分类列表
@@ -524,10 +396,6 @@ class _CategoryEditPageState extends ConsumerState<CategoryEditPage> {
         setState(() {
           _selectedParentCategory = selected;
         });
-        // 切换父分类后主动重跑判重:防抖只监听文本输入,不改名只切父时
-        // 按钮态仍停留在旧父级作用域,这里显式刷新一次。
-        _debounceTimer?.cancel();
-        _checkNameDuplicate();
       }
     } catch (error, stackTrace) {
       logger.error('CategoryEdit', '加载所属分类失败', error, stackTrace);

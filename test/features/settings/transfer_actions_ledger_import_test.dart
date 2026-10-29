@@ -3,6 +3,8 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 
 import 'package:sesame_notes/infrastructure/api/api_client_provider.dart';
 import 'package:sesame_notes/data/db.dart';
@@ -16,6 +18,7 @@ import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';
 import 'package:sesame_notes/shared/providers/local_self_id_providers.dart';
 import 'package:sesame_notes/utils/member_id.dart';
+import 'package:sesame_notes/features/settings/domain/import_identity.dart';
 
 import '../../helpers/test_isolation.dart';
 
@@ -123,9 +126,86 @@ void main() {
     );
     await session.prepare();
     session.map(table.detect(TransferKind.ledger));
+    if (!session.requiresExistingCategories) {
+      // 测试明确执行用户的新增选择，生产预览不会替用户自动决定。
+      for (final source in session.categoryMapping.keys) {
+        session.categoryMapping[source] ??= importCreateCategory;
+      }
+    }
     await session.buildPreview();
     return session;
   }
+
+  testWidgets('旧九字段CSV已导入记录升级后重开仍按原交易身份判重复', (tester) async {
+    await seedLedger('ledger-1', selfMemberId: 'self-member-1');
+    await pumpHarness(tester);
+    // 明确复刻发布版本的九字段顺序，不能用当前映射器生成预期值。
+    final oldRows = [
+      {
+        'date': '2026-01-01',
+        'type': '支出',
+        'amount': '12.50',
+        'currency': 'CNY',
+        'category': '餐饮',
+        'sub_category': null,
+        'category_icon': null,
+        'sub_category_icon': null,
+        'note': '午饭',
+      },
+      {
+        'date': '2026-01-02',
+        'type': '支出',
+        'amount': '20.00',
+        'currency': 'CNY',
+        'category': '交通',
+        'sub_category': null,
+        'category_icon': null,
+        'sub_category_icon': null,
+        'note': '地铁',
+      },
+    ];
+    final oldHash = sha256.convert(utf8.encode(jsonEncode(oldRows))).toString();
+    final ids = [
+      for (var i = 0; i < oldRows.length; i++)
+        csvImportSyncId(
+          targetLedgerId: 'ledger-1',
+          fileHash: oldHash,
+          rowIndex: i,
+        ),
+    ];
+    for (var i = 0; i < ids.length; i++) {
+      await db
+          .into(db.transactions)
+          .insert(
+            TransactionsCompanion.insert(
+              id: ids[i],
+              ledgerId: 'ledger-1',
+              txType: 'expense',
+              amount: i == 0 ? '12.5' : '20',
+              happenedAt: now,
+              currencyCode: 'CNY',
+              nativeAmount: i == 0 ? '12.5' : '20',
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+    }
+    await tester.runAsync(() async {
+      final session = await openSession(_csv, 'ledger-1');
+      expect(
+        session.preview.map(
+          (row) => (row.value as ImportData).transactions.single.syncId,
+        ),
+        ids,
+      );
+      expect(
+        session.preview.every((row) => row.duplicate && !row.selected),
+        isTrue,
+      );
+      expect(await db.select(db.transactions).get(), hasLength(2));
+      expect(await db.select(db.categories).get(), isEmpty);
+    });
+  });
 
   testWidgets('JSON同路径分组明细完整导入，重复内容保留且重开文件身份稳定', (tester) async {
     await seedLedger('ledger-1', selfMemberId: 'self-member-1');
@@ -267,6 +347,13 @@ void main() {
 
     final imported = await tester.runAsync(() async {
       final session = await openSession(_csv, 'ledger-1');
+      expect(session.requiresExistingCategories, isTrue);
+      for (final source in session.categoryMapping.keys) {
+        session.categoryMapping[source] = source.name == '餐饮'
+            ? 'owner-food'
+            : 'owner-travel';
+      }
+      await session.buildPreview();
       expect(
         session.preview.where((row) => row.error == null),
         hasLength(2),

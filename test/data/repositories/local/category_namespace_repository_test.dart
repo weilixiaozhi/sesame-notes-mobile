@@ -10,7 +10,6 @@ import 'package:sesame_notes/data/models/category_display.dart';
 import 'package:sesame_notes/data/repositories/contracts/accounting_repositories.dart';
 import 'package:sesame_notes/data/repositories/local/local_category_repository.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
-import 'package:sesame_notes/data/repositories/support/exceptions.dart';
 import 'package:sesame_notes/data/repositories/support/category_owner_guard.dart';
 import 'package:sesame_notes/features/categories/application/category_actions.dart';
 import 'package:sesame_notes/infrastructure/account/auth_session.dart';
@@ -148,7 +147,7 @@ void main() {
     expect(mutation.entityId, sameId);
   });
 
-  namespaceTest('历史同名不同ID各有记录时字段编辑保持原身份，改变语义仍严格判重', () async {
+  namespaceTest('同名分类字段编辑保持原身份和账单关联', () async {
     const second = '10000000-0000-4000-8000-000000000097';
     const conflict = '10000000-0000-4000-8000-000000000098';
     const ledger = 'own-history';
@@ -175,26 +174,21 @@ void main() {
     final originalIds = (await db.select(db.categories).get())
         .map((c) => (c.id, c.scopeAccountId))
         .toSet();
-    expect(
-      await accountA.isCategoryNameDuplicate(
-        name: 'A自己的分类',
-        kind: 'expense',
-        excludeId: second,
-      ),
-      isFalse,
-    );
+
     await accountA.updateCategory(sameId, icon: 'Utensils');
     await accountA.updateCategory(second, icon: 'Coffee');
     expect((await accountA.getCategoryById(sameId))!.icon, 'Utensils');
     expect((await accountA.getCategoryById(second))!.icon, 'Coffee');
     expect(await accountA.getTransactionCountByCategory(sameId), 1);
     expect(await accountA.getTransactionCountByCategory(second), 1);
-    await expectLater(
-      accountA.updateCategory(second, name: ' 餐饮 '),
-      throwsA(isA<DuplicateNameException>()),
+    await accountA.updateCategory(second, name: ' 餐饮 ');
+    expect((await accountA.getCategoryById(second))!.name, '餐饮');
+    expect(
+      (await db.select(db.transactions).get()).map(
+        (row) => (row.id, row.categoryId),
+      ),
+      originalTransactions.map((row) => (row.id, row.categoryId)),
     );
-    expect((await accountA.getCategoryById(second))!.name, '  A自己的分类  ');
-    expect(await db.select(db.transactions).get(), originalTransactions);
     expect(
       (await db.select(db.categories).get())
           .map((c) => (c.id, c.scopeAccountId))
@@ -207,7 +201,7 @@ void main() {
     );
   });
 
-  namespaceTest('上提子分类遇已有顶层同规范名时保留原树和记录，不能生成另一份类别', () async {
+  namespaceTest('同名子分类提升为一级时保留原身份', () async {
     const parent = '10000000-0000-4000-8000-000000000081';
     const child = '10000000-0000-4000-8000-000000000082';
     await row(parent, '其他分类', 'account-a');
@@ -225,15 +219,23 @@ void main() {
           ),
         );
     final original = await db.select(db.categories).get();
-    await expectLater(
-      accountA.promoteSubCategoriesToTopLevel(parent),
-      throwsA(isA<DuplicateNameException>()),
+    final children = original.where((row) => row.parentId == parent).toList();
+    await accountA.promoteSubCategoriesToTopLevel(parent);
+    for (final before in children) {
+      final after = (await accountA.getCategoryById(before.id))!;
+      expect(after.name, before.name);
+      expect(after.level, 1);
+      expect(after.parentId, isNull);
+    }
+    expect(
+      (await db.select(db.categories).get())
+          .map((row) => (row.id, row.scopeAccountId))
+          .toSet(),
+      original.map((row) => (row.id, row.scopeAccountId)).toSet(),
     );
-    expect(await db.select(db.categories).get(), original);
-    expect(await db.select(db.syncChanges).get(), isEmpty);
   });
 
-  namespaceTest('历史同名兄弟上提不能任意选择合并或改名，整个树事务保留', () async {
+  namespaceTest('同名兄弟上提后分别保留身份与名称', () async {
     const parent = '10000000-0000-4000-8000-000000000083';
     await row(parent, '历史父分类', 'account-a');
     for (final child in [
@@ -255,15 +257,23 @@ void main() {
           );
     }
     final original = await db.select(db.categories).get();
-    await expectLater(
-      accountA.promoteSubCategoriesToTopLevel(parent),
-      throwsA(isA<DuplicateNameException>()),
+    final children = original.where((row) => row.parentId == parent).toList();
+    await accountA.promoteSubCategoriesToTopLevel(parent);
+    for (final before in children) {
+      final after = (await accountA.getCategoryById(before.id))!;
+      expect(after.name, before.name);
+      expect(after.level, 1);
+      expect(after.parentId, isNull);
+    }
+    expect(
+      (await db.select(db.categories).get())
+          .map((row) => (row.id, row.scopeAccountId))
+          .toSet(),
+      original.map((row) => (row.id, row.scopeAccountId)).toSet(),
     );
-    expect(await db.select(db.categories).get(), original);
-    expect(await db.select(db.syncChanges).get(), isEmpty);
   });
 
-  namespaceTest('本地默认根ID曾改为子分类后恢复，按实际复活语义拒绝同父重名', () async {
+  namespaceTest('冻结批量重试不复活历史墓碑也不改写原父身份', () async {
     final templateId = defaultCategoryId(level: 1, key: 'sports');
     const parent = '10000000-0000-4000-8000-000000000086';
     const existingChild = '10000000-0000-4000-8000-000000000087';
@@ -283,23 +293,28 @@ void main() {
             ),
           );
     }
-    final original = await db.select(db.categories).get();
     final local = LocalCategoryRepository(
       db,
       accountIdGetter: () => 'account-a',
       categoryScopeId: '',
     );
     expect(
-      await local.insertCanonicalCategory(
-        id: templateId,
-        name: '运动',
-        kind: 'expense',
-        level: 1,
-        restoreLocalDeleted: true,
+      await local.createCategoryBatch(
+        items: [CategoryCreateDraft(id: templateId, name: '运动')],
       ),
-      CanonicalCategoryInsertResult.nameConflict,
+      0,
     );
-    expect(await db.select(db.categories).get(), original);
+    expect(await local.getCategoryById(templateId), isNull);
+    final tombstone =
+        await (db.select(db.categories)..where(
+              (c) => c.id.equals(templateId) & c.scopeAccountId.equals(''),
+            ))
+            .getSingle();
+    expect(tombstone.parentId, parent);
+    expect(tombstone.deletedAt, isNotNull);
+    expect((await local.getSubCategories(parent)).map((row) => row.id), [
+      existingChild,
+    ]);
     expect(await db.select(db.syncChanges).get(), isEmpty);
   });
 
@@ -480,141 +495,74 @@ void main() {
         name: '错误子分类',
         kind: 'expense',
       ),
-      throwsStateError,
+      throwsA(isA<CategoryParentUnavailableException>()),
     );
     expect(await accountB.getCategoryById(privateId), isNull);
     expect((await accountA.getCategoryById(privateId))!.name, 'A私有父分类');
     expect(await db.select(db.syncChanges).get(), isEmpty);
   });
 
-  namespaceTest('另一账号同名不阻止自定义创建，同账号重复创建不新增实体', () async {
-    await accountA.createCategory(name: '餐饮', kind: 'expense');
+  namespaceTest('同名分类在各账号内独立创建且不跨域认领', () async {
+    final a = await accountA.createCategory(name: '餐饮', kind: 'expense');
     final b = await accountB.createCategory(name: '餐饮', kind: 'expense');
-    await expectLater(
-      accountB.createCategory(name: ' 餐饮 ', kind: 'expense'),
-      throwsA(isA<DuplicateNameException>()),
+    final second = await accountB.createCategory(name: ' 餐饮 ', kind: 'expense');
+    expect({a, b, second}, hasLength(3));
+    expect(
+      (await accountB.getAllCategories())
+          .where((row) => row.name == '餐饮')
+          .map((row) => row.id)
+          .toSet(),
+      {b, second},
     );
-    final dining = (await accountB.getAllCategories())
-        .where((c) => c.name == '餐饮')
-        .toList();
-    expect(dining.map((c) => c.id), [b]);
+    expect(await accountB.getCategoryById(a), isNull);
   });
 
-  namespaceTest('并发规范同名upsert复用一个原实体，不选择不同父级的同名子类', () async {
+  namespaceTest('并发主动创建同名分类为每次操作保留独立ID', () async {
     final results = await Future.wait(
       List.generate(
         8,
-        (i) => accountA.upsertCategory(
-          name: i.isEven ? '餐饮' : ' 餐饮 ',
+        (index) => accountA.createCategory(
+          name: index.isEven ? '餐饮' : ' 餐饮 ',
           kind: 'expense',
         ),
       ),
     );
-    expect(results.map((r) => r.id).toSet(), hasLength(1));
+    expect(results.toSet(), hasLength(8));
     expect(
-      (await accountA.getAllCategories()).where((c) => c.name == '餐饮'),
-      hasLength(1),
-    );
-    final firstParent = await accountA.createCategory(
-      name: '购物',
-      kind: 'expense',
-    );
-    final secondParent = await accountA.createCategory(
-      name: '服饰',
-      kind: 'expense',
-    );
-    final firstChild = await accountA.createSubCategory(
-      parentId: firstParent,
-      name: '其他',
-      kind: 'expense',
-    );
-    final secondChild = await accountA.createSubCategory(
-      parentId: secondParent,
-      name: '其他',
-      kind: 'expense',
-    );
-    expect(firstChild, isNot(secondChild));
-    expect(
-      (await accountA.getSubCategories(firstParent)).single.id,
-      firstChild,
-    );
-    expect(
-      (await accountA.getSubCategories(secondParent)).single.id,
-      secondChild,
-    );
-    await expectLater(
-      accountA.upsertCategory(name: '其他', kind: 'expense'),
-      throwsStateError,
-    );
-    expect(
-      (await accountA.getAllCategories()).where((c) => c.name == '其他'),
-      hasLength(2),
+      (await accountA.getAllCategories()).where((row) => row.name == '餐饮'),
+      hasLength(8),
     );
   });
 
-  namespaceTest('默认模板与同账号自定义同名冲突不创建额外餐饮也不改原引用', () async {
+  namespaceTest('普通批量身份与同名自定义并存，重放只登记一次原身份', () async {
     const custom = '10000000-0000-4000-8000-000000000002';
     await row(custom, ' 餐饮 ', 'account-a');
-    final officialId = defaultCategoryId(level: 1, key: 'dining');
+    final id = defaultCategoryId(level: 1, key: 'dining');
     for (var i = 0; i < 4; i++) {
       expect(
-        await accountA.insertCanonicalCategory(
-          id: officialId,
-          name: '餐饮',
-          kind: 'expense',
-          level: 1,
+        await accountA.createCategoryBatch(
+          items: [CategoryCreateDraft(id: id, name: '餐饮')],
         ),
-        CanonicalCategoryInsertResult.nameConflict,
+        i == 0 ? 1 : 0,
       );
     }
-    expect(await accountA.getCategoryById(officialId), isNull);
+    expect((await accountA.getCategoryById(id))!.name, '餐饮');
     expect((await accountA.getCategoryById(custom))!.name, ' 餐饮 ');
-    expect(await db.select(db.syncChanges).get(), isEmpty);
-  });
-
-  namespaceTest('重复默认模板按固定身份完成一次，重试不新建额外类别或mutation', () async {
-    final officialId = defaultCategoryId(level: 1, key: 'dining');
-    expect(
-      await accountA.insertCanonicalCategory(
-        id: officialId,
-        name: '餐饮',
-        kind: 'expense',
-        level: 1,
-      ),
-      CanonicalCategoryInsertResult.created,
-    );
-    for (var i = 0; i < 5; i++) {
-      expect(
-        await accountA.insertCanonicalCategory(
-          id: officialId,
-          name: '餐饮',
-          kind: 'expense',
-          level: 1,
-        ),
-        CanonicalCategoryInsertResult.unchanged,
-      );
-    }
-    expect(
-      (await accountA.getAllCategories())
-          .where((c) => c.name == '餐饮')
-          .map((c) => c.id),
-      [officialId],
-    );
-    expect((await db.select(db.syncChanges).get()).map((c) => c.entityId), [
-      officialId,
+    expect((await db.select(db.syncChanges).get()).map((row) => row.entityId), [
+      id,
     ]);
   });
 
-  namespaceTest('已有同账号历史重复只报告冲突，不合并删除或创建修复类别', () async {
+  namespaceTest('新增同名分类不修改已有同名记录', () async {
     await row('10000000-0000-4000-8000-000000000003', '餐饮', 'account-a');
     await row('10000000-0000-4000-8000-000000000004', ' 餐饮 ', 'account-a');
     final before = await db.select(db.categories).get();
-    await expectLater(
-      accountA.upsertCategory(name: '餐饮', kind: 'expense'),
-      throwsStateError,
-    );
-    expect(await db.select(db.categories).get(), before);
-    expect(await db.select(db.syncChanges).get(), isEmpty);
+    final created = await accountA.createCategory(name: '餐饮', kind: 'expense');
+    final after = await db.select(db.categories).get();
+    expect(after.where((row) => row.id != created).toList(), before);
+    expect((await db.select(db.syncChanges).get()).map((row) => row.entityId), [
+      created,
+    ]);
   });
 
   namespaceTest('登录期间本地账本新建分类仍在纯本地域，不借当前账号上云', () async {

@@ -1,4 +1,7 @@
 import 'package:sesame_notes/shared/application/provider_reader.dart';
+import 'package:sesame_notes/data/models.dart'
+    show ImportCategorySource, importCreateCategory;
+import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/features/fitness/presentation/widgets/fitness_exercise_media.dart'
     show fitnessExerciseName;
 import 'package:sesame_notes/shared/widgets/app_form_section.dart';
@@ -495,6 +498,74 @@ class _ImportConfirmPageState extends ConsumerState<ImportConfirmPage> {
     );
   }
 
+  /// 分类映射按真实目标 ID 选择，图标和父路径帮助区分同名分类。
+  Widget _categorySelection(
+    TransferActions session,
+    ImportCategorySource source,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    final value = session.categoryMapping[source];
+    final choices = <String, String>{
+      '': l10n.transferSelectCategory,
+      if (!session.requiresExistingCategories && source.name.isNotEmpty)
+        importCreateCategory: l10n.categoryNewTitle,
+      for (final category in session.categories)
+        category.id: [
+          if (category.parentId != null)
+            session.categories
+                    .where((p) => p.id == category.parentId)
+                    .firstOrNull
+                    ?.name ??
+                '',
+          category.name,
+        ].join(' > '),
+    };
+    return AppSelectionField(
+      title: choices[value ?? ''] ?? l10n.transferSelectCategory,
+      isPlaceholder: value == null,
+      enabled: !busy,
+      onTap: () async {
+        try {
+          final selected = await showAppSheet<String>(
+            context: context,
+            child: AppSheet(
+              title: l10n.importConfirmMapping,
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final entry in choices.entries)
+                    AppRadioTile<String>(
+                      title: entry.value,
+                      selected: entry.key == (value ?? ''),
+                      leading: session.categories.any((c) => c.id == entry.key)
+                          ? CategoryIconWidget(
+                              iconName: session.categories
+                                  .firstWhere((c) => c.id == entry.key)
+                                  .icon,
+                              size: AppDimens.icon22,
+                            )
+                          : null,
+                      onTap: () => Navigator.pop(context, entry.key),
+                    ),
+                ],
+              ),
+            ),
+          );
+          if (mounted && !busy && selected != null) {
+            setState(
+              () => session.categoryMapping[source] = selected.isEmpty
+                  ? null
+                  : selected,
+            );
+          }
+        } catch (error, stack) {
+          logger.error('ImportConfirm', '选择导入分类失败', error, stack);
+          if (mounted) showToast(context, l10n.commonOperationFailed);
+        }
+      },
+    );
+  }
+
   Widget _matching(TransferActions session) {
     final l10n = AppLocalizations.of(context);
     return ListView(
@@ -502,32 +573,19 @@ class _ImportConfirmPageState extends ConsumerState<ImportConfirmPage> {
       children: [
         for (final path in session.categoryMapping.keys)
           AppFormSection(
-            title: [
-              if (path.parentName != null) path.parentName!,
-              path.name,
-            ].join(' > '),
-            child: _selection(
-              session.categoryMapping[path] ?? '',
-              {
-                '': session.requiresExistingCategories
-                    ? l10n.transferSelectCategory
-                    : l10n.importKeepOriginalName,
-                for (final category in session.categories)
-                  category.id: [
-                    if (category.parentId != null)
-                      session.categories
-                              .where((p) => p.id == category.parentId)
-                              .firstOrNull
-                              ?.name ??
-                          '',
-                    category.name,
+            title: path.sourceId == null
+                ? l10n.transferRecord(
+                    '${session.table.lineNumbers[path.rowIndex]}',
+                    [
+                      if (path.parentName != null) path.parentName!,
+                      path.name,
+                    ].join(' > '),
+                  )
+                : [
+                    if (path.parentName != null) path.parentName!,
+                    path.name,
                   ].join(' > '),
-              },
-              (value) => setState(
-                () =>
-                    session.categoryMapping[path] = value == '' ? null : value,
-              ),
-            ),
+            child: _categorySelection(session, path),
           ),
         for (final source in session.exerciseMapping.keys)
           AppFormSection(

@@ -824,7 +824,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String categorySubCategoryCreated(Object name) {
-    return '已添加二级分类：$name';
+    return '已添加子分类：$name';
   }
 
   @override
@@ -837,89 +837,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get categorySelectParentTitle => '选择所属分类';
 
   @override
-  String get categoryHasSubCategories => '此分类包含二级分类，无法修改';
+  String get categoryHasSubCategories => '此分类包含子分类，无法更改所属分类';
 
   @override
   String get categorySearchCategory => '搜索分类';
 
   @override
-  String get categoryTopLevelLabel => '一级分类';
+  String get categoryTopLevelLabel => '分类';
 
   @override
-  String get categorySecondLevelLabel => '二级分类';
-
-  @override
-  String get categoryExpenseList =>
-      '餐饮-交通-购物-娱乐-居家-家庭-通讯-水电-住房-医疗-教育-宠物-运动-数码-旅行-烟酒-母婴-美容-维修-社交-学习-汽车-打车-地铁-外卖-物业-停车-捐赠-送礼-纳税-饮料-服装-零食-发红包-水果-游戏-书籍-爱人-装修-日用品-彩票-股票-社保-快递-工作-转账-其他';
-
-  @override
-  String get categoryExpenseDining => '餐饮-早餐-午餐-晚餐-美团外卖-饿了么外卖-京东外卖-餐厅-美食';
-
-  @override
-  String get categoryExpenseSnacks => '零食-饼干-薯片-糖果-巧克力-坚果';
-
-  @override
-  String get categoryExpenseFruit => '水果-苹果-香蕉-橙子-葡萄-西瓜-其他水果';
-
-  @override
-  String get categoryExpenseBeverage => '饮料-奶茶-咖啡-果汁-汽水-矿泉水';
-
-  @override
-  String get categoryExpensePastry => '糕点-蛋糕-面包-甜点-曲奇';
-
-  @override
-  String get categoryExpenseCooking => '做饭食材-蔬菜-肉类-水产-调料-粮油';
-
-  @override
-  String get categoryExpenseShopping => '购物-超市-日用百货-服装-鞋子-包包';
-
-  @override
-  String get categoryExpensePets => '宠物-宠物食品-宠物用品-宠物医疗-宠物美容';
-
-  @override
-  String get categoryExpenseTransport => '交通-交通卡充值-打车-停车费-加油';
-
-  @override
-  String get categoryExpenseCar => '汽车-汽车保养-汽车维修-汽车保险-洗车-违章罚款';
-
-  @override
-  String get categoryExpenseClothing => '服装-上衣-裤子-裙子-鞋子-服饰配件';
-
-  @override
-  String get categoryExpenseDailyGoods => '日用品-洗护用品-纸品-清洁用品-厨房用品';
-
-  @override
-  String get categoryExpenseEducation => '教育-学费-培训费-书籍-文具-办公用品-学习';
-
-  @override
-  String get categoryExpenseInvestLoss => '投资亏损-股票亏损-基金亏损-其他投资亏损';
-
-  @override
-  String get categoryExpenseEntertainment => '娱乐-电影-KTV-游乐场-酒吧-其他娱乐';
-
-  @override
-  String get categoryExpenseGame => '游戏-游戏充值-游戏装备-游戏会员';
-
-  @override
-  String get categoryExpenseHealthProducts => '保健品-维生素-保健食品-营养品';
-
-  @override
-  String get categoryExpenseSubscription => '订阅服务-视频会员-音乐会员-云存储-其他订阅';
-
-  @override
-  String get categoryExpenseSports => '运动-健身房-运动装备-运动课程-户外活动';
-
-  @override
-  String get categoryExpenseHousing => '住房-水电煤-物业费-房租-房贷-装修-宽带';
-
-  @override
-  String get categoryExpenseHome => '居家-家具-家电-装饰品-床上用品';
-
-  @override
-  String get categoryExpenseBeauty => '美容-护肤品-化妆品-剪发-美甲';
-
-  @override
-  String get categoryExpenseTransfer => '转账-生活费-家庭-父母-恋人-借钱';
+  String get categorySecondLevelLabel => '子分类';
 
   @override
   String get appearanceThemeMode => '显示模式';
@@ -1080,18 +1007,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get categoryTemplateEntryFlat => '一级模板';
-
-  @override
-  String get categoryTemplateEntryHierarchical => '二级模板';
-
-  @override
-  String get categoryTemplateFlatTitle => '一级分类模板';
-
-  @override
-  String get categoryTemplateHierarchicalTitle => '二级分类模板';
-
-  @override
   String categoryTemplateSelectedCount(int count) {
     return '本次已勾选 $count 项';
   }
@@ -1101,12 +1016,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get categoryTemplateDeselectAll => '取消全选';
-
-  @override
-  String get categoryTemplateAlreadyAdded => '已添加';
-
-  @override
-  String get categoryTemplateAlreadyAddedHint => '已添加的分类会保持勾选，不能取消';
 
   @override
   String get categoryTemplateConfirmTitle => '确认添加';
@@ -1119,16 +1028,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String categoryTemplateAddSuccess(int count) {
     return '已添加 $count 个分类';
-  }
-
-  @override
-  String categoryTemplateAddFailed(String error) {
-    return '添加失败：$error';
-  }
-
-  @override
-  String categoryTemplatePartiallyCompleted(String completed) {
-    return '$completed\n剩余分类未处理完成，请重试。';
   }
 
   @override
@@ -1175,25 +1074,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get categorySortSaveFailed => '排序保存失败，请重试';
 
   @override
-  String get categoryDeleteOptionAll => '删除分类和分类下的所有数据（含二级）';
+  String get categoryDeleteOptionAll => '删除分类及其全部子分类和数据';
 
   @override
   String get categoryDeleteOptionMigrate => '删除分类及其子分类并迁移所有数据到其他分类';
 
   @override
-  String get categoryDeleteOptionPromote => '删除分类和分类下的所有数据（不含二级分类，二级分类将变为一级分类）';
+  String get categoryDeleteOptionPromote => '删除分类及其直接数据，子分类及其数据独立保留';
 
   @override
   String get categoryDeleteSelectedTitle => '删除选中的分类';
 
   @override
   String categoryDeleteSelectedSubtitleWithSub(int count) {
-    return '确定要删除 $count 个选中分类并且清空分类下的数据吗？（包含二级分类和数据）此操作无法撤销。';
+    return '确定要删除 $count 个选中分类并且清空分类下的数据吗？（包含子分类和数据）此操作无法撤销。';
   }
 
   @override
   String categoryDeleteSelectedSubtitleWithoutSub(int count) {
-    return '确定要删除 $count 个选中分类并且清空分类下的数据吗？（不含二级分类和数据）此操作无法撤销。';
+    return '确定要删除 $count 个选中分类并且清空分类下的数据吗？（不含子分类和数据）此操作无法撤销。';
   }
 
   @override
@@ -1204,7 +1103,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String categoryMigrateChildLabel(Object parent) {
-    return '二级 · $parent';
+    return '所属：$parent';
   }
 
   @override
@@ -1278,7 +1177,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportCsvHeaderCategory => '分类';
 
   @override
-  String get exportCsvHeaderSubCategory => '二级分类';
+  String get exportCsvHeaderSubCategory => '子分类';
 
   @override
   String get exportCsvHeaderAmount => '金额';
@@ -4326,8 +4225,8 @@ class AppLocalizationsZh extends AppLocalizations {
       'fstart_is_leap_month': '开始闰月',
       'fstatistic_type': '统计方式',
       'fstatus': '状态',
-      'fsub_category': '二级分类',
-      'fsub_category_icon': '二级分类图标',
+      'fsub_category': '子分类',
+      'fsub_category_icon': '子分类图标',
       'ftitle': '标题',
       'ftype': '类型',
       'fupdated_at': '修改时间',
@@ -4587,24 +4486,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get categoryConflictChooseLocal => '采用已提交的本地版本？之后的本机编辑会单独保留，等待继续同步。';
 
   @override
-  String get categoryTemplateRestoreTitle => '恢复原分类';
-
-  @override
   String get recurringTransactionTimeZone => '记账时区';
 
   @override
   String get categoryConflictSubmitted => '已提交的本地版本';
 
   @override
-  String categoryTemplateRestoreMessage(String names) {
-    return '以下模板对应的原分类曾被删除：\n$names\n是否恢复原分类及原有设置？不会创建第二个分类，也不会恢复已删除的交易。';
-  }
-
-  @override
   String get recurringTransactionTimeZoneInvalid => '请选择有效的 IANA 时区';
-
-  @override
-  String get categoryTemplateRestoreConfirm => '恢复原分类';
 
   @override
   String get categoryConflictRefreshRequired => '版本信息尚未就绪，请先重新读取。';
@@ -4624,9 +4512,6 @@ class AppLocalizationsZh extends AppLocalizations {
       '已生成过交易，不能更改时区；如需调整，请新建周期规则。';
 
   @override
-  String get categoryTemplatePendingLabel => '等待确认';
-
-  @override
   String get categoryConflictRetry => '重试确认';
 
   @override
@@ -4635,9 +4520,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get categoryConflictChooseCloud =>
       '采用所示云端版本？本次冲突的本地提交将不再应用，之后的本机编辑会单独保留。';
-
-  @override
-  String get categoryTemplateNoChanges => '没有新增或恢复分类';
 
   @override
   String get categoryConflictDeleteTitle => '确认删除分类';
@@ -4649,19 +4531,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get categoryConflictUnavailable => '此版本内容暂不可读，请重新读取。';
 
   @override
-  String get categoryTemplateBlockedParentHierarchy => '原父分类的层级已改变，不能添加此子分类';
-
-  @override
-  String get categoryTemplateBlockedDuplicate => '同名分类已存在，未添加此模板';
-
-  @override
   String get categoryConflictChanged => '分类版本已变化，请重新比较后确认。';
 
   @override
   String get categoryConflictUseLocal => '采用本地版本';
-
-  @override
-  String get categoryTemplateBlockedParentDuplicate => '同名父分类已存在，未添加此模板';
 
   @override
   String categoryConflictPosition(String value) {
@@ -4673,9 +4546,6 @@ class AppLocalizationsZh extends AppLocalizations {
       '云端已删除此分类。是否按已提交的本地版本恢复同一分类？不会创建第二个分类。';
 
   @override
-  String get categoryTemplateBlockedLabel => '未添加';
-
-  @override
   String get categoryConflictRestore => '确认恢复';
 
   @override
@@ -4685,11 +4555,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get categoryConflictRefresh => '重新读取';
 
   @override
-  String categoryTemplatePending(int count) {
-    return '$count 个分类等待云端确认，请到同步处理查看';
-  }
-
-  @override
   String get recurringTransactionIntervalInvalid => '间隔须为 1 到 10000 的整数。';
 
   @override
@@ -4697,11 +4562,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get recurringTransactionMonthOfYear => '每年第几个月';
-
-  @override
-  String categoryTemplateRestored(int count) {
-    return '已恢复 $count 个原分类';
-  }
 
   @override
   String get recurringTransactionTimeZoneHint => '按此时区的日历日期生成，各设备保持一致。';
@@ -4808,6 +4668,534 @@ class AppLocalizationsZh extends AppLocalizations {
   String syncCenterLastFailure(String reason) {
     return '上次同步未完成：$reason';
   }
+
+  @override
+  String get categoryTemplateLibraryTitle => '分类模板库';
+
+  @override
+  String get categoryTemplateCreateMode => '新建分类';
+
+  @override
+  String get categoryTemplateAppendMode => '添加到已有分类';
+
+  @override
+  String get categoryTemplateCreateHint => '选择分类可单独创建，展开后可按需选择子分类。';
+
+  @override
+  String get categoryTemplateAppendHint => '先选择所属分类，勾选的每一项都会添加到它下面。';
+
+  @override
+  String get categoryTemplateChooseTarget => '选择所属分类';
+
+  @override
+  String get categoryTemplateNoChildren => '无子分类';
+
+  @override
+  String get categoryTemplateShowChildren => '展开或收起子分类';
+
+  @override
+  String categoryTemplateChildrenCount(int selected, int total) {
+    return '子分类 $selected/$total 已选';
+  }
+
+  @override
+  String categoryTemplateAppendConfirm(int count, String name) {
+    return '将 $count 个子分类添加到「$name」？';
+  }
+
+  @override
+  String get categoryTemplateRetryHint => '添加尚未完成，请重试本次操作。';
+
+  @override
+  String get categoryTemplatePersonalScope => '添加到我的分类目录';
+
+  @override
+  String get categoryTemplateScopeChanged => '账号或账本已变化，请返回后重新打开模板库。';
+
+  @override
+  String get categoryTemplateTargetUnavailable => '所属分类已不可用，请重新选择。';
+
+  @override
+  String categoryTemplateChildCount(int count) {
+    return '$count 项子分类';
+  }
+
+  @override
+  String get categoryNameDining => '餐饮';
+
+  @override
+  String get categoryNameDiningBreakfast => '早餐';
+
+  @override
+  String get categoryNameDiningLunch => '午餐';
+
+  @override
+  String get categoryNameDiningDinner => '晚餐';
+
+  @override
+  String get categoryNameDiningMeituan => '美团外卖';
+
+  @override
+  String get categoryNameDiningEleme => '饿了么外卖';
+
+  @override
+  String get categoryNameDiningJd => '京东外卖';
+
+  @override
+  String get categoryNameDiningRestaurant => '餐厅';
+
+  @override
+  String get categoryNameDiningFood => '美食';
+
+  @override
+  String get categoryNameTransport => '交通';
+
+  @override
+  String get categoryNameTransportTransitcard => '交通卡充值';
+
+  @override
+  String get categoryNameTransportTaxi => '打车';
+
+  @override
+  String get categoryNameTransportParking => '停车费';
+
+  @override
+  String get categoryNameTransportFuel => '加油';
+
+  @override
+  String get categoryNameShopping => '购物';
+
+  @override
+  String get categoryNameShoppingSupermarket => '超市';
+
+  @override
+  String get categoryNameShoppingDaily => '日用百货';
+
+  @override
+  String get categoryNameShoppingClothing => '服装';
+
+  @override
+  String get categoryNameShoppingShoes => '鞋子';
+
+  @override
+  String get categoryNameShoppingBag => '包包';
+
+  @override
+  String get categoryNameEntertainment => '娱乐';
+
+  @override
+  String get categoryNameEntertainmentMovie => '电影';
+
+  @override
+  String get categoryNameEntertainmentKtv => 'KTV';
+
+  @override
+  String get categoryNameEntertainmentAmusement => '游乐场';
+
+  @override
+  String get categoryNameEntertainmentBar => '酒吧';
+
+  @override
+  String get categoryNameEntertainmentOther => '其他娱乐';
+
+  @override
+  String get categoryNameHome => '居家';
+
+  @override
+  String get categoryNameHomeFurniture => '家具';
+
+  @override
+  String get categoryNameHomeAppliance => '家电';
+
+  @override
+  String get categoryNameHomeDecor => '装饰品';
+
+  @override
+  String get categoryNameHomeBedding => '床上用品';
+
+  @override
+  String get categoryNameFamily => '家庭';
+
+  @override
+  String get categoryNameCommunication => '通讯';
+
+  @override
+  String get categoryNameUtilities => '水电';
+
+  @override
+  String get categoryNameHousing => '住房';
+
+  @override
+  String get categoryNameHousingUtilities => '水电煤';
+
+  @override
+  String get categoryNameHousingProperty => '物业费';
+
+  @override
+  String get categoryNameHousingRent => '房租';
+
+  @override
+  String get categoryNameHousingMortgage => '房贷';
+
+  @override
+  String get categoryNameHousingDecoration => '装修';
+
+  @override
+  String get categoryNameHousingBroadband => '宽带';
+
+  @override
+  String get categoryNameMedical => '医疗';
+
+  @override
+  String get categoryNameEducation => '教育';
+
+  @override
+  String get categoryNameEducationTuition => '学费';
+
+  @override
+  String get categoryNameEducationTraining => '培训费';
+
+  @override
+  String get categoryNameEducationBooks => '书籍';
+
+  @override
+  String get categoryNameEducationStationery => '文具';
+
+  @override
+  String get categoryNameEducationOffice => '办公用品';
+
+  @override
+  String get categoryNameEducationLearning => '学习';
+
+  @override
+  String get categoryNamePets => '宠物';
+
+  @override
+  String get categoryNamePetsFood => '宠物食品';
+
+  @override
+  String get categoryNamePetsSupplies => '宠物用品';
+
+  @override
+  String get categoryNamePetsMedical => '宠物医疗';
+
+  @override
+  String get categoryNamePetsGrooming => '宠物美容';
+
+  @override
+  String get categoryNameSports => '运动';
+
+  @override
+  String get categoryNameSportsGym => '健身房';
+
+  @override
+  String get categoryNameSportsEquipment => '运动装备';
+
+  @override
+  String get categoryNameSportsCourse => '运动课程';
+
+  @override
+  String get categoryNameSportsOutdoor => '户外活动';
+
+  @override
+  String get categoryNameDigital => '数码';
+
+  @override
+  String get categoryNameTravel => '旅行';
+
+  @override
+  String get categoryNameAlcoholTobacco => '烟酒';
+
+  @override
+  String get categoryNameBabyCare => '母婴';
+
+  @override
+  String get categoryNameBeauty => '美容';
+
+  @override
+  String get categoryNameBeautySkincare => '护肤品';
+
+  @override
+  String get categoryNameBeautyCosmetics => '化妆品';
+
+  @override
+  String get categoryNameBeautySalon => '剪发';
+
+  @override
+  String get categoryNameBeautyNail => '美甲';
+
+  @override
+  String get categoryNameRepair => '维修';
+
+  @override
+  String get categoryNameSocial => '社交';
+
+  @override
+  String get categoryNameLearning => '学习';
+
+  @override
+  String get categoryNameCar => '汽车';
+
+  @override
+  String get categoryNameCarMaintenance => '汽车保养';
+
+  @override
+  String get categoryNameCarRepair => '汽车维修';
+
+  @override
+  String get categoryNameCarInsurance => '汽车保险';
+
+  @override
+  String get categoryNameCarWash => '洗车';
+
+  @override
+  String get categoryNameCarFine => '违章罚款';
+
+  @override
+  String get categoryNameTaxi => '打车';
+
+  @override
+  String get categoryNameSubway => '地铁';
+
+  @override
+  String get categoryNameDelivery => '外卖';
+
+  @override
+  String get categoryNameProperty => '物业';
+
+  @override
+  String get categoryNameParking => '停车';
+
+  @override
+  String get categoryNameDonation => '捐赠';
+
+  @override
+  String get categoryNameGift => '送礼';
+
+  @override
+  String get categoryNameTax => '纳税';
+
+  @override
+  String get categoryNameBeverage => '饮料';
+
+  @override
+  String get categoryNameBeverageMilkTea => '奶茶';
+
+  @override
+  String get categoryNameBeverageCoffee => '咖啡';
+
+  @override
+  String get categoryNameBeverageJuice => '果汁';
+
+  @override
+  String get categoryNameBeverageSoda => '汽水';
+
+  @override
+  String get categoryNameBeverageWater => '矿泉水';
+
+  @override
+  String get categoryNameClothing => '服装';
+
+  @override
+  String get categoryNameClothingTop => '上衣';
+
+  @override
+  String get categoryNameClothingPants => '裤子';
+
+  @override
+  String get categoryNameClothingSkirt => '裙子';
+
+  @override
+  String get categoryNameClothingShoes => '鞋子';
+
+  @override
+  String get categoryNameClothingAccessory => '服饰配件';
+
+  @override
+  String get categoryNameSnacks => '零食';
+
+  @override
+  String get categoryNameSnacksBiscuit => '饼干';
+
+  @override
+  String get categoryNameSnacksChips => '薯片';
+
+  @override
+  String get categoryNameSnacksCandy => '糖果';
+
+  @override
+  String get categoryNameSnacksChocolate => '巧克力';
+
+  @override
+  String get categoryNameSnacksNuts => '坚果';
+
+  @override
+  String get categoryNameRedPacket => '发红包';
+
+  @override
+  String get categoryNameFruit => '水果';
+
+  @override
+  String get categoryNameFruitApple => '苹果';
+
+  @override
+  String get categoryNameFruitBanana => '香蕉';
+
+  @override
+  String get categoryNameFruitOrange => '橙子';
+
+  @override
+  String get categoryNameFruitGrape => '葡萄';
+
+  @override
+  String get categoryNameFruitWatermelon => '西瓜';
+
+  @override
+  String get categoryNameFruitOther => '其他水果';
+
+  @override
+  String get categoryNameGame => '游戏';
+
+  @override
+  String get categoryNameGameRecharge => '游戏充值';
+
+  @override
+  String get categoryNameGameEquipment => '游戏装备';
+
+  @override
+  String get categoryNameGameMembership => '游戏会员';
+
+  @override
+  String get categoryNameBook => '书籍';
+
+  @override
+  String get categoryNameLover => '爱人';
+
+  @override
+  String get categoryNameDecoration => '装修';
+
+  @override
+  String get categoryNameDailyGoods => '日用品';
+
+  @override
+  String get categoryNameDailyToiletries => '洗护用品';
+
+  @override
+  String get categoryNameDailyPaper => '纸品';
+
+  @override
+  String get categoryNameDailyCleaning => '清洁用品';
+
+  @override
+  String get categoryNameDailyKitchen => '厨房用品';
+
+  @override
+  String get categoryNameLottery => '彩票';
+
+  @override
+  String get categoryNameStock => '股票';
+
+  @override
+  String get categoryNameSocialSecurity => '社保';
+
+  @override
+  String get categoryNameExpress => '快递';
+
+  @override
+  String get categoryNameWork => '工作';
+
+  @override
+  String get categoryNameTransfer => '转账';
+
+  @override
+  String get categoryNameTransferLivingcost => '生活费';
+
+  @override
+  String get categoryNameTransferFamily => '家庭';
+
+  @override
+  String get categoryNameTransferParents => '父母';
+
+  @override
+  String get categoryNameTransferLover => '恋人';
+
+  @override
+  String get categoryNameTransferBorrowmoney => '借钱';
+
+  @override
+  String get categoryNameOther => '其他';
+
+  @override
+  String get categoryNamePastry => '糕点';
+
+  @override
+  String get categoryNamePastryCake => '蛋糕';
+
+  @override
+  String get categoryNamePastryBread => '面包';
+
+  @override
+  String get categoryNamePastryDessert => '甜点';
+
+  @override
+  String get categoryNamePastryBiscuit => '曲奇';
+
+  @override
+  String get categoryNameCooking => '做饭食材';
+
+  @override
+  String get categoryNameCookingVegetable => '蔬菜';
+
+  @override
+  String get categoryNameCookingMeat => '肉类';
+
+  @override
+  String get categoryNameCookingSeafood => '水产';
+
+  @override
+  String get categoryNameCookingSeasoning => '调料';
+
+  @override
+  String get categoryNameCookingGrain => '粮油';
+
+  @override
+  String get categoryNameInvestLoss => '投资亏损';
+
+  @override
+  String get categoryNameInvestLossStock => '股票亏损';
+
+  @override
+  String get categoryNameInvestLossFund => '基金亏损';
+
+  @override
+  String get categoryNameInvestLossOther => '其他投资亏损';
+
+  @override
+  String get categoryNameHealthProducts => '保健品';
+
+  @override
+  String get categoryNameHealthVitamin => '维生素';
+
+  @override
+  String get categoryNameHealthFood => '保健食品';
+
+  @override
+  String get categoryNameHealthNutrition => '营养品';
+
+  @override
+  String get categoryNameSubscription => '订阅服务';
+
+  @override
+  String get categoryNameSubscriptionVideo => '视频会员';
+
+  @override
+  String get categoryNameSubscriptionMusic => '音乐会员';
+
+  @override
+  String get categoryNameSubscriptionCloud => '云存储';
+
+  @override
+  String get categoryNameSubscriptionOther => '其他订阅';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -5628,7 +6016,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String categorySubCategoryCreated(Object name) {
-    return '已添加二級分類：$name';
+    return '已添加子分類：$name';
   }
 
   @override
@@ -5641,89 +6029,16 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get categorySelectParentTitle => '選擇所屬分類';
 
   @override
-  String get categoryHasSubCategories => '此分類包含二級分類，無法修改';
+  String get categoryHasSubCategories => '此分類包含子分類，無法變更所屬分類';
 
   @override
   String get categorySearchCategory => '搜尋分類';
 
   @override
-  String get categoryTopLevelLabel => '一級分類';
+  String get categoryTopLevelLabel => '分類';
 
   @override
-  String get categorySecondLevelLabel => '二級分類';
-
-  @override
-  String get categoryExpenseList =>
-      '餐飲-交通-購物-娛樂-居家-家庭-通訊-水電-住房-醫療-教育-寵物-運動-數碼-旅行-煙酒-母嬰-美容-維修-社交-學習-汽車-打車-地鐵-外賣-物業-停車-捐贈-送禮-納稅-飲料-服裝-零食-發紅包-水果-遊戲-書籍-愛人-裝修-日用品-彩票-股票-社保-快遞-工作-轉帳-其他';
-
-  @override
-  String get categoryExpenseDining => '餐飲-早餐-午餐-晚餐-美團外賣-餓了麼外賣-京東外賣-餐廳-美食';
-
-  @override
-  String get categoryExpenseSnacks => '零食-餅乾-薯片-糖果-巧克力-堅果';
-
-  @override
-  String get categoryExpenseFruit => '水果-蘋果-香蕉-橙子-葡萄-西瓜-其他水果';
-
-  @override
-  String get categoryExpenseBeverage => '飲料-奶茶-咖啡-果汁-汽水-礦泉水';
-
-  @override
-  String get categoryExpensePastry => '糕點-蛋糕-麵包-甜點-曲奇';
-
-  @override
-  String get categoryExpenseCooking => '做飯食材-蔬菜-肉類-水產-調料-糧油';
-
-  @override
-  String get categoryExpenseShopping => '購物-超市-日用百貨-服裝-鞋子-包包';
-
-  @override
-  String get categoryExpensePets => '寵物-寵物食品-寵物用品-寵物醫療-寵物美容';
-
-  @override
-  String get categoryExpenseTransport => '交通-交通卡充值-打車-停車費-加油';
-
-  @override
-  String get categoryExpenseCar => '汽車-汽車保養-汽車維修-汽車保險-洗車-違章罰款';
-
-  @override
-  String get categoryExpenseClothing => '服裝-上衣-褲子-裙子-鞋子-服飾配件';
-
-  @override
-  String get categoryExpenseDailyGoods => '日用品-洗護用品-紙品-清潔用品-廚房用品';
-
-  @override
-  String get categoryExpenseEducation => '教育-學費-培訓費-書籍-文具-辦公用品-學習';
-
-  @override
-  String get categoryExpenseInvestLoss => '投資虧損-股票虧損-基金虧損-其他投資虧損';
-
-  @override
-  String get categoryExpenseEntertainment => '娛樂-電影-KTV-遊樂場-酒吧-其他娛樂';
-
-  @override
-  String get categoryExpenseGame => '遊戲-遊戲儲值-遊戲裝備-遊戲會員';
-
-  @override
-  String get categoryExpenseHealthProducts => '保健品-維生素-保健食品-營養品';
-
-  @override
-  String get categoryExpenseSubscription => '訂閱服務-視頻會員-音樂會員-雲端儲存-其他訂閱';
-
-  @override
-  String get categoryExpenseSports => '運動-健身房-運動裝備-運動課程-戶外活動';
-
-  @override
-  String get categoryExpenseHousing => '住房-水電煤-物業費-房租-房貸-裝修-寬頻';
-
-  @override
-  String get categoryExpenseHome => '居家-傢俱-家電-裝飾品-床上用品';
-
-  @override
-  String get categoryExpenseBeauty => '美容-護膚品-化妝品-剪髮-美甲';
-
-  @override
-  String get categoryExpenseTransfer => '轉帳-生活費-家庭-父母-戀人-借錢';
+  String get categorySecondLevelLabel => '子分類';
 
   @override
   String get appearanceThemeMode => '顯示模式';
@@ -5884,18 +6199,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String get categoryTemplateEntryFlat => '一級模板';
-
-  @override
-  String get categoryTemplateEntryHierarchical => '二級模板';
-
-  @override
-  String get categoryTemplateFlatTitle => '一級分類模板';
-
-  @override
-  String get categoryTemplateHierarchicalTitle => '二級分類模板';
-
-  @override
   String categoryTemplateSelectedCount(int count) {
     return '本次已勾選 $count 項';
   }
@@ -5905,12 +6208,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get categoryTemplateDeselectAll => '取消全選';
-
-  @override
-  String get categoryTemplateAlreadyAdded => '已添加';
-
-  @override
-  String get categoryTemplateAlreadyAddedHint => '已添加的分類會保持勾選，不能取消';
 
   @override
   String get categoryTemplateConfirmTitle => '確認添加';
@@ -5923,16 +6220,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   @override
   String categoryTemplateAddSuccess(int count) {
     return '已添加 $count 個分類';
-  }
-
-  @override
-  String categoryTemplateAddFailed(String error) {
-    return '添加失敗：$error';
-  }
-
-  @override
-  String categoryTemplatePartiallyCompleted(String completed) {
-    return '$completed\n其餘分類尚未處理完成，請重試。';
   }
 
   @override
@@ -5979,25 +6266,25 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get categorySortSaveFailed => '排序保存失敗，請重試';
 
   @override
-  String get categoryDeleteOptionAll => '刪除分類和分類下的所有資料（含二級）';
+  String get categoryDeleteOptionAll => '刪除分類及其全部子分類和資料';
 
   @override
   String get categoryDeleteOptionMigrate => '刪除分類及其子分類並遷移所有資料到其他分類';
 
   @override
-  String get categoryDeleteOptionPromote => '刪除分類和分類下的所有資料（不含二級分類，二級分類將變為一級分類）';
+  String get categoryDeleteOptionPromote => '刪除分類及其直接資料，子分類及其資料獨立保留';
 
   @override
   String get categoryDeleteSelectedTitle => '刪除選中的分類';
 
   @override
   String categoryDeleteSelectedSubtitleWithSub(int count) {
-    return '確定要刪除 $count 個選中分類並且清空分類下的資料嗎？（包含二級分類和資料）此操作無法撤銷。';
+    return '確定要刪除 $count 個選中分類並且清空分類下的資料嗎？（包含子分類和資料）此操作無法撤銷。';
   }
 
   @override
   String categoryDeleteSelectedSubtitleWithoutSub(int count) {
-    return '確定要刪除 $count 個選中分類並且清空分類下的資料嗎？（不含二級分類和資料）此操作無法撤銷。';
+    return '確定要刪除 $count 個選中分類並且清空分類下的資料嗎？（不含子分類和資料）此操作無法撤銷。';
   }
 
   @override
@@ -6008,7 +6295,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String categoryMigrateChildLabel(Object parent) {
-    return '二級 · $parent';
+    return '所屬：$parent';
   }
 
   @override
@@ -6082,7 +6369,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get exportCsvHeaderCategory => '分類';
 
   @override
-  String get exportCsvHeaderSubCategory => '二級分類';
+  String get exportCsvHeaderSubCategory => '子分類';
 
   @override
   String get exportCsvHeaderAmount => '金額';
@@ -9130,8 +9417,8 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
       'fstart_is_leap_month': '開始閏月',
       'fstatistic_type': '統計方式',
       'fstatus': '狀態',
-      'fsub_category': '二級分類',
-      'fsub_category_icon': '二級分類圖示',
+      'fsub_category': '子分類',
+      'fsub_category_icon': '子分類圖示',
       'ftitle': '標題',
       'ftype': '類型',
       'fupdated_at': '修改時間',
@@ -9391,24 +9678,13 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get categoryConflictChooseLocal => '採用已提交的本機版本？之後的本機編輯會另外保留，等待繼續同步。';
 
   @override
-  String get categoryTemplateRestoreTitle => '還原原分類';
-
-  @override
   String get recurringTransactionTimeZone => '記帳時區';
 
   @override
   String get categoryConflictSubmitted => '已提交的本機版本';
 
   @override
-  String categoryTemplateRestoreMessage(String names) {
-    return '以下範本對應的原分類曾被刪除：\n$names\n是否還原原分類及原有設定？不會建立第二個分類，也不會還原已刪除的交易。';
-  }
-
-  @override
   String get recurringTransactionTimeZoneInvalid => '請選擇有效的 IANA 時區';
-
-  @override
-  String get categoryTemplateRestoreConfirm => '還原原分類';
 
   @override
   String get categoryConflictRefreshRequired => '版本資訊尚未就緒，請先重新讀取。';
@@ -9428,9 +9704,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
       '已產生過交易，無法更改時區；如需調整，請新增週期規則。';
 
   @override
-  String get categoryTemplatePendingLabel => '等待確認';
-
-  @override
   String get categoryConflictRetry => '重試確認';
 
   @override
@@ -9439,9 +9712,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   @override
   String get categoryConflictChooseCloud =>
       '採用所示雲端版本？本次衝突的本機提交將不再套用，之後的本機編輯會另外保留。';
-
-  @override
-  String get categoryTemplateNoChanges => '沒有新增或還原分類';
 
   @override
   String get categoryConflictDeleteTitle => '確認刪除分類';
@@ -9453,19 +9723,10 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get categoryConflictUnavailable => '此版本內容暫時無法讀取，請重新讀取。';
 
   @override
-  String get categoryTemplateBlockedParentHierarchy => '原父分類的層級已改變，不能新增此子分類';
-
-  @override
-  String get categoryTemplateBlockedDuplicate => '同名分類已存在，未新增此範本';
-
-  @override
   String get categoryConflictChanged => '分類版本已變更，請重新比較後確認。';
 
   @override
   String get categoryConflictUseLocal => '採用本機版本';
-
-  @override
-  String get categoryTemplateBlockedParentDuplicate => '同名父分類已存在，未新增此範本';
 
   @override
   String categoryConflictPosition(String value) {
@@ -9477,9 +9738,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
       '雲端已刪除此分類。是否按已提交的本機版本還原同一分類？不會建立第二個分類。';
 
   @override
-  String get categoryTemplateBlockedLabel => '未新增';
-
-  @override
   String get categoryConflictRestore => '確認還原';
 
   @override
@@ -9489,11 +9747,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get categoryConflictRefresh => '重新讀取';
 
   @override
-  String categoryTemplatePending(int count) {
-    return '$count 個分類等待雲端確認，請到同步處理查看';
-  }
-
-  @override
   String get recurringTransactionIntervalInvalid => '間隔須為 1 到 10000 的整數。';
 
   @override
@@ -9501,11 +9754,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get recurringTransactionMonthOfYear => '每年第幾個月';
-
-  @override
-  String categoryTemplateRestored(int count) {
-    return '已還原 $count 個原分類';
-  }
 
   @override
   String get recurringTransactionTimeZoneHint => '依此時區的日曆日期產生，各裝置保持一致。';
@@ -9612,4 +9860,532 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String syncCenterLastFailure(String reason) {
     return '上次同步未完成：$reason';
   }
+
+  @override
+  String get categoryTemplateLibraryTitle => '分類範本庫';
+
+  @override
+  String get categoryTemplateCreateMode => '新增分類';
+
+  @override
+  String get categoryTemplateAppendMode => '加入現有分類';
+
+  @override
+  String get categoryTemplateCreateHint => '選擇分類可單獨建立，展開後可按需選擇子分類。';
+
+  @override
+  String get categoryTemplateAppendHint => '先選擇所屬分類，勾選的每一項都會加入其下。';
+
+  @override
+  String get categoryTemplateChooseTarget => '選擇所屬分類';
+
+  @override
+  String get categoryTemplateNoChildren => '無子分類';
+
+  @override
+  String get categoryTemplateShowChildren => '展開或收起子分類';
+
+  @override
+  String categoryTemplateChildrenCount(int selected, int total) {
+    return '子分類 $selected/$total 已選';
+  }
+
+  @override
+  String categoryTemplateAppendConfirm(int count, String name) {
+    return '將 $count 個子分類加入「$name」？';
+  }
+
+  @override
+  String get categoryTemplateRetryHint => '新增尚未完成，請重試本次操作。';
+
+  @override
+  String get categoryTemplatePersonalScope => '加入我的分類目錄';
+
+  @override
+  String get categoryTemplateScopeChanged => '帳號或帳本已變更，請返回後重新開啟範本庫。';
+
+  @override
+  String get categoryTemplateTargetUnavailable => '所屬分類已無法使用，請重新選擇。';
+
+  @override
+  String categoryTemplateChildCount(int count) {
+    return '$count 項子分類';
+  }
+
+  @override
+  String get categoryNameDining => '餐飲';
+
+  @override
+  String get categoryNameDiningBreakfast => '早餐';
+
+  @override
+  String get categoryNameDiningLunch => '午餐';
+
+  @override
+  String get categoryNameDiningDinner => '晚餐';
+
+  @override
+  String get categoryNameDiningMeituan => '美團外賣';
+
+  @override
+  String get categoryNameDiningEleme => '餓了麼外賣';
+
+  @override
+  String get categoryNameDiningJd => '京東外賣';
+
+  @override
+  String get categoryNameDiningRestaurant => '餐廳';
+
+  @override
+  String get categoryNameDiningFood => '美食';
+
+  @override
+  String get categoryNameTransport => '交通';
+
+  @override
+  String get categoryNameTransportTransitcard => '交通卡充值';
+
+  @override
+  String get categoryNameTransportTaxi => '打車';
+
+  @override
+  String get categoryNameTransportParking => '停車費';
+
+  @override
+  String get categoryNameTransportFuel => '加油';
+
+  @override
+  String get categoryNameShopping => '購物';
+
+  @override
+  String get categoryNameShoppingSupermarket => '超市';
+
+  @override
+  String get categoryNameShoppingDaily => '日用百貨';
+
+  @override
+  String get categoryNameShoppingClothing => '服裝';
+
+  @override
+  String get categoryNameShoppingShoes => '鞋子';
+
+  @override
+  String get categoryNameShoppingBag => '包包';
+
+  @override
+  String get categoryNameEntertainment => '娛樂';
+
+  @override
+  String get categoryNameEntertainmentMovie => '電影';
+
+  @override
+  String get categoryNameEntertainmentKtv => 'KTV';
+
+  @override
+  String get categoryNameEntertainmentAmusement => '遊樂場';
+
+  @override
+  String get categoryNameEntertainmentBar => '酒吧';
+
+  @override
+  String get categoryNameEntertainmentOther => '其他娛樂';
+
+  @override
+  String get categoryNameHome => '居家';
+
+  @override
+  String get categoryNameHomeFurniture => '傢俱';
+
+  @override
+  String get categoryNameHomeAppliance => '家電';
+
+  @override
+  String get categoryNameHomeDecor => '裝飾品';
+
+  @override
+  String get categoryNameHomeBedding => '床上用品';
+
+  @override
+  String get categoryNameFamily => '家庭';
+
+  @override
+  String get categoryNameCommunication => '通訊';
+
+  @override
+  String get categoryNameUtilities => '水電';
+
+  @override
+  String get categoryNameHousing => '住房';
+
+  @override
+  String get categoryNameHousingUtilities => '水電煤';
+
+  @override
+  String get categoryNameHousingProperty => '物業費';
+
+  @override
+  String get categoryNameHousingRent => '房租';
+
+  @override
+  String get categoryNameHousingMortgage => '房貸';
+
+  @override
+  String get categoryNameHousingDecoration => '裝修';
+
+  @override
+  String get categoryNameHousingBroadband => '寬頻';
+
+  @override
+  String get categoryNameMedical => '醫療';
+
+  @override
+  String get categoryNameEducation => '教育';
+
+  @override
+  String get categoryNameEducationTuition => '學費';
+
+  @override
+  String get categoryNameEducationTraining => '培訓費';
+
+  @override
+  String get categoryNameEducationBooks => '書籍';
+
+  @override
+  String get categoryNameEducationStationery => '文具';
+
+  @override
+  String get categoryNameEducationOffice => '辦公用品';
+
+  @override
+  String get categoryNameEducationLearning => '學習';
+
+  @override
+  String get categoryNamePets => '寵物';
+
+  @override
+  String get categoryNamePetsFood => '寵物食品';
+
+  @override
+  String get categoryNamePetsSupplies => '寵物用品';
+
+  @override
+  String get categoryNamePetsMedical => '寵物醫療';
+
+  @override
+  String get categoryNamePetsGrooming => '寵物美容';
+
+  @override
+  String get categoryNameSports => '運動';
+
+  @override
+  String get categoryNameSportsGym => '健身房';
+
+  @override
+  String get categoryNameSportsEquipment => '運動裝備';
+
+  @override
+  String get categoryNameSportsCourse => '運動課程';
+
+  @override
+  String get categoryNameSportsOutdoor => '戶外活動';
+
+  @override
+  String get categoryNameDigital => '數碼';
+
+  @override
+  String get categoryNameTravel => '旅行';
+
+  @override
+  String get categoryNameAlcoholTobacco => '煙酒';
+
+  @override
+  String get categoryNameBabyCare => '母嬰';
+
+  @override
+  String get categoryNameBeauty => '美容';
+
+  @override
+  String get categoryNameBeautySkincare => '護膚品';
+
+  @override
+  String get categoryNameBeautyCosmetics => '化妝品';
+
+  @override
+  String get categoryNameBeautySalon => '剪髮';
+
+  @override
+  String get categoryNameBeautyNail => '美甲';
+
+  @override
+  String get categoryNameRepair => '維修';
+
+  @override
+  String get categoryNameSocial => '社交';
+
+  @override
+  String get categoryNameLearning => '學習';
+
+  @override
+  String get categoryNameCar => '汽車';
+
+  @override
+  String get categoryNameCarMaintenance => '汽車保養';
+
+  @override
+  String get categoryNameCarRepair => '汽車維修';
+
+  @override
+  String get categoryNameCarInsurance => '汽車保險';
+
+  @override
+  String get categoryNameCarWash => '洗車';
+
+  @override
+  String get categoryNameCarFine => '違章罰款';
+
+  @override
+  String get categoryNameTaxi => '打車';
+
+  @override
+  String get categoryNameSubway => '地鐵';
+
+  @override
+  String get categoryNameDelivery => '外賣';
+
+  @override
+  String get categoryNameProperty => '物業';
+
+  @override
+  String get categoryNameParking => '停車';
+
+  @override
+  String get categoryNameDonation => '捐贈';
+
+  @override
+  String get categoryNameGift => '送禮';
+
+  @override
+  String get categoryNameTax => '納稅';
+
+  @override
+  String get categoryNameBeverage => '飲料';
+
+  @override
+  String get categoryNameBeverageMilkTea => '奶茶';
+
+  @override
+  String get categoryNameBeverageCoffee => '咖啡';
+
+  @override
+  String get categoryNameBeverageJuice => '果汁';
+
+  @override
+  String get categoryNameBeverageSoda => '汽水';
+
+  @override
+  String get categoryNameBeverageWater => '礦泉水';
+
+  @override
+  String get categoryNameClothing => '服裝';
+
+  @override
+  String get categoryNameClothingTop => '上衣';
+
+  @override
+  String get categoryNameClothingPants => '褲子';
+
+  @override
+  String get categoryNameClothingSkirt => '裙子';
+
+  @override
+  String get categoryNameClothingShoes => '鞋子';
+
+  @override
+  String get categoryNameClothingAccessory => '服飾配件';
+
+  @override
+  String get categoryNameSnacks => '零食';
+
+  @override
+  String get categoryNameSnacksBiscuit => '餅乾';
+
+  @override
+  String get categoryNameSnacksChips => '薯片';
+
+  @override
+  String get categoryNameSnacksCandy => '糖果';
+
+  @override
+  String get categoryNameSnacksChocolate => '巧克力';
+
+  @override
+  String get categoryNameSnacksNuts => '堅果';
+
+  @override
+  String get categoryNameRedPacket => '發紅包';
+
+  @override
+  String get categoryNameFruit => '水果';
+
+  @override
+  String get categoryNameFruitApple => '蘋果';
+
+  @override
+  String get categoryNameFruitBanana => '香蕉';
+
+  @override
+  String get categoryNameFruitOrange => '橙子';
+
+  @override
+  String get categoryNameFruitGrape => '葡萄';
+
+  @override
+  String get categoryNameFruitWatermelon => '西瓜';
+
+  @override
+  String get categoryNameFruitOther => '其他水果';
+
+  @override
+  String get categoryNameGame => '遊戲';
+
+  @override
+  String get categoryNameGameRecharge => '遊戲儲值';
+
+  @override
+  String get categoryNameGameEquipment => '遊戲裝備';
+
+  @override
+  String get categoryNameGameMembership => '遊戲會員';
+
+  @override
+  String get categoryNameBook => '書籍';
+
+  @override
+  String get categoryNameLover => '愛人';
+
+  @override
+  String get categoryNameDecoration => '裝修';
+
+  @override
+  String get categoryNameDailyGoods => '日用品';
+
+  @override
+  String get categoryNameDailyToiletries => '洗護用品';
+
+  @override
+  String get categoryNameDailyPaper => '紙品';
+
+  @override
+  String get categoryNameDailyCleaning => '清潔用品';
+
+  @override
+  String get categoryNameDailyKitchen => '廚房用品';
+
+  @override
+  String get categoryNameLottery => '彩票';
+
+  @override
+  String get categoryNameStock => '股票';
+
+  @override
+  String get categoryNameSocialSecurity => '社保';
+
+  @override
+  String get categoryNameExpress => '快遞';
+
+  @override
+  String get categoryNameWork => '工作';
+
+  @override
+  String get categoryNameTransfer => '轉帳';
+
+  @override
+  String get categoryNameTransferLivingcost => '生活費';
+
+  @override
+  String get categoryNameTransferFamily => '家庭';
+
+  @override
+  String get categoryNameTransferParents => '父母';
+
+  @override
+  String get categoryNameTransferLover => '戀人';
+
+  @override
+  String get categoryNameTransferBorrowmoney => '借錢';
+
+  @override
+  String get categoryNameOther => '其他';
+
+  @override
+  String get categoryNamePastry => '糕點';
+
+  @override
+  String get categoryNamePastryCake => '蛋糕';
+
+  @override
+  String get categoryNamePastryBread => '麵包';
+
+  @override
+  String get categoryNamePastryDessert => '甜點';
+
+  @override
+  String get categoryNamePastryBiscuit => '曲奇';
+
+  @override
+  String get categoryNameCooking => '做飯食材';
+
+  @override
+  String get categoryNameCookingVegetable => '蔬菜';
+
+  @override
+  String get categoryNameCookingMeat => '肉類';
+
+  @override
+  String get categoryNameCookingSeafood => '水產';
+
+  @override
+  String get categoryNameCookingSeasoning => '調料';
+
+  @override
+  String get categoryNameCookingGrain => '糧油';
+
+  @override
+  String get categoryNameInvestLoss => '投資虧損';
+
+  @override
+  String get categoryNameInvestLossStock => '股票虧損';
+
+  @override
+  String get categoryNameInvestLossFund => '基金虧損';
+
+  @override
+  String get categoryNameInvestLossOther => '其他投資虧損';
+
+  @override
+  String get categoryNameHealthProducts => '保健品';
+
+  @override
+  String get categoryNameHealthVitamin => '維生素';
+
+  @override
+  String get categoryNameHealthFood => '保健食品';
+
+  @override
+  String get categoryNameHealthNutrition => '營養品';
+
+  @override
+  String get categoryNameSubscription => '訂閱服務';
+
+  @override
+  String get categoryNameSubscriptionVideo => '視頻會員';
+
+  @override
+  String get categoryNameSubscriptionMusic => '音樂會員';
+
+  @override
+  String get categoryNameSubscriptionCloud => '雲端儲存';
+
+  @override
+  String get categoryNameSubscriptionOther => '其他訂閱';
 }

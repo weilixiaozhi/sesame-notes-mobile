@@ -1,149 +1,103 @@
+import 'package:decimal/decimal.dart';
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:decimal/decimal.dart';
-
-import '../helpers/test_isolation.dart';
 import 'package:sesame_notes/data/db.dart';
-import 'package:sesame_notes/data/models.dart';
+import 'package:sesame_notes/data/models/import_models.dart';
 import 'package:sesame_notes/data/repositories/contracts/category_query_repository.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/features/settings/infrastructure/data_import_service.dart';
 
-class _MockRepo extends Mock implements LocalRepository {}
+/// 故障只注入目录读取，分类写入仍由真实事务验证回滚。
+class _FailingQueries extends Mock implements CategoryQueryRepository {}
 
-/// 分类查询独立注入，导入导出不能依赖组合仓储的查询转发。
-class _CategoryQueries extends Mock implements CategoryQueryRepository {}
-
+/// 分类阶段整批失败必须报告失败数，并且不遗留未被账单引用的部分写入。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  setUp(() => resetGlobalTestState());
-
-  late _MockRepo repo;
-  late _CategoryQueries categoryQueries;
+  late SesameDatabase db;
+  late LocalRepository repo;
   late DataImportService service;
-
-  setUp(() {
-    repo = _MockRepo();
-    categoryQueries = _CategoryQueries();
+  setUp(() async {
+    db = SesameDatabase.withExecutor(NativeDatabase.memory());
+    repo = LocalRepository(db);
     service = DataImportService();
-  });
-
-  test('importCategories: 创建失败计入 failed，成功分类仍返回缓存', () async {
-    when(
-      () => categoryQueries.getTopLevelCategories('expense'),
-    ).thenAnswer((_) async => <Category>[]);
-    when(
-      () => categoryQueries.getSubCategories(any()),
-    ).thenAnswer((_) async => <Category>[]);
-    when(
-      () => repo.createCategory(
-        name: '好分类',
-        kind: 'expense',
-        icon: any(named: 'icon'),
-        sortOrder: any(named: 'sortOrder'),
-      ),
-    ).thenAnswer((_) async => 'cat-ok');
-    when(
-      () => repo.createCategory(
-        name: '坏分类',
-        kind: 'expense',
-        icon: any(named: 'icon'),
-        sortOrder: any(named: 'sortOrder'),
-      ),
-    ).thenThrow(Exception('db down'));
-
-    final result = await service.importCategories(repo, const [
-      ImportCategory(name: '好分类', kind: 'expense'),
-      ImportCategory(name: '坏分类', kind: 'expense'),
-    ], categoryQueries: categoryQueries);
-
-    expect(result.failed, 1, reason: '坏分类创建失败必须计入 failed');
-    expect(result.cache.values, contains('cat-ok'));
-  });
-
-  // 读现有分类属于基础设施读取，不是"某条分类创建失败"：把它降级成 failed=0
-  // 会让导入报告宣称分类阶段正常，真实故障被改写成后续交易的"分类路径未命中"。
-  test('importCategories: 读取现有分类失败时上抛，不伪装成零失败', () async {
-    when(
-      () => categoryQueries.getTopLevelCategories('expense'),
-    ).thenThrow(Exception('db down'));
-
-    await expectLater(
-      service.importCategories(repo, const [
-        ImportCategory(name: '好分类', kind: 'expense'),
-      ], categoryQueries: categoryQueries),
-      throwsA(isA<Exception>()),
+    await db.customStatement(
+      "INSERT INTO ledgers (id,name,currency,storage_mode,updated_at) VALUES ('ledger','测试','CNY','local',0)",
     );
   });
+  tearDown(() => db.close());
 
-  test('importData: 分类创建失败计入 ImportResult.failed', () async {
-    when(() => repo.getLedgerById('1')).thenAnswer(
-      (_) async => Ledger(
-        id: '1',
-        name: 'L',
-        currency: 'CNY',
-        role: 'owner',
-        memberCount: 1,
-        monthStartDay: 1,
-        storageMode: 'local',
-        aaEnabled: false,
-        createdAt: DateTime(2026, 1, 1),
-        updatedAt: DateTime(2026, 1, 1),
-      ),
+  test('父分类无效时整批回滚，成功草稿也不能遗留', () async {
+    final result = await service.importCategories(
+      repo,
+      const [
+        ImportCategory(
+          id: '00000000-0000-4000-8000-000000000401',
+          name: '好分类',
+          kind: 'expense',
+        ),
+        ImportCategory(
+          id: '00000000-0000-4000-8000-000000000402',
+          name: '子分类',
+          kind: 'expense',
+          level: 2,
+          parentName: '无效父',
+          parentId: '00000000-0000-4000-8000-000000000499',
+        ),
+      ],
+      categoryQueries: repo.categoryStore,
+      ledgerId: 'ledger',
     );
-    when(
-      () => categoryQueries.getAllCategoriesIncludingShared(ledgerId: '1'),
-    ).thenAnswer((_) async => <Category>[]);
-    when(
-      () => repo.createCategory(
-        name: any(named: 'name'),
-        kind: any(named: 'kind'),
-        icon: any(named: 'icon'),
-        sortOrder: any(named: 'sortOrder'),
-        ledgerId: '1',
-      ),
-    ).thenThrow(Exception('db down'));
-    when(
-      () => repo.getTransactionsByLedger(any()),
-    ).thenAnswer((_) async => <Transaction>[]);
-    when(
-      () => repo.getLatestAutoRates(any()),
-    ).thenAnswer((_) async => <ExchangeRate>[]);
-    when(
-      () => repo.getOverrides(any()),
-    ).thenAnswer((_) async => <ExchangeRateOverride>[]);
-    when(
-      () => repo.importTransactions(
-        transactions: any(named: 'transactions'),
-        recordChanges: any(named: 'recordChanges'),
-      ),
-    ).thenAnswer((invocation) async {
-      final txs =
-          invocation.namedArguments[#transactions]
-              as List<TransactionsCompanion>;
-      return [for (final t in txs) t.id.value];
-    });
+    expect(result.failed, 2);
+    expect(result.cache, isEmpty);
+    expect(await db.select(db.categories).get(), isEmpty);
+  });
 
+  test('创建后的目录校验失败也回滚分类并报告真实失败', () async {
+    final queries = _FailingQueries();
+    when(
+      () => queries.getAllCategoriesIncludingShared(ledgerId: 'ledger'),
+    ).thenThrow(StateError('读取失败'));
+    final result = await service.importCategories(
+      repo,
+      const [ImportCategory(name: '分类', kind: 'expense')],
+      categoryQueries: queries,
+      ledgerId: 'ledger',
+    );
+    expect(result.failed, 1);
+    expect(result.cache, isEmpty);
+    expect(await db.select(db.categories).get(), isEmpty);
+  });
+
+  test('分类创建失败和引用失败分别计入结果，不把交易挂到同名项', () async {
     final result = await service.importData(
       repo,
-      '1',
+      'ledger',
       ImportData(
-        categories: const [ImportCategory(name: '坏分类', kind: 'expense')],
+        categories: const [
+          ImportCategory(
+            name: '坏分类',
+            kind: 'expense',
+            level: 2,
+            parentName: '缺失父',
+          ),
+        ],
         transactions: [
           ImportTransaction(
             type: 'expense',
             amount: Decimal.parse('10'),
-            categoryName: '好分类',
+            categoryName: '坏分类',
+            categoryParentName: '缺失父',
             categoryKind: 'expense',
-            happenedAt: DateTime(2026, 7, 1),
+            happenedAt: DateTime.utc(2026),
           ),
         ],
       ),
-      categoryQueries: categoryQueries,
+      categoryQueries: repo.categoryStore,
     );
-
-    // 分类创建失败 1 + 交易引用未命中失败 1 = 2；成功 0。
     expect(result.inserted, 0);
     expect(result.failed, 2);
+    expect(await db.select(db.categories).get(), isEmpty);
+    expect(await db.select(db.transactions).get(), isEmpty);
   });
 }

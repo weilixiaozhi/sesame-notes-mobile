@@ -400,38 +400,14 @@
   },
   "categoryClearUnusedFailed": "清空失敗",
   "categoryDeleteError": "刪除失敗",
-  "categorySubCategoryCreated": "已添加二級分類：{name}",
+  "categorySubCategoryCreated": "已添加子分類：{name}",
   "categoryParentCategoryTitle": "所屬分類",
   "categorySelectParentHint": "請選擇所屬分類",
   "categorySelectParentTitle": "選擇所屬分類",
-  "categoryHasSubCategories": "此分類包含二級分類，無法修改",
+  "categoryHasSubCategories": "此分類包含子分類，無法變更所屬分類",
   "categorySearchCategory": "搜尋分類",
-  "categoryTopLevelLabel": "一級分類",
-  "categorySecondLevelLabel": "二級分類",
-  "categoryExpenseList": "餐飲-交通-購物-娛樂-居家-家庭-通訊-水電-住房-醫療-教育-寵物-運動-數碼-旅行-煙酒-母嬰-美容-維修-社交-學習-汽車-打車-地鐵-外賣-物業-停車-捐贈-送禮-納稅-飲料-服裝-零食-發紅包-水果-遊戲-書籍-愛人-裝修-日用品-彩票-股票-社保-快遞-工作-轉帳-其他",
-  "categoryExpenseDining": "餐飲-早餐-午餐-晚餐-美團外賣-餓了麼外賣-京東外賣-餐廳-美食",
-  "categoryExpenseSnacks": "零食-餅乾-薯片-糖果-巧克力-堅果",
-  "categoryExpenseFruit": "水果-蘋果-香蕉-橙子-葡萄-西瓜-其他水果",
-  "categoryExpenseBeverage": "飲料-奶茶-咖啡-果汁-汽水-礦泉水",
-  "categoryExpensePastry": "糕點-蛋糕-麵包-甜點-曲奇",
-  "categoryExpenseCooking": "做飯食材-蔬菜-肉類-水產-調料-糧油",
-  "categoryExpenseShopping": "購物-超市-日用百貨-服裝-鞋子-包包",
-  "categoryExpensePets": "寵物-寵物食品-寵物用品-寵物醫療-寵物美容",
-  "categoryExpenseTransport": "交通-交通卡充值-打車-停車費-加油",
-  "categoryExpenseCar": "汽車-汽車保養-汽車維修-汽車保險-洗車-違章罰款",
-  "categoryExpenseClothing": "服裝-上衣-褲子-裙子-鞋子-服飾配件",
-  "categoryExpenseDailyGoods": "日用品-洗護用品-紙品-清潔用品-廚房用品",
-  "categoryExpenseEducation": "教育-學費-培訓費-書籍-文具-辦公用品-學習",
-  "categoryExpenseInvestLoss": "投資虧損-股票虧損-基金虧損-其他投資虧損",
-  "categoryExpenseEntertainment": "娛樂-電影-KTV-遊樂場-酒吧-其他娛樂",
-  "categoryExpenseGame": "遊戲-遊戲儲值-遊戲裝備-遊戲會員",
-  "categoryExpenseHealthProducts": "保健品-維生素-保健食品-營養品",
-  "categoryExpenseSubscription": "訂閱服務-視頻會員-音樂會員-雲端儲存-其他訂閱",
-  "categoryExpenseSports": "運動-健身房-運動裝備-運動課程-戶外活動",
-  "categoryExpenseHousing": "住房-水電煤-物業費-房租-房貸-裝修-寬頻",
-  "categoryExpenseHome": "居家-傢俱-家電-裝飾品-床上用品",
-  "categoryExpenseBeauty": "美容-護膚品-化妝品-剪髮-美甲",
-  "categoryExpenseTransfer": "轉帳-生活費-家庭-父母-戀人-借錢",
+  "categoryTopLevelLabel": "分類",
+  "categorySecondLevelLabel": "子分類",
   "appearanceThemeMode": "顯示模式",
   "appearanceThemeModeSystem": "跟隨系統",
   "appearanceThemeModeLight": "亮色模式",
@@ -490,10 +466,6 @@
       }
     }
   },
-  "categoryTemplateEntryFlat": "一級模板",
-  "categoryTemplateEntryHierarchical": "二級模板",
-  "categoryTemplateFlatTitle": "一級分類模板",
-  "categoryTemplateHierarchicalTitle": "二級分類模板",
   "categoryTemplateSelectedCount": "本次已勾選 {count} 項",
   "@categoryTemplateSelectedCount": {
     "placeholders": {
@@ -504,8 +476,6 @@
   },
   "categoryTemplateSelectAll": "全選",
   "categoryTemplateDeselectAll": "取消全選",
-  "categoryTemplateAlreadyAdded": "已添加",
-  "categoryTemplateAlreadyAddedHint": "已添加的分類會保持勾選，不能取消",
   "categoryTemplateConfirmTitle": "確認添加",
   "categoryTemplateConfirmMessage": "確定將勾選的 {count} 個分類加入分類表嗎？",
   "@categoryTemplateConfirmMessage": {
@@ -520,23 +490,6 @@
     "placeholders": {
       "count": {
         "type": "int"
-      }
-    }
-  },
-  "categoryTemplateAddFailed": "添加失敗：{error}",
-  "categoryTemplatePartiallyCompleted": "{completed}\n其餘分類尚未處理完成，請重試。",
-  "@categoryTemplatePartiallyCompleted": {
-    "description": "已提交的模板處理摘要及其餘操作未完成提示。",
-    "placeholders": {
-      "completed": {
-        "type": "String"
-      }
-    }
-  },
-  "@categoryTemplateAddFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
       }
     }
   },
@@ -576,11 +529,11 @@
   "categorySharedManageBannerOwner": "共享帳本：分類的添加、修改、刪除會同步給所有成員",
   "categorySharedManageBannerEditor": "共享帳本記帳使用擁有者的分類；此處的編輯僅影響你的個人分類",
   "categorySortSaveFailed": "排序保存失敗，請重試",
-  "categoryDeleteOptionAll": "刪除分類和分類下的所有資料（含二級）",
+  "categoryDeleteOptionAll": "刪除分類及其全部子分類和資料",
   "categoryDeleteOptionMigrate": "刪除分類及其子分類並遷移所有資料到其他分類",
-  "categoryDeleteOptionPromote": "刪除分類和分類下的所有資料（不含二級分類，二級分類將變為一級分類）",
+  "categoryDeleteOptionPromote": "刪除分類及其直接資料，子分類及其資料獨立保留",
   "categoryDeleteSelectedTitle": "刪除選中的分類",
-  "categoryDeleteSelectedSubtitleWithSub": "確定要刪除 {count} 個選中分類並且清空分類下的資料嗎？（包含二級分類和資料）此操作無法撤銷。",
+  "categoryDeleteSelectedSubtitleWithSub": "確定要刪除 {count} 個選中分類並且清空分類下的資料嗎？（包含子分類和資料）此操作無法撤銷。",
   "@categoryDeleteSelectedSubtitleWithSub": {
     "placeholders": {
       "count": {
@@ -588,7 +541,7 @@
       }
     }
   },
-  "categoryDeleteSelectedSubtitleWithoutSub": "確定要刪除 {count} 個選中分類並且清空分類下的資料嗎？（不含二級分類和資料）此操作無法撤銷。",
+  "categoryDeleteSelectedSubtitleWithoutSub": "確定要刪除 {count} 個選中分類並且清空分類下的資料嗎？（不含子分類和資料）此操作無法撤銷。",
   "@categoryDeleteSelectedSubtitleWithoutSub": {
     "placeholders": {
       "count": {
@@ -598,7 +551,7 @@
   },
   "categoryMigrateSelectTargetTitle": "選擇資料遷移到的分類",
   "categoryMigrateConfirmButton": "確定（遷移分類資料並刪除分類）",
-  "categoryMigrateChildLabel": "二級 · {parent}",
+  "categoryMigrateChildLabel": "所屬：{parent}",
   "@categoryMigrateChildLabel": {
     "placeholders": {
       "parent": {
@@ -635,7 +588,7 @@
   "authErrorServerNotConfigured": "此版本尚未設定帳號伺服器，暫時無法登入或註冊。你可以返回並繼續使用本機功能。",
   "exportCsvHeaderType": "類型",
   "exportCsvHeaderCategory": "分類",
-  "exportCsvHeaderSubCategory": "二級分類",
+  "exportCsvHeaderSubCategory": "子分類",
   "exportCsvHeaderAmount": "金額",
   "exportCsvHeaderNote": "備註",
   "exportCsvHeaderTime": "時間",
@@ -2034,7 +1987,7 @@
   "transferTarget": "目標：{name}",
   "transferUnnamed": "未命名",
   "transferValid": "可以匯入",
-  "transferFieldLabel": "{field, select, faccount {帳號} famount {金額} fbody {正文} fcalendar {曆法} fcategory {分類} fcategory_icon {分類圖示} fcompleted {完成} fcountdown_mode {倒數方式} fcreated_at {建立時間} fcurrency {幣別} fcycle_days {循環天数} fdate {日期} fday {訓練日（從 1 開始）} fdays {訓練日安排} femail {信箱} fend_calendar {結束曆法} fend_date {結束日期} fend_is_leap_month {結束閏月} fentity_type {資料類型} fexercise {動作} fexercises {動作与組} fgeneration_state {計畫執行狀態} fid {記錄關聯標識} finterval_days {間隔天数} fis_leap_month {閏月} fkind {組類型} fname {名稱} fnote {備註} foccurrence_key {計畫發生標識} fpassword {密碼} fpending_schedule {待生效安排} fphone {電話} fpreferences {健身偏好} fremark {備註} frepeat_type {重複规则} freps {次數} frest_seconds {休息秒数} frest_timer {計時狀態} frun_segments {執行時段} fscheduled_date {訓練日期} fset_count {組数} fsource_kind {訓練來源} fsource_plan_id {關聯計畫} fsource_plan_name {關聯計畫名稱} fsource_template_id {關聯模板} fstart_calendar {開始曆法} fstart_date {開始日期} fstart_is_leap_month {開始閏月} fstatistic_type {統計方式} fstatus {狀態} fsub_category {二級分類} fsub_category_icon {二級分類圖示} ftitle {標題} ftype {類型} fupdated_at {修改時間} fweight {重量} fsets {組明細} fslot {訓練安排} fday_index {訓練日序號（從 0 開始）} other {欄位}}",
+  "transferFieldLabel": "{field, select, faccount {帳號} famount {金額} fbody {正文} fcalendar {曆法} fcategory {分類} fcategory_icon {分類圖示} fcompleted {完成} fcountdown_mode {倒數方式} fcreated_at {建立時間} fcurrency {幣別} fcycle_days {循環天数} fdate {日期} fday {訓練日（從 1 開始）} fdays {訓練日安排} femail {信箱} fend_calendar {結束曆法} fend_date {結束日期} fend_is_leap_month {結束閏月} fentity_type {資料類型} fexercise {動作} fexercises {動作与組} fgeneration_state {計畫執行狀態} fid {記錄關聯標識} finterval_days {間隔天数} fis_leap_month {閏月} fkind {組類型} fname {名稱} fnote {備註} foccurrence_key {計畫發生標識} fpassword {密碼} fpending_schedule {待生效安排} fphone {電話} fpreferences {健身偏好} fremark {備註} frepeat_type {重複规则} freps {次數} frest_seconds {休息秒数} frest_timer {計時狀態} frun_segments {執行時段} fscheduled_date {訓練日期} fset_count {組数} fsource_kind {訓練來源} fsource_plan_id {關聯計畫} fsource_plan_name {關聯計畫名稱} fsource_template_id {關聯模板} fstart_calendar {開始曆法} fstart_date {開始日期} fstart_is_leap_month {開始閏月} fstatistic_type {統計方式} fstatus {狀態} fsub_category {子分類} fsub_category_icon {子分類圖示} ftitle {標題} ftype {類型} fupdated_at {修改時間} fweight {重量} fsets {組明細} fslot {訓練安排} fday_index {訓練日序號（從 0 開始）} other {欄位}}",
   "transferCardFields": "卡片欄位",
   "transferCardFieldsHelp": "每列都可作為卡片欄位：關閉開關或清空名稱即不匯入該欄，欄位名稱可改成你習慣的叫法。",
   "transferCardFieldName": "欄位名稱",
@@ -2126,46 +2079,24 @@
   "txAmountInvalid": "請輸入大於 0 且最多兩位小數的金額",
   "txDivisionByZero": "不能除以 0，請修改金額",
   "txExpressionInvalid": "請輸入完整有效的算式",
-  "@categoryTemplateRestoreMessage": {
-    "placeholders": {
-      "names": {
-        "type": "String"
-      }
-    }
-  },
   "categoryConflictCloud": "雲端版本",
-  "@categoryTemplatePending": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "categoryConflictChooseLocal": "採用已提交的本機版本？之後的本機編輯會另外保留，等待繼續同步。",
-  "categoryTemplateRestoreTitle": "還原原分類",
   "recurringTransactionTimeZone": "記帳時區",
   "categoryConflictSubmitted": "已提交的本機版本",
-  "categoryTemplateRestoreMessage": "以下範本對應的原分類曾被刪除：\n{names}\n是否還原原分類及原有設定？不會建立第二個分類，也不會還原已刪除的交易。",
   "recurringTransactionTimeZoneInvalid": "請選擇有效的 IANA 時區",
-  "categoryTemplateRestoreConfirm": "還原原分類",
   "categoryConflictRefreshRequired": "版本資訊尚未就緒，請先重新讀取。",
   "recurringTransactionAmountPrecision": "金額須大於 0，最多 28 位整數和 10 位小數。",
   "categoryConflictExplanation": "本機版本來自這次上傳，不包含之後的編輯。請選擇此分類要採用的版本。",
   "categoryConflictRestoreTitle": "還原雲端已刪除分類",
   "recurringTransactionTimeZoneLocked": "已產生過交易，無法更改時區；如需調整，請新增週期規則。",
-  "categoryTemplatePendingLabel": "等待確認",
   "categoryConflictRetry": "重試確認",
   "recurringTransactionDayOfWeek": "每週星期幾",
   "categoryConflictChooseCloud": "採用所示雲端版本？本次衝突的本機提交將不再套用，之後的本機編輯會另外保留。",
-  "categoryTemplateNoChanges": "沒有新增或還原分類",
   "categoryConflictDeleteTitle": "確認刪除分類",
   "categoryConflictType": "分類類型",
   "categoryConflictUnavailable": "此版本內容暫時無法讀取，請重新讀取。",
-  "categoryTemplateBlockedParentHierarchy": "原父分類的層級已改變，不能新增此子分類",
-  "categoryTemplateBlockedDuplicate": "同名分類已存在，未新增此範本",
   "categoryConflictChanged": "分類版本已變更，請重新比較後確認。",
   "categoryConflictUseLocal": "採用本機版本",
-  "categoryTemplateBlockedParentDuplicate": "同名父分類已存在，未新增此範本",
   "categoryConflictPosition": "排序值：{value}",
   "categoryConflictRestoreMessage": "雲端已刪除此分類。是否按已提交的本機版本還原同一分類？不會建立第二個分類。",
   "@categoryConflictPosition": {
@@ -2175,24 +2106,14 @@
       }
     }
   },
-  "categoryTemplateBlockedLabel": "未新增",
   "categoryConflictRestore": "確認還原",
   "categoryConflictParentMissing": "父分類尚未下載",
   "categoryConflictRefresh": "重新讀取",
-  "categoryTemplatePending": "{count} 個分類等待雲端確認，請到同步處理查看",
   "recurringTransactionIntervalInvalid": "間隔須為 1 到 10000 的整數。",
   "categoryConflictDeleteMessage": "本機提交是刪除操作。採用後將刪除雲端此分類，請先核對兩個版本。",
   "recurringTransactionMonthOfYear": "每年第幾個月",
-  "categoryTemplateRestored": "已還原 {count} 個原分類",
   "recurringTransactionTimeZoneHint": "依此時區的日曆日期產生，各裝置保持一致。",
   "categoryConflictPending": "確認結果尚未收到。請重試原確認，暫時不能選擇其他版本。",
-  "@categoryTemplateRestored": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "categoryConflictUseCloud": "採用雲端版本",
   "reminderDaysDailyTitle": "每日提醒",
   "reminderDaysDailyHint": "使用共用提醒時間，固定提醒節點優先，不重複提醒。",
@@ -2222,5 +2143,206 @@
   "syncCenterPendingRecordHint": "內容已儲存在本機，等待上傳到雲端。",
   "syncCenterAwaitingReceiptHint": "上傳結果尚未確認，重試會使用原請求繼續同步。本機內容仍保留。",
   "syncCenterRecordUnavailable": "原內容已刪除或暫時無法讀取，請重新同步後檢查。",
-  "syncCenterLastFailure": "上次同步未完成：{reason}"
+  "syncCenterLastFailure": "上次同步未完成：{reason}",
+  "categoryTemplateLibraryTitle": "分類範本庫",
+  "categoryTemplateCreateMode": "新增分類",
+  "categoryTemplateAppendMode": "加入現有分類",
+  "categoryTemplateCreateHint": "選擇分類可單獨建立，展開後可按需選擇子分類。",
+  "categoryTemplateAppendHint": "先選擇所屬分類，勾選的每一項都會加入其下。",
+  "categoryTemplateChooseTarget": "選擇所屬分類",
+  "categoryTemplateNoChildren": "無子分類",
+  "categoryTemplateShowChildren": "展開或收起子分類",
+  "categoryTemplateChildrenCount": "子分類 {selected}/{total} 已選",
+  "categoryTemplateAppendConfirm": "將 {count} 個子分類加入「{name}」？",
+  "categoryTemplateRetryHint": "新增尚未完成，請重試本次操作。",
+  "@categoryTemplateChildrenCount": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@categoryTemplateAppendConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryTemplatePersonalScope": "加入我的分類目錄",
+  "categoryTemplateScopeChanged": "帳號或帳本已變更，請返回後重新開啟範本庫。",
+  "categoryTemplateTargetUnavailable": "所屬分類已無法使用，請重新選擇。",
+  "categoryTemplateChildCount": "{count} 項子分類",
+  "@categoryTemplateChildCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryNameDining": "餐飲",
+  "categoryNameDiningBreakfast": "早餐",
+  "categoryNameDiningLunch": "午餐",
+  "categoryNameDiningDinner": "晚餐",
+  "categoryNameDiningMeituan": "美團外賣",
+  "categoryNameDiningEleme": "餓了麼外賣",
+  "categoryNameDiningJd": "京東外賣",
+  "categoryNameDiningRestaurant": "餐廳",
+  "categoryNameDiningFood": "美食",
+  "categoryNameTransport": "交通",
+  "categoryNameTransportTransitcard": "交通卡充值",
+  "categoryNameTransportTaxi": "打車",
+  "categoryNameTransportParking": "停車費",
+  "categoryNameTransportFuel": "加油",
+  "categoryNameShopping": "購物",
+  "categoryNameShoppingSupermarket": "超市",
+  "categoryNameShoppingDaily": "日用百貨",
+  "categoryNameShoppingClothing": "服裝",
+  "categoryNameShoppingShoes": "鞋子",
+  "categoryNameShoppingBag": "包包",
+  "categoryNameEntertainment": "娛樂",
+  "categoryNameEntertainmentMovie": "電影",
+  "categoryNameEntertainmentKtv": "KTV",
+  "categoryNameEntertainmentAmusement": "遊樂場",
+  "categoryNameEntertainmentBar": "酒吧",
+  "categoryNameEntertainmentOther": "其他娛樂",
+  "categoryNameHome": "居家",
+  "categoryNameHomeFurniture": "傢俱",
+  "categoryNameHomeAppliance": "家電",
+  "categoryNameHomeDecor": "裝飾品",
+  "categoryNameHomeBedding": "床上用品",
+  "categoryNameFamily": "家庭",
+  "categoryNameCommunication": "通訊",
+  "categoryNameUtilities": "水電",
+  "categoryNameHousing": "住房",
+  "categoryNameHousingUtilities": "水電煤",
+  "categoryNameHousingProperty": "物業費",
+  "categoryNameHousingRent": "房租",
+  "categoryNameHousingMortgage": "房貸",
+  "categoryNameHousingDecoration": "裝修",
+  "categoryNameHousingBroadband": "寬頻",
+  "categoryNameMedical": "醫療",
+  "categoryNameEducation": "教育",
+  "categoryNameEducationTuition": "學費",
+  "categoryNameEducationTraining": "培訓費",
+  "categoryNameEducationBooks": "書籍",
+  "categoryNameEducationStationery": "文具",
+  "categoryNameEducationOffice": "辦公用品",
+  "categoryNameEducationLearning": "學習",
+  "categoryNamePets": "寵物",
+  "categoryNamePetsFood": "寵物食品",
+  "categoryNamePetsSupplies": "寵物用品",
+  "categoryNamePetsMedical": "寵物醫療",
+  "categoryNamePetsGrooming": "寵物美容",
+  "categoryNameSports": "運動",
+  "categoryNameSportsGym": "健身房",
+  "categoryNameSportsEquipment": "運動裝備",
+  "categoryNameSportsCourse": "運動課程",
+  "categoryNameSportsOutdoor": "戶外活動",
+  "categoryNameDigital": "數碼",
+  "categoryNameTravel": "旅行",
+  "categoryNameAlcoholTobacco": "煙酒",
+  "categoryNameBabyCare": "母嬰",
+  "categoryNameBeauty": "美容",
+  "categoryNameBeautySkincare": "護膚品",
+  "categoryNameBeautyCosmetics": "化妝品",
+  "categoryNameBeautySalon": "剪髮",
+  "categoryNameBeautyNail": "美甲",
+  "categoryNameRepair": "維修",
+  "categoryNameSocial": "社交",
+  "categoryNameLearning": "學習",
+  "categoryNameCar": "汽車",
+  "categoryNameCarMaintenance": "汽車保養",
+  "categoryNameCarRepair": "汽車維修",
+  "categoryNameCarInsurance": "汽車保險",
+  "categoryNameCarWash": "洗車",
+  "categoryNameCarFine": "違章罰款",
+  "categoryNameTaxi": "打車",
+  "categoryNameSubway": "地鐵",
+  "categoryNameDelivery": "外賣",
+  "categoryNameProperty": "物業",
+  "categoryNameParking": "停車",
+  "categoryNameDonation": "捐贈",
+  "categoryNameGift": "送禮",
+  "categoryNameTax": "納稅",
+  "categoryNameBeverage": "飲料",
+  "categoryNameBeverageMilkTea": "奶茶",
+  "categoryNameBeverageCoffee": "咖啡",
+  "categoryNameBeverageJuice": "果汁",
+  "categoryNameBeverageSoda": "汽水",
+  "categoryNameBeverageWater": "礦泉水",
+  "categoryNameClothing": "服裝",
+  "categoryNameClothingTop": "上衣",
+  "categoryNameClothingPants": "褲子",
+  "categoryNameClothingSkirt": "裙子",
+  "categoryNameClothingShoes": "鞋子",
+  "categoryNameClothingAccessory": "服飾配件",
+  "categoryNameSnacks": "零食",
+  "categoryNameSnacksBiscuit": "餅乾",
+  "categoryNameSnacksChips": "薯片",
+  "categoryNameSnacksCandy": "糖果",
+  "categoryNameSnacksChocolate": "巧克力",
+  "categoryNameSnacksNuts": "堅果",
+  "categoryNameRedPacket": "發紅包",
+  "categoryNameFruit": "水果",
+  "categoryNameFruitApple": "蘋果",
+  "categoryNameFruitBanana": "香蕉",
+  "categoryNameFruitOrange": "橙子",
+  "categoryNameFruitGrape": "葡萄",
+  "categoryNameFruitWatermelon": "西瓜",
+  "categoryNameFruitOther": "其他水果",
+  "categoryNameGame": "遊戲",
+  "categoryNameGameRecharge": "遊戲儲值",
+  "categoryNameGameEquipment": "遊戲裝備",
+  "categoryNameGameMembership": "遊戲會員",
+  "categoryNameBook": "書籍",
+  "categoryNameLover": "愛人",
+  "categoryNameDecoration": "裝修",
+  "categoryNameDailyGoods": "日用品",
+  "categoryNameDailyToiletries": "洗護用品",
+  "categoryNameDailyPaper": "紙品",
+  "categoryNameDailyCleaning": "清潔用品",
+  "categoryNameDailyKitchen": "廚房用品",
+  "categoryNameLottery": "彩票",
+  "categoryNameStock": "股票",
+  "categoryNameSocialSecurity": "社保",
+  "categoryNameExpress": "快遞",
+  "categoryNameWork": "工作",
+  "categoryNameTransfer": "轉帳",
+  "categoryNameTransferLivingcost": "生活費",
+  "categoryNameTransferFamily": "家庭",
+  "categoryNameTransferParents": "父母",
+  "categoryNameTransferLover": "戀人",
+  "categoryNameTransferBorrowmoney": "借錢",
+  "categoryNameOther": "其他",
+  "categoryNamePastry": "糕點",
+  "categoryNamePastryCake": "蛋糕",
+  "categoryNamePastryBread": "麵包",
+  "categoryNamePastryDessert": "甜點",
+  "categoryNamePastryBiscuit": "曲奇",
+  "categoryNameCooking": "做飯食材",
+  "categoryNameCookingVegetable": "蔬菜",
+  "categoryNameCookingMeat": "肉類",
+  "categoryNameCookingSeafood": "水產",
+  "categoryNameCookingSeasoning": "調料",
+  "categoryNameCookingGrain": "糧油",
+  "categoryNameInvestLoss": "投資虧損",
+  "categoryNameInvestLossStock": "股票虧損",
+  "categoryNameInvestLossFund": "基金虧損",
+  "categoryNameInvestLossOther": "其他投資虧損",
+  "categoryNameHealthProducts": "保健品",
+  "categoryNameHealthVitamin": "維生素",
+  "categoryNameHealthFood": "保健食品",
+  "categoryNameHealthNutrition": "營養品",
+  "categoryNameSubscription": "訂閱服務",
+  "categoryNameSubscriptionVideo": "視頻會員",
+  "categoryNameSubscriptionMusic": "音樂會員",
+  "categoryNameSubscriptionCloud": "雲端儲存",
+  "categoryNameSubscriptionOther": "其他訂閱"
 }

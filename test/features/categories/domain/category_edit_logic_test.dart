@@ -41,23 +41,29 @@ void main() {
   group('resolveCategoryPlacement 保存时的父子落点', () {
     test('选中父分类：挂到该父下并置为二级', () {
       expect(
-        resolveCategoryPlacement(selectedParentId: 'cat-10', currentLevel: 1),
-        (parentId: 'cat-10', level: 2),
+        resolveCategoryPlacement(
+          selectedParentId: 'cat-10',
+          currentParentId: null,
+        ),
+        'cat-10',
       );
     });
 
     test('未选父分类且原为二级：清空父级并降为一级', () {
       expect(
-        resolveCategoryPlacement(selectedParentId: null, currentLevel: 2),
-        (parentId: '', level: 1),
+        resolveCategoryPlacement(
+          selectedParentId: null,
+          currentParentId: 'old-parent',
+        ),
+        '',
         reason: '空串是仓储约定的「清空父分类」语义',
       );
     });
 
     test('未选父分类且原为一级：父级不改动', () {
       expect(
-        resolveCategoryPlacement(selectedParentId: null, currentLevel: 1),
-        (parentId: null, level: 1),
+        resolveCategoryPlacement(selectedParentId: null, currentParentId: null),
+        null,
         reason: 'null 表示不改动 parentId',
       );
     });

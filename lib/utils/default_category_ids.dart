@@ -39,13 +39,10 @@ Map<String, DefaultCategoryIdentity> _buildIdentities() {
     result[id] = identity;
   }
 
-  for (final key in {
-    ...kFlatExpenseCategoryKeys,
-    ...kHierarchicalExpenseCategories.keys,
-  }) {
+  for (final key in kExpenseCategoryTemplates.keys) {
     add(1, key, null);
   }
-  for (final entry in kHierarchicalExpenseCategories.entries) {
+  for (final entry in kExpenseCategoryTemplates.entries) {
     for (final key in entry.value) {
       add(2, key, entry.key);
     }

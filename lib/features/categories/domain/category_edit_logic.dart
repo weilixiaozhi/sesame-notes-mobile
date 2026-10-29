@@ -17,15 +17,11 @@ String resolveCategoryFormIcon(
   return defaultCategoryIcon;
 }
 
-/// 保存时的父子落点（parentId / level）。
-///
-/// - 选中了父分类 → 挂到该父下，level 为 2；
-/// - 未选父分类且原为二级 → parentId 传空串清空父级，level 降为 1；
-/// - 未选父分类且原为一级 → parentId 传 null 表示不改动，level 为 1。
-({String? parentId, int level}) resolveCategoryPlacement({
+/// 所属关系的保存值；空串用于明确移出原分类，null 表示关系保持不变。
+String? resolveCategoryPlacement({
   required String? selectedParentId,
-  required int currentLevel,
+  required String? currentParentId,
 }) {
-  if (selectedParentId != null) return (parentId: selectedParentId, level: 2);
-  return (parentId: currentLevel == 2 ? '' : null, level: 1);
+  if (selectedParentId != null) return selectedParentId;
+  return currentParentId == null ? null : '';
 }

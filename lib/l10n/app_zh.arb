@@ -400,38 +400,14 @@
   },
   "categoryClearUnusedFailed": "清空失败",
   "categoryDeleteError": "删除失败",
-  "categorySubCategoryCreated": "已添加二级分类：{name}",
+  "categorySubCategoryCreated": "已添加子分类：{name}",
   "categoryParentCategoryTitle": "所属分类",
   "categorySelectParentHint": "请选择所属分类",
   "categorySelectParentTitle": "选择所属分类",
-  "categoryHasSubCategories": "此分类包含二级分类，无法修改",
+  "categoryHasSubCategories": "此分类包含子分类，无法更改所属分类",
   "categorySearchCategory": "搜索分类",
-  "categoryTopLevelLabel": "一级分类",
-  "categorySecondLevelLabel": "二级分类",
-  "categoryExpenseList": "餐饮-交通-购物-娱乐-居家-家庭-通讯-水电-住房-医疗-教育-宠物-运动-数码-旅行-烟酒-母婴-美容-维修-社交-学习-汽车-打车-地铁-外卖-物业-停车-捐赠-送礼-纳税-饮料-服装-零食-发红包-水果-游戏-书籍-爱人-装修-日用品-彩票-股票-社保-快递-工作-转账-其他",
-  "categoryExpenseDining": "餐饮-早餐-午餐-晚餐-美团外卖-饿了么外卖-京东外卖-餐厅-美食",
-  "categoryExpenseSnacks": "零食-饼干-薯片-糖果-巧克力-坚果",
-  "categoryExpenseFruit": "水果-苹果-香蕉-橙子-葡萄-西瓜-其他水果",
-  "categoryExpenseBeverage": "饮料-奶茶-咖啡-果汁-汽水-矿泉水",
-  "categoryExpensePastry": "糕点-蛋糕-面包-甜点-曲奇",
-  "categoryExpenseCooking": "做饭食材-蔬菜-肉类-水产-调料-粮油",
-  "categoryExpenseShopping": "购物-超市-日用百货-服装-鞋子-包包",
-  "categoryExpensePets": "宠物-宠物食品-宠物用品-宠物医疗-宠物美容",
-  "categoryExpenseTransport": "交通-交通卡充值-打车-停车费-加油",
-  "categoryExpenseCar": "汽车-汽车保养-汽车维修-汽车保险-洗车-违章罚款",
-  "categoryExpenseClothing": "服装-上衣-裤子-裙子-鞋子-服饰配件",
-  "categoryExpenseDailyGoods": "日用品-洗护用品-纸品-清洁用品-厨房用品",
-  "categoryExpenseEducation": "教育-学费-培训费-书籍-文具-办公用品-学习",
-  "categoryExpenseInvestLoss": "投资亏损-股票亏损-基金亏损-其他投资亏损",
-  "categoryExpenseEntertainment": "娱乐-电影-KTV-游乐场-酒吧-其他娱乐",
-  "categoryExpenseGame": "游戏-游戏充值-游戏装备-游戏会员",
-  "categoryExpenseHealthProducts": "保健品-维生素-保健食品-营养品",
-  "categoryExpenseSubscription": "订阅服务-视频会员-音乐会员-云存储-其他订阅",
-  "categoryExpenseSports": "运动-健身房-运动装备-运动课程-户外活动",
-  "categoryExpenseHousing": "住房-水电煤-物业费-房租-房贷-装修-宽带",
-  "categoryExpenseHome": "居家-家具-家电-装饰品-床上用品",
-  "categoryExpenseBeauty": "美容-护肤品-化妆品-剪发-美甲",
-  "categoryExpenseTransfer": "转账-生活费-家庭-父母-恋人-借钱",
+  "categoryTopLevelLabel": "分类",
+  "categorySecondLevelLabel": "子分类",
   "appearanceThemeMode": "显示模式",
   "appearanceThemeModeSystem": "跟随系统",
   "appearanceThemeModeLight": "亮色模式",
@@ -490,10 +466,6 @@
       }
     }
   },
-  "categoryTemplateEntryFlat": "一级模板",
-  "categoryTemplateEntryHierarchical": "二级模板",
-  "categoryTemplateFlatTitle": "一级分类模板",
-  "categoryTemplateHierarchicalTitle": "二级分类模板",
   "categoryTemplateSelectedCount": "本次已勾选 {count} 项",
   "@categoryTemplateSelectedCount": {
     "placeholders": {
@@ -504,8 +476,6 @@
   },
   "categoryTemplateSelectAll": "全选",
   "categoryTemplateDeselectAll": "取消全选",
-  "categoryTemplateAlreadyAdded": "已添加",
-  "categoryTemplateAlreadyAddedHint": "已添加的分类会保持勾选，不能取消",
   "categoryTemplateConfirmTitle": "确认添加",
   "categoryTemplateConfirmMessage": "确定将勾选的 {count} 个分类加入分类表吗？",
   "@categoryTemplateConfirmMessage": {
@@ -520,23 +490,6 @@
     "placeholders": {
       "count": {
         "type": "int"
-      }
-    }
-  },
-  "categoryTemplateAddFailed": "添加失败：{error}",
-  "categoryTemplatePartiallyCompleted": "{completed}\n剩余分类未处理完成，请重试。",
-  "@categoryTemplatePartiallyCompleted": {
-    "description": "已提交的模板处理摘要及剩余操作未完成提示。",
-    "placeholders": {
-      "completed": {
-        "type": "String"
-      }
-    }
-  },
-  "@categoryTemplateAddFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
       }
     }
   },
@@ -576,11 +529,11 @@
   "categorySharedManageBannerOwner": "共享账本：分类的新增、修改、删除会同步给所有成员",
   "categorySharedManageBannerEditor": "共享账本记账使用所有者的分类；此处的编辑仅影响你的个人分类",
   "categorySortSaveFailed": "排序保存失败，请重试",
-  "categoryDeleteOptionAll": "删除分类和分类下的所有数据（含二级）",
+  "categoryDeleteOptionAll": "删除分类及其全部子分类和数据",
   "categoryDeleteOptionMigrate": "删除分类及其子分类并迁移所有数据到其他分类",
-  "categoryDeleteOptionPromote": "删除分类和分类下的所有数据（不含二级分类，二级分类将变为一级分类）",
+  "categoryDeleteOptionPromote": "删除分类及其直接数据，子分类及其数据独立保留",
   "categoryDeleteSelectedTitle": "删除选中的分类",
-  "categoryDeleteSelectedSubtitleWithSub": "确定要删除 {count} 个选中分类并且清空分类下的数据吗？（包含二级分类和数据）此操作无法撤销。",
+  "categoryDeleteSelectedSubtitleWithSub": "确定要删除 {count} 个选中分类并且清空分类下的数据吗？（包含子分类和数据）此操作无法撤销。",
   "@categoryDeleteSelectedSubtitleWithSub": {
     "placeholders": {
       "count": {
@@ -588,7 +541,7 @@
       }
     }
   },
-  "categoryDeleteSelectedSubtitleWithoutSub": "确定要删除 {count} 个选中分类并且清空分类下的数据吗？（不含二级分类和数据）此操作无法撤销。",
+  "categoryDeleteSelectedSubtitleWithoutSub": "确定要删除 {count} 个选中分类并且清空分类下的数据吗？（不含子分类和数据）此操作无法撤销。",
   "@categoryDeleteSelectedSubtitleWithoutSub": {
     "placeholders": {
       "count": {
@@ -598,7 +551,7 @@
   },
   "categoryMigrateSelectTargetTitle": "选择数据迁移到的分类",
   "categoryMigrateConfirmButton": "确定（迁移分类数据并删除分类）",
-  "categoryMigrateChildLabel": "二级 · {parent}",
+  "categoryMigrateChildLabel": "所属：{parent}",
   "@categoryMigrateChildLabel": {
     "placeholders": {
       "parent": {
@@ -635,7 +588,7 @@
   "authErrorServerNotConfigured": "此版本未配置账号服务器，暂时无法登录或注册。你可以返回并继续使用本地功能。",
   "exportCsvHeaderType": "类型",
   "exportCsvHeaderCategory": "分类",
-  "exportCsvHeaderSubCategory": "二级分类",
+  "exportCsvHeaderSubCategory": "子分类",
   "exportCsvHeaderAmount": "金额",
   "exportCsvHeaderNote": "备注",
   "exportCsvHeaderTime": "时间",
@@ -2055,7 +2008,7 @@
   "transferTarget": "目标：{name}",
   "transferUnnamed": "未命名",
   "transferValid": "可以导入",
-  "transferFieldLabel": "{field, select, faccount {账号} famount {金额} fbody {正文} fcalendar {历法} fcategory {分类} fcategory_icon {分类图标} fcompleted {完成} fcountdown_mode {倒数方式} fcreated_at {创建时间} fcurrency {币种} fcycle_days {循环天数} fdate {日期} fday {训练日（从 1 开始）} fdays {训练日安排} femail {邮箱} fend_calendar {结束历法} fend_date {结束日期} fend_is_leap_month {结束闰月} fentity_type {数据类型} fexercise {动作} fexercises {动作与组} fgeneration_state {计划执行状态} fid {记录关联标识} finterval_days {间隔天数} fis_leap_month {闰月} fkind {组类型} fname {名称} fnote {备注} foccurrence_key {计划发生标识} fpassword {密码} fpending_schedule {待生效安排} fphone {电话} fpreferences {健身偏好} fremark {备注} frepeat_type {重复规则} freps {次数} frest_seconds {休息秒数} frest_timer {计时状态} frun_segments {执行时段} fscheduled_date {训练日期} fset_count {组数} fsource_kind {训练来源} fsource_plan_id {关联计划} fsource_plan_name {关联计划名称} fsource_template_id {关联模板} fstart_calendar {开始历法} fstart_date {开始日期} fstart_is_leap_month {开始闰月} fstatistic_type {统计方式} fstatus {状态} fsub_category {二级分类} fsub_category_icon {二级分类图标} ftitle {标题} ftype {类型} fupdated_at {修改时间} fweight {重量} fsets {组明细} fslot {训练安排} fday_index {训练日序号（从 0 开始）} other {欄位}}",
+  "transferFieldLabel": "{field, select, faccount {账号} famount {金额} fbody {正文} fcalendar {历法} fcategory {分类} fcategory_icon {分类图标} fcompleted {完成} fcountdown_mode {倒数方式} fcreated_at {创建时间} fcurrency {币种} fcycle_days {循环天数} fdate {日期} fday {训练日（从 1 开始）} fdays {训练日安排} femail {邮箱} fend_calendar {结束历法} fend_date {结束日期} fend_is_leap_month {结束闰月} fentity_type {数据类型} fexercise {动作} fexercises {动作与组} fgeneration_state {计划执行状态} fid {记录关联标识} finterval_days {间隔天数} fis_leap_month {闰月} fkind {组类型} fname {名称} fnote {备注} foccurrence_key {计划发生标识} fpassword {密码} fpending_schedule {待生效安排} fphone {电话} fpreferences {健身偏好} fremark {备注} frepeat_type {重复规则} freps {次数} frest_seconds {休息秒数} frest_timer {计时状态} frun_segments {执行时段} fscheduled_date {训练日期} fset_count {组数} fsource_kind {训练来源} fsource_plan_id {关联计划} fsource_plan_name {关联计划名称} fsource_template_id {关联模板} fstart_calendar {开始历法} fstart_date {开始日期} fstart_is_leap_month {开始闰月} fstatistic_type {统计方式} fstatus {状态} fsub_category {子分类} fsub_category_icon {子分类图标} ftitle {标题} ftype {类型} fupdated_at {修改时间} fweight {重量} fsets {组明细} fslot {训练安排} fday_index {训练日序号（从 0 开始）} other {欄位}}",
   "transferCardFields": "卡片字段",
   "transferCardFieldsHelp": "每列都可作为卡片字段：关闭开关或清空名称即不导入该列，字段名可改成你习惯的叫法。",
   "transferCardFieldName": "字段名",
@@ -2147,46 +2100,24 @@
   "txAmountInvalid": "请输入大于 0 且最多两位小数的金额",
   "txDivisionByZero": "不能除以 0，请修改金额",
   "txExpressionInvalid": "请输入完整有效的算式",
-  "@categoryTemplateRestoreMessage": {
-    "placeholders": {
-      "names": {
-        "type": "String"
-      }
-    }
-  },
   "categoryConflictCloud": "云端版本",
-  "@categoryTemplatePending": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "categoryConflictChooseLocal": "采用已提交的本地版本？之后的本机编辑会单独保留，等待继续同步。",
-  "categoryTemplateRestoreTitle": "恢复原分类",
   "recurringTransactionTimeZone": "记账时区",
   "categoryConflictSubmitted": "已提交的本地版本",
-  "categoryTemplateRestoreMessage": "以下模板对应的原分类曾被删除：\n{names}\n是否恢复原分类及原有设置？不会创建第二个分类，也不会恢复已删除的交易。",
   "recurringTransactionTimeZoneInvalid": "请选择有效的 IANA 时区",
-  "categoryTemplateRestoreConfirm": "恢复原分类",
   "categoryConflictRefreshRequired": "版本信息尚未就绪，请先重新读取。",
   "recurringTransactionAmountPrecision": "金额需大于 0，最多 28 位整数和 10 位小数。",
   "categoryConflictExplanation": "本地版本来自这次上传，不包含之后的编辑。请选择此分类要采用的版本。",
   "categoryConflictRestoreTitle": "恢复云端已删除分类",
   "recurringTransactionTimeZoneLocked": "已生成过交易，不能更改时区；如需调整，请新建周期规则。",
-  "categoryTemplatePendingLabel": "等待确认",
   "categoryConflictRetry": "重试确认",
   "recurringTransactionDayOfWeek": "每周星期几",
   "categoryConflictChooseCloud": "采用所示云端版本？本次冲突的本地提交将不再应用，之后的本机编辑会单独保留。",
-  "categoryTemplateNoChanges": "没有新增或恢复分类",
   "categoryConflictDeleteTitle": "确认删除分类",
   "categoryConflictType": "分类类型",
   "categoryConflictUnavailable": "此版本内容暂不可读，请重新读取。",
-  "categoryTemplateBlockedParentHierarchy": "原父分类的层级已改变，不能添加此子分类",
-  "categoryTemplateBlockedDuplicate": "同名分类已存在，未添加此模板",
   "categoryConflictChanged": "分类版本已变化，请重新比较后确认。",
   "categoryConflictUseLocal": "采用本地版本",
-  "categoryTemplateBlockedParentDuplicate": "同名父分类已存在，未添加此模板",
   "categoryConflictPosition": "排序值：{value}",
   "categoryConflictRestoreMessage": "云端已删除此分类。是否按已提交的本地版本恢复同一分类？不会创建第二个分类。",
   "@categoryConflictPosition": {
@@ -2196,24 +2127,14 @@
       }
     }
   },
-  "categoryTemplateBlockedLabel": "未添加",
   "categoryConflictRestore": "确认恢复",
   "categoryConflictParentMissing": "父分类尚未下载",
   "categoryConflictRefresh": "重新读取",
-  "categoryTemplatePending": "{count} 个分类等待云端确认，请到同步处理查看",
   "recurringTransactionIntervalInvalid": "间隔须为 1 到 10000 的整数。",
   "categoryConflictDeleteMessage": "本地提交是删除操作。采用后将删除云端此分类，请先核对两个版本。",
   "recurringTransactionMonthOfYear": "每年第几个月",
-  "categoryTemplateRestored": "已恢复 {count} 个原分类",
   "recurringTransactionTimeZoneHint": "按此时区的日历日期生成，各设备保持一致。",
   "categoryConflictPending": "确认结果尚未收到。请重试原确认，暂时不能选择其他版本。",
-  "@categoryTemplateRestored": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "categoryConflictUseCloud": "采用云端版本",
   "reminderDaysDailyTitle": "每日提醒",
   "reminderDaysDailyHint": "使用共用提醒时间，固定提醒节点优先，不重复提醒。",
@@ -2243,5 +2164,206 @@
   "syncCenterPendingRecordHint": "内容已保存在本机，等待上传到云端。",
   "syncCenterAwaitingReceiptHint": "上传结果尚未确认，重试会使用原请求继续同步。本机内容仍保留。",
   "syncCenterRecordUnavailable": "原内容已删除或暂时无法读取，请重新同步后检查。",
-  "syncCenterLastFailure": "上次同步未完成：{reason}"
+  "syncCenterLastFailure": "上次同步未完成：{reason}",
+  "categoryTemplateLibraryTitle": "分类模板库",
+  "categoryTemplateCreateMode": "新建分类",
+  "categoryTemplateAppendMode": "添加到已有分类",
+  "categoryTemplateCreateHint": "选择分类可单独创建，展开后可按需选择子分类。",
+  "categoryTemplateAppendHint": "先选择所属分类，勾选的每一项都会添加到它下面。",
+  "categoryTemplateChooseTarget": "选择所属分类",
+  "categoryTemplateNoChildren": "无子分类",
+  "categoryTemplateShowChildren": "展开或收起子分类",
+  "categoryTemplateChildrenCount": "子分类 {selected}/{total} 已选",
+  "categoryTemplateAppendConfirm": "将 {count} 个子分类添加到「{name}」？",
+  "categoryTemplateRetryHint": "添加尚未完成，请重试本次操作。",
+  "@categoryTemplateChildrenCount": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@categoryTemplateAppendConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryTemplatePersonalScope": "添加到我的分类目录",
+  "categoryTemplateScopeChanged": "账号或账本已变化，请返回后重新打开模板库。",
+  "categoryTemplateTargetUnavailable": "所属分类已不可用，请重新选择。",
+  "categoryTemplateChildCount": "{count} 项子分类",
+  "@categoryTemplateChildCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryNameDining": "餐饮",
+  "categoryNameDiningBreakfast": "早餐",
+  "categoryNameDiningLunch": "午餐",
+  "categoryNameDiningDinner": "晚餐",
+  "categoryNameDiningMeituan": "美团外卖",
+  "categoryNameDiningEleme": "饿了么外卖",
+  "categoryNameDiningJd": "京东外卖",
+  "categoryNameDiningRestaurant": "餐厅",
+  "categoryNameDiningFood": "美食",
+  "categoryNameTransport": "交通",
+  "categoryNameTransportTransitcard": "交通卡充值",
+  "categoryNameTransportTaxi": "打车",
+  "categoryNameTransportParking": "停车费",
+  "categoryNameTransportFuel": "加油",
+  "categoryNameShopping": "购物",
+  "categoryNameShoppingSupermarket": "超市",
+  "categoryNameShoppingDaily": "日用百货",
+  "categoryNameShoppingClothing": "服装",
+  "categoryNameShoppingShoes": "鞋子",
+  "categoryNameShoppingBag": "包包",
+  "categoryNameEntertainment": "娱乐",
+  "categoryNameEntertainmentMovie": "电影",
+  "categoryNameEntertainmentKtv": "KTV",
+  "categoryNameEntertainmentAmusement": "游乐场",
+  "categoryNameEntertainmentBar": "酒吧",
+  "categoryNameEntertainmentOther": "其他娱乐",
+  "categoryNameHome": "居家",
+  "categoryNameHomeFurniture": "家具",
+  "categoryNameHomeAppliance": "家电",
+  "categoryNameHomeDecor": "装饰品",
+  "categoryNameHomeBedding": "床上用品",
+  "categoryNameFamily": "家庭",
+  "categoryNameCommunication": "通讯",
+  "categoryNameUtilities": "水电",
+  "categoryNameHousing": "住房",
+  "categoryNameHousingUtilities": "水电煤",
+  "categoryNameHousingProperty": "物业费",
+  "categoryNameHousingRent": "房租",
+  "categoryNameHousingMortgage": "房贷",
+  "categoryNameHousingDecoration": "装修",
+  "categoryNameHousingBroadband": "宽带",
+  "categoryNameMedical": "医疗",
+  "categoryNameEducation": "教育",
+  "categoryNameEducationTuition": "学费",
+  "categoryNameEducationTraining": "培训费",
+  "categoryNameEducationBooks": "书籍",
+  "categoryNameEducationStationery": "文具",
+  "categoryNameEducationOffice": "办公用品",
+  "categoryNameEducationLearning": "学习",
+  "categoryNamePets": "宠物",
+  "categoryNamePetsFood": "宠物食品",
+  "categoryNamePetsSupplies": "宠物用品",
+  "categoryNamePetsMedical": "宠物医疗",
+  "categoryNamePetsGrooming": "宠物美容",
+  "categoryNameSports": "运动",
+  "categoryNameSportsGym": "健身房",
+  "categoryNameSportsEquipment": "运动装备",
+  "categoryNameSportsCourse": "运动课程",
+  "categoryNameSportsOutdoor": "户外活动",
+  "categoryNameDigital": "数码",
+  "categoryNameTravel": "旅行",
+  "categoryNameAlcoholTobacco": "烟酒",
+  "categoryNameBabyCare": "母婴",
+  "categoryNameBeauty": "美容",
+  "categoryNameBeautySkincare": "护肤品",
+  "categoryNameBeautyCosmetics": "化妆品",
+  "categoryNameBeautySalon": "剪发",
+  "categoryNameBeautyNail": "美甲",
+  "categoryNameRepair": "维修",
+  "categoryNameSocial": "社交",
+  "categoryNameLearning": "学习",
+  "categoryNameCar": "汽车",
+  "categoryNameCarMaintenance": "汽车保养",
+  "categoryNameCarRepair": "汽车维修",
+  "categoryNameCarInsurance": "汽车保险",
+  "categoryNameCarWash": "洗车",
+  "categoryNameCarFine": "违章罚款",
+  "categoryNameTaxi": "打车",
+  "categoryNameSubway": "地铁",
+  "categoryNameDelivery": "外卖",
+  "categoryNameProperty": "物业",
+  "categoryNameParking": "停车",
+  "categoryNameDonation": "捐赠",
+  "categoryNameGift": "送礼",
+  "categoryNameTax": "纳税",
+  "categoryNameBeverage": "饮料",
+  "categoryNameBeverageMilkTea": "奶茶",
+  "categoryNameBeverageCoffee": "咖啡",
+  "categoryNameBeverageJuice": "果汁",
+  "categoryNameBeverageSoda": "汽水",
+  "categoryNameBeverageWater": "矿泉水",
+  "categoryNameClothing": "服装",
+  "categoryNameClothingTop": "上衣",
+  "categoryNameClothingPants": "裤子",
+  "categoryNameClothingSkirt": "裙子",
+  "categoryNameClothingShoes": "鞋子",
+  "categoryNameClothingAccessory": "服饰配件",
+  "categoryNameSnacks": "零食",
+  "categoryNameSnacksBiscuit": "饼干",
+  "categoryNameSnacksChips": "薯片",
+  "categoryNameSnacksCandy": "糖果",
+  "categoryNameSnacksChocolate": "巧克力",
+  "categoryNameSnacksNuts": "坚果",
+  "categoryNameRedPacket": "发红包",
+  "categoryNameFruit": "水果",
+  "categoryNameFruitApple": "苹果",
+  "categoryNameFruitBanana": "香蕉",
+  "categoryNameFruitOrange": "橙子",
+  "categoryNameFruitGrape": "葡萄",
+  "categoryNameFruitWatermelon": "西瓜",
+  "categoryNameFruitOther": "其他水果",
+  "categoryNameGame": "游戏",
+  "categoryNameGameRecharge": "游戏充值",
+  "categoryNameGameEquipment": "游戏装备",
+  "categoryNameGameMembership": "游戏会员",
+  "categoryNameBook": "书籍",
+  "categoryNameLover": "爱人",
+  "categoryNameDecoration": "装修",
+  "categoryNameDailyGoods": "日用品",
+  "categoryNameDailyToiletries": "洗护用品",
+  "categoryNameDailyPaper": "纸品",
+  "categoryNameDailyCleaning": "清洁用品",
+  "categoryNameDailyKitchen": "厨房用品",
+  "categoryNameLottery": "彩票",
+  "categoryNameStock": "股票",
+  "categoryNameSocialSecurity": "社保",
+  "categoryNameExpress": "快递",
+  "categoryNameWork": "工作",
+  "categoryNameTransfer": "转账",
+  "categoryNameTransferLivingcost": "生活费",
+  "categoryNameTransferFamily": "家庭",
+  "categoryNameTransferParents": "父母",
+  "categoryNameTransferLover": "恋人",
+  "categoryNameTransferBorrowmoney": "借钱",
+  "categoryNameOther": "其他",
+  "categoryNamePastry": "糕点",
+  "categoryNamePastryCake": "蛋糕",
+  "categoryNamePastryBread": "面包",
+  "categoryNamePastryDessert": "甜点",
+  "categoryNamePastryBiscuit": "曲奇",
+  "categoryNameCooking": "做饭食材",
+  "categoryNameCookingVegetable": "蔬菜",
+  "categoryNameCookingMeat": "肉类",
+  "categoryNameCookingSeafood": "水产",
+  "categoryNameCookingSeasoning": "调料",
+  "categoryNameCookingGrain": "粮油",
+  "categoryNameInvestLoss": "投资亏损",
+  "categoryNameInvestLossStock": "股票亏损",
+  "categoryNameInvestLossFund": "基金亏损",
+  "categoryNameInvestLossOther": "其他投资亏损",
+  "categoryNameHealthProducts": "保健品",
+  "categoryNameHealthVitamin": "维生素",
+  "categoryNameHealthFood": "保健食品",
+  "categoryNameHealthNutrition": "营养品",
+  "categoryNameSubscription": "订阅服务",
+  "categoryNameSubscriptionVideo": "视频会员",
+  "categoryNameSubscriptionMusic": "音乐会员",
+  "categoryNameSubscriptionCloud": "云存储",
+  "categoryNameSubscriptionOther": "其他订阅"
 }

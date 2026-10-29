@@ -8,6 +8,7 @@ import 'package:path/path.dart' as p;
 
 import 'package:sesame_notes/data/models/expense_type.dart';
 import 'export_file_name.dart';
+import '../domain/import_identity.dart';
 
 /// 导出结果：实际文件路径 + 展示用路径。
 typedef DetailExportResult = ({String path, String displayPath});
@@ -65,6 +66,13 @@ Future<DetailExportResult> exportDetailCsv({
         }).toList();
 
   final total = list.length;
+  final ledger = await repo.getLedgerById(ledgerId);
+  if (ledger == null) throw StateError('导出账本不存在，请重新选择');
+  final categoryScope = ledgerCategorySourceScope(
+    ledgerId: ledger.id,
+    storageMode: ledger.storageMode,
+    ownerAccountId: ledger.ownerAccountId,
+  );
   final rows = <List<dynamic>>[];
   rows.add([
     labels.type,
@@ -74,6 +82,11 @@ Future<DetailExportResult> exportDetailCsv({
     labels.currency, // 多币种:交易原币种
     labels.note,
     labels.time,
+    'category_scope',
+    'category_id',
+    'parent_category_id',
+    'category_icon',
+    'sub_category_icon',
   ]);
 
   // 父子分类只从本次导出账本的真实目录解析，同 UUID 的其他账号分类不会参与导出。
@@ -128,6 +141,11 @@ Future<DetailExportResult> exportDetailCsv({
       currencyStr,
       t.note ?? '',
       timeStr,
+      categoryScope,
+      c?.id ?? '',
+      c?.parentId ?? '',
+      c?.level == 2 ? allCategories[c?.parentId]?.icon ?? '' : c?.icon ?? '',
+      c?.level == 2 ? c?.icon ?? '' : '',
     ]);
     if (i % 50 == 0) {
       onProgress((i + 1) / (total == 0 ? 1 : total));

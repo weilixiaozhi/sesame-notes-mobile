@@ -1,10 +1,8 @@
-import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
-import 'package:sesame_notes/data/repositories/support/exceptions.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -21,141 +19,70 @@ void main() {
     await db.close();
   });
 
-  group('支出分类名称判重', () {
-    test('同 kind 重名抛 DuplicateNameException', () async {
-      await repo.createCategory(name: '红包', kind: 'expense');
+  group('分类名称与实体身份独立', () {
+    test('同名同图标一级分类每次创建独立身份', () async {
+      final first = await repo.createCategory(
+        name: '红包',
+        kind: 'expense',
+        icon: 'gift',
+      );
+      final second = await repo.createCategory(
+        name: '红包',
+        kind: 'expense',
+        icon: 'gift',
+      );
+      expect(first, isNot(second));
       expect(
-        () => repo.createCategory(name: '红包', kind: 'expense'),
-        throwsA(isA<DuplicateNameException>()),
+        (await repo.categoryStore.getAllCategories())
+            .map((row) => row.id)
+            .toSet(),
+        {first, second},
       );
     });
-
-    test('upsertCategory 复用同名支出分类', () async {
-      final a = await repo.upsertCategory(name: '红包', kind: 'expense');
-      final aAgain = await repo.upsertCategory(name: '红包', kind: 'expense');
-      expect(aAgain.id, a.id);
-      expect(aAgain.created, isFalse);
-    });
-
-    test('createSubCategory 同父级下重名抛 DuplicateNameException', () async {
-      final p = await repo.createCategory(name: '餐饮', kind: 'expense');
-      await repo.createSubCategory(parentId: p, name: '午餐', kind: 'expense');
+    test('同父同名子分类分别保留，不合并引用', () async {
+      final parent = await repo.createCategory(name: '餐饮', kind: 'expense');
+      final first = await repo.createSubCategory(
+        parentId: parent,
+        name: '午餐',
+        kind: 'expense',
+      );
+      final second = await repo.createSubCategory(
+        parentId: parent,
+        name: '午餐',
+        kind: 'expense',
+      );
+      expect(first, isNot(second));
       expect(
-        () => repo.createSubCategory(parentId: p, name: '午餐', kind: 'expense'),
-        throwsA(isA<DuplicateNameException>()),
+        (await repo.categoryStore.getSubCategories(
+          parent,
+        )).map((row) => row.id).toSet(),
+        {first, second},
       );
     });
-  });
-
-  group('分类作用域唯一(跨父级/跨层级允许同名)', () {
-    test('跨父级同名二级分类可共存(购物>鞋子 + 服装>鞋子)', () async {
-      final pShopping = await repo.createCategory(name: '购物', kind: 'expense');
-      final pClothing = await repo.createCategory(name: '服装', kind: 'expense');
-      final shoesA = await repo.createSubCategory(
-        parentId: pShopping,
+    test('跨父与跨层同名始终绑定明确的父ID', () async {
+      final first = await repo.createCategory(name: '购物', kind: 'expense');
+      final second = await repo.createCategory(name: '购物', kind: 'expense');
+      final childA = await repo.createSubCategory(
+        parentId: first,
         name: '鞋子',
         kind: 'expense',
       );
-      final shoesB = await repo.createSubCategory(
-        parentId: pClothing,
+      final childB = await repo.createSubCategory(
+        parentId: second,
         name: '鞋子',
         kind: 'expense',
       );
-      expect(shoesA, isNot(shoesB));
-    });
-
-    test('一级与二级允许同名(「服装」父分类 vs「购物>服装」子分类)', () async {
-      final pShopping = await repo.createCategory(name: '购物', kind: 'expense');
-      await repo.createSubCategory(
-        parentId: pShopping,
-        name: '服装',
-        kind: 'expense',
-      );
-      // 已存在「购物>服装」二级分类时,仍可创建同名一级分类
-      final l1 = await repo.createCategory(name: '服装', kind: 'expense');
-      expect(l1, isNotEmpty);
-    });
-
-    test('isCategoryNameDuplicate 按作用域判重', () async {
-      final pShopping = await repo.createCategory(name: '购物', kind: 'expense');
-      final pClothing = await repo.createCategory(name: '服装', kind: 'expense');
-      await repo.createSubCategory(
-        parentId: pShopping,
-        name: '鞋子',
-        kind: 'expense',
-      );
-      // 同父级作用域 → 重复
+      final top = await repo.createCategory(name: '鞋子', kind: 'expense');
+      expect({childA, childB, top}, hasLength(3));
       expect(
-        await repo.categoryStore.isCategoryNameDuplicate(
-          name: '鞋子',
-          kind: 'expense',
-          parentId: pShopping,
-        ),
-        isTrue,
-      );
-      // 另一个父级作用域 → 不算重复
-      expect(
-        await repo.categoryStore.isCategoryNameDuplicate(
-          name: '鞋子',
-          kind: 'expense',
-          parentId: pClothing,
-        ),
-        isFalse,
-      );
-      // 根作用域(一级分类之间) → 与二级「鞋子」不冲突
-      expect(
-        await repo.categoryStore.isCategoryNameDuplicate(
-          name: '鞋子',
-          kind: 'expense',
-        ),
-        isFalse,
-      );
-    });
-
-    test('upsertCategory 遇不同父级同名子类报告冲突，不合并或新增同名类别', () async {
-      final pShopping = await repo.createCategory(name: '购物', kind: 'expense');
-      final pClothing = await repo.createCategory(name: '服装', kind: 'expense');
-      // 固定身份用于确认不同父级的原分类均完整保留。
-      final now = DateTime.now().toUtc();
-      final shoesA = 'cat-shoes-a';
-      await db
-          .into(db.categories)
-          .insert(
-            CategoriesCompanion.insert(
-              id: shoesA,
-              name: '鞋子',
-              kind: 'expense',
-              level: 2,
-              parentId: Value(pShopping),
-              updatedAt: now,
-            ),
-          );
-      await db
-          .into(db.categories)
-          .insert(
-            CategoriesCompanion.insert(
-              id: 'cat-shoes-b',
-              name: '鞋子',
-              kind: 'expense',
-              level: 2,
-              parentId: Value(pClothing),
-              updatedAt: now,
-            ),
-          );
-      final before = await db.select(db.categories).get();
-      await expectLater(
-        repo.upsertCategory(name: '鞋子', kind: 'expense'),
-        throwsStateError,
-      );
-      expect(await db.select(db.categories).get(), before);
-      expect(
-        (await repo.categoryStore.getSubCategories(pShopping)).single.id,
-        shoesA,
+        (await repo.categoryStore.getSubCategories(first)).single.id,
+        childA,
       );
       expect(
-        (await repo.categoryStore.getSubCategories(pClothing)).single.id,
-        'cat-shoes-b',
+        (await repo.categoryStore.getSubCategories(second)).single.id,
+        childB,
       );
+      expect((await repo.categoryStore.getCategoryById(top))!.parentId, isNull);
     });
   });
 

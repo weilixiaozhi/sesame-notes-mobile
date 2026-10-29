@@ -25,7 +25,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   const accountId = 'category-boundary-account';
-  const operations = ['createCategory', 'createSubCategory', 'upsertCategory'];
+  const operations = ['createCategory', 'createSubCategory'];
   // 补充平面图标占两个 UTF-16 单元，组合字符占两个码点，不能按字形计长。
   final validIcon = '${'🧾' * 253}e\u0301';
   final invalidFields = <({String label, String? icon, int sortOrder})>[
@@ -57,7 +57,7 @@ void main() {
 
   tearDown(() => _diagnose('关闭分类边界测试数据库', db.close));
 
-  /// 三个入口使用相同字段，二级分类保留真实父节点和既有待推变更。
+  /// 创建入口使用相同字段，二级分类保留真实父节点和既有待推变更。
   Future<String> create(
     String operation, {
     String? icon,
@@ -82,15 +82,6 @@ void main() {
           sortOrder: sortOrder,
           recordChanges: recordChanges,
         );
-      case 'upsertCategory':
-        final result = await repo.upsertCategory(
-          name: '边界分类',
-          kind: 'expense',
-          icon: icon,
-          sortOrder: sortOrder,
-        );
-        expect(result.created, isTrue);
-        return result.id;
       default:
         throw StateError('未知分类创建入口：$operation');
     }

@@ -7,7 +7,6 @@ import '../../helpers/test_isolation.dart';
 
 import 'package:sesame_notes/data/db.dart' as db;
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
-import 'package:sesame_notes/data/repositories/support/exceptions.dart';
 import 'package:sesame_notes/features/categories/application/category_actions.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
@@ -373,7 +372,7 @@ void main() {
     test('新建二级分类：挂到指定父分类下', () async {
       final parent = await createTop('餐饮');
 
-      final id = await actions.createSub(
+      final id = await actions.create(
         parentId: parent,
         name: '早餐',
         kind: 'expense',
@@ -396,7 +395,6 @@ void main() {
         name: '新名字',
         icon: 'category',
         parentId: null,
-        level: 1,
       );
 
       final row = await repo.categoryStore.getCategoryById(target);
@@ -410,13 +408,7 @@ void main() {
       final parent = await createTop('餐饮');
       final child = await createSub(parent, '早餐');
 
-      await actions.update(
-        child,
-        name: '早餐',
-        icon: 'utensils',
-        parentId: '',
-        level: 1,
-      );
+      await actions.update(child, name: '早餐', icon: 'utensils', parentId: '');
 
       final row = await repo.categoryStore.getCategoryById(child);
       expect(row!.parentId, isNull, reason: '空串是清空父分类的仓储契约');
@@ -424,88 +416,51 @@ void main() {
     });
   });
 
-  group('重名判重阻止写入', () {
-    test('一级分类判重命中时写入被拒绝且不新增记录', () async {
-      await createTop('餐饮');
-      expect(
-        await actions.isNameDuplicate(name: '餐饮', kind: 'expense'),
-        isTrue,
+  group('同名分类保持独立身份', () {
+    test('同名一级可以创建且图标与ID各自保留', () async {
+      final first = await createTop('餐饮');
+      final second = await actions.create(
+        name: '餐饮',
+        kind: 'expense',
+        icon: 'coffee',
       );
-
-      await expectLater(
-        actions.create(name: '餐饮', kind: 'expense', icon: 'category'),
-        throwsA(isA<DuplicateNameException>()),
-      );
-
-      final topLevel = await repo.categoryStore.getTopLevelCategories(
-        'expense',
-      );
-      expect(
-        topLevel.where((c) => c.name == '餐饮'),
-        hasLength(1),
-        reason: '重名分类不得写入第二条',
-      );
+      expect(second, isNot(first));
+      final rows = await repo.categoryStore.getTopLevelCategories('expense');
+      expect(rows.where((row) => row.name == '餐饮'), hasLength(2));
+      expect(rows.singleWhere((row) => row.id == second).icon, 'coffee');
     });
 
-    test('二级分类只在同一父级作用域内判重', () async {
-      final parentA = await createTop('父分类1');
-      final parentB = await createTop('父分类2');
-      await createSub(parentA, '鞋子');
-
-      expect(
-        await actions.isNameDuplicate(
-          name: '鞋子',
-          kind: 'expense',
-          parentId: parentA,
-        ),
-        isTrue,
+    test('同父同名子项与跨父同名子项均保持正确父引用', () async {
+      final parentA = await createTop('父分类');
+      final parentB = await createTop('父分类');
+      final first = await createSub(parentA, '鞋子');
+      final second = await actions.create(
+        parentId: parentA,
+        name: '鞋子',
+        kind: 'expense',
       );
-      expect(
-        await actions.isNameDuplicate(
-          name: '鞋子',
-          kind: 'expense',
-          parentId: parentB,
-        ),
-        isFalse,
-        reason: '跨父级允许同名',
-      );
-
-      await expectLater(
-        actions.createSub(
-          parentId: parentA,
-          name: '鞋子',
-          kind: 'expense',
-          icon: 'category',
-        ),
-        throwsA(isA<DuplicateNameException>()),
-      );
-      final id = await actions.createSub(
+      final third = await actions.create(
         parentId: parentB,
         name: '鞋子',
         kind: 'expense',
-        icon: 'category',
       );
-
-      expect((await repo.categoryStore.getCategoryById(id))!.parentId, parentB);
+      expect({first, second, third}, hasLength(3));
+      expect(await repo.categoryStore.getSubCategories(parentA), hasLength(2));
       expect(
-        await repo.categoryStore.getSubCategories(parentA),
-        hasLength(1),
-        reason: '同父重名不得写入',
+        (await repo.categoryStore.getCategoryById(third))!.parentId,
+        parentB,
       );
     });
 
-    test('编辑自身名称不判重（excludeId 排除自身）', () async {
-      final target = await createTop('餐饮');
-
+    test('编辑成已有名称只修改目标ID', () async {
+      final first = await createTop('餐饮');
+      final second = await createTop('食物');
+      await actions.update(second, name: '餐饮', icon: 'coffee');
       expect(
-        await actions.isNameDuplicate(
-          name: '餐饮',
-          kind: 'expense',
-          excludeId: target,
-        ),
-        isFalse,
-        reason: '编辑保存时不应把自己判成重名',
+        (await repo.categoryStore.getCategoryById(first))!.icon,
+        'utensils',
       );
+      expect((await repo.categoryStore.getCategoryById(second))!.name, '餐饮');
     });
   });
 }

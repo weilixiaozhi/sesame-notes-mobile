@@ -404,34 +404,10 @@
   "categoryParentCategoryTitle": "Belongs To",
   "categorySelectParentHint": "Please select a category",
   "categorySelectParentTitle": "Select Category",
-  "categoryHasSubCategories": "This category has subcategories and cannot be modified",
+  "categoryHasSubCategories": "This category has subcategories, so its parent cannot be changed",
   "categorySearchCategory": "Search categories",
-  "categoryTopLevelLabel": "Top-level",
-  "categorySecondLevelLabel": "Second-level",
-  "categoryExpenseList": "Dining-Transport-Shopping-Entertainment-Home-Family-Communication-Utilities-Housing-Medical-Education-Pets-Sports-Digital-Travel-Alcohol & Tobacco-Baby Care-Beauty-Repair-Social-Learning-Car-Taxi-Subway-Delivery-Property-Parking-Donation-Give Gift-Tax-Beverage-Clothing-Snacks-Send Red Packet-Fruit-Game-Books-Lover-Decoration-Daily Goods-Lottery-Stock-Social Security-Express-Work-Transfer-Other",
-  "categoryExpenseDining": "Dining-Breakfast-Lunch-Dinner-Meituan Delivery-Ele.me Delivery-JD Delivery-Restaurant-Food",
-  "categoryExpenseSnacks": "Snacks-Cookies-Chips-Candy-Chocolate-Nuts",
-  "categoryExpenseFruit": "Fruit-Apple-Banana-Orange-Grape-Watermelon-Other Fruits",
-  "categoryExpenseBeverage": "Beverage-Milk Tea-Coffee-Juice-Soda-Mineral Water",
-  "categoryExpensePastry": "Pastry-Cake-Bread-Dessert-Baked Goods",
-  "categoryExpenseCooking": "Cooking Ingredients-Vegetables-Meat-Seafood-Seasoning-Grain & Oil",
-  "categoryExpenseShopping": "Shopping-Supermarket-Daily Necessities-Clothing-Shoes-Bags",
-  "categoryExpensePets": "Pets-Pet Food-Pet Supplies-Pet Medical-Pet Grooming",
-  "categoryExpenseTransport": "Transport-Transit Card-Taxi-Parking Fee-Fuel",
-  "categoryExpenseCar": "Car-Car Maintenance-Car Repair-Car Insurance-Car Wash-Traffic Fine",
-  "categoryExpenseClothing": "Apparel-Top-Pants-Dress-Shoes-Apparel Accessories",
-  "categoryExpenseDailyGoods": "Daily Goods-Personal Care-Paper Products-Cleaning Supplies-Kitchen Supplies",
-  "categoryExpenseEducation": "Education-Tuition-Training Fee-Books-Stationery-Office Supplies-Learning",
-  "categoryExpenseInvestLoss": "Investment Loss-Stock Loss-Fund Loss-Other Investment Loss",
-  "categoryExpenseEntertainment": "Entertainment-Movie-KTV-Amusement Park-Bar-Other Entertainment",
-  "categoryExpenseGame": "Game-Game Top up-Game Equipment-Game Membership",
-  "categoryExpenseHealthProducts": "Health Products-Vitamins-Health Food-Nutritional Supplements",
-  "categoryExpenseSubscription": "Subscription-Video Membership-Music Membership-Cloud Storage-Other Subscription",
-  "categoryExpenseSports": "Sports-Gym-Sports Equipment-Sports Course-Outdoor Activity",
-  "categoryExpenseHousing": "Housing-Utilities-Property Fee-Rent-Mortgage-Renovation-Broadband",
-  "categoryExpenseHome": "Home-Furniture-Appliances-Decorations-Bedding",
-  "categoryExpenseBeauty": "Beauty-Skincare-Cosmetics-Haircut-Nail Care",
-  "categoryExpenseTransfer": "Transfer-Living Cost-Family-Parents-Lover-Borrow Money",
+  "categoryTopLevelLabel": "Category",
+  "categorySecondLevelLabel": "Subcategory",
   "appearanceThemeMode": "Display mode",
   "appearanceThemeModeSystem": "Follow System",
   "appearanceThemeModeLight": "Light Mode",
@@ -490,10 +466,6 @@
       }
     }
   },
-  "categoryTemplateEntryFlat": "Flat Template",
-  "categoryTemplateEntryHierarchical": "Hierarchical Template",
-  "categoryTemplateFlatTitle": "Flat Category Template",
-  "categoryTemplateHierarchicalTitle": "Hierarchical Category Template",
   "categoryTemplateSelectedCount": "{count} selected",
   "@categoryTemplateSelectedCount": {
     "placeholders": {
@@ -504,8 +476,6 @@
   },
   "categoryTemplateSelectAll": "Select all",
   "categoryTemplateDeselectAll": "Deselect all",
-  "categoryTemplateAlreadyAdded": "Added",
-  "categoryTemplateAlreadyAddedHint": "Added categories stay selected and cannot be deselected",
   "categoryTemplateConfirmTitle": "Add Categories",
   "categoryTemplateConfirmMessage": "Add the selected {count} categories to your category list?",
   "@categoryTemplateConfirmMessage": {
@@ -520,23 +490,6 @@
     "placeholders": {
       "count": {
         "type": "int"
-      }
-    }
-  },
-  "categoryTemplateAddFailed": "Failed to add: {error}",
-  "categoryTemplatePartiallyCompleted": "{completed}\nThe remaining categories could not be processed. Please try again.",
-  "@categoryTemplatePartiallyCompleted": {
-    "description": "已提交的模板处理摘要及剩余操作未完成提示。",
-    "placeholders": {
-      "completed": {
-        "type": "String"
-      }
-    }
-  },
-  "@categoryTemplateAddFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
       }
     }
   },
@@ -576,9 +529,9 @@
   "categorySharedManageBannerOwner": "Shared ledger: category changes here sync to all members",
   "categorySharedManageBannerEditor": "This shared ledger uses the owner's categories; edits here only affect your personal categories",
   "categorySortSaveFailed": "Failed to save order. Please try again",
-  "categoryDeleteOptionAll": "Delete categories and all data (incl. subcategories)",
+  "categoryDeleteOptionAll": "Delete categories, their subcategories and all their data",
   "categoryDeleteOptionMigrate": "Delete categories and their subcategories and migrate all data to another category",
-  "categoryDeleteOptionPromote": "Delete categories and data (excl. subcategories, subcategories become top-level)",
+  "categoryDeleteOptionPromote": "Delete categories and their direct data; keep subcategories and their data independently",
   "categoryDeleteSelectedTitle": "Delete Selected Categories",
   "categoryDeleteSelectedSubtitleWithSub": "Are you sure you want to delete {count} selected categories and clear their data? (including subcategories and data) This action cannot be undone.",
   "@categoryDeleteSelectedSubtitleWithSub": {
@@ -598,7 +551,7 @@
   },
   "categoryMigrateSelectTargetTitle": "Select Target Category",
   "categoryMigrateConfirmButton": "Confirm (Migrate data and delete categories)",
-  "categoryMigrateChildLabel": "Sub · {parent}",
+  "categoryMigrateChildLabel": "Under {parent}",
   "@categoryMigrateChildLabel": {
     "placeholders": {
       "parent": {
@@ -2168,46 +2121,24 @@
   "txAmountInvalid": "Enter an amount greater than 0 with up to 2 decimal places.",
   "txDivisionByZero": "Cannot divide by zero. Change the amount.",
   "txExpressionInvalid": "Enter a complete, valid expression.",
-  "@categoryTemplateRestoreMessage": {
-    "placeholders": {
-      "names": {
-        "type": "String"
-      }
-    }
-  },
   "categoryConflictCloud": "Cloud version",
-  "@categoryTemplatePending": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "categoryConflictChooseLocal": "Use the submitted local version? Later edits on this device will be preserved separately for further sync.",
-  "categoryTemplateRestoreTitle": "Restore original categories",
   "recurringTransactionTimeZone": "Time zone",
   "categoryConflictSubmitted": "Submitted local version",
-  "categoryTemplateRestoreMessage": "The original categories for these templates were deleted:\n{names}\nRestore the original categories and their settings? This creates no duplicate categories and restores no deleted transactions.",
   "recurringTransactionTimeZoneInvalid": "Select a valid IANA time zone",
-  "categoryTemplateRestoreConfirm": "Restore originals",
   "categoryConflictRefreshRequired": "Version information is not ready. Reload it before making a decision.",
   "recurringTransactionAmountPrecision": "Enter an amount greater than zero, with up to 28 integer digits and 10 decimal places.",
   "categoryConflictExplanation": "The local version is from this upload and excludes later edits. Choose which version to use for this category.",
   "categoryConflictRestoreTitle": "Restore deleted cloud category",
   "recurringTransactionTimeZoneLocked": "Transactions already exist. Create a new recurring rule to use another time zone.",
-  "categoryTemplatePendingLabel": "Awaiting review",
   "categoryConflictRetry": "Retry confirmation",
   "recurringTransactionDayOfWeek": "Day of the week",
   "categoryConflictChooseCloud": "Use the displayed cloud version? The local submission in this conflict will not be applied. Later device edits will be preserved separately.",
-  "categoryTemplateNoChanges": "No categories were added or restored",
   "categoryConflictDeleteTitle": "Confirm category deletion",
   "categoryConflictType": "Category type",
   "categoryConflictUnavailable": "This version is unavailable. Reload it to continue.",
-  "categoryTemplateBlockedParentHierarchy": "The original parent has changed level; this child cannot be added",
-  "categoryTemplateBlockedDuplicate": "A category with this name exists; this template was not added",
   "categoryConflictChanged": "The category changed. Compare the refreshed versions before confirming again.",
   "categoryConflictUseLocal": "Use local version",
-  "categoryTemplateBlockedParentDuplicate": "A parent with this name exists; this template was not added",
   "categoryConflictPosition": "Sort value: {value}",
   "categoryConflictRestoreMessage": "This category was deleted in the cloud. Restore that same category using the submitted local version? A second category will not be created.",
   "@categoryConflictPosition": {
@@ -2217,24 +2148,14 @@
       }
     }
   },
-  "categoryTemplateBlockedLabel": "Not added",
   "categoryConflictRestore": "Confirm restore",
   "categoryConflictParentMissing": "Parent category has not been downloaded",
   "categoryConflictRefresh": "Reload versions",
-  "categoryTemplatePending": "{count} categories await cloud confirmation. Open Sync issues to review them.",
   "recurringTransactionIntervalInvalid": "Enter an integer from 1 to 10000.",
   "categoryConflictDeleteMessage": "The local submission deletes this category. Applying it will delete the cloud category. Review both versions first.",
   "recurringTransactionMonthOfYear": "Month of the year",
-  "categoryTemplateRestored": "Restored {count} original categories",
   "recurringTransactionTimeZoneHint": "Generate by this time zone’s calendar dates, consistently across devices.",
   "categoryConflictPending": "The confirmation result has not arrived. Retry the original decision before choosing another version.",
-  "@categoryTemplateRestored": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "categoryConflictUseCloud": "Use cloud version",
   "reminderDaysDailyTitle": "Daily reminders",
   "reminderDaysDailyHint": "Uses the shared reminder time. Scheduled milestones take priority, with no duplicate reminders.",
@@ -2244,11 +2165,29 @@
   "reminderDaysDailyLoadFailed": "Could not load anniversaries. Please try again.",
   "reminderDaysDailyAccountChanged": "Your account changed. Close this dialog and select again.",
   "syncCenterTransactionTitle": "Transaction · {category}",
-  "@syncCenterTransactionTitle": {"placeholders": {"category": {"type": "String"}}},
+  "@syncCenterTransactionTitle": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
   "syncCenterCategoryTitle": "Category · {name}",
-  "@syncCenterCategoryTitle": {"placeholders": {"name": {"type": "String"}}},
+  "@syncCenterCategoryTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "syncCenterBookContext": "Ledger: {name}",
-  "@syncCenterBookContext": {"placeholders": {"name": {"type": "String"}}},
+  "@syncCenterBookContext": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "syncCenterUnknownCategory": "Category name unavailable",
   "syncCenterEntityTitle": "{type} · {name}",
   "syncCenterTypeLedger": "Ledger",
@@ -2268,6 +2207,222 @@
   "syncCenterAwaitingReceiptHint": "The upload result is not confirmed. Retrying uses the original request to continue syncing. Your local content is preserved.",
   "syncCenterRecordUnavailable": "The original content was deleted or cannot be read. Sync again and check.",
   "syncCenterLastFailure": "Last sync did not finish: {reason}",
-  "@syncCenterLastFailure": {"placeholders": {"reason": {"type": "String"}}},
-  "@syncCenterEntityTitle": {"placeholders": {"type": {"type": "String"}, "name": {"type": "String"}}}
+  "@syncCenterLastFailure": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "@syncCenterEntityTitle": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryTemplateLibraryTitle": "Category templates",
+  "categoryTemplateCreateMode": "Create categories",
+  "categoryTemplateAppendMode": "Add to a category",
+  "categoryTemplateCreateHint": "Select a category to create it, or expand it to choose subcategories.",
+  "categoryTemplateAppendHint": "Choose a category first. Each selected item will be added directly under it.",
+  "categoryTemplateChooseTarget": "Choose a category",
+  "categoryTemplateNoChildren": "No subcategories",
+  "categoryTemplateShowChildren": "Show or hide subcategories",
+  "categoryTemplateChildrenCount": "{selected}/{total} subcategories selected",
+  "categoryTemplateAppendConfirm": "Add {count} subcategories to “{name}”?",
+  "categoryTemplateRetryHint": "Adding is not complete. Retry this operation.",
+  "@categoryTemplateChildrenCount": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@categoryTemplateAppendConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryTemplatePersonalScope": "Add to my category list",
+  "categoryTemplateScopeChanged": "The account or ledger changed. Go back and reopen templates.",
+  "categoryTemplateTargetUnavailable": "The selected category is no longer available. Choose another.",
+  "categoryTemplateChildCount": "{count} subcategories",
+  "@categoryTemplateChildCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryNameDining": "Dining",
+  "categoryNameDiningBreakfast": "Breakfast",
+  "categoryNameDiningLunch": "Lunch",
+  "categoryNameDiningDinner": "Dinner",
+  "categoryNameDiningMeituan": "Meituan Delivery",
+  "categoryNameDiningEleme": "Ele.me Delivery",
+  "categoryNameDiningJd": "JD Delivery",
+  "categoryNameDiningRestaurant": "Restaurant",
+  "categoryNameDiningFood": "Food",
+  "categoryNameTransport": "Transport",
+  "categoryNameTransportTransitcard": "Transit Card",
+  "categoryNameTransportTaxi": "Taxi",
+  "categoryNameTransportParking": "Parking Fee",
+  "categoryNameTransportFuel": "Fuel",
+  "categoryNameShopping": "Shopping",
+  "categoryNameShoppingSupermarket": "Supermarket",
+  "categoryNameShoppingDaily": "Daily Necessities",
+  "categoryNameShoppingClothing": "Clothing",
+  "categoryNameShoppingShoes": "Shoes",
+  "categoryNameShoppingBag": "Bags",
+  "categoryNameEntertainment": "Entertainment",
+  "categoryNameEntertainmentMovie": "Movie",
+  "categoryNameEntertainmentKtv": "KTV",
+  "categoryNameEntertainmentAmusement": "Amusement Park",
+  "categoryNameEntertainmentBar": "Bar",
+  "categoryNameEntertainmentOther": "Other Entertainment",
+  "categoryNameHome": "Home",
+  "categoryNameHomeFurniture": "Furniture",
+  "categoryNameHomeAppliance": "Appliances",
+  "categoryNameHomeDecor": "Decorations",
+  "categoryNameHomeBedding": "Bedding",
+  "categoryNameFamily": "Family",
+  "categoryNameCommunication": "Communication",
+  "categoryNameUtilities": "Utilities",
+  "categoryNameHousing": "Housing",
+  "categoryNameHousingUtilities": "Utilities",
+  "categoryNameHousingProperty": "Property Fee",
+  "categoryNameHousingRent": "Rent",
+  "categoryNameHousingMortgage": "Mortgage",
+  "categoryNameHousingDecoration": "Renovation",
+  "categoryNameHousingBroadband": "Broadband",
+  "categoryNameMedical": "Medical",
+  "categoryNameEducation": "Education",
+  "categoryNameEducationTuition": "Tuition",
+  "categoryNameEducationTraining": "Training Fee",
+  "categoryNameEducationBooks": "Books",
+  "categoryNameEducationStationery": "Stationery",
+  "categoryNameEducationOffice": "Office Supplies",
+  "categoryNameEducationLearning": "Learning",
+  "categoryNamePets": "Pets",
+  "categoryNamePetsFood": "Pet Food",
+  "categoryNamePetsSupplies": "Pet Supplies",
+  "categoryNamePetsMedical": "Pet Medical",
+  "categoryNamePetsGrooming": "Pet Grooming",
+  "categoryNameSports": "Sports",
+  "categoryNameSportsGym": "Gym",
+  "categoryNameSportsEquipment": "Sports Equipment",
+  "categoryNameSportsCourse": "Sports Course",
+  "categoryNameSportsOutdoor": "Outdoor Activity",
+  "categoryNameDigital": "Digital",
+  "categoryNameTravel": "Travel",
+  "categoryNameAlcoholTobacco": "Alcohol & Tobacco",
+  "categoryNameBabyCare": "Baby Care",
+  "categoryNameBeauty": "Beauty",
+  "categoryNameBeautySkincare": "Skincare",
+  "categoryNameBeautyCosmetics": "Cosmetics",
+  "categoryNameBeautySalon": "Haircut",
+  "categoryNameBeautyNail": "Nail Care",
+  "categoryNameRepair": "Repair",
+  "categoryNameSocial": "Social",
+  "categoryNameLearning": "Learning",
+  "categoryNameCar": "Car",
+  "categoryNameCarMaintenance": "Car Maintenance",
+  "categoryNameCarRepair": "Car Repair",
+  "categoryNameCarInsurance": "Car Insurance",
+  "categoryNameCarWash": "Car Wash",
+  "categoryNameCarFine": "Traffic Fine",
+  "categoryNameTaxi": "Taxi",
+  "categoryNameSubway": "Subway",
+  "categoryNameDelivery": "Delivery",
+  "categoryNameProperty": "Property",
+  "categoryNameParking": "Parking",
+  "categoryNameDonation": "Donation",
+  "categoryNameGift": "Give Gift",
+  "categoryNameTax": "Tax",
+  "categoryNameBeverage": "Beverage",
+  "categoryNameBeverageMilkTea": "Milk Tea",
+  "categoryNameBeverageCoffee": "Coffee",
+  "categoryNameBeverageJuice": "Juice",
+  "categoryNameBeverageSoda": "Soda",
+  "categoryNameBeverageWater": "Mineral Water",
+  "categoryNameClothing": "Clothing",
+  "categoryNameClothingTop": "Top",
+  "categoryNameClothingPants": "Pants",
+  "categoryNameClothingSkirt": "Dress",
+  "categoryNameClothingShoes": "Shoes",
+  "categoryNameClothingAccessory": "Apparel Accessories",
+  "categoryNameSnacks": "Snacks",
+  "categoryNameSnacksBiscuit": "Cookies",
+  "categoryNameSnacksChips": "Chips",
+  "categoryNameSnacksCandy": "Candy",
+  "categoryNameSnacksChocolate": "Chocolate",
+  "categoryNameSnacksNuts": "Nuts",
+  "categoryNameRedPacket": "Send Red Packet",
+  "categoryNameFruit": "Fruit",
+  "categoryNameFruitApple": "Apple",
+  "categoryNameFruitBanana": "Banana",
+  "categoryNameFruitOrange": "Orange",
+  "categoryNameFruitGrape": "Grape",
+  "categoryNameFruitWatermelon": "Watermelon",
+  "categoryNameFruitOther": "Other Fruits",
+  "categoryNameGame": "Game",
+  "categoryNameGameRecharge": "Game Top up",
+  "categoryNameGameEquipment": "Game Equipment",
+  "categoryNameGameMembership": "Game Membership",
+  "categoryNameBook": "Books",
+  "categoryNameLover": "Lover",
+  "categoryNameDecoration": "Decoration",
+  "categoryNameDailyGoods": "Daily Goods",
+  "categoryNameDailyToiletries": "Personal Care",
+  "categoryNameDailyPaper": "Paper Products",
+  "categoryNameDailyCleaning": "Cleaning Supplies",
+  "categoryNameDailyKitchen": "Kitchen Supplies",
+  "categoryNameLottery": "Lottery",
+  "categoryNameStock": "Stock",
+  "categoryNameSocialSecurity": "Social Security",
+  "categoryNameExpress": "Express",
+  "categoryNameWork": "Work",
+  "categoryNameTransfer": "Transfer",
+  "categoryNameTransferLivingcost": "Living Cost",
+  "categoryNameTransferFamily": "Family",
+  "categoryNameTransferParents": "Parents",
+  "categoryNameTransferLover": "Lover",
+  "categoryNameTransferBorrowmoney": "Borrow Money",
+  "categoryNameOther": "Other",
+  "categoryNamePastry": "Pastry",
+  "categoryNamePastryCake": "Cake",
+  "categoryNamePastryBread": "Bread",
+  "categoryNamePastryDessert": "Dessert",
+  "categoryNamePastryBiscuit": "Baked Goods",
+  "categoryNameCooking": "Cooking Ingredients",
+  "categoryNameCookingVegetable": "Vegetables",
+  "categoryNameCookingMeat": "Meat",
+  "categoryNameCookingSeafood": "Seafood",
+  "categoryNameCookingSeasoning": "Seasoning",
+  "categoryNameCookingGrain": "Grain & Oil",
+  "categoryNameInvestLoss": "Investment Loss",
+  "categoryNameInvestLossStock": "Stock Loss",
+  "categoryNameInvestLossFund": "Fund Loss",
+  "categoryNameInvestLossOther": "Other Investment Loss",
+  "categoryNameHealthProducts": "Health Products",
+  "categoryNameHealthVitamin": "Vitamins",
+  "categoryNameHealthFood": "Health Food",
+  "categoryNameHealthNutrition": "Nutritional Supplements",
+  "categoryNameSubscription": "Subscription",
+  "categoryNameSubscriptionVideo": "Video Membership",
+  "categoryNameSubscriptionMusic": "Music Membership",
+  "categoryNameSubscriptionCloud": "Cloud Storage",
+  "categoryNameSubscriptionOther": "Other Subscription"
 }

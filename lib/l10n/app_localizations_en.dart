@@ -853,111 +853,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryHasSubCategories =>
-      'This category has subcategories and cannot be modified';
+      'This category has subcategories, so its parent cannot be changed';
 
   @override
   String get categorySearchCategory => 'Search categories';
 
   @override
-  String get categoryTopLevelLabel => 'Top-level';
+  String get categoryTopLevelLabel => 'Category';
 
   @override
-  String get categorySecondLevelLabel => 'Second-level';
-
-  @override
-  String get categoryExpenseList =>
-      'Dining-Transport-Shopping-Entertainment-Home-Family-Communication-Utilities-Housing-Medical-Education-Pets-Sports-Digital-Travel-Alcohol & Tobacco-Baby Care-Beauty-Repair-Social-Learning-Car-Taxi-Subway-Delivery-Property-Parking-Donation-Give Gift-Tax-Beverage-Clothing-Snacks-Send Red Packet-Fruit-Game-Books-Lover-Decoration-Daily Goods-Lottery-Stock-Social Security-Express-Work-Transfer-Other';
-
-  @override
-  String get categoryExpenseDining =>
-      'Dining-Breakfast-Lunch-Dinner-Meituan Delivery-Ele.me Delivery-JD Delivery-Restaurant-Food';
-
-  @override
-  String get categoryExpenseSnacks =>
-      'Snacks-Cookies-Chips-Candy-Chocolate-Nuts';
-
-  @override
-  String get categoryExpenseFruit =>
-      'Fruit-Apple-Banana-Orange-Grape-Watermelon-Other Fruits';
-
-  @override
-  String get categoryExpenseBeverage =>
-      'Beverage-Milk Tea-Coffee-Juice-Soda-Mineral Water';
-
-  @override
-  String get categoryExpensePastry => 'Pastry-Cake-Bread-Dessert-Baked Goods';
-
-  @override
-  String get categoryExpenseCooking =>
-      'Cooking Ingredients-Vegetables-Meat-Seafood-Seasoning-Grain & Oil';
-
-  @override
-  String get categoryExpenseShopping =>
-      'Shopping-Supermarket-Daily Necessities-Clothing-Shoes-Bags';
-
-  @override
-  String get categoryExpensePets =>
-      'Pets-Pet Food-Pet Supplies-Pet Medical-Pet Grooming';
-
-  @override
-  String get categoryExpenseTransport =>
-      'Transport-Transit Card-Taxi-Parking Fee-Fuel';
-
-  @override
-  String get categoryExpenseCar =>
-      'Car-Car Maintenance-Car Repair-Car Insurance-Car Wash-Traffic Fine';
-
-  @override
-  String get categoryExpenseClothing =>
-      'Apparel-Top-Pants-Dress-Shoes-Apparel Accessories';
-
-  @override
-  String get categoryExpenseDailyGoods =>
-      'Daily Goods-Personal Care-Paper Products-Cleaning Supplies-Kitchen Supplies';
-
-  @override
-  String get categoryExpenseEducation =>
-      'Education-Tuition-Training Fee-Books-Stationery-Office Supplies-Learning';
-
-  @override
-  String get categoryExpenseInvestLoss =>
-      'Investment Loss-Stock Loss-Fund Loss-Other Investment Loss';
-
-  @override
-  String get categoryExpenseEntertainment =>
-      'Entertainment-Movie-KTV-Amusement Park-Bar-Other Entertainment';
-
-  @override
-  String get categoryExpenseGame =>
-      'Game-Game Top up-Game Equipment-Game Membership';
-
-  @override
-  String get categoryExpenseHealthProducts =>
-      'Health Products-Vitamins-Health Food-Nutritional Supplements';
-
-  @override
-  String get categoryExpenseSubscription =>
-      'Subscription-Video Membership-Music Membership-Cloud Storage-Other Subscription';
-
-  @override
-  String get categoryExpenseSports =>
-      'Sports-Gym-Sports Equipment-Sports Course-Outdoor Activity';
-
-  @override
-  String get categoryExpenseHousing =>
-      'Housing-Utilities-Property Fee-Rent-Mortgage-Renovation-Broadband';
-
-  @override
-  String get categoryExpenseHome =>
-      'Home-Furniture-Appliances-Decorations-Bedding';
-
-  @override
-  String get categoryExpenseBeauty =>
-      'Beauty-Skincare-Cosmetics-Haircut-Nail Care';
-
-  @override
-  String get categoryExpenseTransfer =>
-      'Transfer-Living Cost-Family-Parents-Lover-Borrow Money';
+  String get categorySecondLevelLabel => 'Subcategory';
 
   @override
   String get appearanceThemeMode => 'Display mode';
@@ -1124,19 +1029,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get categoryTemplateEntryFlat => 'Flat Template';
-
-  @override
-  String get categoryTemplateEntryHierarchical => 'Hierarchical Template';
-
-  @override
-  String get categoryTemplateFlatTitle => 'Flat Category Template';
-
-  @override
-  String get categoryTemplateHierarchicalTitle =>
-      'Hierarchical Category Template';
-
-  @override
   String categoryTemplateSelectedCount(int count) {
     return '$count selected';
   }
@@ -1146,13 +1038,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryTemplateDeselectAll => 'Deselect all';
-
-  @override
-  String get categoryTemplateAlreadyAdded => 'Added';
-
-  @override
-  String get categoryTemplateAlreadyAddedHint =>
-      'Added categories stay selected and cannot be deselected';
 
   @override
   String get categoryTemplateConfirmTitle => 'Add Categories';
@@ -1165,16 +1050,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String categoryTemplateAddSuccess(int count) {
     return 'Added $count categories';
-  }
-
-  @override
-  String categoryTemplateAddFailed(String error) {
-    return 'Failed to add: $error';
-  }
-
-  @override
-  String categoryTemplatePartiallyCompleted(String completed) {
-    return '$completed\nThe remaining categories could not be processed. Please try again.';
   }
 
   @override
@@ -1223,7 +1098,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryDeleteOptionAll =>
-      'Delete categories and all data (incl. subcategories)';
+      'Delete categories, their subcategories and all their data';
 
   @override
   String get categoryDeleteOptionMigrate =>
@@ -1231,7 +1106,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryDeleteOptionPromote =>
-      'Delete categories and data (excl. subcategories, subcategories become top-level)';
+      'Delete categories and their direct data; keep subcategories and their data independently';
 
   @override
   String get categoryDeleteSelectedTitle => 'Delete Selected Categories';
@@ -1255,7 +1130,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String categoryMigrateChildLabel(Object parent) {
-    return 'Sub · $parent';
+    return 'Under $parent';
   }
 
   @override
@@ -4738,25 +4613,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use the submitted local version? Later edits on this device will be preserved separately for further sync.';
 
   @override
-  String get categoryTemplateRestoreTitle => 'Restore original categories';
-
-  @override
   String get recurringTransactionTimeZone => 'Time zone';
 
   @override
   String get categoryConflictSubmitted => 'Submitted local version';
 
   @override
-  String categoryTemplateRestoreMessage(String names) {
-    return 'The original categories for these templates were deleted:\n$names\nRestore the original categories and their settings? This creates no duplicate categories and restores no deleted transactions.';
-  }
-
-  @override
   String get recurringTransactionTimeZoneInvalid =>
       'Select a valid IANA time zone';
-
-  @override
-  String get categoryTemplateRestoreConfirm => 'Restore originals';
 
   @override
   String get categoryConflictRefreshRequired =>
@@ -4778,9 +4642,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Transactions already exist. Create a new recurring rule to use another time zone.';
 
   @override
-  String get categoryTemplatePendingLabel => 'Awaiting review';
-
-  @override
   String get categoryConflictRetry => 'Retry confirmation';
 
   @override
@@ -4789,10 +4650,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get categoryConflictChooseCloud =>
       'Use the displayed cloud version? The local submission in this conflict will not be applied. Later device edits will be preserved separately.';
-
-  @override
-  String get categoryTemplateNoChanges =>
-      'No categories were added or restored';
 
   @override
   String get categoryConflictDeleteTitle => 'Confirm category deletion';
@@ -4805,23 +4662,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'This version is unavailable. Reload it to continue.';
 
   @override
-  String get categoryTemplateBlockedParentHierarchy =>
-      'The original parent has changed level; this child cannot be added';
-
-  @override
-  String get categoryTemplateBlockedDuplicate =>
-      'A category with this name exists; this template was not added';
-
-  @override
   String get categoryConflictChanged =>
       'The category changed. Compare the refreshed versions before confirming again.';
 
   @override
   String get categoryConflictUseLocal => 'Use local version';
-
-  @override
-  String get categoryTemplateBlockedParentDuplicate =>
-      'A parent with this name exists; this template was not added';
 
   @override
   String categoryConflictPosition(String value) {
@@ -4831,9 +4676,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get categoryConflictRestoreMessage =>
       'This category was deleted in the cloud. Restore that same category using the submitted local version? A second category will not be created.';
-
-  @override
-  String get categoryTemplateBlockedLabel => 'Not added';
 
   @override
   String get categoryConflictRestore => 'Confirm restore';
@@ -4846,11 +4688,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryConflictRefresh => 'Reload versions';
 
   @override
-  String categoryTemplatePending(int count) {
-    return '$count categories await cloud confirmation. Open Sync issues to review them.';
-  }
-
-  @override
   String get recurringTransactionIntervalInvalid =>
       'Enter an integer from 1 to 10000.';
 
@@ -4860,11 +4697,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recurringTransactionMonthOfYear => 'Month of the year';
-
-  @override
-  String categoryTemplateRestored(int count) {
-    return 'Restored $count original categories';
-  }
 
   @override
   String get recurringTransactionTimeZoneHint =>
@@ -4981,4 +4813,537 @@ class AppLocalizationsEn extends AppLocalizations {
   String syncCenterLastFailure(String reason) {
     return 'Last sync did not finish: $reason';
   }
+
+  @override
+  String get categoryTemplateLibraryTitle => 'Category templates';
+
+  @override
+  String get categoryTemplateCreateMode => 'Create categories';
+
+  @override
+  String get categoryTemplateAppendMode => 'Add to a category';
+
+  @override
+  String get categoryTemplateCreateHint =>
+      'Select a category to create it, or expand it to choose subcategories.';
+
+  @override
+  String get categoryTemplateAppendHint =>
+      'Choose a category first. Each selected item will be added directly under it.';
+
+  @override
+  String get categoryTemplateChooseTarget => 'Choose a category';
+
+  @override
+  String get categoryTemplateNoChildren => 'No subcategories';
+
+  @override
+  String get categoryTemplateShowChildren => 'Show or hide subcategories';
+
+  @override
+  String categoryTemplateChildrenCount(int selected, int total) {
+    return '$selected/$total subcategories selected';
+  }
+
+  @override
+  String categoryTemplateAppendConfirm(int count, String name) {
+    return 'Add $count subcategories to “$name”?';
+  }
+
+  @override
+  String get categoryTemplateRetryHint =>
+      'Adding is not complete. Retry this operation.';
+
+  @override
+  String get categoryTemplatePersonalScope => 'Add to my category list';
+
+  @override
+  String get categoryTemplateScopeChanged =>
+      'The account or ledger changed. Go back and reopen templates.';
+
+  @override
+  String get categoryTemplateTargetUnavailable =>
+      'The selected category is no longer available. Choose another.';
+
+  @override
+  String categoryTemplateChildCount(int count) {
+    return '$count subcategories';
+  }
+
+  @override
+  String get categoryNameDining => 'Dining';
+
+  @override
+  String get categoryNameDiningBreakfast => 'Breakfast';
+
+  @override
+  String get categoryNameDiningLunch => 'Lunch';
+
+  @override
+  String get categoryNameDiningDinner => 'Dinner';
+
+  @override
+  String get categoryNameDiningMeituan => 'Meituan Delivery';
+
+  @override
+  String get categoryNameDiningEleme => 'Ele.me Delivery';
+
+  @override
+  String get categoryNameDiningJd => 'JD Delivery';
+
+  @override
+  String get categoryNameDiningRestaurant => 'Restaurant';
+
+  @override
+  String get categoryNameDiningFood => 'Food';
+
+  @override
+  String get categoryNameTransport => 'Transport';
+
+  @override
+  String get categoryNameTransportTransitcard => 'Transit Card';
+
+  @override
+  String get categoryNameTransportTaxi => 'Taxi';
+
+  @override
+  String get categoryNameTransportParking => 'Parking Fee';
+
+  @override
+  String get categoryNameTransportFuel => 'Fuel';
+
+  @override
+  String get categoryNameShopping => 'Shopping';
+
+  @override
+  String get categoryNameShoppingSupermarket => 'Supermarket';
+
+  @override
+  String get categoryNameShoppingDaily => 'Daily Necessities';
+
+  @override
+  String get categoryNameShoppingClothing => 'Clothing';
+
+  @override
+  String get categoryNameShoppingShoes => 'Shoes';
+
+  @override
+  String get categoryNameShoppingBag => 'Bags';
+
+  @override
+  String get categoryNameEntertainment => 'Entertainment';
+
+  @override
+  String get categoryNameEntertainmentMovie => 'Movie';
+
+  @override
+  String get categoryNameEntertainmentKtv => 'KTV';
+
+  @override
+  String get categoryNameEntertainmentAmusement => 'Amusement Park';
+
+  @override
+  String get categoryNameEntertainmentBar => 'Bar';
+
+  @override
+  String get categoryNameEntertainmentOther => 'Other Entertainment';
+
+  @override
+  String get categoryNameHome => 'Home';
+
+  @override
+  String get categoryNameHomeFurniture => 'Furniture';
+
+  @override
+  String get categoryNameHomeAppliance => 'Appliances';
+
+  @override
+  String get categoryNameHomeDecor => 'Decorations';
+
+  @override
+  String get categoryNameHomeBedding => 'Bedding';
+
+  @override
+  String get categoryNameFamily => 'Family';
+
+  @override
+  String get categoryNameCommunication => 'Communication';
+
+  @override
+  String get categoryNameUtilities => 'Utilities';
+
+  @override
+  String get categoryNameHousing => 'Housing';
+
+  @override
+  String get categoryNameHousingUtilities => 'Utilities';
+
+  @override
+  String get categoryNameHousingProperty => 'Property Fee';
+
+  @override
+  String get categoryNameHousingRent => 'Rent';
+
+  @override
+  String get categoryNameHousingMortgage => 'Mortgage';
+
+  @override
+  String get categoryNameHousingDecoration => 'Renovation';
+
+  @override
+  String get categoryNameHousingBroadband => 'Broadband';
+
+  @override
+  String get categoryNameMedical => 'Medical';
+
+  @override
+  String get categoryNameEducation => 'Education';
+
+  @override
+  String get categoryNameEducationTuition => 'Tuition';
+
+  @override
+  String get categoryNameEducationTraining => 'Training Fee';
+
+  @override
+  String get categoryNameEducationBooks => 'Books';
+
+  @override
+  String get categoryNameEducationStationery => 'Stationery';
+
+  @override
+  String get categoryNameEducationOffice => 'Office Supplies';
+
+  @override
+  String get categoryNameEducationLearning => 'Learning';
+
+  @override
+  String get categoryNamePets => 'Pets';
+
+  @override
+  String get categoryNamePetsFood => 'Pet Food';
+
+  @override
+  String get categoryNamePetsSupplies => 'Pet Supplies';
+
+  @override
+  String get categoryNamePetsMedical => 'Pet Medical';
+
+  @override
+  String get categoryNamePetsGrooming => 'Pet Grooming';
+
+  @override
+  String get categoryNameSports => 'Sports';
+
+  @override
+  String get categoryNameSportsGym => 'Gym';
+
+  @override
+  String get categoryNameSportsEquipment => 'Sports Equipment';
+
+  @override
+  String get categoryNameSportsCourse => 'Sports Course';
+
+  @override
+  String get categoryNameSportsOutdoor => 'Outdoor Activity';
+
+  @override
+  String get categoryNameDigital => 'Digital';
+
+  @override
+  String get categoryNameTravel => 'Travel';
+
+  @override
+  String get categoryNameAlcoholTobacco => 'Alcohol & Tobacco';
+
+  @override
+  String get categoryNameBabyCare => 'Baby Care';
+
+  @override
+  String get categoryNameBeauty => 'Beauty';
+
+  @override
+  String get categoryNameBeautySkincare => 'Skincare';
+
+  @override
+  String get categoryNameBeautyCosmetics => 'Cosmetics';
+
+  @override
+  String get categoryNameBeautySalon => 'Haircut';
+
+  @override
+  String get categoryNameBeautyNail => 'Nail Care';
+
+  @override
+  String get categoryNameRepair => 'Repair';
+
+  @override
+  String get categoryNameSocial => 'Social';
+
+  @override
+  String get categoryNameLearning => 'Learning';
+
+  @override
+  String get categoryNameCar => 'Car';
+
+  @override
+  String get categoryNameCarMaintenance => 'Car Maintenance';
+
+  @override
+  String get categoryNameCarRepair => 'Car Repair';
+
+  @override
+  String get categoryNameCarInsurance => 'Car Insurance';
+
+  @override
+  String get categoryNameCarWash => 'Car Wash';
+
+  @override
+  String get categoryNameCarFine => 'Traffic Fine';
+
+  @override
+  String get categoryNameTaxi => 'Taxi';
+
+  @override
+  String get categoryNameSubway => 'Subway';
+
+  @override
+  String get categoryNameDelivery => 'Delivery';
+
+  @override
+  String get categoryNameProperty => 'Property';
+
+  @override
+  String get categoryNameParking => 'Parking';
+
+  @override
+  String get categoryNameDonation => 'Donation';
+
+  @override
+  String get categoryNameGift => 'Give Gift';
+
+  @override
+  String get categoryNameTax => 'Tax';
+
+  @override
+  String get categoryNameBeverage => 'Beverage';
+
+  @override
+  String get categoryNameBeverageMilkTea => 'Milk Tea';
+
+  @override
+  String get categoryNameBeverageCoffee => 'Coffee';
+
+  @override
+  String get categoryNameBeverageJuice => 'Juice';
+
+  @override
+  String get categoryNameBeverageSoda => 'Soda';
+
+  @override
+  String get categoryNameBeverageWater => 'Mineral Water';
+
+  @override
+  String get categoryNameClothing => 'Clothing';
+
+  @override
+  String get categoryNameClothingTop => 'Top';
+
+  @override
+  String get categoryNameClothingPants => 'Pants';
+
+  @override
+  String get categoryNameClothingSkirt => 'Dress';
+
+  @override
+  String get categoryNameClothingShoes => 'Shoes';
+
+  @override
+  String get categoryNameClothingAccessory => 'Apparel Accessories';
+
+  @override
+  String get categoryNameSnacks => 'Snacks';
+
+  @override
+  String get categoryNameSnacksBiscuit => 'Cookies';
+
+  @override
+  String get categoryNameSnacksChips => 'Chips';
+
+  @override
+  String get categoryNameSnacksCandy => 'Candy';
+
+  @override
+  String get categoryNameSnacksChocolate => 'Chocolate';
+
+  @override
+  String get categoryNameSnacksNuts => 'Nuts';
+
+  @override
+  String get categoryNameRedPacket => 'Send Red Packet';
+
+  @override
+  String get categoryNameFruit => 'Fruit';
+
+  @override
+  String get categoryNameFruitApple => 'Apple';
+
+  @override
+  String get categoryNameFruitBanana => 'Banana';
+
+  @override
+  String get categoryNameFruitOrange => 'Orange';
+
+  @override
+  String get categoryNameFruitGrape => 'Grape';
+
+  @override
+  String get categoryNameFruitWatermelon => 'Watermelon';
+
+  @override
+  String get categoryNameFruitOther => 'Other Fruits';
+
+  @override
+  String get categoryNameGame => 'Game';
+
+  @override
+  String get categoryNameGameRecharge => 'Game Top up';
+
+  @override
+  String get categoryNameGameEquipment => 'Game Equipment';
+
+  @override
+  String get categoryNameGameMembership => 'Game Membership';
+
+  @override
+  String get categoryNameBook => 'Books';
+
+  @override
+  String get categoryNameLover => 'Lover';
+
+  @override
+  String get categoryNameDecoration => 'Decoration';
+
+  @override
+  String get categoryNameDailyGoods => 'Daily Goods';
+
+  @override
+  String get categoryNameDailyToiletries => 'Personal Care';
+
+  @override
+  String get categoryNameDailyPaper => 'Paper Products';
+
+  @override
+  String get categoryNameDailyCleaning => 'Cleaning Supplies';
+
+  @override
+  String get categoryNameDailyKitchen => 'Kitchen Supplies';
+
+  @override
+  String get categoryNameLottery => 'Lottery';
+
+  @override
+  String get categoryNameStock => 'Stock';
+
+  @override
+  String get categoryNameSocialSecurity => 'Social Security';
+
+  @override
+  String get categoryNameExpress => 'Express';
+
+  @override
+  String get categoryNameWork => 'Work';
+
+  @override
+  String get categoryNameTransfer => 'Transfer';
+
+  @override
+  String get categoryNameTransferLivingcost => 'Living Cost';
+
+  @override
+  String get categoryNameTransferFamily => 'Family';
+
+  @override
+  String get categoryNameTransferParents => 'Parents';
+
+  @override
+  String get categoryNameTransferLover => 'Lover';
+
+  @override
+  String get categoryNameTransferBorrowmoney => 'Borrow Money';
+
+  @override
+  String get categoryNameOther => 'Other';
+
+  @override
+  String get categoryNamePastry => 'Pastry';
+
+  @override
+  String get categoryNamePastryCake => 'Cake';
+
+  @override
+  String get categoryNamePastryBread => 'Bread';
+
+  @override
+  String get categoryNamePastryDessert => 'Dessert';
+
+  @override
+  String get categoryNamePastryBiscuit => 'Baked Goods';
+
+  @override
+  String get categoryNameCooking => 'Cooking Ingredients';
+
+  @override
+  String get categoryNameCookingVegetable => 'Vegetables';
+
+  @override
+  String get categoryNameCookingMeat => 'Meat';
+
+  @override
+  String get categoryNameCookingSeafood => 'Seafood';
+
+  @override
+  String get categoryNameCookingSeasoning => 'Seasoning';
+
+  @override
+  String get categoryNameCookingGrain => 'Grain & Oil';
+
+  @override
+  String get categoryNameInvestLoss => 'Investment Loss';
+
+  @override
+  String get categoryNameInvestLossStock => 'Stock Loss';
+
+  @override
+  String get categoryNameInvestLossFund => 'Fund Loss';
+
+  @override
+  String get categoryNameInvestLossOther => 'Other Investment Loss';
+
+  @override
+  String get categoryNameHealthProducts => 'Health Products';
+
+  @override
+  String get categoryNameHealthVitamin => 'Vitamins';
+
+  @override
+  String get categoryNameHealthFood => 'Health Food';
+
+  @override
+  String get categoryNameHealthNutrition => 'Nutritional Supplements';
+
+  @override
+  String get categoryNameSubscription => 'Subscription';
+
+  @override
+  String get categoryNameSubscriptionVideo => 'Video Membership';
+
+  @override
+  String get categoryNameSubscriptionMusic => 'Music Membership';
+
+  @override
+  String get categoryNameSubscriptionCloud => 'Cloud Storage';
+
+  @override
+  String get categoryNameSubscriptionOther => 'Other Subscription';
 }

@@ -34,29 +34,43 @@ abstract interface class AccountLedgerRepository {
   });
 }
 
-/// 官方模板创建、同 ID 恢复或待确认的结果；不能把云端待确认当作可见新增。
-enum CanonicalCategoryInsertResult {
-  created,
-  restored,
-  unchanged,
-  nameConflict,
-  parentUnavailable,
-  pendingConfirmation,
-  localRestoreRequired,
+/// 一次创建操作中已经分配身份的分类草稿；名称和图标均不承担唯一性。
+class CategoryCreateDraft {
+  final String id;
+  final String name;
+  final String kind;
+  final String? parentId;
+  final String? icon;
+  final int? sortOrder;
+
+  const CategoryCreateDraft({
+    required this.id,
+    required this.name,
+    this.kind = 'expense',
+    this.parentId,
+    this.icon,
+    this.sortOrder,
+  });
+
+  /// 数据库和同步协议的层级值由父关系唯一派生。
+  int get level => parentId == null ? 1 : 2;
+}
+
+/// 批量创建时用户选定的父分类失效；事务已回滚，可以重新选择目标父分类。
+class CategoryParentUnavailableException implements Exception {
+  const CategoryParentUnavailableException();
+
+  @override
+  String toString() => '目标父分类已删除或移为子分类，请重新选择';
 }
 
 /// 分类写入、事务与关联交易协作端口，纯查询由独立只读接口提供。
 abstract interface class CategoryRepository {
-  /// 只按官方固定身份添加；恢复本机墓碑必须由用户明确确认。
-  Future<CanonicalCategoryInsertResult> insertCanonicalCategory({
-    required String id,
-    required String name,
-    required String kind,
-    required int level,
-    String? icon,
-    int? sortOrder,
-    String? parentId,
-    bool restoreLocalDeleted = false,
+  /// 按冻结的身份原子创建一批分类，重试不覆盖或恢复已经存在的身份。
+  Future<int> createCategoryBatch({
+    required List<CategoryCreateDraft> items,
+    String? ledgerId,
+    bool recordChanges = true,
   });
 
   /// 分类管理与选择所需的createCategory能力。
@@ -65,7 +79,7 @@ abstract interface class CategoryRepository {
     required String kind,
     String? icon,
     int? sortOrder,
-    int level = 1,
+    int? level,
     String? parentId,
     bool recordChanges = true,
     String? ledgerId,
@@ -228,6 +242,13 @@ abstract interface class LedgerRepository {
 
 /// 账单导入导出的最小数据能力，不能通过此接口访问其他仓储操作。
 abstract interface class AccountingTransferRepository {
+  /// 导入时按来源映射后的固定身份创建分类，重复导入不生成另一套记录。
+  Future<int> createCategoryBatch({
+    required List<CategoryCreateDraft> items,
+    String? ledgerId,
+    bool recordChanges = true,
+  });
+
   /// 账单导入导出所需的countPendingSyncChanges能力。
   Future<int> countPendingSyncChanges(String ledgerId);
 
@@ -237,7 +258,7 @@ abstract interface class AccountingTransferRepository {
     required String kind,
     String? icon,
     int? sortOrder,
-    int level = 1,
+    int? level,
     String? parentId,
     bool recordChanges = true,
     String? ledgerId,

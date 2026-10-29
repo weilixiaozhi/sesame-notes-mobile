@@ -113,24 +113,24 @@ void main() {
     expect((await rows(_a)).single.id, _other);
   });
 
-  test('同级规范名称存在不同UUID时保留冲突并回滚祖先，不能新增第二个早餐', () async {
+  test('同级同名不同UUID可独立复制，保留目标原分类及来源引用', () async {
     await insert(_parent, '餐饮', _a);
     await insert(_child, '早餐', _a, parent: _parent);
     await insert(_parent, '餐饮', _b);
     await insert(_other, ' 早餐 ', _b, parent: _parent);
     final before = await rows(_b);
-    await expectLater(
-      cloneCategoryReferences(
-        source: db,
-        target: db,
-        categoryIds: [_child],
-        sourceAccountId: _a,
-        targetAccountId: _b,
-      ),
-      throwsA(isA<CategoryCloneConflict>()),
+    final mapping = await cloneCategoryReferences(
+      source: db,
+      target: db,
+      categoryIds: [_child],
+      sourceAccountId: _a,
+      targetAccountId: _b,
     );
-    expect(await rows(_b), before);
-    expect((await rows(_b)).where((c) => c.id == _child), isEmpty);
+    expect(mapping[_child], _child);
+    final after = await rows(_b);
+    expect(after, containsAll(before));
+    expect(after.where((c) => c.id == _child).single.parentId, _parent);
+    expect(after.where((c) => c.parentId == _parent), hasLength(2));
     expect(
       (await rows(_a)).singleWhere((c) => c.id == _child).parentId,
       _parent,

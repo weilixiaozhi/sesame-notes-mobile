@@ -470,12 +470,12 @@ class AcceptanceDataSeeder {
       )).where((category) => category.kind == 'expense').toList(),
     );
     if (cats.isNotEmpty) return cats.map((c) => c.id).toList();
-    final created = await repo.upsertCategory(
+    final created = await repo.createCategory(
       name: '验收填充',
       kind: 'expense',
       ledgerId: ledgerId,
     );
-    return [created.id];
+    return [created];
   }
 
   /// 随机金额（10.00 ~ 999.99，输出服务端契约规范格式：尾零剥离）。

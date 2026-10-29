@@ -78,6 +78,20 @@ void main() {
     resetGlobalTestState();
     repo = _MockRepo();
     categoryQueries = _CategoryQueries();
+    when(() => repo.getLedgerById('led-1')).thenAnswer(
+      (_) async => Ledger(
+        id: 'led-1',
+        name: '本地账本',
+        currency: 'CNY',
+        monthStartDay: 1,
+        aaEnabled: false,
+        role: 'owner',
+        memberCount: 1,
+        storageMode: 'local',
+        createdAt: DateTime.utc(2026),
+        updatedAt: DateTime.utc(2026),
+      ),
+    );
   });
 
   /// 将注入的交易与分类导出到临时目录并读取 CSV 内容。
@@ -193,7 +207,7 @@ void main() {
 
     // 表头:类型,分类,二级分类,金额,币种,备注,时间
     final dataColumns = lines[1].split(',');
-    expect(dataColumns, hasLength(7));
+    expect(dataColumns, hasLength(12));
     expect(dataColumns[3], '12.50', reason: '库内金额为元口径 decimal 字符串，导出保留两位小数');
     expect(content, isNot(contains('1250.00')));
 

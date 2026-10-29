@@ -222,12 +222,9 @@ class CategoryActions {
         (repo) async =>
             (ledgerId == null
                     ? await repo.getTopLevelCategories(kind)
-                    : (await repo.getAllCategories(ledgerId: ledgerId)).where(
-                        (c) =>
-                            c.kind == kind &&
-                            c.level == 1 &&
-                            c.parentId == null,
-                      ))
+                    : (await repo.getAllCategories(
+                        ledgerId: ledgerId,
+                      )).where((c) => c.kind == kind && c.parentId == null))
                 .map((row) => row.toDisplay())
                 .toList(growable: false),
       );
@@ -242,7 +239,7 @@ class CategoryActions {
                 ? await repo.getSubCategories(parentId)
                 : (await repo.getAllCategories(
                     ledgerId: ledgerId,
-                  )).where((c) => c.parentId == parentId && c.level == 2))
+                  )).where((c) => c.parentId == parentId))
             .map((row) => row.toDisplay())
             .toList(growable: false),
   );
@@ -253,31 +250,13 @@ class CategoryActions {
         ? await repo.hasSubCategories(categoryId)
         : (await repo.getAllCategories(
             ledgerId: ledgerId,
-          )).any((c) => c.parentId == categoryId && c.level == 2),
+          )).any((c) => c.parentId == categoryId),
   );
 
   /// 该分类下的交易笔数。
   Future<int> countTransactions(String categoryId, {String? ledgerId}) => _read(
     (repo) =>
         repo.getTransactionCountByCategory(categoryId, ledgerId: ledgerId),
-  );
-
-  /// 作用域判重：二级分类只与同一父级下的兄弟比，一级分类只与其他一级比，
-  /// 跨父级允许同名（默认种子数据即有「购物>鞋子」「服装>鞋子」）。
-  Future<bool> isNameDuplicate({
-    required String name,
-    required String kind,
-    String? excludeId,
-    String? parentId,
-    String? ledgerId,
-  }) => _read(
-    (repo) => repo.isCategoryNameDuplicate(
-      name: name,
-      kind: kind,
-      excludeId: excludeId,
-      parentId: parentId,
-      ledgerId: ledgerId,
-    ),
   );
 
   /// 周期账单分类选择：固定支出类型，且允许挂到二级分类
@@ -301,34 +280,19 @@ class CategoryActions {
 
   // ==================== 用例 ====================
 
-  /// 新建一级分类，返回新分类 id。
+  /// 按可选所属分类创建独立节点，所有创建入口共用同一事务与校验。
   Future<String> create({
     required String name,
     required String kind,
     String? icon,
+    String? parentId,
     String? ledgerId,
   }) => _mutation(
     (repo) => repo.createCategory(
       name: name,
       kind: kind,
       icon: icon,
-      ledgerId: ledgerId,
-    ),
-  );
-
-  /// 新建二级分类，返回新分类 id。
-  Future<String> createSub({
-    required String parentId,
-    required String name,
-    required String kind,
-    String? icon,
-    String? ledgerId,
-  }) => _mutation(
-    (repo) => repo.createSubCategory(
       parentId: parentId,
-      name: name,
-      kind: kind,
-      icon: icon,
       ledgerId: ledgerId,
     ),
   );
@@ -339,7 +303,6 @@ class CategoryActions {
     String? name,
     String? icon,
     String? parentId,
-    int? level,
     String? ledgerId,
   }) => _mutation(
     (repo) => repo.updateCategory(
@@ -347,7 +310,6 @@ class CategoryActions {
       name: name,
       icon: icon,
       parentId: parentId,
-      level: level,
       ledgerId: ledgerId,
     ),
   );

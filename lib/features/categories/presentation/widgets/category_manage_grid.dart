@@ -68,7 +68,7 @@ class _CategoryGridViewState extends ConsumerState<CategoryManageGrid> {
   void _loadData() {
     // 获取一级分类
     final topLevelCategories = widget.categoriesWithCount
-        .where((item) => item.category.level == 1)
+        .where((item) => item.category.parentId == null)
         .toList();
 
     // 按 sortOrder 排序

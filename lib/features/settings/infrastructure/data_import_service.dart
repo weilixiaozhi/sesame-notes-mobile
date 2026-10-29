@@ -1,7 +1,6 @@
 import 'package:sesame_notes/data/repositories/contracts/accounting_repositories.dart';
 import 'package:sesame_notes/data/repositories/contracts/category_query_repository.dart';
 import 'package:sesame_notes/features/settings/domain/import_validation.dart';
-import 'package:sesame_notes/utils/text_validation.dart';
 import 'package:sesame_notes/data/models/transaction_import.dart';
 
 import 'package:sesame_notes/data/models/import_models.dart';
@@ -10,6 +9,7 @@ import 'package:sesame_notes/utils/currency/decimal_money.dart';
 import 'package:sesame_notes/utils/currency/rate_math.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:uuid/uuid.dart';
+import 'transfer_table.dart' show transferId;
 
 /// 设置模块的通用数据导入编排，复用仓储写入和公网汇率读取能力。
 ///
@@ -169,177 +169,98 @@ class DataImportService {
     );
   }
 
-  /// 导入分类(先一级后二级)。public — 备份/全量恢复路径复用。
-  ///
-  /// 唯一契约：父级作用域内唯一，缓存始终使用完整 [ImportCategoryPath]。
-  /// 一级路径的 parentName 为 null，二级路径保留父分类名，跨父同名互不覆盖。
-  /// 返回 (分类缓存, 创建失败计数)：单条失败只跳过该分类并计数，
-  /// 不中断整批；调用方（importData）负责把失败数计入 ImportResult。
-  Future<({Map<ImportCategoryPath, String> cache, int failed})>
-  importCategories(
+  /// 按用户确认的来源身份创建分类；名称只用于显示，不能认领现有分类。
+  Future<({Map<Object, String> cache, int failed})> importCategories(
     AccountingTransferRepository repo,
     List<ImportCategory> categories, {
     required CategoryQueryRepository categoryQueries,
     bool recordChanges = true,
     String? ledgerId,
   }) async {
-    final categoryCache = <ImportCategoryPath, String>{};
-    var failed = 0;
-
-    if (categories.isEmpty) return (cache: categoryCache, failed: failed);
-    // 非法分类跳过并计入失败数，直接调用与完整导入使用同一校验规则。
-    final validCategories = categories
-        .where((c) => validateImportCategory(c).isEmpty)
-        .toList(growable: false);
-    if (validCategories.length != categories.length) {
-      failed += categories.length - validCategories.length;
-      logger.warning(
-        'CategoryImport',
-        '跳过 ${categories.length - validCategories.length} 条非法分类',
-      );
-    }
-    logger.info('CategoryImport', '开始导入分类: ${validCategories.length} 个');
-    final sw = Stopwatch()..start();
-    int created = 0;
-
-    // 获取所有现有分类
-    // 全局仅支出模式，只查 expense 分类。
-    final ledgerCatalog = ledgerId == null
-        ? null
-        : await categoryQueries.getAllCategoriesIncludingShared(
-            ledgerId: ledgerId,
+    final cache = <Object, String>{};
+    if (categories.isEmpty) return (cache: cache, failed: 0);
+    try {
+      return await repo.runInTransaction(() async {
+        final valid =
+            categories.where((c) => validateImportCategory(c).isEmpty).toList()
+              ..sort((a, b) => a.level.compareTo(b.level));
+        final drafts = <String, CategoryCreateDraft>{};
+        final keys = <Object, String>{};
+        for (final category in valid) {
+          final path = (
+            kind: category.kind,
+            parentName: category.parentName,
+            name: category.name,
           );
-    final existingExpense = ledgerCatalog == null
-        ? await categoryQueries.getTopLevelCategories('expense')
-        : ledgerCatalog
-              .where(
-                (row) =>
-                    row.kind == 'expense' &&
-                    row.level == 1 &&
-                    row.parentId == null,
-              )
-              .toList();
-    final existingCategoryMap = <ImportCategoryPath, String>{};
-
-    // 一级与二级都用 record 保存字段边界，分类名含分隔符时也不会串键。
-    // 否则「购物>鞋子」「服装>鞋子」会扁平进同一 key 互相覆盖，CSV 导入
-    // 「服装>鞋子」时命中「购物>鞋子」的 id，整批交易静默挂错分类。
-    for (final cat in existingExpense) {
-      existingCategoryMap[(kind: cat.kind, parentName: null, name: cat.name)] =
-          cat.id;
-      // 获取子分类
-      final subCats = ledgerCatalog == null
-          ? await categoryQueries.getSubCategories(cat.id)
-          : ledgerCatalog.where(
-              (row) => row.level == 2 && row.parentId == cat.id,
-            );
-      for (final sub in subCats) {
-        existingCategoryMap[(
-              kind: sub.kind,
-              parentName: cat.name,
-              name: sub.name,
-            )] =
-            sub.id;
-      }
-    }
-
-    ImportCategoryPath keyFor(ImportCategoryPath key) => (
-      kind: key.kind,
-      name: normalizeName(key.name),
-      parentName: key.parentName == null
-          ? null
-          : normalizeName(key.parentName!),
-    );
-
-    // 分离一级和二级分类
-    final level1 = validCategories
-        .where((c) => c.level == 1 || c.parentName == null)
-        .toList();
-    final level2 = validCategories
-        .where((c) => c.level == 2 && c.parentName != null)
-        .toList();
-
-    // 导入一级分类
-    for (final cat in level1) {
-      final key = (kind: cat.kind, parentName: null, name: cat.name);
-      final storedKey = keyFor(key);
-      if (existingCategoryMap.containsKey(storedKey)) {
-        categoryCache[key] = existingCategoryMap[storedKey]!;
-      } else {
-        try {
-          final id = await repo.createCategory(
-            name: cat.name,
-            kind: cat.kind,
-            icon: cat.icon,
-            sortOrder: cat.sortOrder,
-            recordChanges: recordChanges,
-            ledgerId: ledgerId,
-          );
-          categoryCache[key] = id;
-          existingCategoryMap[storedKey] = id;
-          created++;
-        } catch (e, st) {
-          // 单条分类落库失败只跳过该分类并计数，不中断整批导入；
-          // 交易引用不到该分类时按「分类路径未命中」整笔失败。
-          failed++;
-          logger.error('CategoryImport', '创建一级分类失败: ${cat.name}', e, st);
-        }
-      }
-    }
-
-    // 导入二级分类
-    for (final cat in level2) {
-      final key = (kind: cat.kind, parentName: cat.parentName, name: cat.name);
-      final storedKey = keyFor(key);
-      if (existingCategoryMap.containsKey(storedKey)) {
-        categoryCache[key] = existingCategoryMap[storedKey]!;
-      } else {
-        final parentKey = (
-          kind: cat.kind,
-          parentName: null,
-          name: cat.parentName!,
-        );
-        final parentId =
-            categoryCache[parentKey] ?? existingCategoryMap[keyFor(parentKey)];
-        if (parentId != null) {
-          try {
-            final id = await repo.createSubCategory(
-              parentId: parentId,
-              name: cat.name,
-              kind: cat.kind,
-              icon: cat.icon,
-              sortOrder: cat.sortOrder,
-              recordChanges: recordChanges,
-              ledgerId: ledgerId,
-            );
-            categoryCache[key] = id;
-            existingCategoryMap[storedKey] = id;
-            created++;
-          } catch (e, st) {
-            failed++;
-            logger.error(
-              'CategoryImport',
-              '创建二级分类失败: ${cat.parentName}/${cat.name}',
-              e,
-              st,
-            );
+          final Object key = category.sourceKey ?? path;
+          final id =
+              category.id ??
+              transferId([
+                'category-import',
+                ledgerId ?? 'current-directory',
+                category.sourceKey ??
+                    [
+                      category.kind,
+                      category.parentName,
+                      category.name,
+                      category.icon,
+                    ],
+              ]);
+          // 缺少来源身份且同名的多条分类不能用一个名称键吞并，调用方须先明确映射。
+          if (keys.containsKey(key) && keys[key] != id) {
+            throw StateError('导入分类身份不明确，请重新选择分类映射');
           }
-        } else {
-          failed++;
-          logger.error(
-            'CategoryImport',
-            '创建二级分类失败，父分类未命中: ${cat.parentName}/${cat.name}',
-            StateError('父分类缓存缺失'),
+          String? parentId = category.parentId;
+          if (category.level == 2 && parentId == null) {
+            parentId =
+                keys[(
+                  kind: category.kind,
+                  parentName: null,
+                  name: category.parentName!,
+                )];
+            if (parentId == null) throw StateError('请选择子分类对应的目标父分类');
+          }
+          final draft = CategoryCreateDraft(
+            id: id,
+            name: category.name,
+            kind: category.kind,
+            parentId: parentId,
+            icon: category.icon,
+            sortOrder: category.sortOrder,
           );
+          final previous = drafts[id];
+          if (previous != null &&
+              (previous.name != draft.name ||
+                  previous.parentId != draft.parentId ||
+                  previous.icon != draft.icon ||
+                  previous.level != draft.level)) {
+            throw StateError('同一来源分类包含不一致内容，请检查导入文件');
+          }
+          drafts[id] = draft;
+          keys[key] = id;
         }
-      }
+        await repo.createCategoryBatch(
+          items: drafts.values.toList(),
+          ledgerId: ledgerId,
+          recordChanges: recordChanges,
+        );
+        // 重试不得恢复已删除分类；只有目标目录中仍有效的身份能够承接交易。
+        final liveIds = (await categoryQueries.getAllCategoriesIncludingShared(
+          ledgerId: ledgerId,
+        )).map((row) => row.id).toSet();
+        for (final entry in keys.entries) {
+          if (liveIds.contains(entry.value)) cache[entry.key] = entry.value;
+        }
+        return (
+          cache: cache,
+          failed: categories.length - valid.length + keys.length - cache.length,
+        );
+      });
+    } catch (error, stack) {
+      logger.error('CategoryImport', '分类映射写入失败，请重新选择目标分类', error, stack);
+      cache.clear();
+      return (cache: cache, failed: categories.length);
     }
-    logger.info(
-      'CategoryImport',
-      '分类导入完成: 新增=$created 已存在=${validCategories.length - created} 耗时=${sw.elapsedMilliseconds}ms',
-    );
-
-    return (cache: categoryCache, failed: failed);
   }
 
   /// 导入交易（统一 batch 路径）
@@ -351,7 +272,7 @@ class DataImportService {
     AccountingTransferRepository repo,
     String ledgerId,
     List<ImportTransaction> transactions, {
-    required Map<ImportCategoryPath, String> categoryCache,
+    required Map<Object, String> categoryCache,
     void Function(int done, int total)? onProgress,
 
     /// 阶段回调：'rate' = 正在补拉汇率，'write' = 开始落库。
@@ -563,7 +484,7 @@ class DataImportService {
           parentName: tx.categoryParentName,
           name: tx.categoryName!,
         );
-        categoryId = categoryCache[key];
+        categoryId = categoryCache[tx.categorySourceKey ?? key];
         if (categoryId == null) {
           categoryFailure =
               '分类路径未命中: kind=${tx.categoryKind} '

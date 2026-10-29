@@ -4,7 +4,7 @@ import 'package:sesame_notes/data/db.dart';
 import 'category_scope.dart';
 import 'package:sesame_notes/utils/text_validation.dart';
 
-/// 分类身份或同级语义冲突保留两份原始内容，调用者可展示比较后再由用户决策。
+/// 同一分类身份内容冲突保留两份原始内容，调用者可展示比较后再由用户决策。
 class CategoryCloneConflict implements Exception {
   /// 冻结本次复制的来源与目标，不在异常处理中合并记录或改写任何身份。
   const CategoryCloneConflict({required this.source, required this.target});
@@ -117,29 +117,6 @@ Future<Map<String, String>> cloneCategoryReferences({
             return targetId;
           }
           throw CategoryCloneConflict(source: row, target: existing.toJson());
-        }
-        final siblings =
-            await (target.select(target.categories)..where(
-                  (c) =>
-                      categoryScopePredicate(c, targetAccountId) &
-                      c.kind.equals(row['kind'] as String) &
-                      c.level.equals(row['level'] as int) &
-                      (mappedParent == null
-                          ? c.parentId.isNull()
-                          : c.parentId.equals(mappedParent)),
-                ))
-                .get();
-        Category? canonical;
-        // 历史目录也按相同规范名称比较；多个既有冲突只保留为候选，不隐式合并。
-        for (final sibling in siblings) {
-          if (normalizeName(sibling.name) ==
-              normalizeName(content['name'] as String)) {
-            canonical = sibling;
-            break;
-          }
-        }
-        if (canonical != null) {
-          throw CategoryCloneConflict(source: row, target: canonical.toJson());
         }
         final updated = row['updated_at'] as DateTime;
         final deleted = row['deleted_at'] as DateTime?;

@@ -94,7 +94,6 @@ void main() {
         () => repo.createCategory(name: '非法分类', kind: type),
         () =>
             repo.createSubCategory(parentId: parent, name: '非法子分类', kind: type),
-        () => repo.upsertCategory(name: '非法分类', kind: type),
         () => repo.addTransaction(
           ledgerId: ledgerId,
           type: type,

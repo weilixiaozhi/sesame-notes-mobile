@@ -3,6 +3,7 @@ import 'dart:ui' show Locale;
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/utils/default_category_keys.dart';
+import 'package:sesame_notes/utils/category_template_names.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/utils/default_category_ids.dart';
 import 'package:sesame_notes/data/services/category_seed_service.dart';
@@ -65,31 +66,11 @@ class SeedService {
     required String key,
   }) => defaultCategoryId(level: level, key: key);
 
-  // ========== 一级/二级默认分类 key ==========
+  /// 所有分类模板共用一份树结构，根节点与子节点只表达包含关系。
+  static const Map<String, List<String>> categoryTemplates =
+      kExpenseCategoryTemplates;
 
-  /// 默认支出分类 key 列表（一级分类模式）。
-  ///
-  /// 定义于 utils/default_category_keys.dart（纯常量）——utils 层
-  /// CategoryUtils 需按 key 取下标翻译，若由本服务直接持有会形成
-  /// utils → services 上行依赖。此处 const 转发。
-  static const List<String> flatExpenseCategoryKeys = kFlatExpenseCategoryKeys;
-
-  /// 二级分类模式的默认支出分类（父分类 -> 子分类列表）。定义位置同上。
-  static const Map<String, List<String>> hierarchicalExpenseCategories =
-      kHierarchicalExpenseCategories;
-
-  // ========== 混合层次分类模板（hybridhierarchy，新注册默认创建）==========
-
-  /// 混合层次模板：按展示顺序定义的有序分类清单。
-  ///
-  /// 设计意图：把「独立一级」与「父子组」合并为单一有序列表，使二者可交错
-  /// 排列。`children == null` 表示独立一级分类，否则为父子组（父 + 其子分类列表）。
-  ///
-  /// 顺序即新注册用户的默认分类 sortOrder（一级全局递增，二级在父内从 0 起）。
-  /// ⚠️ 父 key 与子 key 都必须存在于 hierarchicalExpenseCategories：
-  /// getTranslatedSubCategoryName 按 key 在 hierarchical map 中的真实下标取翻译，
-  /// 查不到会 fallback 成 snake_case key；独立一级 key 必须存在于
-  /// flatExpenseCategoryKeys（getTranslatedCategoryName 按下标取翻译）。
+  /// 新账号初始内容选择，顺序决定首次创建的显示排序；不改变模板库结构。
   static const List<({String key, List<String>? children})>
   hybridCategoryTemplate = [
     (
@@ -410,194 +391,12 @@ class SeedService {
 
   // ========== 种子数据生成方法 ==========
 
-  /// 获取翻译后的分类名称（用于一级分类模式）
-  /// 公开原因：模板库页面（category_template_logic）按 key 取同一翻译。
-  static String getTranslatedCategoryName(String key, AppLocalizations l10n) {
-    final translationString = l10n.categoryExpenseList;
-    final names = translationString.split('-');
-    final keys = flatExpenseCategoryKeys;
+  /// 模板与初始化共用节点名称入口，翻译内容不依赖分类层级。
+  static String getTranslatedCategoryName(String key, AppLocalizations l10n) =>
+      categoryTemplateName(key, l10n);
 
-    final index = keys.indexOf(key);
-    if (index >= 0 && index < names.length) {
-      final name = names[index].trim();
-      // 多语言清单缺段时回退到 key，避免创建空名分类。
-      if (name.isNotEmpty) return name;
-    }
-
-    return key; // fallback
-  }
-
-  /// 获取翻译后的父分类名称（用于二级分类模式）
-  /// 公开原因：模板库页面（category_template_logic）按 key 取同一翻译。
-  static String getTranslatedParentCategoryName(
-    String key,
-    AppLocalizations l10n,
-  ) {
-    switch (key) {
-      case 'dining':
-        return l10n.categoryExpenseDining.split('-')[0].trim();
-      case 'snacks':
-        return l10n.categoryExpenseSnacks.split('-')[0].trim();
-      case 'fruit':
-        return l10n.categoryExpenseFruit.split('-')[0].trim();
-      case 'beverage':
-        return l10n.categoryExpenseBeverage.split('-')[0].trim();
-      case 'pastry':
-        return l10n.categoryExpensePastry.split('-')[0].trim();
-      case 'cooking':
-        return l10n.categoryExpenseCooking.split('-')[0].trim();
-      case 'shopping':
-        return l10n.categoryExpenseShopping.split('-')[0].trim();
-      case 'pets':
-        return l10n.categoryExpensePets.split('-')[0].trim();
-      case 'transport':
-        return l10n.categoryExpenseTransport.split('-')[0].trim();
-      case 'car':
-        return l10n.categoryExpenseCar.split('-')[0].trim();
-      case 'clothing':
-        return l10n.categoryExpenseClothing.split('-')[0].trim();
-      case 'daily_goods':
-        return l10n.categoryExpenseDailyGoods.split('-')[0].trim();
-      case 'education':
-        return l10n.categoryExpenseEducation.split('-')[0].trim();
-      case 'invest_loss':
-        return l10n.categoryExpenseInvestLoss.split('-')[0].trim();
-      case 'entertainment':
-        return l10n.categoryExpenseEntertainment.split('-')[0].trim();
-      case 'game':
-        return l10n.categoryExpenseGame.split('-')[0].trim();
-      case 'health_products':
-        return l10n.categoryExpenseHealthProducts.split('-')[0].trim();
-      case 'subscription':
-        return l10n.categoryExpenseSubscription.split('-')[0].trim();
-      case 'sports':
-        return l10n.categoryExpenseSports.split('-')[0].trim();
-      case 'housing':
-        return l10n.categoryExpenseHousing.split('-')[0].trim();
-      case 'home':
-        return l10n.categoryExpenseHome.split('-')[0].trim();
-      case 'beauty':
-        return l10n.categoryExpenseBeauty.split('-')[0].trim();
-      case 'transfer':
-        return l10n.categoryExpenseTransfer.split('-')[0].trim();
-      default:
-        return key;
-    }
-  }
-
-  /// 获取翻译后的子分类名称
-  /// 公开原因：模板库页面（category_template_logic）按 key 取同一翻译。
-  static String getTranslatedSubCategoryName(
-    String key,
-    AppLocalizations l10n,
-  ) {
-    // 全局仅支出模式，直接从支出分类 map 查找父分类
-    final categoryMap = hierarchicalExpenseCategories;
-
-    String? parentKey;
-    for (final entry in categoryMap.entries) {
-      if (entry.value.contains(key)) {
-        parentKey = entry.key;
-        break;
-      }
-    }
-
-    if (parentKey == null) return key;
-
-    // 获取父分类的翻译字符串
-    String translationString;
-    switch (parentKey) {
-      case 'dining':
-        translationString = l10n.categoryExpenseDining;
-        break;
-      case 'snacks':
-        translationString = l10n.categoryExpenseSnacks;
-        break;
-      case 'fruit':
-        translationString = l10n.categoryExpenseFruit;
-        break;
-      case 'beverage':
-        translationString = l10n.categoryExpenseBeverage;
-        break;
-      case 'pastry':
-        translationString = l10n.categoryExpensePastry;
-        break;
-      case 'cooking':
-        translationString = l10n.categoryExpenseCooking;
-        break;
-      case 'shopping':
-        translationString = l10n.categoryExpenseShopping;
-        break;
-      case 'pets':
-        translationString = l10n.categoryExpensePets;
-        break;
-      case 'transport':
-        translationString = l10n.categoryExpenseTransport;
-        break;
-      case 'car':
-        translationString = l10n.categoryExpenseCar;
-        break;
-      case 'clothing':
-        translationString = l10n.categoryExpenseClothing;
-        break;
-      case 'daily_goods':
-        translationString = l10n.categoryExpenseDailyGoods;
-        break;
-      case 'education':
-        translationString = l10n.categoryExpenseEducation;
-        break;
-      case 'invest_loss':
-        translationString = l10n.categoryExpenseInvestLoss;
-        break;
-      case 'entertainment':
-        translationString = l10n.categoryExpenseEntertainment;
-        break;
-      case 'game':
-        translationString = l10n.categoryExpenseGame;
-        break;
-      case 'health_products':
-        translationString = l10n.categoryExpenseHealthProducts;
-        break;
-      case 'subscription':
-        translationString = l10n.categoryExpenseSubscription;
-        break;
-      case 'sports':
-        translationString = l10n.categoryExpenseSports;
-        break;
-      case 'housing':
-        translationString = l10n.categoryExpenseHousing;
-        break;
-      case 'home':
-        translationString = l10n.categoryExpenseHome;
-        break;
-      case 'beauty':
-        translationString = l10n.categoryExpenseBeauty;
-        break;
-      case 'transfer':
-        translationString = l10n.categoryExpenseTransfer;
-        break;
-      default:
-        return key;
-    }
-
-    final names = translationString.split('-');
-    final childKeys = hierarchicalExpenseCategories[parentKey] ?? [];
-
-    final index = childKeys.indexOf(key);
-    // names 第 0 段是父分类名称,子分类名称从第 1 段起
-    if (index >= 0 && index + 1 < names.length) {
-      return names[index + 1].trim();
-    }
-
-    return key; // fallback
-  }
-
-  /// 生成默认分类（混合层次模式：一级 + 二级并存）
-  ///
-  /// 新注册静默创建的唯一分类清单（欢迎页无分类模式选择屏）。
-  /// 遍历 [hybridCategoryTemplate] 单一有序清单：`children == null` 创建独立一级，
-  /// 否则创建父分类并挂接其子分类。一级 sortOrder 全局递增，二级 sortOrder 在
-  /// 父内从 0 起。syncId 全部走确定性 UUID，与模板库"已添加"判定共用同一套标识。
+  /// 首次初始化按默认选择创建分类树，稳定身份仅服务多设备初始化幂等。
+  /// 节点排序按所在集合递增，用户后续从模板创建使用独立身份。
   static Future<void> createHybridCategories(
     SesameDatabase db,
     AppLocalizations l10n, {
@@ -612,9 +411,7 @@ class SeedService {
         categories.add(
           CategorySeedItem(
             key,
-            children == null
-                ? getTranslatedCategoryName(key, l10n)
-                : getTranslatedParentCategoryName(key, l10n),
+            getTranslatedCategoryName(key, l10n),
             getDefaultIcon(key),
             1,
             sortOrder++,
@@ -627,7 +424,7 @@ class SeedService {
           categories.add(
             CategorySeedItem(
               childKey,
-              getTranslatedSubCategoryName(childKey, l10n),
+              getTranslatedCategoryName(childKey, l10n),
               getDefaultIcon(childKey),
               2,
               i,

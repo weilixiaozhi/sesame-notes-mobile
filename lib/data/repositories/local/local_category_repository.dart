@@ -1,7 +1,6 @@
 import 'package:sesame_notes/data/repositories/contracts/category_query_repository.dart';
 import 'package:sesame_notes/data/repositories/contracts/accounting_repositories.dart'
-    show CanonicalCategoryInsertResult;
-import 'package:sesame_notes/utils/default_category_ids.dart';
+    show CategoryCreateDraft, CategoryParentUnavailableException;
 import 'package:sesame_notes/data/models/accounting_records.dart';
 import 'package:sesame_notes/data/repositories/support/category_row_tree.dart';
 import 'package:sesame_notes/utils/text_validation.dart';
@@ -215,8 +214,8 @@ class LocalCategoryRepository implements CategoryQueryRepository {
   }) async {
     if (level != 1 && level != 2) throw StateError('分类层级无效');
     if (id != null && parentId == id) throw StateError('分类不能选择自身作为所属分类');
-    if (level == 1 && parentId != null) throw StateError('一级分类不能设置所属分类');
-    if (level == 2 && parentId == null) throw StateError('二级分类必须选择有效的一级分类');
+    if (level == 1 && parentId != null) throw StateError('父分类不能设置所属分类');
+    if (level == 2 && parentId == null) throw StateError('子分类必须选择有效的父分类');
     if (parentId == null) return;
     final parent =
         await (_categories()..where(
@@ -229,48 +228,7 @@ class LocalCategoryRepository implements CategoryQueryRepository {
             .getSingleOrNull();
     if (parent == null) throw StateError('所属分类不存在或不属于当前分类目录');
     if (id != null && await hasSubCategories(id)) {
-      throw StateError('分类仍有子分类，不能改为二级分类');
-    }
-  }
-
-  /// 同一账号、类型、层级和父级内按规范名称比较，已有历史重复只报告冲突。
-  Future<List<Category>> _sameNameCategories({
-    required String name,
-    required String kind,
-    required int level,
-    required String? parentId,
-    String? excludeId,
-  }) async {
-    final normalized = normalizeName(name);
-    final query = _categories()
-      ..where(
-        (c) =>
-            c.kind.equals(kind) & c.level.equals(level) & c.deletedAt.isNull(),
-      );
-    query.where(
-      (c) =>
-          parentId == null ? c.parentId.isNull() : c.parentId.equals(parentId),
-    );
-    if (excludeId != null) query.where((c) => c.id.equals(excludeId).not());
-    final rows = await query.get();
-    return [
-      for (final row in rows)
-        if (_normalizedNameMatches(row, normalized)) row,
-    ];
-  }
-
-  /// 名称校验失败保留原记录，不把损坏文本当作新类别的匹配依据。
-  bool _normalizedNameMatches(Category row, String normalized) {
-    try {
-      return normalizeName(row.name) == normalized;
-    } catch (error, stack) {
-      logger.error(
-        'LocalCategoryRepository',
-        '分类名称格式无效: category=${row.id}',
-        safeErrorSummary(error),
-        stack,
-      );
-      return false;
+      throw StateError('分类仍有子分类，不能移入其他分类');
     }
   }
 
@@ -340,234 +298,126 @@ class LocalCategoryRepository implements CategoryQueryRepository {
     return rows.map((category) => category.id).toSet();
   });
 
-  /// 官方模板只使用稳定身份；墓碑恢复和云端待确认不产生第二个可见分类。
-  Future<CanonicalCategoryInsertResult> insertCanonicalCategory({
-    required String id,
-    required String name,
-    required String kind,
-    required int level,
-    String? icon,
-    int? sortOrder,
-    String? parentId,
-    bool restoreLocalDeleted = false,
-  }) async {
-    final identity = officialCategoryIdentities[id];
-    if (identity == null ||
-        identity.level != level ||
-        identity.parentId != parentId) {
-      throw ArgumentError('分类不属于指定官方模板');
+  /// 按一次操作冻结的 UUID 创建分类；父先子后，任何失败回滚整批写入及同步事件。
+  Future<int> createCategoryBatch({
+    required List<CategoryCreateDraft> items,
+    String? ledgerId,
+    bool recordChanges = true,
+  }) => runInTransaction(() async {
+    if (ledgerId != null) {
+      return (await _forEditableLedger(
+        ledgerId,
+      )).createCategoryBatch(items: items, recordChanges: recordChanges);
     }
-    name = normalizeName(name);
-    requireExpenseType(kind);
-    validateCategoryFields(icon: icon, sortOrder: sortOrder);
-    return runInTransaction(() async {
-      final account = _scope;
-      final existing = await (_categories()..where((c) => c.id.equals(id)))
-          .getSingleOrNull();
-      if (existing != null && existing.deletedAt == null) {
-        if ((await _sameNameCategories(
-          name: existing.name,
-          kind: existing.kind,
-          level: existing.level,
-          parentId: existing.parentId,
-          excludeId: existing.id,
-        )).isNotEmpty) {
-          return CanonicalCategoryInsertResult.nameConflict;
-        }
-        return CanonicalCategoryInsertResult.unchanged;
+    final ids = <String>{};
+    for (final item in items) {
+      if (!Uuid.isValidUUID(fromString: item.id) || !ids.add(item.id)) {
+        throw StateError('分类创建身份无效，请重新选择分类');
       }
-
-      final restoring = existing != null && existing.scopeAccountId == null;
-      if (restoring && !restoreLocalDeleted) {
-        return CanonicalCategoryInsertResult.localRestoreRequired;
+      normalizeName(item.name);
+      requireExpenseType(item.kind);
+      validateCategoryFields(icon: item.icon, sortOrder: item.sortOrder);
+    }
+    final ordered = [...items]..sort((a, b) => a.level.compareTo(b.level));
+    final catalog = await _categories().get();
+    final existingIds = catalog.map((row) => row.id).toSet();
+    final nextOrders = <String?, int>{};
+    for (final row in catalog.where((row) => row.deletedAt == null)) {
+      final next = row.sortOrder + 1;
+      if (next > (nextOrders[row.parentId] ?? 0)) {
+        nextOrders[row.parentId] = next;
       }
-      final desired = restoring ? existing : null;
-      final effectiveParent = desired != null ? desired.parentId : parentId;
-      if (effectiveParent != null) {
+    }
+    var created = 0;
+    for (final item in ordered) {
+      // 同一操作重试只认本域 UUID；已编辑或删除的记录不会被重放覆盖。
+      if (existingIds.contains(item.id)) continue;
+      if (item.level == 2 &&
+          item.parentId != null &&
+          !items.any(
+            (parent) => parent.id == item.parentId && parent.level == 1,
+          )) {
         final parent =
             await (_categories()..where(
-                  (c) =>
-                      c.id.equals(effectiveParent) &
-                      c.deletedAt.isNull() &
-                      c.level.equals(1) &
-                      c.parentId.isNull(),
+                  (row) =>
+                      row.id.equals(item.parentId!) &
+                      row.deletedAt.isNull() &
+                      row.level.equals(1) &
+                      row.parentId.isNull(),
                 ))
                 .getSingleOrNull();
-        if (parent == null) {
-          return CanonicalCategoryInsertResult.parentUnavailable;
-        }
+        if (parent == null) throw const CategoryParentUnavailableException();
       }
-      final desiredName = desired?.name ?? name;
-      final duplicate = await _sameNameCategories(
-        name: desiredName,
-        kind: desired?.kind ?? kind,
-        level: desired?.level ?? level,
-        parentId: effectiveParent,
-        excludeId: id,
+      await _validatePlacement(
+        id: item.id,
+        level: item.level,
+        parentId: item.parentId,
       );
-      if (duplicate.isNotEmpty) {
-        return CanonicalCategoryInsertResult.nameConflict;
-      }
-      final now = existing == null
-          ? DateTime.now().toUtc()
-          : await _nextEditTime(existing);
-      final row =
-          desired?.copyWith(
-            updatedAt: now,
-            deletedAt: const d.Value(null),
-            serverVersionToken: const d.Value(null),
-          ) ??
-          Category(
-            id: id,
-            name: name,
-            kind: kind,
-            level: level,
-            sortOrder: sortOrder ?? 0,
-            icon: icon,
-            parentId: parentId,
-            scopeAccountId: _scope,
-            cloudRegistered: existing?.cloudRegistered ?? false,
-            updatedAt: now,
-          );
-      final payload = categorySyncPayload(row);
-      if (existing != null && !restoring) {
-        if (account == null || trackerGetter?.call() == null) {
-          throw StateError('请登录原账号后确认恢复分类');
-        }
-        final pending =
-            await (db.select(db.syncChanges)..where(
-                  (c) =>
-                      c.accountId.equals(account) &
-                      c.entityType.equals('category') &
-                      c.entityId.equals(id) &
-                      c.action.equals('upsert') &
-                      c.pushedAt.isNull(),
-                ))
-                .get();
-        final wanted = jsonDecode(payload) as Map;
-        for (final previous in pending) {
-          final data = jsonDecode(previous.payload) as Map;
-          if (data['base_token'] == null &&
-              const [
-                'name',
-                'kind',
-                'level',
-                'parent_id',
-                'icon',
-                'sort_order',
-              ].every((key) => data[key] == wanted[key])) {
-            return CanonicalCategoryInsertResult.pendingConfirmation;
-          }
-        }
-        await _recordCategoryChange(
-          entityId: id,
-          action: 'upsert',
-          payload: payload,
-          updatedAt: now,
-        );
-        return CanonicalCategoryInsertResult.pendingConfirmation;
-      }
-      await db
-          .into(db.categories)
-          .insertOnConflictUpdate(row.toCompanion(false));
-      await _recordCategoryChange(
-        entityId: id,
-        action: 'upsert',
-        payload: payload,
+      final order = item.sortOrder ?? nextOrders[item.parentId] ?? 0;
+      validateCategoryFields(icon: item.icon, sortOrder: order);
+      nextOrders[item.parentId] = order + 1;
+      final now = DateTime.now().toUtc();
+      final row = Category(
+        id: item.id,
+        name: normalizeName(item.name),
+        kind: item.kind,
+        level: item.level,
+        sortOrder: order,
+        icon: item.icon,
+        parentId: item.parentId,
+        scopeAccountId: _scope,
+        cloudRegistered: false,
         updatedAt: now,
       );
-      return restoring
-          ? CanonicalCategoryInsertResult.restored
-          : CanonicalCategoryInsertResult.created;
-    });
-  }
+      await db.into(db.categories).insert(row.toCompanion(true));
+      if (recordChanges) {
+        await _recordCategoryChange(
+          entityId: row.id,
+          action: 'upsert',
+          payload: categorySyncPayload(row),
+          updatedAt: now,
+        );
+      }
+      existingIds.add(row.id);
+      created++;
+    }
+    return created;
+  });
 
-  /// 创建一级分类；恢复回填传 [recordChanges] 为 false，避免历史快照反向推云。
+  /// 每次主动创建分配新身份；同名同图标分类也保持独立。
   Future<String> createCategory({
     required String name,
     required String kind,
     String? icon,
     int? sortOrder,
-    int level = 1,
+    int? level,
     String? parentId,
     bool recordChanges = true,
     String? ledgerId,
   }) => runInTransaction(() async {
-    if (ledgerId != null) {
-      return (await _forEditableLedger(ledgerId)).createCategory(
-        name: name,
-        kind: kind,
-        icon: icon,
-        sortOrder: sortOrder,
-        level: level,
-        parentId: parentId,
-        recordChanges: recordChanges,
-      );
+    final expectedLevel = parentId == null ? 1 : 2;
+    if (level != null && level != expectedLevel) {
+      throw StateError('分类关系与层级不一致');
     }
-    name = normalizeName(name);
-    requireExpenseType(kind);
-    validateCategoryFields(icon: icon, sortOrder: sortOrder);
-    // 撞同名抛 DuplicateNameException。判重按「作用域唯一」契约:
-    // 只在同一父级作用域内判重(parentId 为 null → 一级分类之间;非 null →
-    // 同父的二级之间)。跨父级/跨层级允许同名(默认 seed 即有「购物>鞋子」
-    // 「服装>鞋子」)。caller 显式 handle:
-    //   - UI 主动建 → 先过 isCategoryNameDuplicate 警告;真冲突 try/catch 弹 toast
-    //   - import / 自动记账等静默路径 → 使用 upsertCategory(get-or-create)
-    // 静默复用会吞掉 caller 传的 icon/sortOrder。
-    // 离线创建即生成 UUID 主键，本地与云端始终同一 id。
     final id = _uuid.v4();
-    final now = DateTime.now().toUtc();
-    // 写库与变更登记同事务:登记失败时回滚,避免云端漏推新分类。
-    await runInTransaction(() async {
-      await _validatePlacement(id: id, level: level, parentId: parentId);
-      if (await isCategoryNameDuplicate(
-        name: name,
-        kind: kind,
-        parentId: parentId,
-      )) {
-        throw DuplicateNameException(entityType: 'category', name: name);
-      }
-      await db
-          .into(db.categories)
-          .insert(
-            CategoriesCompanion.insert(
-              id: id,
-              name: name,
-              kind: kind,
-              level: level,
-              icon: d.Value(icon),
-              sortOrder: d.Value(sortOrder ?? 0),
-              parentId: d.Value(parentId),
-              scopeAccountId: d.Value(_scope),
-              updatedAt: now,
-            ),
-          );
-      if (recordChanges) {
-        await _recordCategoryChange(
-          entityId: id,
-          action: 'upsert',
-          payload: categorySyncPayload(
-            Category(
-              id: id,
-              name: name,
-              kind: kind,
-              level: level,
-              sortOrder: sortOrder ?? 0,
-              icon: icon,
-              parentId: parentId,
-              scopeAccountId: _scope,
-              cloudRegistered: false,
-              updatedAt: now,
-            ),
-          ),
-          updatedAt: now,
-        );
-      }
-    });
+    await createCategoryBatch(
+      items: [
+        CategoryCreateDraft(
+          id: id,
+          name: name,
+          kind: kind,
+          parentId: parentId,
+          icon: icon,
+          sortOrder: sortOrder,
+        ),
+      ],
+      ledgerId: ledgerId,
+      recordChanges: recordChanges,
+    );
     return id;
   });
 
-  /// 创建二级分类；恢复回填传 [recordChanges] 为 false，避免历史快照反向推云。
+  /// 在明确父身份下创建二级分类，父分类归属由批量写入入口验证。
   Future<String> createSubCategory({
     required String parentId,
     required String name,
@@ -576,71 +426,16 @@ class LocalCategoryRepository implements CategoryQueryRepository {
     int? sortOrder,
     bool recordChanges = true,
     String? ledgerId,
-  }) => runInTransaction(() async {
-    if (ledgerId != null) {
-      return (await _forEditableLedger(ledgerId)).createSubCategory(
-        parentId: parentId,
-        name: name,
-        kind: kind,
-        icon: icon,
-        sortOrder: sortOrder,
-        recordChanges: recordChanges,
-      );
-    }
-    name = normalizeName(name);
-    requireExpenseType(kind);
-    validateCategoryFields(icon: icon, sortOrder: sortOrder);
-    // 作用域唯一:仅在同一 parentId 下判重,跨父级允许同名二级分类
-    final id = _uuid.v4();
-    final now = DateTime.now().toUtc();
-    await runInTransaction(() async {
-      await _validatePlacement(id: id, level: 2, parentId: parentId);
-      if (await isCategoryNameDuplicate(
-        name: name,
-        kind: kind,
-        parentId: parentId,
-      )) {
-        throw DuplicateNameException(entityType: 'category', name: name);
-      }
-      await db
-          .into(db.categories)
-          .insert(
-            CategoriesCompanion.insert(
-              id: id,
-              name: name,
-              kind: kind,
-              icon: d.Value(icon),
-              parentId: d.Value(parentId),
-              level: 2,
-              scopeAccountId: d.Value(_scope),
-              sortOrder: d.Value(sortOrder ?? 0),
-              updatedAt: now,
-            ),
-          );
-      if (recordChanges) {
-        await _recordCategoryChange(
-          entityId: id,
-          action: 'upsert',
-          payload: categorySyncPayload(
-            Category(
-              id: id,
-              name: name,
-              kind: kind,
-              level: 2,
-              sortOrder: sortOrder ?? 0,
-              icon: icon,
-              parentId: parentId,
-              scopeAccountId: _scope,
-              cloudRegistered: false,
-              updatedAt: now,
-            ),
-          ),
-          updatedAt: now,
-        );
-      }
-    });
-    return id;
-  });
+  }) => createCategory(
+    parentId: parentId,
+    name: name,
+    kind: kind,
+    icon: icon,
+    sortOrder: sortOrder,
+    level: 2,
+    recordChanges: recordChanges,
+    ledgerId: ledgerId,
+  );
 
   /// 修改当前目录中的分类名称、图标和两级归属。
   Future<void> updateCategory(
@@ -686,23 +481,16 @@ class LocalCategoryRepository implements CategoryQueryRepository {
           : parentId.isEmpty
           ? null
           : parentId;
+      final effectiveLevel = effectiveParent == null ? 1 : 2;
+      if (level != null && level != effectiveLevel) {
+        throw StateError('分类关系与层级不一致');
+      }
       await _validatePlacement(
         id: id,
-        level: level ?? row.level,
+        level: effectiveLevel,
         parentId: effectiveParent,
       );
       validateCategoryFields(icon: icon);
-      if (await isCategoryNameDuplicate(
-        name: name ?? row.name,
-        kind: row.kind,
-        parentId: effectiveParent,
-        excludeId: id,
-      )) {
-        throw DuplicateNameException(
-          entityType: 'category',
-          name: name ?? row.name,
-        );
-      }
       await (_updateCategories()..where((c) => c.id.equals(id))).write(
         CategoriesCompanion(
           name: name != null ? d.Value(name) : const d.Value.absent(),
@@ -712,7 +500,7 @@ class LocalCategoryRepository implements CategoryQueryRepository {
           parentId: parentId != null
               ? (parentId.isEmpty ? const d.Value(null) : d.Value(parentId))
               : const d.Value.absent(),
-          level: level != null ? d.Value(level) : const d.Value.absent(),
+          level: d.Value(effectiveLevel),
           // updatedAt 是同步 LWW 依据,任何字段变更都要推进。
           updatedAt: d.Value(now),
         ),
@@ -722,7 +510,7 @@ class LocalCategoryRepository implements CategoryQueryRepository {
         id: row.id,
         name: name ?? row.name,
         kind: row.kind,
-        level: level ?? row.level,
+        level: effectiveLevel,
         sortOrder: row.sortOrder,
         icon: icon ?? row.icon,
         parentId: parentId != null
@@ -820,7 +608,10 @@ class LocalCategoryRepository implements CategoryQueryRepository {
         rows.map((row) => row.id),
       );
       // 新请求按子级优先登记；已经冻结的旧请求仍原样重放。
-      rows.sort((a, b) => b.level.compareTo(a.level));
+      rows.sort(
+        (a, b) =>
+            (b.parentId == null ? 0 : 1).compareTo(a.parentId == null ? 0 : 1),
+      );
       for (final row in rows) {
         final now = await _nextEditTime(row);
         await (_updateCategories()..where((c) => c.id.equals(row.id))).write(
@@ -909,7 +700,7 @@ class LocalCategoryRepository implements CategoryQueryRepository {
             .go();
       });
 
-  /// 上提前验证所有目标语义身份，冲突时整组保留原分类及引用。
+  /// 按原身份上提子分类，保留账单引用且允许目标目录存在同名分类。
   Future<int> promoteSubCategoriesToTopLevel(String parentId) async {
     return await runInTransaction(() async {
       // 获取所有需要提升的二级分类
@@ -920,30 +711,10 @@ class LocalCategoryRepository implements CategoryQueryRepository {
         ...subCategories.map((c) => c.id),
       ]);
 
-      final promotedNames = <(String, String)>{};
-      for (final sub in subCategories) {
-        final normalized = normalizeName(sub.name);
-        // 多个历史兄弟重名或已有顶层同名时，不能上提产生更多同语义分类。
-        if (!promotedNames.add((sub.kind, normalized)) ||
-            (await _sameNameCategories(
-              name: normalized,
-              kind: sub.kind,
-              level: 1,
-              parentId: null,
-            )).isNotEmpty) {
-          throw DuplicateNameException(entityType: 'category', name: sub.name);
-        }
-      }
-
       // 查当前一级分类的最大 sortOrder，确保提升后的分类排在已有分类之后
       final topLevel =
           await (_categories()
-                ..where(
-                  (c) =>
-                      c.parentId.isNull() &
-                      c.level.equals(1) &
-                      c.deletedAt.isNull(),
-                )
+                ..where((c) => c.parentId.isNull() & c.deletedAt.isNull())
                 ..orderBy([
                   (c) => d.OrderingTerm(
                     expression: c.sortOrder,
@@ -984,87 +755,6 @@ class LocalCategoryRepository implements CategoryQueryRepository {
       return promoted;
     });
   }
-
-  /// 校验输入字段后复用同名分类，未命中时创建分类并登记同步变更。
-  Future<({String id, bool created})> upsertCategory({
-    required String name,
-    required String kind,
-    String? icon,
-    int? sortOrder,
-    String? ledgerId,
-  }) => runInTransaction(() async {
-    if (ledgerId != null) {
-      return (await _forEditableLedger(ledgerId)).upsertCategory(
-        name: name,
-        kind: kind,
-        icon: icon,
-        sortOrder: sortOrder,
-      );
-    }
-    name = normalizeName(name);
-    requireExpenseType(kind);
-    validateCategoryFields(icon: icon, sortOrder: sortOrder);
-    // 名称导入创建一级类别，不能把不同父级下的同名子分类静默归为同一个实体。
-    final existing = await _sameNameCategories(
-      name: name,
-      kind: kind,
-      level: 1,
-      parentId: null,
-    );
-    if (existing.length > 1) throw StateError('当前目录存在多个同名分类，请先确认并处理分类冲突');
-    if (existing.isNotEmpty) {
-      return (id: existing.first.id, created: false);
-    }
-    final children =
-        await (_categories()..where(
-              (c) =>
-                  c.kind.equals(kind) &
-                  c.level.equals(2) &
-                  c.deletedAt.isNull(),
-            ))
-            .get();
-    if (children.any((c) => _normalizedNameMatches(c, name))) {
-      throw StateError('已有同名子分类，请明确选择其所属分类后再导入，不能自动创建或合并分类');
-    }
-    final id = _uuid.v4();
-    final now = DateTime.now().toUtc();
-    await runInTransaction(() async {
-      await db
-          .into(db.categories)
-          .insert(
-            CategoriesCompanion.insert(
-              id: id,
-              name: name,
-              kind: kind,
-              level: 1,
-              icon: d.Value(icon),
-              scopeAccountId: d.Value(_scope),
-              sortOrder: d.Value(sortOrder ?? 0),
-              updatedAt: now,
-            ),
-          );
-      await _recordCategoryChange(
-        entityId: id,
-        action: 'upsert',
-        payload: categorySyncPayload(
-          Category(
-            id: id,
-            name: name,
-            kind: kind,
-            level: 1,
-            sortOrder: sortOrder ?? 0,
-            icon: icon,
-            parentId: null,
-            scopeAccountId: _scope,
-            cloudRegistered: false,
-            updatedAt: now,
-          ),
-        ),
-        updatedAt: now,
-      );
-    });
-    return (id: id, created: true);
-  });
 
   /// UUID 必须在指定账本或当前账号目录中解析，不能回退到其他域。
   @override
@@ -1139,15 +829,14 @@ class LocalCategoryRepository implements CategoryQueryRepository {
     String? ledgerId,
   }) => _readScoped(() async {
     if (ledgerId != null) {
-      return (await getAllCategories(ledgerId: ledgerId))
-          .where((c) => c.kind == kind && c.level == 1 && c.parentId == null)
-          .toList();
+      return (await getAllCategories(
+        ledgerId: ledgerId,
+      )).where((c) => c.kind == kind && c.parentId == null).toList();
     }
     return await (_categories()
           ..where(
             (c) =>
                 c.kind.equals(kind) &
-                c.level.equals(1) &
                 c.parentId.isNull() &
                 c.deletedAt.isNull(),
           )
@@ -1161,12 +850,7 @@ class LocalCategoryRepository implements CategoryQueryRepository {
       _readScoped(() async {
         if (await getCategoryById(parentId) == null) return const [];
         return await (_categories()
-              ..where(
-                (c) =>
-                    c.parentId.equals(parentId) &
-                    c.level.equals(2) &
-                    c.deletedAt.isNull(),
-              )
+              ..where((c) => c.parentId.equals(parentId) & c.deletedAt.isNull())
               ..orderBy([(c) => d.OrderingTerm(expression: c.sortOrder)]))
             .get();
       });
@@ -1182,48 +866,6 @@ class LocalCategoryRepository implements CategoryQueryRepository {
                 .get();
         return CategoryHierarchy.getUsableCategories(allCategories);
       });
-
-  /// 按当前账号、类型、层级、父级与规范名称复核重复。
-  @override
-  Future<bool> isCategoryNameDuplicate({
-    required String name,
-    required String kind,
-    String? excludeId,
-    String? parentId,
-    String? ledgerId,
-  }) => _readScoped(() async {
-    if (ledgerId != null) {
-      return (await _forEditableLedger(ledgerId)).isCategoryNameDuplicate(
-        name: name,
-        kind: kind,
-        excludeId: excludeId,
-        parentId: parentId,
-      );
-    }
-    final level = parentId == null ? 1 : 2;
-    if (excludeId != null) {
-      final original =
-          await (_categories()
-                ..where((c) => c.id.equals(excludeId) & c.deletedAt.isNull()))
-              .getSingleOrNull();
-      // 历史同语义实体保持各自身份；只修改图标等字段不会产生新的重名实体。
-      if (original != null &&
-          original.kind == kind &&
-          original.level == level &&
-          original.parentId == parentId &&
-          _normalizedNameMatches(original, normalizeName(name))) {
-        return false;
-      }
-    }
-    final results = await _sameNameCategories(
-      name: name,
-      kind: kind,
-      level: level,
-      parentId: parentId,
-      excludeId: excludeId,
-    );
-    return results.isNotEmpty;
-  });
 
   /// 只检测当前目录内的活跃子级。
   @override
@@ -1345,7 +987,7 @@ class LocalCategoryRepository implements CategoryQueryRepository {
 
       // 汇总需要迁移交易的源分类 id：一级分类包含其全部二级分类
       final sourceIds = <String>[fromCategoryId];
-      if (fromCategory.level == 1) {
+      if (fromCategory.parentId == null) {
         final subCategories = await getSubCategories(fromCategoryId);
         sourceIds.addAll(subCategories.map((sub) => sub.id));
       }
@@ -1433,9 +1075,9 @@ class LocalCategoryRepository implements CategoryQueryRepository {
       final topLevel = <Category>[];
       final children = <String, List<Category>>{};
       for (final row in categories.values.where((row) => row.kind == kind)) {
-        if (row.level == 1 && row.parentId == null) {
+        if (row.parentId == null) {
           topLevel.add(row);
-        } else if (row.level == 2 && row.parentId != null) {
+        } else if (row.parentId != null) {
           (children[row.parentId!] ??= []).add(row);
         }
       }
@@ -1533,7 +1175,9 @@ class LocalCategoryRepository implements CategoryQueryRepository {
         .where((c) => c.id == categoryId || c.parentId == categoryId)
         .toList()
       ..sort((a, b) {
-        final level = a.level.compareTo(b.level);
+        final level = (a.parentId == null ? 0 : 1).compareTo(
+          b.parentId == null ? 0 : 1,
+        );
         return level == 0 ? a.sortOrder.compareTo(b.sortOrder) : level;
       });
   });
@@ -1592,19 +1236,12 @@ class LocalCategoryRepository implements CategoryQueryRepository {
       }
     }
     await runInTransaction(() async {
-      final semanticKeys = <(String, int, String?, String)>{};
       for (final row in categories) {
-        final name = normalizeName(row.name.value);
-        final key = (row.kind.value, row.level.value, row.parentId.value, name);
-        if (!semanticKeys.add(key) ||
-            (await _sameNameCategories(
-              name: name,
-              kind: row.kind.value,
-              level: row.level.value,
-              parentId: row.parentId.value,
-            )).isNotEmpty) {
-          throw DuplicateNameException(entityType: 'category', name: name);
-        }
+        normalizeName(row.name.value);
+        validateCategoryFields(
+          icon: row.icon.present ? row.icon.value : null,
+          sortOrder: row.sortOrder.present ? row.sortOrder.value : 0,
+        );
       }
       await db.batch((batch) {
         batch.insertAll(db.categories, [
@@ -1621,6 +1258,11 @@ class LocalCategoryRepository implements CategoryQueryRepository {
       if (ids.isEmpty) return;
       final rows = await (_categories()..where((c) => c.id.isIn(ids))).get();
       for (final row in rows) {
+        await _validatePlacement(
+          id: row.id,
+          level: row.level,
+          parentId: row.parentId,
+        );
         await _recordCategoryChange(
           entityId: row.id,
           action: 'upsert',
@@ -1635,7 +1277,7 @@ class LocalCategoryRepository implements CategoryQueryRepository {
   ///
   /// 返回插入行的 UUID id（UUID 主键表 insert 要求 caller 必须提供 id，
   /// 插入成功即证明 id 存在）。变更登记不在此处做:调用方走
-  /// [batchInsertCategories] 或业务方法（createCategory/upsertCategory）
+  /// [batchInsertCategories] 或业务方法（createCategory）
   /// 时已统一登记,避免重复。
   Future<String> insertCategory(CategoriesCompanion category) =>
       runInTransaction(() async {
@@ -1644,17 +1286,16 @@ class LocalCategoryRepository implements CategoryQueryRepository {
             category.scopeAccountId.value != _scope) {
           throw StateError('分类不属于当前分类目录');
         }
-        if ((await _sameNameCategories(
-          name: category.name.value,
-          kind: category.kind.value,
-          level: category.level.value,
-          parentId: category.parentId.value,
-        )).isNotEmpty) {
-          throw DuplicateNameException(
-            entityType: 'category',
-            name: category.name.value,
-          );
-        }
+        normalizeName(category.name.value);
+        validateCategoryFields(
+          icon: category.icon.present ? category.icon.value : null,
+          sortOrder: category.sortOrder.present ? category.sortOrder.value : 0,
+        );
+        await _validatePlacement(
+          id: category.id.value,
+          level: category.level.present ? category.level.value : 1,
+          parentId: category.parentId.present ? category.parentId.value : null,
+        );
         await db
             .into(db.categories)
             .insert(category.copyWith(scopeAccountId: d.Value(_scope)));

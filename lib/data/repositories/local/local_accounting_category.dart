@@ -8,26 +8,16 @@ import '../contracts/accounting_repositories.dart';
 
 /// 分类写入与跨仓储协作共享事务、账号和同步变更登记。
 mixin LocalCategoryOperations on LocalAccountingContext {
-  /// 官方模板的固定身份写入由分类仓储原子处理，未确认墓碑不会进入可见目录。
+  /// 批量创建沿用同一账本权限、分类域和同步事务。
   @override
-  Future<CanonicalCategoryInsertResult> insertCanonicalCategory({
-    required String id,
-    required String name,
-    required String kind,
-    required int level,
-    String? icon,
-    int? sortOrder,
-    String? parentId,
-    bool restoreLocalDeleted = false,
-  }) => categoryStore.insertCanonicalCategory(
-    id: id,
-    name: name,
-    kind: kind,
-    level: level,
-    icon: icon,
-    sortOrder: sortOrder,
-    parentId: parentId,
-    restoreLocalDeleted: restoreLocalDeleted,
+  Future<int> createCategoryBatch({
+    required List<CategoryCreateDraft> items,
+    String? ledgerId,
+    bool recordChanges = true,
+  }) => categoryStore.createCategoryBatch(
+    items: items,
+    ledgerId: ledgerId,
+    recordChanges: recordChanges,
   );
 
   /// 创建分类，并透传是否登记同步变更；恢复回填使用 false。
@@ -37,7 +27,7 @@ mixin LocalCategoryOperations on LocalAccountingContext {
     required String kind,
     String? icon,
     int? sortOrder,
-    int level = 1,
+    int? level,
     String? parentId,
     bool recordChanges = true,
     String? ledgerId,
@@ -102,21 +92,6 @@ mixin LocalCategoryOperations on LocalAccountingContext {
   @override
   Future<int> promoteSubCategoriesToTopLevel(String parentId) =>
       categoryStore.promoteSubCategoriesToTopLevel(parentId);
-
-  /// 提供 upsertCategory 对应的持久化能力。
-  Future<({String id, bool created})> upsertCategory({
-    required String name,
-    required String kind,
-    String? icon,
-    int? sortOrder,
-    String? ledgerId,
-  }) => categoryStore.upsertCategory(
-    name: name,
-    kind: kind,
-    icon: icon,
-    sortOrder: sortOrder,
-    ledgerId: ledgerId,
-  );
 
   /// 迁移分类直属交易，并为实际变化的云交易登记完整 upsert 快照。
   Future<int> migrateCategory({

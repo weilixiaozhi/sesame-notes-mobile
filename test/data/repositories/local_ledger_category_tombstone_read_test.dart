@@ -386,9 +386,8 @@ void main() {
         .transactionCount;
     expect(topCount, 1);
     expect(
-      await repo.categoryStore.isCategoryNameDuplicate(
-        name: '已删一级',
-        kind: 'expense',
+      (await repo.categoryStore.getAllCategories()).any(
+        (row) => row.name == '已删一级',
       ),
       isFalse,
     );

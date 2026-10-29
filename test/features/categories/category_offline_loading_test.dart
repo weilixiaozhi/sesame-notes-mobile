@@ -180,10 +180,6 @@ void main() {
       await beginPendingSync();
       final actions = container.read(categoryActionsProvider);
       expect((await actions.getById(categoryId))!.name, '本机餐饮');
-      expect(
-        await actions.isNameDuplicate(name: '新餐饮', kind: 'expense'),
-        isFalse,
-      );
       final tree = await readProviderFutureFromContainer(
         container,
         categoryPickerTreeForLedgerProvider((

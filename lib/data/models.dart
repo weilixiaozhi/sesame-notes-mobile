@@ -36,6 +36,8 @@ export 'models/import_models.dart'
     show
         ImportCategory,
         ImportCategoryPath,
+        ImportCategorySource,
+        importCreateCategory,
         ImportTransaction,
         ImportData,
         ImportResult;

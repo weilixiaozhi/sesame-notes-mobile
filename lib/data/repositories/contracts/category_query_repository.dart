@@ -43,15 +43,6 @@ abstract interface class CategoryQueryRepository {
     bool topLevelOnly = true,
   });
 
-  /// 在相同类型及父级下判重，指定账本时先验证可编辑目录。
-  Future<bool> isCategoryNameDuplicate({
-    required String name,
-    required String kind,
-    String? excludeId,
-    String? parentId,
-    String? ledgerId,
-  });
-
   /// 判断当前分类域内是否存在有效子分类。
   Future<bool> hasSubCategories(String categoryId);
 

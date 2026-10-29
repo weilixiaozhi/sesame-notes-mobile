@@ -28,7 +28,7 @@ void main() {
 
   tearDown(() async => db.close());
 
-  test('恢复和导入统一名称规则，仅创建一份规范化分类', () async {
+  test('导入仍规范化名称，但不同来源路径不自动合并身份', () async {
     final legacy = '旧' * 150;
     final restored = await service.importCategories(
       repo,
@@ -59,10 +59,10 @@ void main() {
       ),
     ], categoryQueries: repo.categoryStore);
     expect(normal.failed, 0);
-    expect(await repo.categoryStore.getAllCategories(), hasLength(2));
+    expect(await repo.categoryStore.getAllCategories(), hasLength(4));
     expect(
       normal.cache[(kind: 'expense', parentName: null, name: ' 父分类 ')],
-      normal.cache[(kind: 'expense', parentName: null, name: '父分类')],
+      isNot(normal.cache[(kind: 'expense', parentName: null, name: '父分类')]),
     );
   });
 

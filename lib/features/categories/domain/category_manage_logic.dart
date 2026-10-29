@@ -158,7 +158,7 @@ List<({String id, int sortOrder})> reorderUpdates(
 List<CategoryWithCount> orderCategoriesParentFirst(
   List<CategoryWithCount> all,
 ) {
-  final parents = all.where((i) => i.category.level == 1).toList()
+  final parents = all.where((i) => i.category.parentId == null).toList()
     ..sort((a, b) => a.category.sortOrder.compareTo(b.category.sortOrder));
 
   final ordered = <CategoryWithCount>[];

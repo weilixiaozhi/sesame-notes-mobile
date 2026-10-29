@@ -4,8 +4,7 @@ import 'package:sesame_notes/router/product_analytics_routes.dart';
 
 import 'package:sesame_notes/data/models/fitness_custom_exercise.dart';
 import 'package:sesame_notes/features/fitness/presentation/fitness_custom_exercise_edit_page.dart';
-import 'package:sesame_notes/features/categories/presentation/category_template_hierarchical_page.dart';
-import 'package:sesame_notes/features/categories/presentation/category_template_flat_page.dart';
+import 'package:sesame_notes/features/categories/presentation/category_templates_page.dart';
 import 'package:sesame_notes/features/auth/domain/pin_setup_mode.dart';
 
 import 'package:sesame_notes/features/settings/infrastructure/transfer_table.dart';
@@ -204,10 +203,16 @@ List<GoRoute> buildAppRoutes({Map<String, WidgetBuilder> stubs = const {}}) {
       (state) => FitnessExerciseDetailPage(exerciseId: state.extra as String),
     ),
     plain(Routes.categoryManage, (_) => const CategoryManagePage()),
-    plain(Routes.categoryTemplateFlat, (_) => const CategoryTemplateFlatPage()),
-    plain(
-      Routes.categoryTemplateHierarchical,
-      (_) => const CategoryTemplateHierarchicalPage(),
+    plain(Routes.categoryTemplates, (_) => const CategoryTemplatesPage()),
+    GoRoute(
+      path: Routes.categoryTemplateFlat,
+      name: Routes.categoryTemplateFlat,
+      redirect: (_, _) => Routes.categoryTemplates,
+    ),
+    GoRoute(
+      path: Routes.categoryTemplateHierarchical,
+      name: Routes.categoryTemplateHierarchical,
+      redirect: (_, _) => Routes.categoryTemplates,
     ),
     extraRoute(
       Routes.fitnessCustomExerciseEdit,

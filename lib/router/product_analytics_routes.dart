@@ -96,6 +96,7 @@ String? productAnalyticsPage(String path) {
     '/days/books' => 'days.books',
     '/days/books/edit' => 'days.books.edit',
     '/category/manage' => 'accounting.categories',
+    '/category/templates' => 'accounting.categories.templates.flat',
     '/category/templates/flat' => 'accounting.categories.templates.flat',
     '/category/templates/hierarchical' =>
       'accounting.categories.templates.hierarchical',
