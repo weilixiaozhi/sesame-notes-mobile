@@ -20,6 +20,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/infrastructure/backup/backup_file_access.dart';
 import 'package:sesame_notes/features/settings/domain/backup_manifest.dart';
 
 /// 单个本地备份文件信息（供恢复列表展示）。
@@ -79,8 +80,6 @@ class PreparedBackup {
 }
 
 class LocalBackupService {
-  static final _activeBackupReaders = <String, int>{};
-
   /// 读取租约使用规范绝对路径，Windows 路径大小写差异不应分裂同一个快照身份。
   static String _backupReadKey(File file) => Platform.isWindows
       ? p.normalize(file.absolute.path).toLowerCase()
@@ -90,18 +89,26 @@ class LocalBackupService {
   static Future<T> withBackupFileRead<T>(
     File file,
     Future<T> Function() read,
-  ) async {
-    final key = _backupReadKey(file);
-    _activeBackupReaders.update(key, (count) => count + 1, ifAbsent: () => 1);
+  ) => BackupFileAccess.read('local:${_backupReadKey(file)}', read);
+
+  /// 清理预约与上传、预览共用同一身份，读取中的快照不得删除。
+  static Future<T> withBackupFileDeletion<T>(
+    File file,
+    Future<T> Function() action,
+  ) => BackupFileAccess.delete('local:${_backupReadKey(file)}', action);
+
+  /// 查询只读事实，不领取文件租约。
+  static bool isBackupFileInUse(File file) =>
+      BackupFileAccess.isInUse('local:${_backupReadKey(file)}');
+
+  /// 显式文件清理与备份创建共用单飞边界，清理不读取或改写活动数据库。
+  static Future<T> withBackupCleanup<T>(Future<T> Function() action) async {
+    if (_backupInProgress) throw const BackupFileBusyException();
+    _backupInProgress = true;
     try {
-      return await read();
+      return await action();
     } finally {
-      final remaining = _activeBackupReaders[key]! - 1;
-      if (remaining == 0) {
-        _activeBackupReaders.remove(key);
-      } else {
-        _activeBackupReaders[key] = remaining;
-      }
+      _backupInProgress = false;
     }
   }
 
@@ -222,6 +229,10 @@ class LocalBackupService {
     }
     return [dir];
   }
+
+  /// 文件管理只枚举应用自己的既有备份目录，不创建目录或扫描数据库父目录。
+  Future<List<Directory>> existingBackupDirectories() async =>
+      List.unmodifiable(await _candidateReadDirs());
 
   /// 列出应用正式命名的已提交快照，其他文件不参与展示或清理。
   Future<List<File>> _listBackupFiles() async {
@@ -504,11 +515,11 @@ class LocalBackupService {
       for (final old in files) {
         final key = _backupReadKey(old);
         // 在途读取可以暂时超过保留上限，租约释放后的下一次清理再收敛。
-        if (retained.contains(key) || _activeBackupReaders.containsKey(key)) {
+        if (retained.contains(key) || isBackupFileInUse(old)) {
           continue;
         }
         try {
-          await old.delete();
+          await withBackupFileDeletion(old, old.delete);
           logger.info('LocalBackup', '已清理旧备份: ${old.path}');
         } catch (e) {
           logger.warning(

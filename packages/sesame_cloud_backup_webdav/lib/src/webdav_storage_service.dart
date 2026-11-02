@@ -2,15 +2,19 @@ library;
 
 import 'dart:io' as io;
 
+import 'package:dio/dio.dart' as dio;
 import 'package:sesame_cloud_backup/sesame_cloud_backup.dart';
 import 'package:webdav_client/webdav_client.dart' as webdav;
 import 'webdav_errors.dart';
 
 /// WebDAV implementation of [CloudStorageService].
-class WebDAVStorageService implements CloudStorageService {
+class WebDAVStorageService
+    implements CloudStorageService, CloudConditionalDeleteStorage {
   final webdav.Client _client;
   final String _remotePath;
   final CloudSyncLogger? _logger;
+  final _verifiedDeletePrefixes = <String>{};
+  final _deleteChecks = <String, Future<void>>{};
 
   WebDAVStorageService(this._client, this._remotePath,
       {CloudSyncLogger? logger})
@@ -75,6 +79,56 @@ class WebDAVStorageService implements CloudStorageService {
     }
   }
 
+  /// 单次独立连接只给实际 GET 固定 If-Match，认证协商不携带对象前提。
+  @override
+  Future<bool> downloadIfMatch({
+    required String path,
+    required io.File destination,
+    required String expectedETag,
+  }) async {
+    if (!isStrongCloudETag(expectedETag)) {
+      throw const CloudConditionalDeleteUnsupportedException();
+    }
+    final connection = webdav.WdDio(
+      options: _client.c.options.copyWith(headers: {
+        for (final entry in _client.c.options.headers.entries)
+          if (entry.key.toLowerCase() != 'if-match') entry.key: entry.value,
+      }),
+    );
+    connection.interceptors.add(dio.InterceptorsWrapper(
+      onRequest: (options, handler) {
+        // OPTIONS 负责认证，只有真实内容读取才能证明 GET 条件被服务器执行。
+        if (options.method.toUpperCase() == 'GET') {
+          options.headers['If-Match'] = expectedETag;
+        }
+        handler.next(options);
+      },
+    ));
+    final client = webdav.Client(
+      uri: _client.uri,
+      c: connection,
+      auth: _client.auth,
+    );
+    try {
+      await client.read2File(_buildPath(path), destination.path);
+      return true;
+    } catch (error, stackTrace) {
+      try {
+        if (await destination.exists()) await destination.delete();
+      } catch (_) {
+        // 隔离文件清理不能覆盖对象条件失败的实际原因。
+      }
+      final status = webDavStatusCode(error);
+      if (status == 404) return false;
+      if (status == 412) {
+        throw CloudStorageException('云端对象已变化，未读取文件', null, status);
+      }
+      _fail('条件读取', error, stackTrace);
+    } finally {
+      connection.close(force: true);
+    }
+  }
+
   /// 幂等删除指定文件，不操作其他对象。
   @override
   Future<void> delete({required String path}) async {
@@ -83,6 +137,55 @@ class WebDAVStorageService implements CloudStorageService {
     } catch (e, stackTrace) {
       if (_isNotFound(e)) return;
       _fail('删除', e, stackTrace);
+    }
+  }
+
+  /// 首次显式清理使用本次独占空对象验证服务确实执行条件，成功后按前缀复用。
+  @override
+  Future<void> verifyConditionalDelete({required String prefix}) {
+    if (_verifiedDeletePrefixes.contains(prefix)) return Future.value();
+    final pending = _deleteChecks[prefix];
+    if (pending != null) return pending;
+    late final Future<void> check;
+    check = verifyCloudConditionalDelete(
+      storage: this,
+      conditional: this,
+      prefix: prefix,
+      logger: _logger,
+    ).then((_) {
+      _verifiedDeletePrefixes.add(prefix);
+    }).whenComplete(() {
+      if (identical(_deleteChecks[prefix], check)) _deleteChecks.remove(prefix);
+    });
+    _deleteChecks[prefix] = check;
+    return check;
+  }
+
+  /// 条件头仅属于本次 DELETE，不污染连接或影响另一份快照的请求。
+  @override
+  Future<void> deleteIfMatch(
+      {required String path, required String expectedETag}) async {
+    if (!isStrongCloudETag(expectedETag)) {
+      throw const CloudConditionalDeleteUnsupportedException();
+    }
+    try {
+      final response = await _client.c.req<void>(
+        _client,
+        'DELETE',
+        _buildPath(path),
+        optionsHandler: (options) =>
+            options.headers!['If-Match'] = expectedETag,
+      );
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw CloudStorageException(
+            '云端对象已变化或删除被拒绝，原文件已保留', null, response.statusCode);
+      }
+    } catch (error, stackTrace) {
+      final status = webDavStatusCode(error);
+      if (status == 412 || status == 404) {
+        throw CloudStorageException('云端对象已变化，未删除文件', null, status);
+      }
+      _fail('条件删除', error, stackTrace);
     }
   }
 
@@ -114,7 +217,7 @@ class WebDAVStorageService implements CloudStorageService {
               path: relative,
               size: file.size,
               lastModified: file.mTime,
-              metadata: const {}));
+              metadata: {if (isStrongCloudETag(file.eTag)) 'etag': file.eTag}));
         }
       }
       return result;

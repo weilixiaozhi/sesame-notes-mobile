@@ -98,5 +98,43 @@ void main() {
           Hmac(sha256, key).convert(utf8.encode(toSign)).toString();
       expect(headers['Authorization'], endsWith('Signature=$expected'));
     });
+
+    for (final method in ['GET', 'DELETE']) {
+      test('$method对象条件值进入规范请求，HMAC匹配独立条件向量', () {
+        final headers = signer.sign(
+          method: method,
+          uri: uri,
+          headers: {
+            'Host': 'examplebucket.s3.amazonaws.com',
+            'If-Match': '"opaque-version-1"',
+          },
+        );
+        final date = headers['x-amz-date']!;
+        final stamp = date.substring(0, 8);
+        final emptyHash = sha256.convert(const <int>[]).toString();
+        // 规范条件头使用独立固定文本，防止请求值未进入签名却仍通过结构检查。
+        final canonical = '$method\n/test.txt\n\n'
+            'host:examplebucket.s3.amazonaws.com\n'
+            'if-match:"opaque-version-1"\n'
+            'x-amz-content-sha256:$emptyHash\n'
+            'x-amz-date:$date\n\n'
+            'host;if-match;x-amz-content-sha256;x-amz-date\n$emptyHash';
+        final toSign = 'AWS4-HMAC-SHA256\n$date\n'
+            '$stamp/us-east-1/s3/aws4_request\n'
+            '${sha256.convert(utf8.encode(canonical))}';
+        List<int> key =
+            utf8.encode('AWS4wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY');
+        for (final part in [stamp, 'us-east-1', 's3', 'aws4_request']) {
+          key = Hmac(sha256, key).convert(utf8.encode(part)).bytes;
+        }
+        final expected =
+            Hmac(sha256, key).convert(utf8.encode(toSign)).toString();
+        expect(
+            headers['Authorization'],
+            contains(
+                'SignedHeaders=host;if-match;x-amz-content-sha256;x-amz-date'));
+        expect(headers['Authorization'], endsWith('Signature=$expected'));
+      });
+    }
   });
 }

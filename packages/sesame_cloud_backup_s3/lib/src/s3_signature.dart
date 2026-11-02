@@ -83,6 +83,7 @@ class S3SignatureV4 {
         .where((k) =>
             k.toLowerCase().startsWith('x-amz-') ||
             k.toLowerCase() == 'host' ||
+            k.toLowerCase() == 'if-match' ||
             k.toLowerCase() == 'content-type' ||
             k.toLowerCase() == 'content-length')
         .map((k) => k.toLowerCase())
@@ -126,6 +127,7 @@ class S3SignatureV4 {
         .where((k) =>
             k.toLowerCase().startsWith('x-amz-') ||
             k.toLowerCase() == 'host' ||
+            k.toLowerCase() == 'if-match' ||
             k.toLowerCase() == 'content-type' ||
             k.toLowerCase() == 'content-length')
         .map((k) => k.toLowerCase())

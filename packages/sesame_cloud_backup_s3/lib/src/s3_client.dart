@@ -14,8 +14,10 @@ class S3ObjectInfo {
   final String key;
   final int? size;
   final DateTime? lastModified;
+  final String? etag;
 
-  const S3ObjectInfo({required this.key, this.size, this.lastModified});
+  const S3ObjectInfo(
+      {required this.key, this.size, this.lastModified, this.etag});
 }
 
 /// S3 REST API 客户端
@@ -104,7 +106,11 @@ class S3Client {
   Future<bool> getFile(
       {required String bucket,
       required String key,
-      required File destination}) async {
+      required File destination,
+      String? expectedETag}) async {
+    if (expectedETag != null && !isStrongCloudETag(expectedETag)) {
+      throw const CloudConditionalDeleteUnsupportedException();
+    }
     try {
       final uri = _requestUri(bucket, key);
       return await CloudHttpFileTransfer.download(
@@ -113,7 +119,10 @@ class S3Client {
           _signer.sign(
               method: 'GET',
               uri: uri,
-              headers: {'Host': uri.authority},
+              headers: {
+                'Host': uri.authority,
+                if (expectedETag != null) 'If-Match': expectedETag,
+              },
               canonicalPath: _canonicalPath(bucket, key)));
     } catch (error, stackTrace) {
       throwCloudStorageFailure(
@@ -129,11 +138,16 @@ class S3Client {
   Future<void> deleteObject({
     required String bucket,
     required String key,
+    String? expectedETag,
   }) async {
+    if (expectedETag != null && !isStrongCloudETag(expectedETag)) {
+      throw const CloudConditionalDeleteUnsupportedException();
+    }
     final uri = _requestUri(bucket, key);
 
     var headers = <String, String>{
       'Host': uri.authority,
+      if (expectedETag != null) 'If-Match': expectedETag,
     };
 
     headers = _signer.sign(
@@ -150,7 +164,7 @@ class S3Client {
 
       if (response.statusCode != 204 && response.statusCode != 200) {
         // 404 也算成功（对象已不存在）
-        if (response.statusCode != 404) {
+        if (expectedETag != null || response.statusCode != 404) {
           _handleError('DeleteObject', response);
         }
       }
@@ -286,10 +300,12 @@ class S3Client {
             element.findElements('Size', namespace: '*').firstOrNull;
         final lastModifiedElement =
             element.findElements('LastModified', namespace: '*').firstOrNull;
+        final etags = element.findElements('ETag', namespace: '*').toList();
         return S3ObjectInfo(
           key: keys.single.innerText,
           size: int.tryParse(sizeElement?.innerText ?? ''),
           lastModified: DateTime.tryParse(lastModifiedElement?.innerText ?? ''),
+          etag: etags.length == 1 ? etags.single.innerText : null,
         );
       }).toList();
       return (

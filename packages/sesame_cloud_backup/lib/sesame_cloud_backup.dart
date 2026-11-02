@@ -20,7 +20,14 @@ export 'src/core/exceptions.dart'
         CloudFileAlreadyExistsException;
 
 // 文件存储接口与文件元数据。
-export 'src/core/storage_service.dart' show CloudStorageService, CloudFile;
+export 'src/core/storage_service.dart'
+    show
+        CloudStorageService,
+        CloudFile,
+        CloudConditionalDeleteStorage,
+        CloudConditionalDeleteUnsupportedException,
+        isStrongCloudETag,
+        verifyCloudConditionalDelete;
 
 // Configuration
 export 'src/config/cloud_backend.dart'

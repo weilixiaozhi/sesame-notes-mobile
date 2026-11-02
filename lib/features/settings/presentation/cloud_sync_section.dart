@@ -30,7 +30,7 @@ import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/shared/widgets/app_empty.dart';
 
-/// 备份同步操作区块（上传 / 下载 / 自动同步开关 / 状态）。
+/// 备份同步操作区块（上传、下载、文件管理、自动同步开关及状态）。
 ///
 /// 无 Scaffold / PrimaryHeader / RefreshIndicator 外壳，由 CloudServicePage
 /// 嵌入在当前选中的第三方后端卡片正下方（仅激活第三方后端时显示）。
@@ -148,6 +148,15 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
                         ? null
                         : _downloadRestore,
                   ),
+                  AppTokens.cardDivider(context),
+                  AppListTile(
+                    leading: AppIcons.folder,
+                    title: l10n.backupCleanupCloudTitle,
+                    enabled: !isLocal && !_uploadBusy && !_downloadBusy,
+                    onTap: isLocal || _uploadBusy || _downloadBusy
+                        ? null
+                        : () => _manageBackups(overview.active.backendId),
+                  ),
                 ],
               ),
             ),
@@ -155,6 +164,23 @@ class _CloudSyncSectionState extends ConsumerState<CloudSyncSection> {
         );
       },
     );
+  }
+
+  /// 管理入口只传后端身份，清单和删除均由独立服务重新核验配置。
+  Future<void> _manageBackups(String backendId) async {
+    try {
+      await context.pushNamed(Routes.backupCleanup, extra: backendId);
+    } catch (error, stack) {
+      logger.error(
+        'CloudSyncSection',
+        '打开云端备份管理失败',
+        safeErrorSummary(error),
+        stack,
+      );
+      if (mounted) {
+        showToast(context, AppLocalizations.of(context).commonOperationFailed);
+      }
+    }
   }
 
   /// 状态行文案。

@@ -5342,4 +5342,132 @@ class AppLocalizationsEn extends AppLocalizations {
   String categoryTemplateAddCount(int count) {
     return 'Add $count';
   }
+
+  @override
+  String get backupCleanupTitle => 'Manage backups';
+
+  @override
+  String get backupCleanupCloudTitle => 'Manage cloud backups';
+
+  @override
+  String get backupCleanupLocal => 'On this device';
+
+  @override
+  String get backupCleanupHint =>
+      'Review files in this backup location before choosing what to delete. Current records stay unchanged. Historical backups are not restored.';
+
+  @override
+  String get backupCleanupCloudScopeHint =>
+      'Only the app\'s backup folder under this cloud configuration is listed. Check other accounts, folders, or service-side records in the storage manager. Cloud version history and recycle bins must be managed separately in the service console.';
+
+  @override
+  String get backupCleanupRetention =>
+      'Automatic retention stays at 30 local backups and 5 cloud backups.';
+
+  @override
+  String get backupCleanupCheckHint =>
+      'Cloud lists do not download files. Check a file to download and verify that file only. Unchecked and unrecognized files are kept.';
+
+  @override
+  String get backupCleanupNoCurrentHint =>
+      'There is no verified current backup here. Check an existing backup or save a new one. Until then, only confirmed historical files can be cleaned up.';
+
+  @override
+  String get backupCleanupEmpty => 'No files to manage in this backup location';
+
+  @override
+  String get backupCleanupCheck => 'Check file';
+
+  @override
+  String get backupCleanupCloudCheckTitle => 'Check this cloud file?';
+
+  @override
+  String backupCleanupCloudCheckConfirm(String fileName, String size) {
+    return 'Download only $fileName ($size) to check its contents? The cloud file will not be changed.';
+  }
+
+  @override
+  String get backupCleanupSizeUnknown => 'Size unknown';
+
+  @override
+  String backupCleanupDeleteSelected(int count) {
+    return 'Delete selected ($count)';
+  }
+
+  @override
+  String get backupCleanupDeleteTitle => 'Delete selected backup files?';
+
+  @override
+  String backupCleanupDeleteConfirm(int count) {
+    return 'Delete the selected files ($count)? This cannot be undone in the app. Current records and other files will not be changed.';
+  }
+
+  @override
+  String get backupCleanupNoCurrentTitle => 'No verified current backup';
+
+  @override
+  String get backupCleanupNoCurrentConfirm =>
+      'This location has no verified current backup. Delete only the selected confirmed historical files? Unchecked and unrecognized files will be kept.';
+
+  @override
+  String get backupCleanupDeleteHistorical => 'Delete historical files';
+
+  @override
+  String backupCleanupDeleted(int count) {
+    return 'Files deleted: $count';
+  }
+
+  @override
+  String backupCleanupPartial(int deleted, int failed) {
+    return 'Confirmed deleted: $deleted; incomplete or awaiting confirmation: $failed. Refresh to check.';
+  }
+
+  @override
+  String get backupCleanupUnavailable =>
+      'Could not read these backup files. Check the location and try again.';
+
+  @override
+  String get backupCleanupBusy => 'A backup file is in use. Try again later.';
+
+  @override
+  String get backupCleanupChanged =>
+      'The account, location, or files have changed. Refresh and select again.';
+
+  @override
+  String get backupCleanupKeepCurrent =>
+      'Keep a verified current backup, or select only confirmed historical files.';
+
+  @override
+  String get backupCleanupCheckFirst =>
+      'Check the file before selecting it for deletion.';
+
+  @override
+  String get backupCleanupProtected => 'Newest verified current backup · kept';
+
+  @override
+  String get backupCleanupUnverified => 'Not checked';
+
+  @override
+  String get backupCleanupCurrent => 'Current format · content validated';
+
+  @override
+  String get backupCleanupUnsupported =>
+      'Historical backup structure · Restore not supported in this version';
+
+  @override
+  String get backupCleanupAuxiliary =>
+      'Historical auxiliary file · Not supported by the current restore entry';
+
+  @override
+  String get backupCleanupUnknown => 'Unrecognized · kept';
+
+  @override
+  String get backupCleanupPending => 'Being written · kept';
+
+  @override
+  String get backupCleanupInUse => 'In use · kept';
+
+  @override
+  String get backupCleanupReadOnlyHint =>
+      'This storage or file cannot provide verified safe deletion. You can still check files here; use the cloud storage manager to delete them.';
 }

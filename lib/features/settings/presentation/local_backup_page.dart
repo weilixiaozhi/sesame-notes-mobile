@@ -28,7 +28,7 @@ import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/theme/typography.dart';
 
-/// 本机备份页：自动备份开关 + 立即备份 + 快照列表恢复入口。
+/// 本机备份页：自动备份开关、立即备份、快照恢复和独立文件管理入口。
 class LocalBackupPage extends ConsumerStatefulWidget {
   const LocalBackupPage({super.key});
 
@@ -125,6 +125,19 @@ class _LocalBackupPageState extends ConsumerState<LocalBackupPage>
     await context.pushNamed(Routes.backupRestore, extra: file.file.path);
   }
 
+  /// 管理页返回后重读快照列表，导航失败只显示固定友好提示。
+  Future<void> _manageBackups() async {
+    try {
+      await context.pushNamed(Routes.backupCleanup);
+      _reloadBackups();
+    } catch (error, stack) {
+      logger.error('LocalBackup', '打开备份管理失败', safeErrorSummary(error), stack);
+      if (mounted) {
+        showToast(context, AppLocalizations.of(context).commonOperationFailed);
+      }
+    }
+  }
+
   /// 从文件恢复：从系统文件选择器挑一个 .snbak 备份，同样进入恢复页。
   ///
   /// 设计意图：卸载重装/换机后，历史备份可能不在恢复列表（保存在外部目录），
@@ -170,6 +183,11 @@ class _LocalBackupPageState extends ConsumerState<LocalBackupPage>
             title: l10n.localBackupPageTitle,
             showBack: true,
             actions: [
+              HeaderIconAction(
+                icon: AppIcons.folder,
+                tooltip: l10n.backupCleanupTitle,
+                onPressed: _backingUp ? null : _manageBackups,
+              ),
               HeaderIconAction(
                 icon: AppIcons.fileDownload,
                 tooltip: l10n.localBackupNowTooltip,

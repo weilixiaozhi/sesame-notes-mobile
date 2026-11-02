@@ -9775,6 +9775,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add {count}'**
   String categoryTemplateAddCount(int count);
+
+  /// No description provided for @backupCleanupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage backups'**
+  String get backupCleanupTitle;
+
+  /// No description provided for @backupCleanupCloudTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage cloud backups'**
+  String get backupCleanupCloudTitle;
+
+  /// No description provided for @backupCleanupLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'On this device'**
+  String get backupCleanupLocal;
+
+  /// No description provided for @backupCleanupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Review files in this backup location before choosing what to delete. Current records stay unchanged. Historical backups are not restored.'**
+  String get backupCleanupHint;
+
+  /// No description provided for @backupCleanupCloudScopeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the app\'s backup folder under this cloud configuration is listed. Check other accounts, folders, or service-side records in the storage manager. Cloud version history and recycle bins must be managed separately in the service console.'**
+  String get backupCleanupCloudScopeHint;
+
+  /// No description provided for @backupCleanupRetention.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic retention stays at 30 local backups and 5 cloud backups.'**
+  String get backupCleanupRetention;
+
+  /// No description provided for @backupCleanupCheckHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud lists do not download files. Check a file to download and verify that file only. Unchecked and unrecognized files are kept.'**
+  String get backupCleanupCheckHint;
+
+  /// No description provided for @backupCleanupNoCurrentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no verified current backup here. Check an existing backup or save a new one. Until then, only confirmed historical files can be cleaned up.'**
+  String get backupCleanupNoCurrentHint;
+
+  /// No description provided for @backupCleanupEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No files to manage in this backup location'**
+  String get backupCleanupEmpty;
+
+  /// No description provided for @backupCleanupCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Check file'**
+  String get backupCleanupCheck;
+
+  /// No description provided for @backupCleanupCloudCheckTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check this cloud file?'**
+  String get backupCleanupCloudCheckTitle;
+
+  /// No description provided for @backupCleanupCloudCheckConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Download only {fileName} ({size}) to check its contents? The cloud file will not be changed.'**
+  String backupCleanupCloudCheckConfirm(String fileName, String size);
+
+  /// No description provided for @backupCleanupSizeUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Size unknown'**
+  String get backupCleanupSizeUnknown;
+
+  /// No description provided for @backupCleanupDeleteSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete selected ({count})'**
+  String backupCleanupDeleteSelected(int count);
+
+  /// No description provided for @backupCleanupDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete selected backup files?'**
+  String get backupCleanupDeleteTitle;
+
+  /// No description provided for @backupCleanupDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the selected files ({count})? This cannot be undone in the app. Current records and other files will not be changed.'**
+  String backupCleanupDeleteConfirm(int count);
+
+  /// No description provided for @backupCleanupNoCurrentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No verified current backup'**
+  String get backupCleanupNoCurrentTitle;
+
+  /// No description provided for @backupCleanupNoCurrentConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This location has no verified current backup. Delete only the selected confirmed historical files? Unchecked and unrecognized files will be kept.'**
+  String get backupCleanupNoCurrentConfirm;
+
+  /// No description provided for @backupCleanupDeleteHistorical.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete historical files'**
+  String get backupCleanupDeleteHistorical;
+
+  /// No description provided for @backupCleanupDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Files deleted: {count}'**
+  String backupCleanupDeleted(int count);
+
+  /// No description provided for @backupCleanupPartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed deleted: {deleted}; incomplete or awaiting confirmation: {failed}. Refresh to check.'**
+  String backupCleanupPartial(int deleted, int failed);
+
+  /// No description provided for @backupCleanupUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read these backup files. Check the location and try again.'**
+  String get backupCleanupUnavailable;
+
+  /// No description provided for @backupCleanupBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'A backup file is in use. Try again later.'**
+  String get backupCleanupBusy;
+
+  /// No description provided for @backupCleanupChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'The account, location, or files have changed. Refresh and select again.'**
+  String get backupCleanupChanged;
+
+  /// No description provided for @backupCleanupKeepCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep a verified current backup, or select only confirmed historical files.'**
+  String get backupCleanupKeepCurrent;
+
+  /// No description provided for @backupCleanupCheckFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the file before selecting it for deletion.'**
+  String get backupCleanupCheckFirst;
+
+  /// No description provided for @backupCleanupProtected.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest verified current backup · kept'**
+  String get backupCleanupProtected;
+
+  /// No description provided for @backupCleanupUnverified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not checked'**
+  String get backupCleanupUnverified;
+
+  /// No description provided for @backupCleanupCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current format · content validated'**
+  String get backupCleanupCurrent;
+
+  /// No description provided for @backupCleanupUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Historical backup structure · Restore not supported in this version'**
+  String get backupCleanupUnsupported;
+
+  /// No description provided for @backupCleanupAuxiliary.
+  ///
+  /// In en, this message translates to:
+  /// **'Historical auxiliary file · Not supported by the current restore entry'**
+  String get backupCleanupAuxiliary;
+
+  /// No description provided for @backupCleanupUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unrecognized · kept'**
+  String get backupCleanupUnknown;
+
+  /// No description provided for @backupCleanupPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Being written · kept'**
+  String get backupCleanupPending;
+
+  /// No description provided for @backupCleanupInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'In use · kept'**
+  String get backupCleanupInUse;
+
+  /// No description provided for @backupCleanupReadOnlyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This storage or file cannot provide verified safe deletion. You can still check files here; use the cloud storage manager to delete them.'**
+  String get backupCleanupReadOnlyHint;
 }
 
 class _AppLocalizationsDelegate

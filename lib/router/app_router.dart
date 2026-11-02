@@ -62,6 +62,7 @@ import 'package:sesame_notes/features/ledgers/presentation/ledgers_page.dart';
 import 'package:sesame_notes/features/settings/presentation/app_lock_settings_page.dart';
 import 'package:sesame_notes/features/settings/presentation/cloud_service_page.dart';
 import 'package:sesame_notes/features/settings/presentation/local_backup_page.dart';
+import 'package:sesame_notes/features/settings/presentation/backup_cleanup_page.dart';
 import 'package:sesame_notes/features/settings/presentation/detail_export_page.dart';
 import 'package:sesame_notes/features/settings/presentation/detail_import_export_page.dart';
 import 'package:sesame_notes/features/settings/presentation/import_confirm_page.dart';
@@ -407,6 +408,12 @@ List<GoRoute> buildAppRoutes({Map<String, WidgetBuilder> stubs = const {}}) {
       ),
     ),
     plain(Routes.localBackup, (_) => const LocalBackupPage()),
+    extraRoute(
+      Routes.backupCleanup,
+      (state) => BackupCleanupPage(
+        initialSourceId: state.extra is String ? state.extra as String : null,
+      ),
+    ),
   ];
 }
 

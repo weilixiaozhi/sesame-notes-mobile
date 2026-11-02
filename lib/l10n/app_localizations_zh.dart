@@ -5193,6 +5193,126 @@ class AppLocalizationsZh extends AppLocalizations {
   String categoryTemplateAddCount(int count) {
     return '添加 $count 项';
   }
+
+  @override
+  String get backupCleanupTitle => '管理备份';
+
+  @override
+  String get backupCleanupCloudTitle => '管理云端备份';
+
+  @override
+  String get backupCleanupLocal => '本机';
+
+  @override
+  String get backupCleanupHint => '先检查当前备份位置的文件，再选择要删除的项目。当前记录不会改变，历史备份不会被恢复。';
+
+  @override
+  String get backupCleanupCloudScopeHint =>
+      '仅列出此云配置中的应用备份目录。其他账号、其他目录及服务端辅助记录，请到对应存储管理器核对。云服务的版本历史或回收站需到服务后台单独管理。';
+
+  @override
+  String get backupCleanupRetention => '自动保留规则仍为本机最近30份、云端最近5份。';
+
+  @override
+  String get backupCleanupCheckHint =>
+      '读取云端列表不会下载文件。点击检查后仅下载并核验该文件；未检查和无法识别的文件会保留。';
+
+  @override
+  String get backupCleanupNoCurrentHint =>
+      '这里还没有已核验的当前备份。可先检查现有备份或保存一份新备份；核验前仅允许清理已确认的历史文件。';
+
+  @override
+  String get backupCleanupEmpty => '当前备份位置没有可管理的文件';
+
+  @override
+  String get backupCleanupCheck => '检查文件';
+
+  @override
+  String get backupCleanupCloudCheckTitle => '检查这个云端文件？';
+
+  @override
+  String backupCleanupCloudCheckConfirm(String fileName, String size) {
+    return '仅下载“$fileName”（$size）并检查内容？云端原文件不会改变。';
+  }
+
+  @override
+  String get backupCleanupSizeUnknown => '大小未知';
+
+  @override
+  String backupCleanupDeleteSelected(int count) {
+    return '删除所选（$count）';
+  }
+
+  @override
+  String get backupCleanupDeleteTitle => '删除所选备份文件？';
+
+  @override
+  String backupCleanupDeleteConfirm(int count) {
+    return '确定删除所选的$count个文件？应用内无法撤销，当前记录及其他文件不会改变。';
+  }
+
+  @override
+  String get backupCleanupNoCurrentTitle => '尚无已核验的当前备份';
+
+  @override
+  String get backupCleanupNoCurrentConfirm =>
+      '此位置没有已核验的当前备份。仍要仅删除所选的已确认历史文件吗？未检查和无法识别的文件会保留。';
+
+  @override
+  String get backupCleanupDeleteHistorical => '删除历史文件';
+
+  @override
+  String backupCleanupDeleted(int count) {
+    return '已删除$count个文件';
+  }
+
+  @override
+  String backupCleanupPartial(int deleted, int failed) {
+    return '已确认删除$deleted个，$failed个未完成或结果待确认，请刷新核对。';
+  }
+
+  @override
+  String get backupCleanupUnavailable => '无法读取备份文件，请检查备份位置后重试。';
+
+  @override
+  String get backupCleanupBusy => '备份文件正在使用，请稍后重试。';
+
+  @override
+  String get backupCleanupChanged => '账号、备份位置或文件已变化，请刷新后重新选择。';
+
+  @override
+  String get backupCleanupKeepCurrent => '请保留已核验的当前备份，或仅选择已确认的历史文件。';
+
+  @override
+  String get backupCleanupCheckFirst => '请先检查文件，再选择删除。';
+
+  @override
+  String get backupCleanupProtected => '最新已核验的当前备份 · 保留';
+
+  @override
+  String get backupCleanupUnverified => '尚未检查';
+
+  @override
+  String get backupCleanupCurrent => '当前格式，内容校验通过';
+
+  @override
+  String get backupCleanupUnsupported => '历史结构备份 · 本版不支持恢复';
+
+  @override
+  String get backupCleanupAuxiliary => '历史辅助文件 · 当前恢复入口不支持';
+
+  @override
+  String get backupCleanupUnknown => '无法识别 · 保留';
+
+  @override
+  String get backupCleanupPending => '正在写入 · 保留';
+
+  @override
+  String get backupCleanupInUse => '正在使用 · 保留';
+
+  @override
+  String get backupCleanupReadOnlyHint =>
+      '此来源或文件暂不支持安全删除。仍可在此检查备份，删除请使用对应云存储管理器。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -10382,4 +10502,124 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String categoryTemplateAddCount(int count) {
     return '新增 $count 項';
   }
+
+  @override
+  String get backupCleanupTitle => '管理備份';
+
+  @override
+  String get backupCleanupCloudTitle => '管理雲端備份';
+
+  @override
+  String get backupCleanupLocal => '本機';
+
+  @override
+  String get backupCleanupHint => '先檢查目前備份位置的檔案，再選擇要刪除的項目。目前記錄不會改變，歷史備份不會被還原。';
+
+  @override
+  String get backupCleanupCloudScopeHint =>
+      '僅列出此雲端設定中的應用程式備份目錄。其他帳號、其他目錄及伺服器輔助記錄，請至對應儲存管理器核對。雲端服務的版本歷史或回收桶需至服務後台另外管理。';
+
+  @override
+  String get backupCleanupRetention => '自動保留規則仍為本機最近30份、雲端最近5份。';
+
+  @override
+  String get backupCleanupCheckHint =>
+      '讀取雲端清單不會下載檔案。點選檢查後僅下載並驗證該檔案；未檢查及無法識別的檔案會保留。';
+
+  @override
+  String get backupCleanupNoCurrentHint =>
+      '這裡還沒有已驗證的目前備份。可先檢查現有備份或儲存一份新備份；驗證前僅允許清理已確認的歷史檔案。';
+
+  @override
+  String get backupCleanupEmpty => '目前備份位置沒有可管理的檔案';
+
+  @override
+  String get backupCleanupCheck => '檢查檔案';
+
+  @override
+  String get backupCleanupCloudCheckTitle => '檢查這個雲端檔案？';
+
+  @override
+  String backupCleanupCloudCheckConfirm(String fileName, String size) {
+    return '僅下載「$fileName」（$size）並檢查內容？雲端原檔案不會改變。';
+  }
+
+  @override
+  String get backupCleanupSizeUnknown => '大小未知';
+
+  @override
+  String backupCleanupDeleteSelected(int count) {
+    return '刪除所選（$count）';
+  }
+
+  @override
+  String get backupCleanupDeleteTitle => '刪除所選備份檔案？';
+
+  @override
+  String backupCleanupDeleteConfirm(int count) {
+    return '確定刪除所選的$count個檔案？應用程式內無法復原，目前記錄及其他檔案不會改變。';
+  }
+
+  @override
+  String get backupCleanupNoCurrentTitle => '尚無已驗證的目前備份';
+
+  @override
+  String get backupCleanupNoCurrentConfirm =>
+      '此位置沒有已驗證的目前備份。仍要僅刪除所選的已確認歷史檔案嗎？未檢查及無法識別的檔案會保留。';
+
+  @override
+  String get backupCleanupDeleteHistorical => '刪除歷史檔案';
+
+  @override
+  String backupCleanupDeleted(int count) {
+    return '已刪除$count個檔案';
+  }
+
+  @override
+  String backupCleanupPartial(int deleted, int failed) {
+    return '已確認刪除$deleted個，$failed個未完成或結果待確認，請重新整理核對。';
+  }
+
+  @override
+  String get backupCleanupUnavailable => '無法讀取備份檔案，請檢查備份位置後再試。';
+
+  @override
+  String get backupCleanupBusy => '備份檔案正在使用，請稍後再試。';
+
+  @override
+  String get backupCleanupChanged => '帳號、備份位置或檔案已變更，請重新整理後再次選擇。';
+
+  @override
+  String get backupCleanupKeepCurrent => '請保留已驗證的目前備份，或僅選擇已確認的歷史檔案。';
+
+  @override
+  String get backupCleanupCheckFirst => '請先檢查檔案，再選擇刪除。';
+
+  @override
+  String get backupCleanupProtected => '最新已驗證的目前備份 · 保留';
+
+  @override
+  String get backupCleanupUnverified => '尚未檢查';
+
+  @override
+  String get backupCleanupCurrent => '目前格式，內容驗證通過';
+
+  @override
+  String get backupCleanupUnsupported => '歷史結構備份 · 此版本不支援還原';
+
+  @override
+  String get backupCleanupAuxiliary => '歷史輔助檔案 · 目前還原入口不支援';
+
+  @override
+  String get backupCleanupUnknown => '無法識別 · 保留';
+
+  @override
+  String get backupCleanupPending => '正在寫入 · 保留';
+
+  @override
+  String get backupCleanupInUse => '正在使用 · 保留';
+
+  @override
+  String get backupCleanupReadOnlyHint =>
+      '此來源或檔案暫不支援安全刪除。仍可在此檢查備份，刪除請使用對應雲端儲存管理器。';
 }

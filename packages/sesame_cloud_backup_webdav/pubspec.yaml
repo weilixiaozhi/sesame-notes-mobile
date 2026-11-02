@@ -13,6 +13,7 @@ dependencies:
   sesame_cloud_backup:
     path: ../sesame_cloud_backup
   webdav_client: ^1.2.2
+  dio: ^5.7.0
 
 dev_dependencies:
   flutter_test:

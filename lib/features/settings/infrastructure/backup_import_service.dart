@@ -10,6 +10,7 @@ import '../../../data/repositories/local/fitness_space_repository.dart';
 
 import 'backup_file_io.dart';
 import 'backup_schema.dart';
+import 'local_backup_service.dart';
 import '../../../data/repositories/support/database_fingerprint.dart';
 
 import 'dart:io';
@@ -279,7 +280,14 @@ class BackupImportService {
   /// 再把 SQLite 提取到临时隔离区构建只读 RecoverySession。
   ///
   /// 备份无加密，任何设备可直接打开；结构版本取当前应用的统一声明。
-  Future<RecoverySession> openBackup({required File backupFile}) async {
+  Future<RecoverySession> openBackup({required File backupFile}) =>
+      LocalBackupService.withBackupFileRead(
+        backupFile,
+        () => _openBackupFile(backupFile),
+      );
+
+  /// 从读取分帧到提取副本完成持续持有源文件租约，错误时释放原文件读取身份。
+  Future<RecoverySession> _openBackupFile(File backupFile) async {
     try {
       final framed = await readBackupFileFrame(backupFile);
       final manifest = BackupManifestCodec.decodeJson(framed.manifestJson);

@@ -2420,5 +2420,81 @@
         "type": "int"
       }
     }
-  }
+  },
+  "backupCleanupTitle": "Manage backups",
+  "backupCleanupCloudTitle": "Manage cloud backups",
+  "backupCleanupLocal": "On this device",
+  "backupCleanupHint": "Review files in this backup location before choosing what to delete. Current records stay unchanged. Historical backups are not restored.",
+  "backupCleanupCloudScopeHint": "Only the app's backup folder under this cloud configuration is listed. Check other accounts, folders, or service-side records in the storage manager. Cloud version history and recycle bins must be managed separately in the service console.",
+  "backupCleanupRetention": "Automatic retention stays at 30 local backups and 5 cloud backups.",
+  "backupCleanupCheckHint": "Cloud lists do not download files. Check a file to download and verify that file only. Unchecked and unrecognized files are kept.",
+  "backupCleanupNoCurrentHint": "There is no verified current backup here. Check an existing backup or save a new one. Until then, only confirmed historical files can be cleaned up.",
+  "backupCleanupEmpty": "No files to manage in this backup location",
+  "backupCleanupCheck": "Check file",
+  "backupCleanupCloudCheckTitle": "Check this cloud file?",
+  "backupCleanupCloudCheckConfirm": "Download only {fileName} ({size}) to check its contents? The cloud file will not be changed.",
+  "backupCleanupSizeUnknown": "Size unknown",
+  "backupCleanupDeleteSelected": "Delete selected ({count})",
+  "backupCleanupDeleteTitle": "Delete selected backup files?",
+  "backupCleanupDeleteConfirm": "Delete the selected files ({count})? This cannot be undone in the app. Current records and other files will not be changed.",
+  "backupCleanupNoCurrentTitle": "No verified current backup",
+  "backupCleanupNoCurrentConfirm": "This location has no verified current backup. Delete only the selected confirmed historical files? Unchecked and unrecognized files will be kept.",
+  "backupCleanupDeleteHistorical": "Delete historical files",
+  "backupCleanupDeleted": "Files deleted: {count}",
+  "backupCleanupPartial": "Confirmed deleted: {deleted}; incomplete or awaiting confirmation: {failed}. Refresh to check.",
+  "backupCleanupUnavailable": "Could not read these backup files. Check the location and try again.",
+  "backupCleanupBusy": "A backup file is in use. Try again later.",
+  "backupCleanupChanged": "The account, location, or files have changed. Refresh and select again.",
+  "backupCleanupKeepCurrent": "Keep a verified current backup, or select only confirmed historical files.",
+  "backupCleanupCheckFirst": "Check the file before selecting it for deletion.",
+  "backupCleanupProtected": "Newest verified current backup · kept",
+  "backupCleanupUnverified": "Not checked",
+  "backupCleanupCurrent": "Current format · content validated",
+  "backupCleanupUnsupported": "Historical backup structure · Restore not supported in this version",
+  "backupCleanupAuxiliary": "Historical auxiliary file · Not supported by the current restore entry",
+  "backupCleanupUnknown": "Unrecognized · kept",
+  "backupCleanupPending": "Being written · kept",
+  "backupCleanupInUse": "In use · kept",
+  "@backupCleanupCloudCheckConfirm": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@backupCleanupDeleteSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@backupCleanupDeleteConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@backupCleanupDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@backupCleanupPartial": {
+    "placeholders": {
+      "deleted": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "backupCleanupReadOnlyHint": "This storage or file cannot provide verified safe deletion. You can still check files here; use the cloud storage manager to delete them."
 }

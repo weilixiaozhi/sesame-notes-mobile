@@ -7,6 +7,7 @@
 library;
 
 import 'package:sesame_notes/infrastructure/backup/cloud_backup_transfer.dart';
+import 'package:sesame_notes/infrastructure/backup/backup_file_access.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io';
 
@@ -146,27 +147,23 @@ Future<String?> _uploadPublishedBackupFile(
   }
   try {
     final storage = provider.storage;
+    final scope = cloudBackupScopeKey(cfg);
     final remoteName = p.basename(file.path);
     var remotePath = '$cloudBackupDirectory/$remoteName';
+    // 上传中的对象与清理共享租约，条件创建和碰撞改名都保留独立快照身份。
+    Future<void> uploadAt(String path) => BackupFileAccess.read(
+      cloudBackupFileKey(scope, path),
+      () => uploadBackupSnapshot(storage, file, path, isCurrent: isCurrent),
+    );
     try {
-      await uploadBackupSnapshot(
-        storage,
-        file,
-        remotePath,
-        isCurrent: isCurrent,
-      );
+      await uploadAt(remotePath);
     } on CloudFileAlreadyExistsException {
       // 远端已存在同名对象时使用独立目录，保留每次上传的独立快照。
       remotePath = '$cloudBackupDirectory/${const Uuid().v4()}/$remoteName';
-      await uploadBackupSnapshot(
-        storage,
-        file,
-        remotePath,
-        isCurrent: isCurrent,
-      );
+      await uploadAt(remotePath);
     }
     logger.info('AutoBackup', '云端备份上传完成: $remotePath');
-    await _pruneCloudBackups(storage);
+    await _pruneCloudBackups(storage, scope);
     return cfg.backendId;
   } finally {
     await provider.dispose();
@@ -176,7 +173,10 @@ Future<String?> _uploadPublishedBackupFile(
 /// 云端保留策略：目录内 .snbak 超过 [cloudRetentionCount] 份时删除最旧文件。
 ///
 /// 按文件名时间戳字典序排序（与本地命名约定一致）；清理失败仅记日志不阻断。
-Future<void> _pruneCloudBackups(CloudStorageService storage) async {
+Future<void> _pruneCloudBackups(
+  CloudStorageService storage,
+  String scope,
+) async {
   try {
     final files = await storage.list(path: '$cloudBackupDirectory/');
     final backups =
@@ -190,7 +190,9 @@ Future<void> _pruneCloudBackups(CloudStorageService storage) async {
           ..sort((a, b) => p.basename(b.path).compareTo(p.basename(a.path)));
     if (backups.length <= cloudRetentionCount) return;
     for (final old in backups.skip(cloudRetentionCount)) {
-      await storage.delete(path: old.path);
+      final key = cloudBackupFileKey(scope, old.path);
+      if (BackupFileAccess.isInUse(key)) continue;
+      await BackupFileAccess.delete(key, () => storage.delete(path: old.path));
       logger.info('AutoBackup', '已清理云端旧备份: ${old.path}');
     }
   } catch (e, st) {
@@ -340,7 +342,10 @@ Future<File?> downloadLatestCloudBackup() async {
     final directory = await parent.createTemp('sesame-cloud-backup-');
     final target = File(p.join(directory.path, p.basename(backups.first.path)));
     try {
-      if (!await downloadBackupSnapshot(storage, backups.first.path, target)) {
+      if (!await BackupFileAccess.read(
+        cloudBackupFileKey(cloudBackupScopeKey(cfg), backups.first.path),
+        () => downloadBackupSnapshot(storage, backups.first.path, target),
+      )) {
         await directory.delete(recursive: true);
         return null;
       }

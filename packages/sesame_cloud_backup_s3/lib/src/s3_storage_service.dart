@@ -6,10 +6,13 @@ import 's3_client.dart';
 import 's3_exceptions.dart';
 
 /// S3 存储服务实现
-class S3StorageService implements CloudStorageService {
+class S3StorageService
+    implements CloudStorageService, CloudConditionalDeleteStorage {
   final S3Client client;
   final String bucket;
   final CloudSyncLogger? _logger;
+  final _verifiedDeletePrefixes = <String>{};
+  final _deleteChecks = <String, Future<void>>{};
 
   /// 复用后端连接，并把文件与元数据故障交给统一诊断边界。
   S3StorageService(this.client, this.bucket, {CloudSyncLogger? logger})
@@ -45,6 +48,28 @@ class S3StorageService implements CloudStorageService {
     }
   }
 
+  /// 条件读取绑定列举时的强 ETag，下载内容摘要因此对应同一对象版本。
+  @override
+  Future<bool> downloadIfMatch({
+    required String path,
+    required File destination,
+    required String expectedETag,
+  }) async {
+    if (!isStrongCloudETag(expectedETag)) {
+      throw const CloudConditionalDeleteUnsupportedException();
+    }
+    try {
+      return await client.getFile(
+        bucket: bucket,
+        key: _normalizePath(path),
+        destination: destination,
+        expectedETag: expectedETag,
+      );
+    } catch (error, stackTrace) {
+      _fail('条件读取', error, stackTrace);
+    }
+  }
+
   /// 删除指定逻辑路径的对象，缺失对象由客户端按幂等成功处理。
   @override
   Future<void> delete({required String path}) async {
@@ -57,6 +82,51 @@ class S3StorageService implements CloudStorageService {
       _fail('删除', e, stackTrace);
     } catch (e, stackTrace) {
       _fail('删除', e, stackTrace);
+    }
+  }
+
+  /// 首次显式清理时验证当前桶和前缀的条件删除行为，同一会话复用成功结果。
+  @override
+  Future<void> verifyConditionalDelete({required String prefix}) {
+    if (_verifiedDeletePrefixes.contains(prefix)) return Future.value();
+    final pending = _deleteChecks[prefix];
+    if (pending != null) return pending;
+    late final Future<void> check;
+    check = verifyCloudConditionalDelete(
+      storage: this,
+      conditional: this,
+      prefix: prefix,
+      logger: _logger,
+    ).then((_) {
+      _verifiedDeletePrefixes.add(prefix);
+    }).whenComplete(() {
+      if (identical(_deleteChecks[prefix], check)) _deleteChecks.remove(prefix);
+    });
+    _deleteChecks[prefix] = check;
+    return check;
+  }
+
+  /// If-Match 参与实际签名请求，服务端身份不匹配时保留对象并返回 412。
+  @override
+  Future<void> deleteIfMatch(
+      {required String path, required String expectedETag}) async {
+    if (!isStrongCloudETag(expectedETag)) {
+      throw const CloudConditionalDeleteUnsupportedException();
+    }
+    try {
+      await client.deleteObject(
+        bucket: bucket,
+        key: _normalizePath(path),
+        expectedETag: expectedETag,
+      );
+    } on S3Exception catch (error, stackTrace) {
+      if (error.statusCode == 412 || error.statusCode == 404) {
+        throw CloudStorageException('云端对象已变化，未删除文件', null, error.statusCode);
+      }
+      _fail('条件删除', error, stackTrace);
+    } catch (error, stackTrace) {
+      if (error is CloudConditionalDeleteUnsupportedException) rethrow;
+      _fail('条件删除', error, stackTrace);
     }
   }
 
@@ -82,6 +152,7 @@ class S3StorageService implements CloudStorageService {
                 path: info.key,
                 size: info.size,
                 lastModified: info.lastModified,
+                metadata: {if (isStrongCloudETag(info.etag)) 'etag': info.etag},
               ))
           .toList();
     } catch (e, stackTrace) {

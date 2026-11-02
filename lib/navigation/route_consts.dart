@@ -135,6 +135,9 @@ class Routes {
   /// 备份恢复页（4 步流程：参数经 extra 传外部 .snbak 路径，可空）
   static const String backupRestore = '/backup/restore';
 
+  /// 本机与已配置云端备份文件的检查及显式清理入口。
+  static const String backupCleanup = '/backup/cleanup';
+
   /// 全量路由名清单：路由表测试据此双向校验 GoRoute 注册无遗漏/无漂移。
   /// 新增路由时必须同步登记到本表。
   static const List<String> all = [
@@ -193,5 +196,6 @@ class Routes {
     importConfirm,
     localBackup,
     backupRestore,
+    backupCleanup,
   ];
 }
