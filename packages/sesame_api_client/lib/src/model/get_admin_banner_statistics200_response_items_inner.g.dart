@@ -36,9 +36,6 @@ final BuiltSet<GetAdminBannerStatistics200ResponseItemsInnerSlotEnum>
 ]);
 
 const GetAdminBannerStatistics200ResponseItemsInnerSource_Enum
-    _$getAdminBannerStatistics200ResponseItemsInnerSourceEnum_builtin =
-    const GetAdminBannerStatistics200ResponseItemsInnerSource_Enum._('builtin');
-const GetAdminBannerStatistics200ResponseItemsInnerSource_Enum
     _$getAdminBannerStatistics200ResponseItemsInnerSourceEnum_remote =
     const GetAdminBannerStatistics200ResponseItemsInnerSource_Enum._('remote');
 
@@ -46,8 +43,6 @@ GetAdminBannerStatistics200ResponseItemsInnerSource_Enum
     _$getAdminBannerStatistics200ResponseItemsInnerSourceEnumValueOf(
         String name) {
   switch (name) {
-    case 'builtin':
-      return _$getAdminBannerStatistics200ResponseItemsInnerSourceEnum_builtin;
     case 'remote':
       return _$getAdminBannerStatistics200ResponseItemsInnerSourceEnum_remote;
     default:
@@ -58,7 +53,6 @@ GetAdminBannerStatistics200ResponseItemsInnerSource_Enum
 final BuiltSet<GetAdminBannerStatistics200ResponseItemsInnerSource_Enum>
     _$getAdminBannerStatistics200ResponseItemsInnerSourceEnumValues = BuiltSet<
         GetAdminBannerStatistics200ResponseItemsInnerSource_Enum>(const <GetAdminBannerStatistics200ResponseItemsInnerSource_Enum>[
-  _$getAdminBannerStatistics200ResponseItemsInnerSourceEnum_builtin,
   _$getAdminBannerStatistics200ResponseItemsInnerSourceEnum_remote,
 ]);
 
@@ -109,11 +103,9 @@ class _$GetAdminBannerStatistics200ResponseItemsInnerSource_EnumSerializer
         PrimitiveSerializer<
             GetAdminBannerStatistics200ResponseItemsInnerSource_Enum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'builtin': 'builtin',
     'remote': 'remote',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'builtin': 'builtin',
     'remote': 'remote',
   };
 

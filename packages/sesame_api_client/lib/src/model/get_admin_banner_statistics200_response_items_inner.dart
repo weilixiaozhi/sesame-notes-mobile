@@ -33,7 +33,7 @@ abstract class GetAdminBannerStatistics200ResponseItemsInner
 
   @BuiltValueField(wireName: r'source')
   GetAdminBannerStatistics200ResponseItemsInnerSource_Enum get source_;
-  // enum source_Enum {  builtin,  remote,  };
+  // enum source_Enum {  remote,  };
 
   @BuiltValueField(wireName: r'version')
   int get version;
@@ -254,10 +254,6 @@ class GetAdminBannerStatistics200ResponseItemsInnerSlotEnum extends EnumClass {
 
 class GetAdminBannerStatistics200ResponseItemsInnerSource_Enum
     extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'builtin')
-  static const GetAdminBannerStatistics200ResponseItemsInnerSource_Enum
-      builtin =
-      _$getAdminBannerStatistics200ResponseItemsInnerSourceEnum_builtin;
   @BuiltValueEnumConst(wireName: r'remote')
   static const GetAdminBannerStatistics200ResponseItemsInnerSource_Enum remote =
       _$getAdminBannerStatistics200ResponseItemsInnerSourceEnum_remote;

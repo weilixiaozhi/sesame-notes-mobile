@@ -50,7 +50,6 @@ import 'package:sesame_api_client/src/model/get_admin_audit_logs200_response_ite
 import 'package:sesame_api_client/src/model/get_admin_banner_statistics200_response.dart';
 import 'package:sesame_api_client/src/model/get_admin_banner_statistics200_response_coverage.dart';
 import 'package:sesame_api_client/src/model/get_admin_banner_statistics200_response_items_inner.dart';
-import 'package:sesame_api_client/src/model/get_admin_banner_statistics200_response_range.dart';
 import 'package:sesame_api_client/src/model/get_admin_groups200_response.dart';
 import 'package:sesame_api_client/src/model/get_admin_groups200_response_items_inner.dart';
 import 'package:sesame_api_client/src/model/get_admin_groups_by_group_id_members200_response.dart';
@@ -70,10 +69,7 @@ import 'package:sesame_api_client/src/model/get_admin_users_by_user_id200_respon
 import 'package:sesame_api_client/src/model/get_admin_users_by_user_id_devices200_response.dart';
 import 'package:sesame_api_client/src/model/get_admin_users_by_user_id_devices200_response_items_inner.dart';
 import 'package:sesame_api_client/src/model/get_app_banners200_response.dart';
-import 'package:sesame_api_client/src/model/get_app_banners200_response_any_of.dart';
-import 'package:sesame_api_client/src/model/get_app_banners200_response_any_of1.dart';
-import 'package:sesame_api_client/src/model/get_app_banners200_response_any_of1_items_inner.dart';
-import 'package:sesame_api_client/src/model/get_app_banners200_response_any_of_items_inner.dart';
+import 'package:sesame_api_client/src/model/get_app_banners200_response_items_inner.dart';
 import 'package:sesame_api_client/src/model/get_category_conflicts200_response.dart';
 import 'package:sesame_api_client/src/model/get_day_books_by_day_book_id_events200_response.dart';
 import 'package:sesame_api_client/src/model/get_devices200_response_inner.dart';
@@ -351,8 +347,6 @@ import 'package:sesame_api_client/src/model/put_admin_users_by_user_id_avatar_re
 import 'package:sesame_api_client/src/model/put_admin_users_by_user_id_phone_request.dart';
 import 'package:sesame_api_client/src/model/put_profile_avatar_request.dart';
 import 'package:sesame_api_client/src/model/recurring_transaction.dart';
-import 'package:sesame_api_client/src/model/reset_admin_banner_slot_request.dart';
-import 'package:sesame_api_client/src/model/reset_admin_banner_slot_request_revisions_inner.dart';
 import 'package:sesame_api_client/src/model/transaction.dart';
 import 'package:sesame_api_client/src/model/transaction_split.dart';
 import 'package:sesame_api_client/src/model/update_admin_banner_request.dart';
@@ -401,7 +395,6 @@ part 'serializers.g.dart';
   GetAdminBannerStatistics200Response,
   GetAdminBannerStatistics200ResponseCoverage,
   GetAdminBannerStatistics200ResponseItemsInner,
-  GetAdminBannerStatistics200ResponseRange,
   GetAdminGroups200Response,
   GetAdminGroups200ResponseItemsInner,
   GetAdminGroupsByGroupIdMembers200Response,
@@ -421,10 +414,7 @@ part 'serializers.g.dart';
   GetAdminUsersByUserIdDevices200Response,
   GetAdminUsersByUserIdDevices200ResponseItemsInner,
   GetAppBanners200Response,
-  GetAppBanners200ResponseAnyOf,
-  GetAppBanners200ResponseAnyOf1,
-  GetAppBanners200ResponseAnyOf1ItemsInner,
-  GetAppBanners200ResponseAnyOfItemsInner,
+  GetAppBanners200ResponseItemsInner,
   GetCategoryConflicts200Response,
   GetDayBooksByDayBookIdEvents200Response,
   GetDevices200ResponseInner,
@@ -702,8 +692,6 @@ part 'serializers.g.dart';
   PutAdminUsersByUserIdPhoneRequest,
   PutProfileAvatarRequest,
   RecurringTransaction,
-  ResetAdminBannerSlotRequest,
-  ResetAdminBannerSlotRequestRevisionsInner,
   Transaction,
   TransactionSplit,
   UpdateAdminBannerRequest,
@@ -930,6 +918,11 @@ Serializers serializers = (_$serializers.toBuilder()
             GetFitnessSpacesByFitnessSpaceIdCalendar200ResponseDaysInnerRestDaysInner>(),
       )
       ..addBuilderFactory(
+        const FullType(
+            BuiltList, [FullType(GetAppBanners200ResponseItemsInner)]),
+        () => ListBuilder<GetAppBanners200ResponseItemsInner>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [
           FullType(
               PostLedgersByLedgerIdRecurringTransactionsGenerateDue200ResponseRuleCursorsInner)
@@ -986,11 +979,6 @@ Serializers serializers = (_$serializers.toBuilder()
         ]),
         () => ListBuilder<
             GetFitnessSpacesByFitnessSpaceIdPreferences200ResponseItemsInnerCustomExercisesInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(
-            BuiltSet, [FullType(ResetAdminBannerSlotRequestRevisionsInner)]),
-        () => SetBuilder<ResetAdminBannerSlotRequestRevisionsInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(TransactionSplit)]),
@@ -1099,11 +1087,6 @@ Serializers serializers = (_$serializers.toBuilder()
         ]),
         () => ListBuilder<
             GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInnerSlotExercisesInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(
-            BuiltList, [FullType(GetAppBanners200ResponseAnyOfItemsInner)]),
-        () => ListBuilder<GetAppBanners200ResponseAnyOfItemsInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltSet, [FullType(String)]),
@@ -1222,11 +1205,6 @@ Serializers serializers = (_$serializers.toBuilder()
         const FullType(BuiltList,
             [FullType(ListOfficialFitnessTaxonomies200ResponseItemsInner)]),
         () => ListBuilder<ListOfficialFitnessTaxonomies200ResponseItemsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(
-            BuiltList, [FullType(GetAppBanners200ResponseAnyOf1ItemsInner)]),
-        () => ListBuilder<GetAppBanners200ResponseAnyOf1ItemsInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList,

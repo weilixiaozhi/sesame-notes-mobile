@@ -97,9 +97,6 @@ String? productAnalyticsPage(String path) {
     '/days/books/edit' => 'days.books.edit',
     '/category/manage' => 'accounting.categories',
     '/category/templates' => 'accounting.categories.templates.flat',
-    '/category/templates/flat' => 'accounting.categories.templates.flat',
-    '/category/templates/hierarchical' =>
-      'accounting.categories.templates.hierarchical',
     '/category/edit' => 'accounting.categories.edit',
     '/category/detail' => 'accounting.categories.detail',
     '/statistics/aa' => 'accounting.aa_statistics',

@@ -9,7 +9,7 @@ import 'package:sesame_notes/utils/date/date_parser.dart';
 import 'package:sesame_notes/utils/currency/decimal_money.dart';
 import 'transfer_table.dart' show transferId;
 
-/// 无分类身份列的旧文件沿用九字段交易指纹，新增空列不能改变历史导入身份。
+/// 分类身份列全部为空时不参与交易文件指纹，同一内容保持稳定的导入身份。
 String ledgerTransactionFileHash(List<Map<String, Object?>> rows) {
   try {
     const identityFields = {
@@ -39,7 +39,7 @@ String ledgerTransactionFileHash(List<Map<String, Object?>> rows) {
   }
 }
 
-/// 分类来源指纹采用跨端固定字段顺序，交易旧指纹保持自身的兼容规则。
+/// 分类来源指纹采用跨端固定字段顺序，交易指纹按自身字段规范计算。
 String ledgerCategoryFileHash(List<Map<String, Object?>> rows) {
   const fields = [
     'date',
@@ -74,7 +74,7 @@ String ledgerCategoryFileHash(List<Map<String, Object?>> rows) {
       .toString();
 }
 
-/// 按来源身份读取分类，旧文件以行号区分未确认的同名来源。
+/// 按来源身份读取分类；缺少分类身份时，以文件与行号区分待确认的同名来源。
 schema.ImportCategorySource? ledgerImportCategorySource(
   Map<String, Object?> row, {
   required String fileHash,

@@ -76,8 +76,6 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(GetAdminBannerStatistics200ResponseItemsInner.serializer)
       ..add(GetAdminBannerStatistics200ResponseItemsInnerSlotEnum.serializer)
       ..add(GetAdminBannerStatistics200ResponseItemsInnerSource_Enum.serializer)
-      ..add(GetAdminBannerStatistics200ResponseRange.serializer)
-      ..add(GetAdminBannerStatistics200ResponseRangeTimezoneEnum.serializer)
       ..add(GetAdminBannerStatistics200ResponseScopeEnum.serializer)
       ..add(GetAdminGroups200Response.serializer)
       ..add(GetAdminGroups200ResponseItemsInner.serializer)
@@ -103,14 +101,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(GetAdminUsersByUserIdDevices200Response.serializer)
       ..add(GetAdminUsersByUserIdDevices200ResponseItemsInner.serializer)
       ..add(GetAppBanners200Response.serializer)
-      ..add(GetAppBanners200ResponseAnyOf.serializer)
-      ..add(GetAppBanners200ResponseAnyOf1.serializer)
-      ..add(GetAppBanners200ResponseAnyOf1ItemsInner.serializer)
-      ..add(GetAppBanners200ResponseAnyOf1ItemsInnerSlotEnum.serializer)
-      ..add(GetAppBanners200ResponseAnyOf1ItemsInnerTargetEnum.serializer)
-      ..add(GetAppBanners200ResponseAnyOfItemsInner.serializer)
-      ..add(GetAppBanners200ResponseAnyOfItemsInnerSlotEnum.serializer)
-      ..add(GetAppBanners200ResponseAnyOfItemsInnerTargetEnum.serializer)
+      ..add(GetAppBanners200ResponseItemsInner.serializer)
+      ..add(GetAppBanners200ResponseItemsInnerSlotEnum.serializer)
+      ..add(GetAppBanners200ResponseItemsInnerTargetEnum.serializer)
       ..add(GetCategoryConflicts200Response.serializer)
       ..add(GetDayBooksByDayBookIdEvents200Response.serializer)
       ..add(GetDevices200ResponseInner.serializer)
@@ -720,8 +713,6 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(RecurringTransaction.serializer)
       ..add(RecurringTransactionFrequencyEnum.serializer)
       ..add(RecurringTransactionTxTypeEnum.serializer)
-      ..add(ResetAdminBannerSlotRequest.serializer)
-      ..add(ResetAdminBannerSlotRequestRevisionsInner.serializer)
       ..add(Transaction.serializer)
       ..add(TransactionAaModeEnum.serializer)
       ..add(TransactionCategoryKindEnum.serializer)
@@ -836,12 +827,8 @@ Serializers _$serializers = (Serializers().toBuilder()
               ListBuilder<GetAdminUsersByUserIdDevices200ResponseItemsInner>())
       ..addBuilderFactory(
           const FullType(BuiltList,
-              const [const FullType(GetAppBanners200ResponseAnyOf1ItemsInner)]),
-          () => ListBuilder<GetAppBanners200ResponseAnyOf1ItemsInner>())
-      ..addBuilderFactory(
-          const FullType(BuiltList,
-              const [const FullType(GetAppBanners200ResponseAnyOfItemsInner)]),
-          () => ListBuilder<GetAppBanners200ResponseAnyOfItemsInner>())
+              const [const FullType(GetAppBanners200ResponseItemsInner)]),
+          () => ListBuilder<GetAppBanners200ResponseItemsInner>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [
             const FullType(GetFitnessCatalog200ResponseExercisesInner)
@@ -1597,11 +1584,6 @@ Serializers _$serializers = (Serializers().toBuilder()
           ]),
           () => SetBuilder<
               GetAdminAnalyticsCatalog200ResponseEventsInnerSourcePagesInnerPlatformsEnum>())
-      ..addBuilderFactory(
-          const FullType(BuiltSet, const [
-            const FullType(ResetAdminBannerSlotRequestRevisionsInner)
-          ]),
-          () => SetBuilder<ResetAdminBannerSlotRequestRevisionsInner>())
       ..addBuilderFactory(
           const FullType(BuiltSet, const [const FullType(String)]),
           () => SetBuilder<String>())

@@ -7,14 +7,14 @@ part of 'get_admin_banner_statistics200_response.dart';
 // **************************************************************************
 
 const GetAdminBannerStatistics200ResponseScopeEnum
-    _$getAdminBannerStatistics200ResponseScopeEnum_current =
-    const GetAdminBannerStatistics200ResponseScopeEnum._('current');
+    _$getAdminBannerStatistics200ResponseScopeEnum_total =
+    const GetAdminBannerStatistics200ResponseScopeEnum._('total');
 
 GetAdminBannerStatistics200ResponseScopeEnum
     _$getAdminBannerStatistics200ResponseScopeEnumValueOf(String name) {
   switch (name) {
-    case 'current':
-      return _$getAdminBannerStatistics200ResponseScopeEnum_current;
+    case 'total':
+      return _$getAdminBannerStatistics200ResponseScopeEnum_total;
     default:
       throw ArgumentError(name);
   }
@@ -23,7 +23,7 @@ GetAdminBannerStatistics200ResponseScopeEnum
 final BuiltSet<GetAdminBannerStatistics200ResponseScopeEnum>
     _$getAdminBannerStatistics200ResponseScopeEnumValues = BuiltSet<
         GetAdminBannerStatistics200ResponseScopeEnum>(const <GetAdminBannerStatistics200ResponseScopeEnum>[
-  _$getAdminBannerStatistics200ResponseScopeEnum_current,
+  _$getAdminBannerStatistics200ResponseScopeEnum_total,
 ]);
 
 Serializer<GetAdminBannerStatistics200ResponseScopeEnum>
@@ -34,10 +34,10 @@ class _$GetAdminBannerStatistics200ResponseScopeEnumSerializer
     implements
         PrimitiveSerializer<GetAdminBannerStatistics200ResponseScopeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'current': 'current',
+    'total': 'total',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'current': 'current',
+    'total': 'total',
   };
 
   @override
@@ -64,8 +64,6 @@ class _$GetAdminBannerStatistics200ResponseScopeEnumSerializer
 class _$GetAdminBannerStatistics200Response
     extends GetAdminBannerStatistics200Response {
   @override
-  final GetAdminBannerStatistics200ResponseRange range;
-  @override
   final GetAdminBannerStatistics200ResponseScopeEnum scope;
   @override
   final BuiltList<GetAdminBannerStatistics200ResponseItemsInner> items;
@@ -78,10 +76,7 @@ class _$GetAdminBannerStatistics200Response
       (GetAdminBannerStatistics200ResponseBuilder()..update(updates))._build();
 
   _$GetAdminBannerStatistics200Response._(
-      {required this.range,
-      required this.scope,
-      required this.items,
-      required this.coverage})
+      {required this.scope, required this.items, required this.coverage})
       : super._();
   @override
   GetAdminBannerStatistics200Response rebuild(
@@ -96,7 +91,6 @@ class _$GetAdminBannerStatistics200Response
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is GetAdminBannerStatistics200Response &&
-        range == other.range &&
         scope == other.scope &&
         items == other.items &&
         coverage == other.coverage;
@@ -105,7 +99,6 @@ class _$GetAdminBannerStatistics200Response
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, range.hashCode);
     _$hash = $jc(_$hash, scope.hashCode);
     _$hash = $jc(_$hash, items.hashCode);
     _$hash = $jc(_$hash, coverage.hashCode);
@@ -116,7 +109,6 @@ class _$GetAdminBannerStatistics200Response
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'GetAdminBannerStatistics200Response')
-          ..add('range', range)
           ..add('scope', scope)
           ..add('items', items)
           ..add('coverage', coverage))
@@ -129,12 +121,6 @@ class GetAdminBannerStatistics200ResponseBuilder
         Builder<GetAdminBannerStatistics200Response,
             GetAdminBannerStatistics200ResponseBuilder> {
   _$GetAdminBannerStatistics200Response? _$v;
-
-  GetAdminBannerStatistics200ResponseRangeBuilder? _range;
-  GetAdminBannerStatistics200ResponseRangeBuilder get range =>
-      _$this._range ??= GetAdminBannerStatistics200ResponseRangeBuilder();
-  set range(GetAdminBannerStatistics200ResponseRangeBuilder? range) =>
-      _$this._range = range;
 
   GetAdminBannerStatistics200ResponseScopeEnum? _scope;
   GetAdminBannerStatistics200ResponseScopeEnum? get scope => _$this._scope;
@@ -162,7 +148,6 @@ class GetAdminBannerStatistics200ResponseBuilder
   GetAdminBannerStatistics200ResponseBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _range = $v.range.toBuilder();
       _scope = $v.scope;
       _items = $v.items.toBuilder();
       _coverage = $v.coverage.toBuilder();
@@ -190,7 +175,6 @@ class GetAdminBannerStatistics200ResponseBuilder
     try {
       _$result = _$v ??
           _$GetAdminBannerStatistics200Response._(
-            range: range.build(),
             scope: BuiltValueNullFieldError.checkNotNull(
                 scope, r'GetAdminBannerStatistics200Response', 'scope'),
             items: items.build(),
@@ -199,9 +183,6 @@ class GetAdminBannerStatistics200ResponseBuilder
     } catch (_) {
       late String _$failedField;
       try {
-        _$failedField = 'range';
-        range.build();
-
         _$failedField = 'items';
         items.build();
         _$failedField = 'coverage';

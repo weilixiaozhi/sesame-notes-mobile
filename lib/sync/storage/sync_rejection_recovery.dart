@@ -55,7 +55,7 @@ class SyncRejectionRecovery {
           return;
         }
         final latest = pending.last;
-        // 队列毫秒时间已经在结构升级时规范化，重试保留最后意图的原绝对时刻。
+        // 队列保存毫秒级绝对时间，重试保留最后意图的原绝对时刻。
         // 新幂等身份不能借当前墙上时间或旧正文的无时区时间改变编辑顺序。
         final timestamp = latest.updatedAt.toUtc();
         var payload = latest.payload;

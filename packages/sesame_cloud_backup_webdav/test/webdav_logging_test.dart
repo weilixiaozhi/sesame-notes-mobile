@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_cloud_backup/sesame_cloud_backup.dart';
 import 'package:sesame_cloud_backup_webdav/sesame_cloud_backup_webdav.dart';
 
-/// 实际文件故障保留安全诊断，旧旁路文件清理失败不阻断真实备份操作。
+/// 实际文件故障保留安全诊断，操作仅访问目标文件。
 void main() {
   test('对象上传拒绝记录上下文且不暴露凭据、路径或备份正文', () async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
@@ -68,8 +68,10 @@ void main() {
           .having((error) => error.statusCode, 'HTTP 状态', 403)),
     );
 
-    expect(requests.any((path) => path.endsWith('.metadata.json')), isFalse,
-        reason: requests.toString());
+    expect(
+      requests.where((path) => path.startsWith('PUT ')),
+      everyElement('PUT /private-path/private-backup.snbak'),
+    );
     expect(messages, hasLength(1));
     expect(messages.single, contains('WebDAV'));
     expect(messages.single, contains('文件上传失败'));
@@ -83,17 +85,9 @@ void main() {
     }
   });
 
-  for (final scenario in [
-    (primaryStatus: 204, sidecarStatus: 404),
-    (primaryStatus: 204, sidecarStatus: 403),
-    (primaryStatus: 204, sidecarStatus: 500),
-    (primaryStatus: 403, sidecarStatus: 403),
-  ]) {
-    final sidecarStatus = scenario.sidecarStatus;
-    test(
-        scenario.primaryStatus == 403
-            ? '真实文件删除被拒时保留对象且不清理旧旁路'
-            : '旧旁路清理返回$sidecarStatus仍可上传、下载和删除真实备份', () async {
+  for (final primaryStatus in [204, 403]) {
+    test(primaryStatus == 403 ? '文件删除被拒时保留对象并记录安全诊断' : '文件支持上传下载和幂等删除',
+        () async {
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       addTearDown(() => server.close(force: true));
       final requests = <String>[];
@@ -115,10 +109,6 @@ void main() {
           } else if (method == 'MKCOL') {
             await request.drain<void>();
             request.response.statusCode = HttpStatus.created;
-          } else if (path.endsWith('.metadata.json')) {
-            await request.drain<void>();
-            request.response.statusCode = sidecarStatus;
-            request.response.write('password-secret backup-plaintext');
           } else if (method == 'PUT') {
             expect(request.headers.value('if-none-match'), '*');
             uploaded = await request.fold<String>('',
@@ -127,7 +117,7 @@ void main() {
           } else if (method == 'GET' && uploaded != null) {
             request.response.write(uploaded);
           } else if (method == 'DELETE') {
-            if (scenario.primaryStatus == 403) {
+            if (primaryStatus == 403) {
               request.response.statusCode = HttpStatus.forbidden;
               request.response.write('password-secret backup-plaintext');
             } else if (uploaded == null) {
@@ -140,7 +130,7 @@ void main() {
             request.response.statusCode = HttpStatus.notFound;
           }
         } catch (error, stack) {
-          stderr.writeln('WebDAV 文件与旁路清理测试响应失败：$error\n$stack');
+          stderr.writeln('WebDAV 文件操作测试响应失败：$error\n$stack');
           rethrow;
         } finally {
           await request.response.close();
@@ -163,7 +153,7 @@ void main() {
       addTearDown(provider.dispose);
       final directory = await (Directory('../../Temp/cleanup-residual-20261017')
             ..createSync(recursive: true))
-          .createTemp('webdav-sidecar-');
+          .createTemp('webdav-file-');
       addTearDown(() => directory.delete(recursive: true));
       final source = await File('${directory.path}/source.snbak')
           .writeAsString('backup-plaintext');
@@ -174,42 +164,36 @@ void main() {
       );
       expect(uploaded, 'backup-plaintext');
       expect(
-          requests.where((path) =>
-              path.startsWith('PUT ') && path.endsWith('.metadata.json')),
-          isEmpty);
+        requests.where((path) => path.startsWith('PUT ')),
+        everyElement('PUT /private-path/private-backup.snbak'),
+      );
       final restored = File('${directory.path}/restored.snbak');
       expect(
           await provider.storage.downloadFile(
               path: 'private-backup.snbak', destination: restored),
           isTrue);
       expect(await restored.readAsBytes(), await source.readAsBytes());
-      if (scenario.primaryStatus == 403) {
+      if (primaryStatus == 403) {
         await expectLater(
           provider.storage.delete(path: 'private-backup.snbak'),
           throwsA(isA<CloudStorageException>()
               .having((error) => error.statusCode, '实际文件拒绝状态', 403)),
         );
         expect(uploaded, 'backup-plaintext');
-        expect(
-            requests.where((path) => path.endsWith('.metadata.json')), isEmpty);
         expect(messages, hasLength(1));
       } else {
         await provider.storage.delete(path: 'private-backup.snbak');
-        expect(uploaded, isNull, reason: '真实文件成功删除后旁路清理失败不能反转结果');
-        if (sidecarStatus == 403) {
-          // 重试时主文件已不存在，旧旁路拒绝清理仍不能阻断幂等删除。
-          await provider.storage.delete(path: 'private-backup.snbak');
-        }
-        final attempts = sidecarStatus == 403 ? 2 : 1;
-        expect(
-            requests.where((path) =>
-                path.startsWith('DELETE ') && path.endsWith('.metadata.json')),
-            hasLength(attempts));
-        expect(messages, sidecarStatus == 404 ? isEmpty : hasLength(attempts));
+        expect(uploaded, isNull);
+        await provider.storage.delete(path: 'private-backup.snbak');
+        expect(messages, isEmpty);
       }
+      expect(
+        requests.where((path) => path.startsWith('DELETE ')),
+        everyElement('DELETE /private-path/private-backup.snbak'),
+      );
       for (final message in messages) {
         expect(message, contains('WebDAV'));
-        expect(message, contains('$sidecarStatus'));
+        expect(message, contains('$primaryStatus'));
         for (final secret in [
           'password-secret',
           'backup-plaintext',

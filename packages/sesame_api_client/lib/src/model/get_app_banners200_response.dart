@@ -3,13 +3,10 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:sesame_api_client/src/model/get_app_banners200_response_any_of1.dart';
-import 'package:sesame_api_client/src/model/get_app_banners200_response_any_of1_items_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:sesame_api_client/src/model/get_app_banners200_response_any_of.dart';
+import 'package:sesame_api_client/src/model/get_app_banners200_response_items_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
-import 'package:one_of/any_of.dart';
 
 part 'get_app_banners200_response.g.dart';
 
@@ -21,8 +18,8 @@ part 'get_app_banners200_response.g.dart';
 abstract class GetAppBanners200Response
     implements
         Built<GetAppBanners200Response, GetAppBanners200ResponseBuilder> {
-  /// Any Of [GetAppBanners200ResponseAnyOf], [GetAppBanners200ResponseAnyOf1]
-  AnyOf get anyOf;
+  @BuiltValueField(wireName: r'items')
+  BuiltList<GetAppBanners200ResponseItemsInner> get items;
 
   GetAppBanners200Response._();
 
@@ -53,7 +50,14 @@ class _$GetAppBanners200ResponseSerializer
     Serializers serializers,
     GetAppBanners200Response object, {
     FullType specifiedType = FullType.unspecified,
-  }) sync* {}
+  }) sync* {
+    yield r'items';
+    yield serializers.serialize(
+      object.items,
+      specifiedType: const FullType(
+          BuiltList, [FullType(GetAppBanners200ResponseItemsInner)]),
+    );
+  }
 
   @override
   Object serialize(
@@ -61,10 +65,37 @@ class _$GetAppBanners200ResponseSerializer
     GetAppBanners200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final anyOf = object.anyOf;
-    return serializers.serialize(anyOf,
-        specifiedType: FullType(
-            AnyOf, anyOf.valueTypes.map((type) => FullType(type)).toList()))!;
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
+  }
+
+  void _deserializeProperties(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+    required List<Object?> serializedList,
+    required GetAppBanners200ResponseBuilder result,
+    required List<Object?> unhandled,
+  }) {
+    for (var i = 0; i < serializedList.length; i += 2) {
+      final key = serializedList[i] as String;
+      final value = serializedList[i + 1];
+      switch (key) {
+        case r'items':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(
+                BuiltList, [FullType(GetAppBanners200ResponseItemsInner)]),
+          ) as BuiltList<GetAppBanners200ResponseItemsInner>;
+          result.items.replace(valueDes);
+          break;
+        default:
+          unhandled.add(key);
+          unhandled.add(value);
+          break;
+      }
+    }
   }
 
   @override
@@ -74,14 +105,16 @@ class _$GetAppBanners200ResponseSerializer
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = GetAppBanners200ResponseBuilder();
-    Object? anyOfDataSrc;
-    final targetType = const FullType(AnyOf, [
-      FullType(GetAppBanners200ResponseAnyOf),
-      FullType(GetAppBanners200ResponseAnyOf1),
-    ]);
-    anyOfDataSrc = serialized;
-    result.anyOf = serializers.deserialize(anyOfDataSrc,
-        specifiedType: targetType) as AnyOf;
+    final serializedList = (serialized as Iterable<Object?>).toList();
+    final unhandled = <Object?>[];
+    _deserializeProperties(
+      serializers,
+      serialized,
+      specifiedType: specifiedType,
+      serializedList: serializedList,
+      unhandled: unhandled,
+      result: result,
+    );
     return result.build();
   }
 }

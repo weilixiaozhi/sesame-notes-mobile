@@ -167,7 +167,7 @@ class _ReadOnlyBackupDatabase extends SesameDatabase {
     await super.close();
   }
 
-  /// 合法旧备份不经过主库初始化，也绝不补齐当前日子表。
+  /// 备份连接只读既有结构，不执行建库或数据转换。
   @override
   d.MigrationStrategy get migration => d.MigrationStrategy(
     onCreate: (_) async => throw StateError('备份不允许初始化'),
@@ -312,22 +312,10 @@ class BackupImportService {
           extracted.path,
           manifest,
         );
-        var effectiveManifest = manifest;
-        if (manifest.dbSchemaVersion != currentSchemaVersion) {
-          // 来源清单与 SQLite 已核对；先关闭只读句柄，再仅升级本次提取副本。
-          recoveryRepository.close();
-          recoveryRepository = null;
-          await upgradeExtractedBackupSchema(extracted);
-          effectiveManifest = currentBackupManifest(manifest);
-          recoveryRepository = await BackupRecoveryRepository.openAndValidate(
-            extracted.path,
-            effectiveManifest,
-          );
-        }
         final sourceDb = _ReadOnlyBackupDatabase(extracted);
         return RecoverySession(
           backupFile: backupFile,
-          manifest: effectiveManifest,
+          manifest: manifest,
           extractedSqliteFile: extracted,
           sourceDb: sourceDb,
           recoveryRepository: recoveryRepository,

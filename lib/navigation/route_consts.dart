@@ -9,11 +9,8 @@ class Routes {
   /// 分类管理页
   static const String categoryManage = '/category/manage';
 
-  /// 统一分类模板库入口；已有路径继续兼容导航。
+  /// 统一分类模板库入口。
   static const String categoryTemplates = '/category/templates';
-  static const String categoryTemplateFlat = '/category/templates/flat';
-  static const String categoryTemplateHierarchical =
-      '/category/templates/hierarchical';
 
   /// AA 分摊统计页
   static const String aaStatistics = '/statistics/aa';
@@ -144,8 +141,6 @@ class Routes {
     syncCenter,
     categoryManage,
     categoryTemplates,
-    categoryTemplateFlat,
-    categoryTemplateHierarchical,
     aaStatistics,
     aaEdit,
     aaMemberDetail,

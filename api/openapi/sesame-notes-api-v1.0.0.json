@@ -11495,247 +11495,139 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "anyOf": [
-                    {
-                      "type": "object",
-                      "required": [
-                        "items"
-                      ],
-                      "properties": {
-                        "items": {
-                          "maxItems": 2,
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "required": [
-                              "slot",
-                              "image_path",
-                              "target",
-                              "is_enabled",
-                              "version",
-                              "updated_at"
-                            ],
-                            "properties": {
-                              "slot": {
-                                "anyOf": [
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-plan-library"
-                                    ]
-                                  },
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-template-library"
-                                    ]
-                                  }
+                  "type": "object",
+                  "required": [
+                    "items"
+                  ],
+                  "properties": {
+                    "items": {
+                      "maxItems": 40,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "slot",
+                          "image_path",
+                          "target",
+                          "target_id",
+                          "target_name",
+                          "version",
+                          "sort_order"
+                        ],
+                        "properties": {
+                          "id": {
+                            "format": "uuid",
+                            "type": "string"
+                          },
+                          "slot": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "fitness-plan-library"
                                 ]
                               },
-                              "image_path": {
-                                "anyOf": [
-                                  {
-                                    "pattern": "^/api/v1/banners/media/[a-f0-9]{64}$",
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              },
-                              "target": {
-                                "anyOf": [
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-plan-library"
-                                    ]
-                                  },
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-template-library"
-                                    ]
-                                  },
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-exercises"
-                                    ]
-                                  },
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-plans"
-                                    ]
-                                  },
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-templates"
-                                    ]
-                                  }
-                                ]
-                              },
-                              "is_enabled": {
-                                "type": "boolean"
-                              },
-                              "version": {
-                                "minimum": 0,
-                                "type": "integer"
-                              },
-                              "updated_at": {
-                                "anyOf": [
-                                  {
-                                    "format": "date-time",
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "fitness-template-library"
                                 ]
                               }
-                            }
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "object",
-                      "required": [
-                        "items"
-                      ],
-                      "properties": {
-                        "items": {
-                          "maxItems": 40,
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "required": [
-                              "id",
-                              "slot",
-                              "image_path",
-                              "target",
-                              "target_id",
-                              "target_name",
-                              "version",
-                              "sort_order"
-                            ],
-                            "properties": {
-                              "id": {
+                            ]
+                          },
+                          "image_path": {
+                            "anyOf": [
+                              {
+                                "pattern": "^/api/v1/banners/media/[a-f0-9]{64}$",
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "target": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "fitness-plan-library"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "fitness-template-library"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "fitness-exercises"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "fitness-plans"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "fitness-templates"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "official-plan"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "official-template"
+                                ]
+                              }
+                            ]
+                          },
+                          "target_id": {
+                            "anyOf": [
+                              {
                                 "format": "uuid",
                                 "type": "string"
                               },
-                              "slot": {
-                                "anyOf": [
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-plan-library"
-                                    ]
-                                  },
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-template-library"
-                                    ]
-                                  }
-                                ]
-                              },
-                              "image_path": {
-                                "anyOf": [
-                                  {
-                                    "pattern": "^/api/v1/banners/media/[a-f0-9]{64}$",
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              },
-                              "target": {
-                                "anyOf": [
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-plan-library"
-                                    ]
-                                  },
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-template-library"
-                                    ]
-                                  },
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-exercises"
-                                    ]
-                                  },
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-plans"
-                                    ]
-                                  },
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "fitness-templates"
-                                    ]
-                                  },
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "official-plan"
-                                    ]
-                                  },
-                                  {
-                                    "type": "string",
-                                    "enum": [
-                                      "official-template"
-                                    ]
-                                  }
-                                ]
-                              },
-                              "target_id": {
-                                "anyOf": [
-                                  {
-                                    "format": "uuid",
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              },
-                              "target_name": {
-                                "anyOf": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              },
-                              "version": {
-                                "minimum": 1,
-                                "maximum": 2147483646,
-                                "type": "integer"
-                              },
-                              "sort_order": {
-                                "minimum": 0,
-                                "maximum": 9999,
-                                "type": "integer"
+                              {
+                                "type": "null"
                               }
-                            }
+                            ]
+                          },
+                          "target_name": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "version": {
+                            "minimum": 1,
+                            "maximum": 2147483646,
+                            "type": "integer"
+                          },
+                          "sort_order": {
+                            "minimum": 0,
+                            "maximum": 9999,
+                            "type": "integer"
                           }
                         }
                       }
                     }
-                  ]
+                  }
                 }
               }
             }
@@ -11873,16 +11765,8 @@
                         ],
                         "properties": {
                           "id": {
-                            "anyOf": [
-                              {
-                                "format": "uuid",
-                                "type": "string"
-                              },
-                              {
-                                "pattern": "^builtin:fitness-(?:plan|template)-library$",
-                                "type": "string"
-                              }
-                            ]
+                            "format": "uuid",
+                            "type": "string"
                           },
                           "slot": {
                             "anyOf": [
@@ -11979,7 +11863,8 @@
                             ]
                           },
                           "version": {
-                            "minimum": 0,
+                            "minimum": 1,
+                            "maximum": 2147483646,
                             "type": "integer"
                           },
                           "sort_order": {
@@ -11988,19 +11873,9 @@
                             "type": "integer"
                           },
                           "source": {
-                            "anyOf": [
-                              {
-                                "type": "string",
-                                "enum": [
-                                  "builtin"
-                                ]
-                              },
-                              {
-                                "type": "string",
-                                "enum": [
-                                  "remote"
-                                ]
-                              }
+                            "type": "string",
+                            "enum": [
+                              "remote"
                             ]
                           },
                           "updated_at": {
@@ -12256,16 +12131,8 @@
                   ],
                   "properties": {
                     "id": {
-                      "anyOf": [
-                        {
-                          "format": "uuid",
-                          "type": "string"
-                        },
-                        {
-                          "pattern": "^builtin:fitness-(?:plan|template)-library$",
-                          "type": "string"
-                        }
-                      ]
+                      "format": "uuid",
+                      "type": "string"
                     },
                     "slot": {
                       "anyOf": [
@@ -12362,7 +12229,8 @@
                       ]
                     },
                     "version": {
-                      "minimum": 0,
+                      "minimum": 1,
+                      "maximum": 2147483646,
                       "type": "integer"
                     },
                     "sort_order": {
@@ -12371,19 +12239,9 @@
                       "type": "integer"
                     },
                     "source": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "builtin"
-                          ]
-                        },
-                        {
-                          "type": "string",
-                          "enum": [
-                            "remote"
-                          ]
-                        }
+                      "type": "string",
+                      "enum": [
+                        "remote"
                       ]
                     },
                     "updated_at": {
@@ -12530,15 +12388,6 @@
             "in": "query",
             "name": "kind",
             "required": true
-          },
-          {
-            "schema": {
-              "maxLength": 100,
-              "type": "string"
-            },
-            "in": "query",
-            "name": "q",
-            "required": false
           }
         ],
         "security": [
@@ -12558,7 +12407,6 @@
                   ],
                   "properties": {
                     "items": {
-                      "maxItems": 100,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -12841,16 +12689,8 @@
                   ],
                   "properties": {
                     "id": {
-                      "anyOf": [
-                        {
-                          "format": "uuid",
-                          "type": "string"
-                        },
-                        {
-                          "pattern": "^builtin:fitness-(?:plan|template)-library$",
-                          "type": "string"
-                        }
-                      ]
+                      "format": "uuid",
+                      "type": "string"
                     },
                     "slot": {
                       "anyOf": [
@@ -12947,7 +12787,8 @@
                       ]
                     },
                     "version": {
-                      "minimum": 0,
+                      "minimum": 1,
+                      "maximum": 2147483646,
                       "type": "integer"
                     },
                     "sort_order": {
@@ -12956,19 +12797,9 @@
                       "type": "integer"
                     },
                     "source": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "builtin"
-                          ]
-                        },
-                        {
-                          "type": "string",
-                          "enum": [
-                            "remote"
-                          ]
-                        }
+                      "type": "string",
+                      "enum": [
+                        "remote"
                       ]
                     },
                     "updated_at": {
@@ -13121,193 +12952,6 @@
             },
             "in": "path",
             "name": "banner_id",
-            "required": true
-          }
-        ],
-        "security": [
-          {
-            "adminSessionAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "ok"
-                  ],
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "请求频率超过限制，请按 Retry-After 指示重试。",
-            "headers": {
-              "Retry-After": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "距离允许重试的秒数"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/admin/banners/{slot}/reset": {
-      "post": {
-        "operationId": "resetAdminBannerSlot",
-        "tags": [
-          "admin-banners"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "additionalProperties": false,
-                "type": "object",
-                "required": [
-                  "revisions"
-                ],
-                "properties": {
-                  "revisions": {
-                    "maxItems": 20,
-                    "uniqueItems": true,
-                    "type": "array",
-                    "items": {
-                      "additionalProperties": false,
-                      "type": "object",
-                      "required": [
-                        "id",
-                        "version"
-                      ],
-                      "properties": {
-                        "id": {
-                          "format": "uuid",
-                          "type": "string"
-                        },
-                        "version": {
-                          "minimum": 1,
-                          "maximum": 2147483646,
-                          "type": "integer"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "enum": [
-                    "fitness-plan-library"
-                  ]
-                },
-                {
-                  "type": "string",
-                  "enum": [
-                    "fitness-template-library"
-                  ]
-                }
-              ]
-            },
-            "in": "path",
-            "name": "slot",
             "required": true
           }
         ],
@@ -13847,26 +13491,6 @@
         "tags": [
           "admin-banners"
         ],
-        "parameters": [
-          {
-            "schema": {
-              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-              "type": "string"
-            },
-            "in": "query",
-            "name": "start_date",
-            "required": true
-          },
-          {
-            "schema": {
-              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-              "type": "string"
-            },
-            "in": "query",
-            "name": "end_date",
-            "required": true
-          }
-        ],
         "security": [
           {
             "adminSessionAuth": []
@@ -13880,42 +13504,18 @@
                 "schema": {
                   "type": "object",
                   "required": [
-                    "range",
                     "scope",
                     "items",
                     "coverage"
                   ],
                   "properties": {
-                    "range": {
-                      "type": "object",
-                      "required": [
-                        "start_date",
-                        "end_date",
-                        "timezone"
-                      ],
-                      "properties": {
-                        "start_date": {
-                          "type": "string"
-                        },
-                        "end_date": {
-                          "type": "string"
-                        },
-                        "timezone": {
-                          "type": "string",
-                          "enum": [
-                            "Asia/Shanghai"
-                          ]
-                        }
-                      }
-                    },
                     "scope": {
                       "type": "string",
                       "enum": [
-                        "current"
+                        "total"
                       ]
                     },
                     "items": {
-                      "minItems": 2,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -13930,24 +13530,8 @@
                         ],
                         "properties": {
                           "banner_id": {
-                            "anyOf": [
-                              {
-                                "format": "uuid",
-                                "type": "string"
-                              },
-                              {
-                                "type": "string",
-                                "enum": [
-                                  "builtin:fitness-plan-library"
-                                ]
-                              },
-                              {
-                                "type": "string",
-                                "enum": [
-                                  "builtin:fitness-template-library"
-                                ]
-                              }
-                            ]
+                            "format": "uuid",
+                            "type": "string"
                           },
                           "slot": {
                             "anyOf": [
@@ -13966,23 +13550,13 @@
                             ]
                           },
                           "source": {
-                            "anyOf": [
-                              {
-                                "type": "string",
-                                "enum": [
-                                  "builtin"
-                                ]
-                              },
-                              {
-                                "type": "string",
-                                "enum": [
-                                  "remote"
-                                ]
-                              }
+                            "type": "string",
+                            "enum": [
+                              "remote"
                             ]
                           },
                           "version": {
-                            "minimum": 0,
+                            "minimum": 1,
                             "maximum": 2147483647,
                             "type": "integer"
                           },
@@ -14021,7 +13595,10 @@
                           "type": "string"
                         },
                         "complete": {
-                          "type": "boolean"
+                          "type": "boolean",
+                          "enum": [
+                            true
+                          ]
                         },
                         "audience": {
                           "type": "string",

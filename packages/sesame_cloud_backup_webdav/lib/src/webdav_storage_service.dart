@@ -75,19 +75,13 @@ class WebDAVStorageService implements CloudStorageService {
     }
   }
 
+  /// 幂等删除指定文件，不操作其他对象。
   @override
   Future<void> delete({required String path}) async {
     try {
-      final fullPath = _buildPath(path);
-
-      try {
-        await _client.remove(fullPath);
-      } catch (error) {
-        // 对象已被其他操作删除时，继续完成可选的旧旁路文件清理。
-        if (!_isNotFound(error)) rethrow;
-      }
-      await _deleteLegacyMetadata(fullPath);
+      await _client.remove(_buildPath(path));
     } catch (e, stackTrace) {
+      if (_isNotFound(e)) return;
       _fail('删除', e, stackTrace);
     }
   }
@@ -114,7 +108,7 @@ class WebDAVStorageService implements CloudStorageService {
         final relative = PathHelper.join([path, name]);
         if (file.isDir == true) {
           result.addAll(await list(path: relative));
-        } else if (!name.endsWith('.metadata.json')) {
+        } else {
           result.add(CloudFile(
               name: name,
               path: relative,
@@ -175,24 +169,6 @@ class WebDAVStorageService implements CloudStorageService {
           if (status != 405 && status != 409) rethrow;
           await _client.readDir(currentPath);
         }
-      }
-    }
-  }
-
-  /// 尽力清理历史旁路文件，清理失败不改变真实对象的删除结果。
-  Future<void> _deleteLegacyMetadata(String filePath) async {
-    try {
-      final metadataPath = '$filePath.metadata.json';
-      await _client.remove(metadataPath);
-    } catch (e, stackTrace) {
-      if (_isNotFound(e)) return;
-      try {
-        _logger?.warning(
-          'WebDAV 历史旁路文件清理失败：${e.runtimeType}'
-          ' HTTP=${webDavStatusCode(e)}\n$stackTrace',
-        );
-      } catch (_) {
-        // 日志回调失败也不能改变已经完成的对象操作。
       }
     }
   }

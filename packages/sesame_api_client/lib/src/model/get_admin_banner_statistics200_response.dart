@@ -6,7 +6,6 @@
 import 'package:sesame_api_client/src/model/get_admin_banner_statistics200_response_coverage.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:sesame_api_client/src/model/get_admin_banner_statistics200_response_items_inner.dart';
-import 'package:sesame_api_client/src/model/get_admin_banner_statistics200_response_range.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -15,7 +14,6 @@ part 'get_admin_banner_statistics200_response.g.dart';
 /// GetAdminBannerStatistics200Response
 ///
 /// Properties:
-/// * [range]
 /// * [scope]
 /// * [items]
 /// * [coverage]
@@ -24,12 +22,9 @@ abstract class GetAdminBannerStatistics200Response
     implements
         Built<GetAdminBannerStatistics200Response,
             GetAdminBannerStatistics200ResponseBuilder> {
-  @BuiltValueField(wireName: r'range')
-  GetAdminBannerStatistics200ResponseRange get range;
-
   @BuiltValueField(wireName: r'scope')
   GetAdminBannerStatistics200ResponseScopeEnum get scope;
-  // enum scopeEnum {  current,  };
+  // enum scopeEnum {  total,  };
 
   @BuiltValueField(wireName: r'items')
   BuiltList<GetAdminBannerStatistics200ResponseItemsInner> get items;
@@ -67,11 +62,6 @@ class _$GetAdminBannerStatistics200ResponseSerializer
     GetAdminBannerStatistics200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'range';
-    yield serializers.serialize(
-      object.range,
-      specifiedType: const FullType(GetAdminBannerStatistics200ResponseRange),
-    );
     yield r'scope';
     yield serializers.serialize(
       object.scope,
@@ -115,14 +105,6 @@ class _$GetAdminBannerStatistics200ResponseSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'range':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType:
-                const FullType(GetAdminBannerStatistics200ResponseRange),
-          ) as GetAdminBannerStatistics200ResponseRange;
-          result.range.replace(valueDes);
-          break;
         case r'scope':
           final valueDes = serializers.deserialize(
             value,
@@ -177,9 +159,9 @@ class _$GetAdminBannerStatistics200ResponseSerializer
 }
 
 class GetAdminBannerStatistics200ResponseScopeEnum extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'current')
-  static const GetAdminBannerStatistics200ResponseScopeEnum current =
-      _$getAdminBannerStatistics200ResponseScopeEnum_current;
+  @BuiltValueEnumConst(wireName: r'total')
+  static const GetAdminBannerStatistics200ResponseScopeEnum total =
+      _$getAdminBannerStatistics200ResponseScopeEnum_total;
 
   static Serializer<GetAdminBannerStatistics200ResponseScopeEnum>
       get serializer =>

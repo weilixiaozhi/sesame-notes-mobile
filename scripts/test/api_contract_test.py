@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 ARTIFACT = ROOT / "api/openapi/sesame-notes-api-v1.0.0.json"
-EXPECTED_SHA256 = "3F37D0F118C3B5D69082A4360638D1C1638B50D59D85BA940845524F534A0F5B"
+EXPECTED_SHA256 = "CC0A05120A585478FDEEDFF23229108A8B85F3D1F5B3288A87806F094FE8FED0"
 # 内置训练内容与主仓 apps/api/test/fitness-library.test.ts 共用同一份内容哨兵。
 FITNESS_LIBRARY = ROOT / "assets/fitness/library.json"
 EXPECTED_FITNESS_LIBRARY_SHA256 = "daafbb470c0ff449292b28518ad9fc6b11c44f4c42997f8f672358f76676ded8"
@@ -52,6 +52,25 @@ def _is_unified_error_schema(schema: dict) -> bool:
 
 class ApiContractTest(unittest.TestCase):
     """锁定移动端使用的统一契约字节内容和生成必需元数据。"""
+
+    def test_banner_contract_returns_independent_carousel_slides(self) -> None:
+        """公开轮播统一保留每张身份和独立目标，并接受当前客户端的格式参数。"""
+        try:
+            contract = json.loads(ARTIFACT.read_text(encoding="utf-8"))
+            operation = contract["paths"]["/api/v1/banners"]["get"]
+            parameters = {item["name"]: item for item in operation["parameters"]}
+            self.assertEqual({"carousel"}, _enum_values(parameters["format"]["schema"]))
+            response = operation["responses"]["200"]["content"]["application/json"]["schema"]
+            self.assertEqual("object", response["type"])
+            slides = response["properties"]["items"]
+            self.assertEqual(40, slides["maxItems"])
+            self.assertTrue({"id", "target_id", "target_name", "sort_order"}.issubset(slides["items"]["required"]))
+            self.assertEqual({
+                "fitness-plan-library", "fitness-template-library", "fitness-exercises",
+                "fitness-plans", "fitness-templates", "official-plan", "official-template",
+            }, _enum_values(slides["items"]["properties"]["target"]))
+        except (OSError, ValueError, KeyError) as error:
+            raise RuntimeError("无法读取当前轮播契约，请检查冻结文件") from error
 
     def test_category_removal_requires_explicit_reference_handling(self) -> None:
         """分类删除只允许迁移、删除关联交易或提升子分类。"""

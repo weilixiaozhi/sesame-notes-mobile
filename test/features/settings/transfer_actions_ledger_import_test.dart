@@ -136,10 +136,10 @@ void main() {
     return session;
   }
 
-  testWidgets('旧九字段CSV已导入记录升级后重开仍按原交易身份判重复', (tester) async {
+  testWidgets('无分类身份CSV添加空身份列后重开仍按原交易身份判重复', (tester) async {
     await seedLedger('ledger-1', selfMemberId: 'self-member-1');
     await pumpHarness(tester);
-    // 明确复刻发布版本的九字段顺序，不能用当前映射器生成预期值。
+    // 预期指纹使用独立的九字段输入，校验空分类身份列不会改变已有交易身份。
     final oldRows = [
       {
         'date': '2026-01-01',

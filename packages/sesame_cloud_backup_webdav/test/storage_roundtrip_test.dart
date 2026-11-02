@@ -9,7 +9,7 @@ void main() {
   test('列举出的路径可以下载和删除上传的同一个对象', () async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     final objects = <String, String>{
-      '/prefix/backups/a.snbak.metadata.json': 'legacy-metadata',
+      '/prefix/backups/notes.json': 'unrelated-content',
     };
     final requests = <String>[];
     addTearDown(() => server.close(force: true));
@@ -59,15 +59,6 @@ void main() {
       file: file,
       metadata: const {'origin': 'snapshot'},
     );
-    expect(
-      objects['/prefix/backups/a.snbak.metadata.json'],
-      'legacy-metadata',
-      reason: '上传真实备份不能写入或覆盖旁路文件',
-    );
-    expect(
-        requests.where((path) =>
-            path.startsWith('PUT ') && path.endsWith('.metadata.json')),
-        isEmpty);
     final replacement = await File('${dir.path}/replacement')
         .writeAsString('different snapshot');
     await expectLater(
@@ -80,24 +71,33 @@ void main() {
         isTrue);
     expect(await output.readAsString(), 'snapshot');
     final listed = await storage.list(path: 'backups/');
-    expect(listed.single.path, 'backups/a.snbak');
-    expect(listed.single.size, 8);
-    expect(listed.any((file) => file.path.endsWith('.metadata.json')), isFalse);
+    expect(listed.map((file) => file.path).toSet(), {
+      'backups/a.snbak',
+      'backups/notes.json',
+    });
+    final backup = listed.singleWhere((file) => file.name == 'a.snbak');
+    expect(backup.size, 8);
     expect(
-      await storage.downloadFile(path: listed.single.path, destination: output),
+      await storage.downloadFile(path: backup.path, destination: output),
       isTrue,
     );
     expect(await output.readAsString(), 'snapshot');
-    await storage.delete(path: listed.single.path);
-    await storage.delete(path: listed.single.path);
-    expect(await storage.list(path: 'backups/'), isEmpty);
+    await storage.delete(path: backup.path);
+    await storage.delete(path: backup.path);
+    expect(
+      (await storage.list(path: 'backups/')).single.path,
+      'backups/notes.json',
+    );
     final missingOutput = File('${dir.path}/deleted-output');
     expect(
-      await storage.downloadFile(
-          path: listed.single.path, destination: missingOutput),
+      await storage.downloadFile(path: backup.path, destination: missingOutput),
       isFalse,
     );
     expect(await missingOutput.exists(), isFalse);
-    expect(objects, isEmpty);
+    expect(objects, {'/prefix/backups/notes.json': 'unrelated-content'});
+    expect(
+      requests.where((request) => request.startsWith('DELETE ')),
+      everyElement('DELETE /prefix/backups/a.snbak'),
+    );
   });
 }

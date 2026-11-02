@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -8,7 +7,6 @@ import 'package:drift/drift.dart' as d;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_api_client/sesame_api_client.dart';
-import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/models/memo.dart' as memos;
 import 'package:sesame_notes/data/repositories/local/day_repository.dart';
@@ -19,9 +17,7 @@ import 'package:sesame_notes/features/days/domain/day_date_rules.dart';
 import 'package:sesame_notes/infrastructure/api/api_serializers.dart';
 import 'package:sesame_notes/sync/storage/change_recorder_impl.dart';
 import 'package:sesame_notes/sync/sync_service.dart';
-import 'package:sqlite3/sqlite3.dart' as sql;
 
-import '../helpers/database_schema_fixture.dart';
 import '../helpers/test_isolation.dart';
 
 const _account = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
@@ -153,10 +149,10 @@ class _BootstrapTransport implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
-/// 使用内存库或真实历史文件库，验证各域完整同步先于普通发送。
+/// 使用真实内存数据库，验证各域完整同步先于普通发送。
 class _BootstrapFixture {
-  _BootstrapFixture(int highWater, {SesameDatabase? database})
-    : db = database ?? SesameDatabase.withExecutor(NativeDatabase.memory()),
+  _BootstrapFixture(int highWater)
+    : db = SesameDatabase.withExecutor(NativeDatabase.memory()),
       transport = _BootstrapTransport(highWater) {
     client.dio.httpClientAdapter = transport;
     recorder = ChangeRecorderImpl(db, accountIdGetter: () => account);
@@ -287,100 +283,6 @@ class _BootstrapFixture {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(resetGlobalTestState);
-
-  for (final scenario in [
-    (version: 4, old: '0', h: 0),
-    (version: 7, old: '50', h: 50),
-    (version: 8, old: '9007199254740993', h: 50),
-  ]) {
-    test(
-      '真实schema${scenario.version}旧游标${scenario.old}迁移后先完成四域full再推拉',
-      () async {
-        final directory = await createTestTempDirectory(
-          'sync-bootstrap-migration-',
-        );
-        _BootstrapFixture? fixture;
-        try {
-          final file = File('${directory.path}/historical.sqlite');
-          await createHistoricalDatabaseFixture(file, scenario.version);
-          final raw = sql.sqlite3.open(file.path);
-          try {
-            // 原始连接保留历史非空约束，把四域旧值及身份写入同一真实设备状态行。
-            raw.execute(
-              'UPDATE sync_state SET account_id=?,device_id=?,server_cursor=?,day_events_cursor=?,memos_cursor=?,fitness_cursor=?',
-              [_account, _device, ...List.filled(4, scenario.old)],
-            );
-            expect(
-              raw.select('PRAGMA user_version').single.values.single,
-              scenario.version,
-            );
-            final cursorColumn = raw
-                .select('PRAGMA table_info(sync_state)')
-                .singleWhere((column) => column['name'] == 'server_cursor');
-            expect(cursorColumn['notnull'], 1);
-            expect(cursorColumn['dflt_value'], "'0'");
-            expect(
-              raw
-                  .select('SELECT server_cursor FROM sync_state')
-                  .single['server_cursor'],
-              scenario.old,
-            );
-          } finally {
-            raw.close();
-          }
-
-          final migrated = _BootstrapFixture(
-            scenario.h,
-            database: SesameDatabase.withExecutor(NativeDatabase(file)),
-          );
-          fixture = migrated;
-          // 首次读取真实触发升级；迁移后的空值要求四域分别建立完整基线。
-          expect(await migrated.cursors(), [null, null, null, null]);
-          await migrated.createPendingParents();
-          expect(await migrated.service.synchronize(), 0);
-          expect(migrated.transport.calls.take(4), [
-            'full:accounting',
-            'full:days',
-            'full:memos',
-            'full:fitness',
-          ]);
-          expect(
-            migrated.transport.calls.indexOf('push'),
-            greaterThanOrEqualTo(4),
-          );
-          expect(migrated.transport.sent, isNotEmpty);
-          // push 返回的较高水位只确认本机变更，增量仍从完整快照水位开始消费。
-          expect(
-            migrated.transport.calls.where((call) => call.startsWith('pull:')),
-            ['pull:${scenario.h}'],
-          );
-          expect(
-            await migrated.cursors(),
-            List.filled(4, '${migrated.transport.highWater}'),
-          );
-        } catch (error, stackTrace) {
-          logger.error(
-            'SyncBootstrapTest',
-            '历史库迁移后的首次同步回归失败',
-            error,
-            stackTrace,
-          );
-          rethrow;
-        } finally {
-          try {
-            await fixture?.dispose();
-          } finally {
-            final root =
-                '${Directory('Temp').absolute.path}${Platform.pathSeparator}';
-            if (!directory.absolute.path.startsWith(root)) {
-              throw StateError('测试目录不在 Temp 内');
-            }
-            await directory.delete(recursive: true);
-          }
-        }
-      },
-    );
-  }
 
   test('仅日子域初始化成功不把记账与其他域伪装就绪，下一轮只补未完成域', () async {
     final fixture = _BootstrapFixture(0);

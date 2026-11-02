@@ -92,17 +92,12 @@ final BuiltSet<ListAdminBanners200ResponseItemsInnerTargetEnum>
 ]);
 
 const ListAdminBanners200ResponseItemsInnerSource_Enum
-    _$listAdminBanners200ResponseItemsInnerSourceEnum_builtin =
-    const ListAdminBanners200ResponseItemsInnerSource_Enum._('builtin');
-const ListAdminBanners200ResponseItemsInnerSource_Enum
     _$listAdminBanners200ResponseItemsInnerSourceEnum_remote =
     const ListAdminBanners200ResponseItemsInnerSource_Enum._('remote');
 
 ListAdminBanners200ResponseItemsInnerSource_Enum
     _$listAdminBanners200ResponseItemsInnerSourceEnumValueOf(String name) {
   switch (name) {
-    case 'builtin':
-      return _$listAdminBanners200ResponseItemsInnerSourceEnum_builtin;
     case 'remote':
       return _$listAdminBanners200ResponseItemsInnerSourceEnum_remote;
     default:
@@ -113,7 +108,6 @@ ListAdminBanners200ResponseItemsInnerSource_Enum
 final BuiltSet<ListAdminBanners200ResponseItemsInnerSource_Enum>
     _$listAdminBanners200ResponseItemsInnerSourceEnumValues = BuiltSet<
         ListAdminBanners200ResponseItemsInnerSource_Enum>(const <ListAdminBanners200ResponseItemsInnerSource_Enum>[
-  _$listAdminBanners200ResponseItemsInnerSourceEnum_builtin,
   _$listAdminBanners200ResponseItemsInnerSourceEnum_remote,
 ]);
 
@@ -207,11 +201,9 @@ class _$ListAdminBanners200ResponseItemsInnerSource_EnumSerializer
     implements
         PrimitiveSerializer<ListAdminBanners200ResponseItemsInnerSource_Enum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'builtin': 'builtin',
     'remote': 'remote',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'builtin': 'builtin',
     'remote': 'remote',
   };
 

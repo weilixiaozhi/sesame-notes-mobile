@@ -204,16 +204,6 @@ List<GoRoute> buildAppRoutes({Map<String, WidgetBuilder> stubs = const {}}) {
     ),
     plain(Routes.categoryManage, (_) => const CategoryManagePage()),
     plain(Routes.categoryTemplates, (_) => const CategoryTemplatesPage()),
-    GoRoute(
-      path: Routes.categoryTemplateFlat,
-      name: Routes.categoryTemplateFlat,
-      redirect: (_, _) => Routes.categoryTemplates,
-    ),
-    GoRoute(
-      path: Routes.categoryTemplateHierarchical,
-      name: Routes.categoryTemplateHierarchical,
-      redirect: (_, _) => Routes.categoryTemplates,
-    ),
     extraRoute(
       Routes.fitnessCustomExerciseEdit,
       (state) => FitnessCustomExerciseEditPage(

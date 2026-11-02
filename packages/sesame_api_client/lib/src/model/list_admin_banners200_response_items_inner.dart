@@ -56,7 +56,7 @@ abstract class ListAdminBanners200ResponseItemsInner
 
   @BuiltValueField(wireName: r'source')
   ListAdminBanners200ResponseItemsInnerSource_Enum get source_;
-  // enum source_Enum {  builtin,  remote,  };
+  // enum source_Enum {  remote,  };
 
   @BuiltValueField(wireName: r'updated_at')
   DateTime? get updatedAt;
@@ -366,9 +366,6 @@ class ListAdminBanners200ResponseItemsInnerTargetEnum extends EnumClass {
 }
 
 class ListAdminBanners200ResponseItemsInnerSource_Enum extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'builtin')
-  static const ListAdminBanners200ResponseItemsInnerSource_Enum builtin =
-      _$listAdminBanners200ResponseItemsInnerSourceEnum_builtin;
   @BuiltValueEnumConst(wireName: r'remote')
   static const ListAdminBanners200ResponseItemsInnerSource_Enum remote =
       _$listAdminBanners200ResponseItemsInnerSourceEnum_remote;

@@ -1,7 +1,7 @@
 name: sesame_notes
 description: "Sesame Notes - 芝麻记"
 publish_to: 'none'
-version: 1.4.17+35
+version: 1.4.18+36
 
 environment:
   sdk: ^3.12.0
