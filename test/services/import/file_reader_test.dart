@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gbk_codec/gbk_codec.dart';
 
 import 'package:sesame_notes/features/settings/infrastructure/file_reader.dart';
 
@@ -49,7 +48,23 @@ void main() {
     });
 
     test('GBK 解码命中中文字符', () {
-      final bytes = gbk_bytes.encode('支付宝账单测试');
+      // 固定标准 GBK 字节，使输入夹具独立于应用使用的编解码器。
+      final bytes = <int>[
+        0xD6,
+        0xA7,
+        0xB8,
+        0xB6,
+        0xB1,
+        0xA6,
+        0xD5,
+        0xCB,
+        0xB5,
+        0xA5,
+        0xB2,
+        0xE2,
+        0xCA,
+        0xD4,
+      ];
       expect(FileReaderService.decodeBytes(bytes), '支付宝账单测试');
     });
 
