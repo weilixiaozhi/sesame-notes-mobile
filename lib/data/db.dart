@@ -10,6 +10,7 @@ import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/models/day_event.dart' show DayLimits;
 
 part 'db.g.dart';
+part 'database_schema6_upgrade.dart';
 
 /// 同步版本及其墓碑以 UTC 毫秒存储，保留权威时间在持久化往返中的精度。
 class MillisecondTimestampConverter extends TypeConverter<DateTime, int> {
@@ -1055,7 +1056,7 @@ class BackupState extends Table {
   List<String> get customConstraints => ['CHECK (id = 0)'];
 }
 
-/// 活动数据库和备份恢复只接受此结构版本。
+/// 活动数据库升级目标与备份恢复使用的结构版本。
 const currentSchemaVersion = 10;
 
 /// 结构不完整的数据库拒绝打开，原文件和业务内容保持不变。
@@ -1129,20 +1130,7 @@ class SesameDatabase extends _$SesameDatabase {
         rethrow;
       }
     },
-    onUpgrade: (_, from, to) async {
-      try {
-        // 版本不一致时拒绝连接，原库的结构、版本标记和业务数据保持原值。
-        throw StateError('本机数据库版本不受支持，请保留原文件并从当前版本备份恢复；当前数据未修改。');
-      } catch (error, stackTrace) {
-        logger.error(
-          'Database',
-          '本机数据库版本校验失败：来源版本=$from，目标版本=$to',
-          safeErrorSummary(error),
-          stackTrace,
-        );
-        rethrow;
-      }
-    },
+    onUpgrade: _upgradeSchema6Database,
   );
 
   /// 分类父子查询使用同一账号域索引，编号重复不会跨账号匹配。
