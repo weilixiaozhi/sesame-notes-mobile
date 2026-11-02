@@ -57,7 +57,7 @@ mixin LocalLedgerOperations on LocalAccountingContext {
   Future<String> createLedger({
     required String name,
     String currency = 'CNY',
-    String storageMode = 'cloud',
+    required String storageMode,
     bool aaEnabled = false,
     int monthStartDay = 1,
     String? localSelfId,

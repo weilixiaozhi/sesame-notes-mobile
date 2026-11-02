@@ -36,6 +36,7 @@ void main() {
   Future<String> seedLedger({int monthStartDay = 1}) async {
     try {
       final id = await repo.createLedger(
+        storageMode: 'cloud',
         name: '测试账本',
         monthStartDay: monthStartDay,
       );

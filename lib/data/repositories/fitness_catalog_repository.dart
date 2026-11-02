@@ -57,7 +57,7 @@ class FitnessCatalogRepository {
     return (await loadSnapshot()).exercises;
   }
 
-  /// 动作与动态分类一起读取，旧缓存缺少分类时保留内置分类回退语义。
+  /// 动作与动态分类一起读取，目录缺少动态分类时使用内置分类。
   Future<FitnessCatalogSnapshot> loadSnapshot() async {
     try {
       final cached = preferences.getString(_cacheKey);

@@ -31,7 +31,7 @@ final fitnessBuiltinCatalogProvider =
           (await ref.watch(fitnessCatalogSnapshotProvider.future)).exercises,
     );
 
-/// 加载期间或旧目录未提供分类时回退内置名称，已缓存目录可立即展示动态名称。
+/// 加载期间或目录未提供动态分类时使用内置名称，缓存可立即提供动态名称。
 final fitnessTaxonomiesProvider = Provider<FitnessTaxonomies?>(
   (ref) => ref.watch(fitnessCatalogSnapshotProvider).value?.taxonomies,
 );

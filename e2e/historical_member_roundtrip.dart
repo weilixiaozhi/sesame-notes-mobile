@@ -27,7 +27,11 @@ Future<void> runHistoricalMemberRoundtrip(
     accountIdGetter: () => account,
     changeTracker: ChangeRecorderImpl(a.db, accountIdGetter: () => account),
   );
-  final source = await repo.createLedger(name: '历史成员真实往返', aaEnabled: true);
+  final source = await repo.createLedger(
+    name: '历史成员真实往返',
+    storageMode: 'cloud',
+    aaEnabled: true,
+  );
   await a.push();
   await a.full(ledgerId: source);
   final peerLeft = await _joinPeer(a.client, source);

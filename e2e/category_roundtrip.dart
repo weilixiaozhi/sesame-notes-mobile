@@ -356,7 +356,11 @@ Future<void> _aaCopyRoundtrip(
   String categoryId,
   Future<void> Function(LocalRepository, String) promoteLocal,
 ) async {
-  final source = await repoA.createLedger(name: 'AA 成员映射', aaEnabled: true);
+  final source = await repoA.createLedger(
+    name: 'AA 成员映射',
+    storageMode: 'cloud',
+    aaEnabled: true,
+  );
   await a.push();
   await a.full(ledgerId: source);
   final owner = (await repoA.getMembersByLedger(

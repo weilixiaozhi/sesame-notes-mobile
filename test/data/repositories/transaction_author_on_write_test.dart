@@ -16,7 +16,7 @@ void main() {
   setUp(() async {
     db = SesameDatabase.withExecutor(NativeDatabase.memory());
     repo = LocalRepository(db);
-    ledgerId = await repo.createLedger(name: 'test');
+    ledgerId = await repo.createLedger(storageMode: 'cloud', name: 'test');
   });
 
   tearDown(() => db.close());

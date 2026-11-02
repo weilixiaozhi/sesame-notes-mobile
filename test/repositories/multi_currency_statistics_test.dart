@@ -25,7 +25,11 @@ void main() {
 
   /// CNY 账本;7 月两笔支出:外币 $12(≈86.4)+ 本位币 ¥100。返回账本 UUID。
   Future<String> seedMixed() async {
-    final lid = await repo.createLedger(name: 'L', currency: 'CNY');
+    final lid = await repo.createLedger(
+      storageMode: 'cloud',
+      name: 'L',
+      currency: 'CNY',
+    );
     final ledger = await repo.getLedgerById(lid);
     expect(ledger, isNotNull);
     expect(ledger!.scopeAccountId, accountId);
@@ -81,7 +85,11 @@ void main() {
   );
 
   test('单币种账本:统计与旧口径一致(回归锁)', () async {
-    final lid = await repo.createLedger(name: 'S', currency: 'CNY');
+    final lid = await repo.createLedger(
+      storageMode: 'cloud',
+      name: 'S',
+      currency: 'CNY',
+    );
     // 全局仅支出模式：两笔均为支出，合计 80
     await repo.addTransaction(
       ledgerId: lid,
@@ -104,7 +112,11 @@ void main() {
   });
 
   test('空 native(绕过 repo 写入的历史行)回退 amount', () async {
-    final lid = await repo.createLedger(name: 'N', currency: 'CNY');
+    final lid = await repo.createLedger(
+      storageMode: 'cloud',
+      name: 'N',
+      currency: 'CNY',
+    );
     final now = DateTime.now().toUtc();
     // v1 schema 下 native_amount 为 NOT NULL，"缺失"用空串表示；
     // 统计层 tryParse('') 失败后回退 amount（等价 NULL 语义）。

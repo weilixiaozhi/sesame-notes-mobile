@@ -209,8 +209,8 @@ class LocalLedgerRepository {
   Future<String> createLedger({
     required String name,
     String currency = 'CNY',
-    // 默认 'cloud' 以兼容现有调用方；未登录用户由 UI 显式传 'local'。
-    String storageMode = 'cloud',
+    // 归属由调用方明确选择，云端账本与本机账本分别遵守各自的身份和同步边界。
+    required String storageMode,
     // AA 分摊开关:默认 false(新账本关闭)。
     bool aaEnabled = false,
     int monthStartDay = 1,

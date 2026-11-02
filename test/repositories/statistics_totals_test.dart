@@ -18,7 +18,11 @@ void main() {
 
   /// 创建测试账本并返回 UUID
   Future<String> seedLedger() {
-    return repo.createLedger(name: '测试账本', monthStartDay: 1);
+    return repo.createLedger(
+      storageMode: 'cloud',
+      name: '测试账本',
+      monthStartDay: 1,
+    );
   }
 
   test('区间统计覆盖全部交易并遵守日期、账本、删除边界', () async {

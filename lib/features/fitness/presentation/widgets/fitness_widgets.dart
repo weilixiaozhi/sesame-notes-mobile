@@ -135,7 +135,7 @@ String fitnessWorkoutStatus(AppLocalizations l, FitnessWorkout workout) =>
     ? l.fitnessPaused
     : fitnessStatus(l, workout.status);
 
-/// 动态分类优先使用官方名称，历史删除项可继续展示，旧目录回退已有翻译。
+/// 动态分类优先使用官方名称，已删除项可继续展示；未提供动态目录时使用内置名称。
 String fitnessCatalogLabel(
   AppLocalizations l,
   String id, {

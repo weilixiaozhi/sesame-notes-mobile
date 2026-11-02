@@ -28,8 +28,8 @@ void main() {
 
   test('记账日历的月金额和当天明细只查询传入的当前账本', () async {
     final repo = LocalRepository(db);
-    final a = await repo.createLedger(name: '账本A');
-    final b = await repo.createLedger(name: '账本B');
+    final a = await repo.createLedger(storageMode: 'cloud', name: '账本A');
+    final b = await repo.createLedger(storageMode: 'cloud', name: '账本B');
     final recordA = await repo.addTransaction(
       ledgerId: a,
       type: 'expense',

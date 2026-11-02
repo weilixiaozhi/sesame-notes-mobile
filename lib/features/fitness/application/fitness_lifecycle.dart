@@ -78,8 +78,8 @@ final fitnessLifecycleProvider = Provider<Future<void> Function()>((ref) {
     final preferences = preferenceState.value;
     final workout = workoutState.value;
     final l = localizations();
-    // 偏好加载完成后即整理系统渠道，无需用户再启动一次计时；加载中的
-    // 默认值不能参与迁移，否则可能覆盖用户原先选择的静音组合。
+    // 偏好加载完成后即初始化系统提醒配置，无需用户再启动一次计时；只使用
+    // 已确认的声振选择创建渠道或设置原生默认值，避免加载状态覆盖用户选择。
     if (preferences != null &&
         !preferenceState.isLoading &&
         !preferenceState.hasError) {

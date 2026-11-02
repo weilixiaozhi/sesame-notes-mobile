@@ -21,7 +21,11 @@ void main() {
 
   test('批量统计：多账本一次返回，金额折 nativeAmount 并转元', () async {
     // 账本 1：外币 $12(≈86.4) + 本位币 ¥100，共 2 笔 → 186.4 元
-    final l1 = await repo.createLedger(name: 'A', currency: 'CNY');
+    final l1 = await repo.createLedger(
+      storageMode: 'cloud',
+      name: 'A',
+      currency: 'CNY',
+    );
     await repo.addTransaction(
       ledgerId: l1,
       type: 'expense',
@@ -38,7 +42,11 @@ void main() {
     );
 
     // 账本 2：3 笔，合计 80 元
-    final l2 = await repo.createLedger(name: 'B', currency: 'CNY');
+    final l2 = await repo.createLedger(
+      storageMode: 'cloud',
+      name: 'B',
+      currency: 'CNY',
+    );
     await repo.addTransaction(
       ledgerId: l2,
       type: 'expense',
@@ -59,7 +67,11 @@ void main() {
     );
 
     // 账本 3：无交易，不应出现在批量结果中
-    final l3 = await repo.createLedger(name: 'C', currency: 'CNY');
+    final l3 = await repo.createLedger(
+      storageMode: 'cloud',
+      name: 'C',
+      currency: 'CNY',
+    );
 
     final stats = await repo.getAllLedgerStats();
 
@@ -76,7 +88,11 @@ void main() {
   });
 
   test('批量统计与逐本 getLedgerStats 结果一致（回归锁）', () async {
-    final l1 = await repo.createLedger(name: 'A', currency: 'CNY');
+    final l1 = await repo.createLedger(
+      storageMode: 'cloud',
+      name: 'A',
+      currency: 'CNY',
+    );
     await repo.addTransaction(
       ledgerId: l1,
       type: 'expense',

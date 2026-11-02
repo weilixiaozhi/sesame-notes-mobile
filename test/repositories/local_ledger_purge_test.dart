@@ -46,7 +46,10 @@ void main() {
   /// 构造一本带全套关联数据的云端账本：交易 + 编辑历史 + 同步变更 +
   /// 成员镜像 + 共享分类镜像 + 虚拟用户 + 周期交易。
   Future<String> seedCloudLedger(String name) async {
-    final id = await repo.createLedger(name: name); // createLedger 默认 cloud
+    final id = await repo.createLedger(
+      storageMode: 'cloud',
+      name: name,
+    ); // createLedger 默认 cloud
     final txId = await repo.addTransaction(
       ledgerId: id,
       type: 'expense',
@@ -227,7 +230,10 @@ void main() {
   test('purge 只清理指定账号，其他账号的云账本保持隔离', () async {
     final ownId = await seedCloudLedger('当前账号云账本');
     final other = LocalRepository(db, accountIdGetter: () => 'other-account');
-    final otherId = await other.createLedger(name: '其他账号云账本');
+    final otherId = await other.createLedger(
+      storageMode: 'cloud',
+      name: '其他账号云账本',
+    );
 
     await repo.purgeAllCloudLedgers(accountId: accountId);
 

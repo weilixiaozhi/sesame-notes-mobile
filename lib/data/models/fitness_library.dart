@@ -364,7 +364,7 @@ class FitnessLibrary {
   OfficialFitnessTemplate template(String id) =>
       templates.firstWhere((template) => template.id == id);
 
-  /// 只读页面容错读取：官方身份可能来自旧草稿，缺失时返回 null。
+  /// 只读页面按当前内容快照查找官方身份，快照中缺少该项时返回 null。
   OfficialFitnessTemplate? templateOrNull(String id) =>
       templates.where((template) => template.id == id).firstOrNull;
 }

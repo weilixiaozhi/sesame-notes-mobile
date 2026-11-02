@@ -159,7 +159,7 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
     final l10n = AppLocalizations.of(context);
     final currentAccountId = ref.watch(currentAccountIdProvider);
     // 云端账本分区的账号昵称副标题：仅当前账号的云端账本进入该分区，
-    // 直接取当前登录资料昵称展示（旧备份 manifest 无昵称也能显示）。
+    // 账号昵称使用当前登录资料，不依赖备份中的展示信息。
     final nickname =
         ref.watch(accountStateProvider).profile?.displayName?.trim() ?? '';
     // 分区判定：云端账本且归属账号 == 当前账号 → 云端分区；其余（本地账本 +

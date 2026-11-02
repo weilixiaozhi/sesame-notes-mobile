@@ -40,7 +40,10 @@ void main() {
     final db = SesameDatabase.withExecutor(NativeDatabase.memory());
     try {
       final repository = LocalRepository(db);
-      final ledger = await repository.createLedger(name: '版本检查');
+      final ledger = await repository.createLedger(
+        storageMode: 'cloud',
+        name: '版本检查',
+      );
       final id = await repository.addTransaction(
         ledgerId: ledger,
         type: 'expense',
