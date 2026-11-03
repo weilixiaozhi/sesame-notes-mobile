@@ -8,10 +8,12 @@ const accountingSyncEntityTypes = [
   'category',
   'recurring_transaction',
   'exchange_rate_override',
+  // 待处理成员队列按原实体标识展示拒收问题，保持账本问题提示完整。
   'virtual_user',
   'member',
 ];
 
+/// 按实体与账本归属筛选财务变更，账号级财务变更允许没有账本 id。
 Expression<bool> accountingSyncScope(
   Expression<String> entityType,
   Expression<String> ledgerId,

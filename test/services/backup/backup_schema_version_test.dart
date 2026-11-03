@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/native.dart';
@@ -111,7 +112,6 @@ Future<({File sqlite, File backup, BackupManifest manifest})> _backupFixture(
           ownerType: 'OWNER',
           pendingMutationCount: 0,
           openConflictCount: 0,
-          lastSyncAt: null,
         ),
       ],
       accounts: const [],
@@ -181,6 +181,21 @@ void main() {
 
   test('当前结构预览保留毫秒、冻结字节，原备份与主库不变', () async {
     final fixture = await _backupFixture(workspace);
+    final manifestJson = fixture.manifest.toJson();
+    final ledgerJson =
+        (manifestJson['ledgers'] as List).single as Map<String, dynamic>;
+    expect(ledgerJson, isNot(contains('last_sync_at')));
+    // 可选展示元数据不参与恢复，读取只依赖当前声明字段。
+    ledgerJson.addAll({
+      'last_sync_at': _sourceVersionTime.toIso8601String(),
+      'extra_display_notes': {'title': '附加展示信息'},
+    });
+    await fixture.backup.writeAsBytes(
+      BackupPayloadCodec.encode(
+        utf8.encode(jsonEncode(manifestJson)),
+        await fixture.sqlite.readAsBytes(),
+      ),
+    );
     final original = await fixture.backup.readAsBytes();
     final rawOriginal = await fixture.sqlite.readAsBytes();
     final importer = BackupImportService(tempDirOverride: workspace);

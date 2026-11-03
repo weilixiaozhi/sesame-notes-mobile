@@ -164,11 +164,7 @@ class BackupSnapshotProcessor {
     );
   }
 
-  /// 从最终隔离数据库构建 Manifest（账本分域 + 同步状态统计）。
-  ///
-  /// 统计口径（仅展示与审计）：pending = 未推送 sync_changes 数；
-  /// open_conflict = status=OPEN 冲突数；last_sync_at = 账本内最近一次业务更新时间。
-  /// 不设 last_server_revision（账本无天然的'最后服务端修订号'）。
+  /// 在隔离快照中物化备忘录的未确认修改和冲突分支，按正文指纹保留不同内容。
   Future<void> _materializeMemoBranches(SesameDatabase db) => db.transaction(
     () async {
       final candidates = <({String bookId, String entityId, String payload})>[];
@@ -273,7 +269,7 @@ class BackupSnapshotProcessor {
     },
   );
 
-  /// 在隔离工作进程中处理备份快照，失败向调用方保留原异常。
+  /// 从最终隔离数据库构建清单，待上传数和未解决冲突数用于预览警告与审计。
   Future<BackupManifest> _buildManifest(
     SesameDatabase db, {
     String? deviceId,
@@ -349,7 +345,6 @@ class BackupSnapshotProcessor {
               : 'MEMBER',
           pendingMutationCount: pendingCount,
           openConflictCount: conflictCount,
-          lastSyncAt: ledger.updatedAt,
         ),
       );
     }

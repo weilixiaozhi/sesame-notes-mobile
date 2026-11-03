@@ -359,7 +359,7 @@ class LocalLedgerRepository {
   }
 
   /// Cloud→Local Fork：新 ledger_id + sync_id=NULL +
-  /// binding=NULL + storageMode=local + origin 七字段溯源。
+  /// binding=NULL + storageMode=local，并记录来源身份与落盘时间。
   ///
   /// 设计意图：云端账本的活跃绑定关系绝不随备份恢复——Fork 产出的是一本
   /// 与云端时间线无关的独立本地账本（sync_id 恒 NULL）；成员重映射/
@@ -372,7 +372,6 @@ class LocalLedgerRepository {
     required String originBackupId,
     String? originAccountId,
     String? originSyncId,
-    int? originLastRevision,
     SesameDatabase? sourceDb,
     String? currentAccountId,
   }) {
@@ -384,7 +383,6 @@ class LocalLedgerRepository {
       originBackupId: originBackupId,
       originAccountId: originAccountId,
       originSyncId: originSyncId,
-      originLastRevision: originLastRevision,
       sourceDb: sourceDb,
       currentAccountId: currentAccountId,
     );
@@ -507,7 +505,6 @@ class LocalLedgerRepository {
     required String originBackupId,
     String? originAccountId,
     String? originSyncId,
-    int? originLastRevision,
     SesameDatabase? sourceDb,
     String? currentAccountId,
     String? targetBindingStatus,
@@ -575,7 +572,6 @@ class LocalLedgerRepository {
               originSyncId: d.Value(originSyncId),
               originAccountId: d.Value(originAccountId),
               originBackupId: d.Value(originBackupId),
-              originLastRevision: d.Value(originLastRevision),
               detachedAt: d.Value(now),
             ),
           );

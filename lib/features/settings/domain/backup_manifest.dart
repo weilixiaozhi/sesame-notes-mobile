@@ -9,18 +9,16 @@ import '../../../data/models/private_book.dart';
 /// - .snbak 为明文分帧文件：[u32 manifest 长度][u32 sqlite 长度]
 ///   [manifest JSON][SQLite 体]，长度字段为大端；
 /// - format_version 与 db_schema_version 分离，打开时校验；
-/// - 统计字段（pending_mutation_count / open_conflict_count /
-///   last_sync_at）仅展示与审计，恢复时全部销毁。
+/// - 统计字段（pending_mutation_count / open_conflict_count）用于预览警告和审计，
+///   业务数据来自 SQLite 快照。
 
 import 'dart:convert';
 import 'dart:typed_data';
 
-/// 备份格式版本（.snbak 明文分帧协议，首版 = 1）。
+/// 备份格式版本（.snbak 明文分帧协议）。
 ///
-/// 何时 bump：只有"读端无法容忍"的形状变化才升版本——删除/改名读端会读或必填的
-/// 字段、改字段语义或取值格式、增删 `contents` 条目、改分帧协议；仅新增可选字段不用升。
-/// 恢复只接受当前数据库结构，原备份文件保持不变。
-/// 删除字段或改变语义需要先升版本；未知版本保持拒绝。
+/// 读取端依赖的必填字段、字段语义、内容声明或分帧协议发生不兼容变化时递增。
+/// 展示用可选元数据允许省略；未知格式版本及非当前数据库结构拒绝打开。
 const int backupFormatVersion = 1;
 
 /// 分帧清单列出的持久化内容，写入与读取校验共用同一组字段。
@@ -103,7 +101,6 @@ class ManifestLedger {
     required this.ownerType,
     required this.pendingMutationCount,
     required this.openConflictCount,
-    required this.lastSyncAt,
   });
 
   /// 本备份内的账本引用 id（恢复预览时与 RecoveryItem 对应）。
@@ -136,10 +133,6 @@ class ManifestLedger {
   /// 备份时 OPEN 冲突数（仅展示与警告）。
   final int openConflictCount;
 
-  /// 备份时最后同步时间（仅展示；不设 last_server_revision——账本无天然的
-  /// 最后服务端修订号）。
-  final DateTime? lastSyncAt;
-
   /// 序列化为冻结 JSON 形状。
   Map<String, dynamic> toJson() => {
     'ledger_backup_id': ledgerBackupId,
@@ -152,10 +145,9 @@ class ManifestLedger {
     'owner_type': ownerType,
     'pending_mutation_count': pendingMutationCount,
     'open_conflict_count': openConflictCount,
-    'last_sync_at': lastSyncAt?.toUtc().toIso8601String(),
   };
 
-  /// 从 JSON 解析；任何字段缺失/类型错误抛 [BackupFormatException]。
+  /// 从 JSON 解析账本身份、归属与统计字段；必填项缺失或类型错误时拒绝打开。
   factory ManifestLedger.fromJson(Map<String, dynamic> json) {
     try {
       final ledgerBackupId = json['ledger_backup_id'] as String?;
@@ -173,13 +165,6 @@ class ManifestLedger {
           conflicts == null) {
         throw const FormatException('missing');
       }
-      final lastSyncAtRaw = json['last_sync_at'] as String?;
-      final lastSyncAt = lastSyncAtRaw == null
-          ? null
-          : DateTime.tryParse(lastSyncAtRaw);
-      if (lastSyncAtRaw != null && lastSyncAt == null) {
-        throw const FormatException('date');
-      }
       return ManifestLedger(
         ledgerBackupId: ledgerBackupId,
         name: name,
@@ -191,7 +176,6 @@ class ManifestLedger {
         ownerType: ownerType,
         pendingMutationCount: pending,
         openConflictCount: conflicts,
-        lastSyncAt: lastSyncAt,
       );
     } on BackupFormatException {
       rethrow;

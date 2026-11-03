@@ -41,8 +41,8 @@ class CollaboratorAvatarSlot extends StatelessWidget {
 class CollaboratorAvatarGroup extends StatelessWidget {
   final LedgerMemberDisplay? creator;
   final LedgerMemberDisplay? editor;
-  final String? creatorUserId;
-  final String? editorUserId;
+  final String? creatorMemberId;
+  final String? editorMemberId;
   final double radius;
   final bool membersLoading;
 
@@ -50,8 +50,8 @@ class CollaboratorAvatarGroup extends StatelessWidget {
     super.key,
     required this.creator,
     required this.editor,
-    required this.creatorUserId,
-    required this.editorUserId,
+    required this.creatorMemberId,
+    required this.editorMemberId,
     this.radius = 11,
     this.membersLoading = false,
   });
@@ -63,10 +63,10 @@ class CollaboratorAvatarGroup extends StatelessWidget {
     // 成员表尚未加载:统一显示默认头像占位(数量与最终一致),
     // 数据到位后再切换真实头像。
     if (membersLoading) {
-      if (creatorUserId == null && editorUserId == null) {
+      if (creatorMemberId == null && editorMemberId == null) {
         return const SizedBox.shrink();
       }
-      final samePerson = creatorUserId == editorUserId;
+      final samePerson = creatorMemberId == editorMemberId;
       final overlap = radius * 0.32;
       final placeholder = CollaboratorAvatarSlot(member: null, radius: radius);
       if (!samePerson) {
@@ -85,11 +85,11 @@ class CollaboratorAvatarGroup extends StatelessWidget {
     }
 
     // 两者 userId 都为空(如历史数据无协作字段)→ 不展示
-    if (creatorUserId == null && editorUserId == null) {
+    if (creatorMemberId == null && editorMemberId == null) {
       return const SizedBox.shrink();
     }
 
-    final samePerson = creatorUserId == editorUserId;
+    final samePerson = creatorMemberId == editorMemberId;
 
     // Tooltip 展示名:昵称恒非空(账号注册即分配);解析不到时统一「未知」,
     // 禁止裸显 member id / user id。

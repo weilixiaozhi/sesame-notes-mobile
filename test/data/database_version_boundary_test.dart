@@ -10,7 +10,7 @@ import '../helpers/test_isolation.dart';
 
 const _stamp = 1792371723947;
 
-/// 创建含业务、毫秒时间、水位和未确认冻结请求的当前库，保留底层连接供再次打开。
+/// 创建含业务、暂存元数据、水位和未确认冻结请求的当前库，保留连接供再次打开。
 Future<void> _seedCurrentDatabase(Database raw) async {
   final db = SesameDatabase.withExecutor(
     NativeDatabase.opened(raw, closeUnderlyingOnClose: false),
@@ -18,7 +18,8 @@ Future<void> _seedCurrentDatabase(Database raw) async {
   try {
     await db.customSelect('SELECT 1').get();
     raw.execute(
-      "INSERT INTO ledgers(id,name,updated_at) VALUES('ledger','当前账本',?)",
+      'INSERT INTO ledgers(id,name,updated_at,origin_last_revision) '
+      "VALUES('ledger','当前账本',?,7)",
       [_stamp],
     );
     raw.execute(
@@ -27,13 +28,20 @@ Future<void> _seedCurrentDatabase(Database raw) async {
       [_stamp],
     );
     raw.execute(
-      'INSERT INTO sync_state(account_id,device_id,server_cursor,day_events_cursor,memos_cursor,fitness_cursor) '
-      "VALUES('account','device','0','123',NULL,'900719925474099312345')",
+      'INSERT INTO sync_state(account_id,device_id,server_cursor,day_events_cursor,memos_cursor,fitness_cursor,last_push_at) '
+      "VALUES('account','device','0','123',NULL,'900719925474099312345',?)",
+      [_stamp ~/ 1000],
     );
     raw.execute(
       'INSERT INTO sync_changes(entity_type,entity_id,action,payload,updated_at,mutation_id,frozen_request,account_id) '
       "VALUES('category','category','upsert',?,?,'mutation',?,'account')",
       ['{ "name": "保留正文", "level": 1 }\n', _stamp, '{ 未确认冻结原文'],
+    );
+    raw.execute(
+      'INSERT INTO sync_pull_errors(account_id,change_id,entity_type,entity_id,action,raw_change_json,'
+      'first_seen_at,last_attempt_at,user_action) '
+      "VALUES('account','1234','category','category','upsert',?,?,?,'retry_requested')",
+      ['{ "saved": true }', _stamp ~/ 1000, _stamp ~/ 1000],
     );
   } catch (error, stackTrace) {
     logger.error('SchemaBoundaryTest', '创建当前数据库夹具失败', error, stackTrace);

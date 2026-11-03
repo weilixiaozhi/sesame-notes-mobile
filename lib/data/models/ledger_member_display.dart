@@ -6,8 +6,6 @@ class LedgerMemberDisplay {
     required this.displayName,
     required this.memberType,
     this.linkedAccountId,
-    this.originMemberId,
-    this.originAccountId,
     required this.role,
     this.avatarUrl,
     required this.avatarVersion,
@@ -23,8 +21,6 @@ class LedgerMemberDisplay {
   final String displayName;
   final String memberType;
   final String? linkedAccountId;
-  final String? originMemberId;
-  final String? originAccountId;
   final String role;
   final String? avatarUrl;
   final int avatarVersion;

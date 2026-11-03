@@ -61,11 +61,11 @@ class TransactionListItem extends ConsumerWidget {
   /// null = 单人账本或不展示头像。
   final Map<String, LedgerMemberDisplay>? collaboratorMap;
 
-  /// 交易创建人 userId(来自 Transaction.createdByUserId)。
-  final String? creatorUserId;
+  /// 交易创建人成员 ID（来自 Transaction.createdByMemberId）。
+  final String? creatorMemberId;
 
-  /// 交易最后编辑人 userId(来自 Transaction.lastEditedByUserId)。
-  final String? editorUserId;
+  /// 交易最后编辑人成员 ID（来自 Transaction.lastEditedByMemberId）。
+  final String? editorMemberId;
 
   /// 是否为共享账本。仅共享账本渲染协作头像;非共享账本(单人账本)不渲染。
   final bool isShared;
@@ -84,8 +84,8 @@ class TransactionListItem extends ConsumerWidget {
     this.happenedAt,
     this.lastEditedAt,
     this.collaboratorMap,
-    this.creatorUserId,
-    this.editorUserId,
+    this.creatorMemberId,
+    this.editorMemberId,
     this.isShared = false,
     this.isSelectionMode = false,
     this.isSelected = false,
@@ -253,11 +253,11 @@ class TransactionListItem extends ConsumerWidget {
           // 仅共享账本渲染协作头像:collaboratorMap == null 表示成员表尚未加载,
           // 传 membersLoading 让组件先显示默认头像占位，数据到位后再切真实头像。
           final isMembersLoading = collaboratorMap == null;
-          final creator = (!isMembersLoading && creatorUserId != null)
-              ? collaboratorMap![creatorUserId]
+          final creator = (!isMembersLoading && creatorMemberId != null)
+              ? collaboratorMap![creatorMemberId]
               : null;
-          final editor = (!isMembersLoading && editorUserId != null)
-              ? collaboratorMap![editorUserId]
+          final editor = (!isMembersLoading && editorMemberId != null)
+              ? collaboratorMap![editorMemberId]
               : null;
           parts.add(
             Row(
@@ -266,8 +266,8 @@ class TransactionListItem extends ConsumerWidget {
                 CollaboratorAvatarGroup(
                   creator: creator,
                   editor: editor,
-                  creatorUserId: creatorUserId,
-                  editorUserId: editorUserId,
+                  creatorMemberId: creatorMemberId,
+                  editorMemberId: editorMemberId,
                   radius: 9,
                   membersLoading: isMembersLoading,
                 ),

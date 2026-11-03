@@ -57,7 +57,7 @@ class TransactionList extends ConsumerStatefulWidget {
   /// 列表项点击分类图标的回调。
   final Future<void> Function(CategoryDisplay category)? onCategoryTap;
 
-  /// 共享账本成员表:userId → LedgerMemberDisplay(含 avatarUrl/displayName)。
+  /// 共享账本成员表：memberId → LedgerMemberDisplay(含 avatarUrl/displayName)。
   /// 由调用方在共享账本场景从成员展示 Provider 构建,
   /// 传给列表项渲染真实头像 + 创建人/编辑人重叠(与详情页一致)。
   /// null = 单人账本,不展示头像。
@@ -499,7 +499,7 @@ class _TransactionListRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 把整张成员表 + 交易的创建人/编辑人 userId 透传给列表项,
+    // 把整张成员表 + 交易的创建人/编辑人成员 ID 透传给列表项,
     // 由 TransactionListItem 自行解析真实头像并做重叠展示。
     return GestureDetector(
       onLongPress: onLongPress,
@@ -518,8 +518,8 @@ class _TransactionListRow extends StatelessWidget {
         happenedAt: it.t.happenedAt,
         lastEditedAt: it.t.lastEditedAt,
         collaboratorMap: memberDisplayMap,
-        creatorUserId: it.t.createdByMemberId,
-        editorUserId: it.t.lastEditedByMemberId,
+        creatorMemberId: it.t.createdByMemberId,
+        editorMemberId: it.t.lastEditedByMemberId,
         isShared: isShared,
         onTap: onTap,
         onCategoryTap: onCategoryTap,

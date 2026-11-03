@@ -10,7 +10,6 @@ import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/models/day_event.dart' show DayLimits;
 
 part 'db.g.dart';
-part 'database_schema6_upgrade.dart';
 
 /// 同步版本及其墓碑以 UTC 毫秒存储，保留权威时间在持久化往返中的精度。
 class MillisecondTimestampConverter extends TypeConverter<DateTime, int> {
@@ -118,13 +117,13 @@ class Ledgers extends Table {
   /// 云端账本登录后按 linked_account_id 解析）。身份不随登录变化。
   TextColumn get selfMemberId => text().nullable()();
 
-  /// 溯源:来源类型(CLOUD_BACKUP / LOCAL_BACKUP),仅 provenance,不授予同步语义。
+  /// 来源操作类型：备份恢复、云端复制、转本地或删除保护；用于溯源，不授予同步绑定。
   TextColumn get originType => text().nullable()();
 
-  /// 溯源:来源账本 id(备份里的原始 ledger id)。
+  /// 来源账本 id，用于关联复制、转移或恢复的来源记录。
   TextColumn get originLedgerId => text().nullable()();
 
-  /// 溯源:备份时来源账本的 sync_id(只读;永不作活跃 sync_id)。
+  /// 来源账本的 sync_id，仅作溯源，不能作为当前账本的同步身份。
   TextColumn get originSyncId => text().nullable()();
 
   /// 溯源:来源账号 id(只读;不恢复绑定关系)。
@@ -133,7 +132,7 @@ class Ledgers extends Table {
   /// 溯源:来源备份(备份文件 id/名,审计用)。
   TextColumn get originBackupId => text().nullable()();
 
-  /// 溯源:备份时最后服务端 revision(只读;永不作 base_revision)。
+  /// 来源版本的可空存储值，仅保留在原始记录中，不参与业务投影、同步或并发控制。
   IntColumn get originLastRevision => integer().nullable()();
 
   /// 溯源:Fork/恢复落盘时间(审计用)。
@@ -841,8 +840,8 @@ class SyncChanges extends Table {
   /// 本地自增队列序号(纯本地)。
   IntColumn get id => integer().autoIncrement()();
 
-  /// 契约 entity_type: ledger/transaction/category/recurring_transaction/
-  /// exchange_rate_override/virtual_user。
+  /// 财务、日子、备忘录和健身四域的队列实体类型。
+  /// 账本成员使用 member，账本归档使用 ledger_archive。
   TextColumn get entityType => text()();
 
   /// 契约 entity_id: UUID。
@@ -1056,7 +1055,7 @@ class BackupState extends Table {
   List<String> get customConstraints => ['CHECK (id = 0)'];
 }
 
-/// 活动数据库升级目标与备份恢复使用的结构版本。
+/// 活动数据库和备份恢复只接受此结构版本。
 const currentSchemaVersion = 10;
 
 /// 结构不完整的数据库拒绝打开，原文件和业务内容保持不变。
@@ -1130,7 +1129,20 @@ class SesameDatabase extends _$SesameDatabase {
         rethrow;
       }
     },
-    onUpgrade: _upgradeSchema6Database,
+    onUpgrade: (_, from, to) async {
+      try {
+        // 版本不一致时拒绝连接，原库的结构、版本标记和业务数据保持原值。
+        throw StateError('本机数据库版本不受支持，请保留原文件并从当前版本备份恢复；当前数据未修改。');
+      } catch (error, stackTrace) {
+        logger.error(
+          'Database',
+          '本机数据库版本校验失败：来源版本=$from，目标版本=$to',
+          safeErrorSummary(error),
+          stackTrace,
+        );
+        rethrow;
+      }
+    },
   );
 
   /// 分类父子查询使用同一账号域索引，编号重复不会跨账号匹配。

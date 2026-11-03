@@ -22,7 +22,6 @@ class LedgerSnapshot {
   final String? originSyncId;
   final String? originAccountId;
   final String? originBackupId;
-  final int? originLastRevision;
   final DateTime? detachedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -52,7 +51,6 @@ class LedgerSnapshot {
     this.originSyncId,
     this.originAccountId,
     this.originBackupId,
-    this.originLastRevision,
     this.detachedAt,
     required this.createdAt,
     required this.updatedAt,

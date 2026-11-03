@@ -201,7 +201,6 @@ void main() {
             ownerType: 'OWNER',
             pendingMutationCount: 0,
             openConflictCount: 0,
-            lastSyncAt: null,
           ),
           ManifestLedger(
             ledgerBackupId: '22222222-2222-4222-8222-222222222222',
@@ -214,7 +213,6 @@ void main() {
             ownerType: 'OWNER',
             pendingMutationCount: 1,
             openConflictCount: 1,
-            lastSyncAt: null,
           ),
         ],
         accounts: const [
@@ -278,7 +276,6 @@ void main() {
     expect(forked.originType, 'CLOUD_BACKUP');
     expect(forked.originSyncId, 'sync-s1');
     expect(forked.originAccountId, 'acc-1');
-    // Manifest 不携带 last_server_revision，origin_last_revision 不写入
     // 交易复制 + server_revision 清空
     final forkedTxs = await (liveDb.select(
       liveDb.transactions,

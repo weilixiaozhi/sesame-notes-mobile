@@ -728,12 +728,12 @@ class _TransactionEditorLayout extends StatelessWidget {
 /// - 所属共享账本的 id(UUID,用于查成员列表)
 class _TxAuthorContext {
   _TxAuthorContext({
-    required this.creatorUserId,
-    required this.lastEditedByUserId,
+    required this.creatorMemberId,
+    required this.lastEditedByMemberId,
     required this.ledgerId,
   });
-  final String? creatorUserId;
-  final String? lastEditedByUserId;
+  final String? creatorMemberId;
+  final String? lastEditedByMemberId;
   final String ledgerId;
 }
 
@@ -747,8 +747,8 @@ final _txAuthorContextProvider = FutureProvider.autoDispose
       // 只有共享账本(成员数 > 1)才需要展示协作者头像
       if (ledger == null || ledger.memberCount <= 1) return null;
       return _TxAuthorContext(
-        creatorUserId: tx.createdByMemberId,
-        lastEditedByUserId: tx.lastEditedByMemberId,
+        creatorMemberId: tx.createdByMemberId,
+        lastEditedByMemberId: tx.lastEditedByMemberId,
         ledgerId: ledger.id,
       );
     });
@@ -784,11 +784,11 @@ class _TxAuthorAvatars extends ConsumerWidget {
           loading: () => const SizedBox.shrink(),
           error: (_, _) => const SizedBox.shrink(),
           data: (byId) {
-            final creator = ctx.creatorUserId != null
-                ? byId[ctx.creatorUserId]
+            final creator = ctx.creatorMemberId != null
+                ? byId[ctx.creatorMemberId]
                 : null;
-            final editor = ctx.lastEditedByUserId != null
-                ? byId[ctx.lastEditedByUserId]
+            final editor = ctx.lastEditedByMemberId != null
+                ? byId[ctx.lastEditedByMemberId]
                 : null;
             // 判断当前用户(self member id)是否就是这笔交易的创建者/编辑者
             final selfMemberId =
@@ -798,8 +798,8 @@ class _TxAuthorAvatars extends ConsumerWidget {
                     ?.value
                     ?.selfMemberId ??
                 '';
-            final creatorIsSelf = ctx.creatorUserId == selfMemberId;
-            final editorIsSelf = ctx.lastEditedByUserId == selfMemberId;
+            final creatorIsSelf = ctx.creatorMemberId == selfMemberId;
+            final editorIsSelf = ctx.lastEditedByMemberId == selfMemberId;
             final isSelf = creatorIsSelf && editorIsSelf;
 
             // 规则1:创建人==编辑人==自己 → 不展示
@@ -811,8 +811,8 @@ class _TxAuthorAvatars extends ConsumerWidget {
             return CollaboratorAvatarGroup(
               creator: creator,
               editor: editor,
-              creatorUserId: ctx.creatorUserId,
-              editorUserId: ctx.lastEditedByUserId,
+              creatorMemberId: ctx.creatorMemberId,
+              editorMemberId: ctx.lastEditedByMemberId,
               radius: 11,
             );
           },

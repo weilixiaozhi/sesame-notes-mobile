@@ -657,8 +657,8 @@ class AaStatisticsPage extends ConsumerWidget {
       lastEditedAt: it.t.lastEditedAt,
       // 与首页完全一致:共享账本渲染协作头像(同源缓存)。
       collaboratorMap: memberMap,
-      creatorUserId: it.t.createdByMemberId,
-      editorUserId: it.t.lastEditedByMemberId,
+      creatorMemberId: it.t.createdByMemberId,
+      editorMemberId: it.t.lastEditedByMemberId,
       isShared: isShared,
     );
   }

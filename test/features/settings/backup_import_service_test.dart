@@ -88,7 +88,6 @@ void main() {
           ownerType: 'OWNER',
           pendingMutationCount: 0,
           openConflictCount: 1,
-          lastSyncAt: null,
         ),
       ],
       accounts: const [ManifestAccount(accountId: 'acc-1', accountName: '')],

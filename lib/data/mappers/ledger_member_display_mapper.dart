@@ -10,8 +10,6 @@ extension LedgerMemberDisplayMapper on LedgerMemberSnapshot {
     displayName: displayName,
     memberType: memberType,
     linkedAccountId: linkedAccountId,
-    originMemberId: originMemberId,
-    originAccountId: originAccountId,
     role: role,
     avatarUrl: avatarUrl,
     avatarVersion: avatarVersion,

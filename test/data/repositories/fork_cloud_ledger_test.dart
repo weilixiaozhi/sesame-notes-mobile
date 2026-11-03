@@ -167,7 +167,7 @@ void main() {
     }
   }
 
-  test('Cloud→Local Fork：新 ledger_id + 同步身份全清 + origin 七字段', () async {
+  test('Cloud→Local Fork：新 ledger_id + 同步身份全清 + 来源元数据', () async {
     final sourceId = await seedCloudLedger();
     final newId = '22222222-2222-4222-8222-222222222221';
 
@@ -178,7 +178,6 @@ void main() {
       originBackupId: 'backup-1',
       originAccountId: 'acc-1',
       originSyncId: 'sync-s1',
-      originLastRevision: 7,
     );
 
     expect(result, newId);
@@ -194,7 +193,6 @@ void main() {
     expect(fork.originSyncId, 'sync-s1');
     expect(fork.originAccountId, 'acc-1');
     expect(fork.originBackupId, 'backup-1');
-    expect(fork.originLastRevision, 7);
     expect(fork.detachedAt, isNotNull);
   });
 
