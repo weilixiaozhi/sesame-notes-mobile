@@ -18,8 +18,8 @@ Future<void> _seedCurrentDatabase(Database raw) async {
   try {
     await db.customSelect('SELECT 1').get();
     raw.execute(
-      'INSERT INTO ledgers(id,name,updated_at,origin_last_revision) '
-      "VALUES('ledger','当前账本',?,7)",
+      'INSERT INTO ledgers(id,name,updated_at) '
+      "VALUES('ledger','当前账本',?)",
       [_stamp],
     );
     raw.execute(
@@ -28,9 +28,8 @@ Future<void> _seedCurrentDatabase(Database raw) async {
       [_stamp],
     );
     raw.execute(
-      'INSERT INTO sync_state(account_id,device_id,server_cursor,day_events_cursor,memos_cursor,fitness_cursor,last_push_at) '
-      "VALUES('account','device','0','123',NULL,'900719925474099312345',?)",
-      [_stamp ~/ 1000],
+      'INSERT INTO sync_state(account_id,device_id,server_cursor,day_events_cursor,memos_cursor,fitness_cursor) '
+      "VALUES('account','device','0','123',NULL,'900719925474099312345')",
     );
     raw.execute(
       'INSERT INTO sync_changes(entity_type,entity_id,action,payload,updated_at,mutation_id,frozen_request,account_id) '
@@ -39,8 +38,8 @@ Future<void> _seedCurrentDatabase(Database raw) async {
     );
     raw.execute(
       'INSERT INTO sync_pull_errors(account_id,change_id,entity_type,entity_id,action,raw_change_json,'
-      'first_seen_at,last_attempt_at,user_action) '
-      "VALUES('account','1234','category','category','upsert',?,?,?,'retry_requested')",
+      'first_seen_at,last_attempt_at) '
+      "VALUES('account','1234','category','category','upsert',?,?,?)",
       ['{ "saved": true }', _stamp ~/ 1000, _stamp ~/ 1000],
     );
   } catch (error, stackTrace) {
@@ -109,7 +108,7 @@ void main() {
     ...List.generate(currentSchemaVersion, (version) => version),
     currentSchemaVersion + 1,
   ]) {
-    test('完整结构的 schema$version 拒绝打开，原结构、数据和版本标记均不改写', () async {
+    test('当前列结构伪装为 schema$version 拒绝打开，原结构、数据和版本标记均不改写', () async {
       final raw = sqlite3.openInMemory();
       try {
         await _seedCurrentDatabase(raw);

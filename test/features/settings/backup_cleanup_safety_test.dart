@@ -204,7 +204,7 @@ void main() {
       await db.close();
     }
     currentDb = await file.readAsBytes();
-    for (final version in [9, 11]) {
+    for (final version in [9, currentSchemaVersion + 1]) {
       final copy = await file.copy('${fixtures.path}/v$version.sqlite');
       final raw = sqlite.sqlite3.open(copy.path);
       try {
@@ -227,9 +227,21 @@ void main() {
       raw.close();
     }
     unrelatedDb = await foreign.readAsBytes();
-    currentA = _frame(currentDb, 10, DateTime.utc(2026, 11, 2, 12, 0, 1));
-    currentB = _frame(currentDb, 10, DateTime.utc(2026, 11, 2, 12, 0, 2));
-    currentC = _frame(currentDb, 10, DateTime.utc(2026, 11, 2, 12, 0, 3));
+    currentA = _frame(
+      currentDb,
+      currentSchemaVersion,
+      DateTime.utc(2026, 11, 2, 12, 0, 1),
+    );
+    currentB = _frame(
+      currentDb,
+      currentSchemaVersion,
+      DateTime.utc(2026, 11, 2, 12, 0, 2),
+    );
+    currentC = _frame(
+      currentDb,
+      currentSchemaVersion,
+      DateTime.utc(2026, 11, 2, 12, 0, 3),
+    );
     historical = _frame(oldDb, 9, DateTime.utc(2026, 10, 19));
   });
   tearDownAll(() async => fixtures.delete(recursive: true));
@@ -433,7 +445,7 @@ void main() {
     expect(await unknown.readAsString(), '{"note":"保留"}');
   });
 
-  for (final version in [11, 999]) {
+  for (final version in [currentSchemaVersion + 1, 999]) {
     test('未来schema$version及辅助后缀不能取得历史删除资格', () async {
       final bytes = Uint8List.fromList(futureDb);
       ByteData.sublistView(bytes).setUint32(60, version);

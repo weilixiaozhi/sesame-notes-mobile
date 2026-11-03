@@ -10,6 +10,7 @@ import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/models/day_event.dart' show DayLimits;
 
 part 'db.g.dart';
+part 'database_schema11_upgrade.dart';
 
 /// 同步版本及其墓碑以 UTC 毫秒存储，保留权威时间在持久化往返中的精度。
 class MillisecondTimestampConverter extends TypeConverter<DateTime, int> {
@@ -131,9 +132,6 @@ class Ledgers extends Table {
 
   /// 溯源:来源备份(备份文件 id/名,审计用)。
   TextColumn get originBackupId => text().nullable()();
-
-  /// 来源版本的可空存储值，仅保留在原始记录中，不参与业务投影、同步或并发控制。
-  IntColumn get originLastRevision => integer().nullable()();
 
   /// 溯源:Fork/恢复落盘时间(审计用)。
   DateTimeColumn get detachedAt => dateTime().nullable()();
@@ -906,10 +904,6 @@ class SyncState extends Table {
 
   TextColumn get fitnessCursor => text().nullable()();
 
-  DateTimeColumn get lastPushAt => dateTime().nullable()();
-
-  DateTimeColumn get lastPullAt => dateTime().nullable()();
-
   @override
   Set<Column> get primaryKey => {accountId, deviceId};
 }
@@ -938,8 +932,6 @@ class SyncPullErrors extends Table {
 
   TextColumn get errorClass => text().nullable()();
 
-  TextColumn get errorMessage => text().nullable()();
-
   TextColumn get stackTrace => text().nullable()();
 
   DateTimeColumn get firstSeenAt => dateTime()();
@@ -947,9 +939,6 @@ class SyncPullErrors extends Table {
   DateTimeColumn get lastAttemptAt => dateTime()();
 
   IntColumn get attemptCount => integer().withDefault(const Constant(1))();
-
-  TextColumn get userAction =>
-      text().nullable()(); // null / 'skip' / 'retry_requested'
 
   DateTimeColumn get resolvedAt => dateTime().nullable()();
 }
@@ -1010,30 +999,6 @@ class SyncConflicts extends Table {
   ];
 }
 
-/// 恢复审计日志（本地持久化，不依赖云端；每次恢复写一行，供审计）。
-class RecoveryLogs extends Table {
-  /// 本地自增行标识。
-  IntColumn get id => integer().autoIncrement()();
-
-  /// 恢复执行时间（UTC）。
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-
-  /// 来源备份文件名（如 sesame_notes_20260821_021300.snbak）。
-  TextColumn get sourceBackupName => text()();
-
-  /// 目标账本 id（恢复为本地/Fork 时为新 ledger id；跳过时为空）。
-  TextColumn get targetLedgerId => text().nullable()();
-
-  /// 动作：restore_local / fork_cloud_to_local / skip / reconnect。
-  TextColumn get action => text()();
-
-  /// 结果：success / failed。
-  TextColumn get result => text()();
-
-  /// 附加信息（失败原因、原账本 id 等，仅审计）。
-  TextColumn get detail => text().nullable()();
-}
-
 /// 自动备份的单例状态。
 class BackupState extends Table {
   /// 自上次成功备份以来的首次脏时间（null = 无脏数据）。
@@ -1055,8 +1020,8 @@ class BackupState extends Table {
   List<String> get customConstraints => ['CHECK (id = 0)'];
 }
 
-/// 活动数据库和备份恢复只接受此结构版本。
-const currentSchemaVersion = 10;
+/// 活动数据库升级目标与备份恢复使用的结构版本。
+const currentSchemaVersion = 11;
 
 /// 结构不完整的数据库拒绝打开，原文件和业务内容保持不变。
 const incompleteSchemaMessage = '本机数据库结构不完整，请先保留原文件并从备份恢复；当前数据未修改。';
@@ -1084,7 +1049,6 @@ const incompleteSchemaMessage = '本机数据库结构不完整，请先保留�
     SyncPullErrors,
     SyncConflicts,
     BackupState,
-    RecoveryLogs,
     FitnessEntities,
     FitnessSpaces,
     FitnessImportReceipts,
@@ -1129,20 +1093,7 @@ class SesameDatabase extends _$SesameDatabase {
         rethrow;
       }
     },
-    onUpgrade: (_, from, to) async {
-      try {
-        // 版本不一致时拒绝连接，原库的结构、版本标记和业务数据保持原值。
-        throw StateError('本机数据库版本不受支持，请保留原文件并从当前版本备份恢复；当前数据未修改。');
-      } catch (error, stackTrace) {
-        logger.error(
-          'Database',
-          '本机数据库版本校验失败：来源版本=$from，目标版本=$to',
-          safeErrorSummary(error),
-          stackTrace,
-        );
-        rethrow;
-      }
-    },
+    onUpgrade: _upgradeSchema10Database,
   );
 
   /// 分类父子查询使用同一账号域索引，编号重复不会跨账号匹配。

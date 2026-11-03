@@ -252,16 +252,6 @@ class $LedgersTable extends Ledgers with TableInfo<$LedgersTable, Ledger> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _originLastRevisionMeta =
-      const VerificationMeta('originLastRevision');
-  @override
-  late final GeneratedColumn<int> originLastRevision = GeneratedColumn<int>(
-    'origin_last_revision',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
   static const VerificationMeta _detachedAtMeta = const VerificationMeta(
     'detachedAt',
   );
@@ -327,7 +317,6 @@ class $LedgersTable extends Ledgers with TableInfo<$LedgersTable, Ledger> {
     originSyncId,
     originAccountId,
     originBackupId,
-    originLastRevision,
     detachedAt,
     createdAt,
     updatedAt,
@@ -520,15 +509,6 @@ class $LedgersTable extends Ledgers with TableInfo<$LedgersTable, Ledger> {
         ),
       );
     }
-    if (data.containsKey('origin_last_revision')) {
-      context.handle(
-        _originLastRevisionMeta,
-        originLastRevision.isAcceptableOrUnknown(
-          data['origin_last_revision']!,
-          _originLastRevisionMeta,
-        ),
-      );
-    }
     if (data.containsKey('detached_at')) {
       context.handle(
         _detachedAtMeta,
@@ -638,10 +618,6 @@ class $LedgersTable extends Ledgers with TableInfo<$LedgersTable, Ledger> {
         DriftSqlType.string,
         data['${effectivePrefix}origin_backup_id'],
       ),
-      originLastRevision: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}origin_last_revision'],
-      ),
       detachedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}detached_at'],
@@ -731,13 +707,13 @@ class Ledger extends DataClass implements Insertable<Ledger>, LedgerSnapshot {
   /// 云端账本登录后按 linked_account_id 解析）。身份不随登录变化。
   final String? selfMemberId;
 
-  /// 溯源:来源类型(CLOUD_BACKUP / LOCAL_BACKUP),仅 provenance,不授予同步语义。
+  /// 来源操作类型：备份恢复、云端复制、转本地或删除保护；用于溯源，不授予同步绑定。
   final String? originType;
 
-  /// 溯源:来源账本 id(备份里的原始 ledger id)。
+  /// 来源账本 id，用于关联复制、转移或恢复的来源记录。
   final String? originLedgerId;
 
-  /// 溯源:备份时来源账本的 sync_id(只读;永不作活跃 sync_id)。
+  /// 来源账本的 sync_id，仅作溯源，不能作为当前账本的同步身份。
   final String? originSyncId;
 
   /// 溯源:来源账号 id(只读;不恢复绑定关系)。
@@ -745,9 +721,6 @@ class Ledger extends DataClass implements Insertable<Ledger>, LedgerSnapshot {
 
   /// 溯源:来源备份(备份文件 id/名,审计用)。
   final String? originBackupId;
-
-  /// 溯源:备份时最后服务端 revision(只读;永不作 base_revision)。
-  final int? originLastRevision;
 
   /// 溯源:Fork/恢复落盘时间(审计用)。
   final DateTime? detachedAt;
@@ -783,7 +756,6 @@ class Ledger extends DataClass implements Insertable<Ledger>, LedgerSnapshot {
     this.originSyncId,
     this.originAccountId,
     this.originBackupId,
-    this.originLastRevision,
     this.detachedAt,
     required this.createdAt,
     required this.updatedAt,
@@ -841,9 +813,6 @@ class Ledger extends DataClass implements Insertable<Ledger>, LedgerSnapshot {
     }
     if (!nullToAbsent || originBackupId != null) {
       map['origin_backup_id'] = Variable<String>(originBackupId);
-    }
-    if (!nullToAbsent || originLastRevision != null) {
-      map['origin_last_revision'] = Variable<int>(originLastRevision);
     }
     if (!nullToAbsent || detachedAt != null) {
       map['detached_at'] = Variable<DateTime>(detachedAt);
@@ -914,9 +883,6 @@ class Ledger extends DataClass implements Insertable<Ledger>, LedgerSnapshot {
       originBackupId: originBackupId == null && nullToAbsent
           ? const Value.absent()
           : Value(originBackupId),
-      originLastRevision: originLastRevision == null && nullToAbsent
-          ? const Value.absent()
-          : Value(originLastRevision),
       detachedAt: detachedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(detachedAt),
@@ -960,7 +926,6 @@ class Ledger extends DataClass implements Insertable<Ledger>, LedgerSnapshot {
       originSyncId: serializer.fromJson<String?>(json['originSyncId']),
       originAccountId: serializer.fromJson<String?>(json['originAccountId']),
       originBackupId: serializer.fromJson<String?>(json['originBackupId']),
-      originLastRevision: serializer.fromJson<int?>(json['originLastRevision']),
       detachedAt: serializer.fromJson<DateTime?>(json['detachedAt']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -993,7 +958,6 @@ class Ledger extends DataClass implements Insertable<Ledger>, LedgerSnapshot {
       'originSyncId': serializer.toJson<String?>(originSyncId),
       'originAccountId': serializer.toJson<String?>(originAccountId),
       'originBackupId': serializer.toJson<String?>(originBackupId),
-      'originLastRevision': serializer.toJson<int?>(originLastRevision),
       'detachedAt': serializer.toJson<DateTime?>(detachedAt),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -1024,7 +988,6 @@ class Ledger extends DataClass implements Insertable<Ledger>, LedgerSnapshot {
     Value<String?> originSyncId = const Value.absent(),
     Value<String?> originAccountId = const Value.absent(),
     Value<String?> originBackupId = const Value.absent(),
-    Value<int?> originLastRevision = const Value.absent(),
     Value<DateTime?> detachedAt = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -1070,9 +1033,6 @@ class Ledger extends DataClass implements Insertable<Ledger>, LedgerSnapshot {
     originBackupId: originBackupId.present
         ? originBackupId.value
         : this.originBackupId,
-    originLastRevision: originLastRevision.present
-        ? originLastRevision.value
-        : this.originLastRevision,
     detachedAt: detachedAt.present ? detachedAt.value : this.detachedAt,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -1134,9 +1094,6 @@ class Ledger extends DataClass implements Insertable<Ledger>, LedgerSnapshot {
       originBackupId: data.originBackupId.present
           ? data.originBackupId.value
           : this.originBackupId,
-      originLastRevision: data.originLastRevision.present
-          ? data.originLastRevision.value
-          : this.originLastRevision,
       detachedAt: data.detachedAt.present
           ? data.detachedAt.value
           : this.detachedAt,
@@ -1171,7 +1128,6 @@ class Ledger extends DataClass implements Insertable<Ledger>, LedgerSnapshot {
           ..write('originSyncId: $originSyncId, ')
           ..write('originAccountId: $originAccountId, ')
           ..write('originBackupId: $originBackupId, ')
-          ..write('originLastRevision: $originLastRevision, ')
           ..write('detachedAt: $detachedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -1204,7 +1160,6 @@ class Ledger extends DataClass implements Insertable<Ledger>, LedgerSnapshot {
     originSyncId,
     originAccountId,
     originBackupId,
-    originLastRevision,
     detachedAt,
     createdAt,
     updatedAt,
@@ -1236,7 +1191,6 @@ class Ledger extends DataClass implements Insertable<Ledger>, LedgerSnapshot {
           other.originSyncId == this.originSyncId &&
           other.originAccountId == this.originAccountId &&
           other.originBackupId == this.originBackupId &&
-          other.originLastRevision == this.originLastRevision &&
           other.detachedAt == this.detachedAt &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -1266,7 +1220,6 @@ class LedgersCompanion extends UpdateCompanion<Ledger> {
   final Value<String?> originSyncId;
   final Value<String?> originAccountId;
   final Value<String?> originBackupId;
-  final Value<int?> originLastRevision;
   final Value<DateTime?> detachedAt;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -1295,7 +1248,6 @@ class LedgersCompanion extends UpdateCompanion<Ledger> {
     this.originSyncId = const Value.absent(),
     this.originAccountId = const Value.absent(),
     this.originBackupId = const Value.absent(),
-    this.originLastRevision = const Value.absent(),
     this.detachedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -1325,7 +1277,6 @@ class LedgersCompanion extends UpdateCompanion<Ledger> {
     this.originSyncId = const Value.absent(),
     this.originAccountId = const Value.absent(),
     this.originBackupId = const Value.absent(),
-    this.originLastRevision = const Value.absent(),
     this.detachedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
     required DateTime updatedAt,
@@ -1357,7 +1308,6 @@ class LedgersCompanion extends UpdateCompanion<Ledger> {
     Expression<String>? originSyncId,
     Expression<String>? originAccountId,
     Expression<String>? originBackupId,
-    Expression<int>? originLastRevision,
     Expression<DateTime>? detachedAt,
     Expression<DateTime>? createdAt,
     Expression<int>? updatedAt,
@@ -1388,8 +1338,6 @@ class LedgersCompanion extends UpdateCompanion<Ledger> {
       if (originSyncId != null) 'origin_sync_id': originSyncId,
       if (originAccountId != null) 'origin_account_id': originAccountId,
       if (originBackupId != null) 'origin_backup_id': originBackupId,
-      if (originLastRevision != null)
-        'origin_last_revision': originLastRevision,
       if (detachedAt != null) 'detached_at': detachedAt,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -1421,7 +1369,6 @@ class LedgersCompanion extends UpdateCompanion<Ledger> {
     Value<String?>? originSyncId,
     Value<String?>? originAccountId,
     Value<String?>? originBackupId,
-    Value<int?>? originLastRevision,
     Value<DateTime?>? detachedAt,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -1451,7 +1398,6 @@ class LedgersCompanion extends UpdateCompanion<Ledger> {
       originSyncId: originSyncId ?? this.originSyncId,
       originAccountId: originAccountId ?? this.originAccountId,
       originBackupId: originBackupId ?? this.originBackupId,
-      originLastRevision: originLastRevision ?? this.originLastRevision,
       detachedAt: detachedAt ?? this.detachedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -1531,9 +1477,6 @@ class LedgersCompanion extends UpdateCompanion<Ledger> {
     if (originBackupId.present) {
       map['origin_backup_id'] = Variable<String>(originBackupId.value);
     }
-    if (originLastRevision.present) {
-      map['origin_last_revision'] = Variable<int>(originLastRevision.value);
-    }
     if (detachedAt.present) {
       map['detached_at'] = Variable<DateTime>(detachedAt.value);
     }
@@ -1581,7 +1524,6 @@ class LedgersCompanion extends UpdateCompanion<Ledger> {
           ..write('originSyncId: $originSyncId, ')
           ..write('originAccountId: $originAccountId, ')
           ..write('originBackupId: $originBackupId, ')
-          ..write('originLastRevision: $originLastRevision, ')
           ..write('detachedAt: $detachedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -13914,8 +13856,8 @@ class SyncChange extends DataClass implements Insertable<SyncChange> {
   /// 本地自增队列序号(纯本地)。
   final int id;
 
-  /// 契约 entity_type: ledger/transaction/category/recurring_transaction/
-  /// exchange_rate_override/virtual_user。
+  /// 财务、日子、备忘录和健身四域的队列实体类型。
+  /// 账本成员使用 member，账本归档使用 ledger_archive。
   final String entityType;
 
   /// 契约 entity_id: UUID。
@@ -14566,28 +14508,6 @@ class $SyncStateTable extends SyncState
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _lastPushAtMeta = const VerificationMeta(
-    'lastPushAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> lastPushAt = GeneratedColumn<DateTime>(
-    'last_push_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _lastPullAtMeta = const VerificationMeta(
-    'lastPullAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> lastPullAt = GeneratedColumn<DateTime>(
-    'last_pull_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
   @override
   List<GeneratedColumn> get $columns => [
     accountId,
@@ -14596,8 +14516,6 @@ class $SyncStateTable extends SyncState
     dayEventsCursor,
     memosCursor,
     fitnessCursor,
-    lastPushAt,
-    lastPullAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -14661,24 +14579,6 @@ class $SyncStateTable extends SyncState
         ),
       );
     }
-    if (data.containsKey('last_push_at')) {
-      context.handle(
-        _lastPushAtMeta,
-        lastPushAt.isAcceptableOrUnknown(
-          data['last_push_at']!,
-          _lastPushAtMeta,
-        ),
-      );
-    }
-    if (data.containsKey('last_pull_at')) {
-      context.handle(
-        _lastPullAtMeta,
-        lastPullAt.isAcceptableOrUnknown(
-          data['last_pull_at']!,
-          _lastPullAtMeta,
-        ),
-      );
-    }
     return context;
   }
 
@@ -14712,14 +14612,6 @@ class $SyncStateTable extends SyncState
         DriftSqlType.string,
         data['${effectivePrefix}fitness_cursor'],
       ),
-      lastPushAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}last_push_at'],
-      ),
-      lastPullAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}last_pull_at'],
-      ),
     );
   }
 
@@ -14740,8 +14632,6 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
   final String? dayEventsCursor;
   final String? memosCursor;
   final String? fitnessCursor;
-  final DateTime? lastPushAt;
-  final DateTime? lastPullAt;
   const SyncStateData({
     required this.accountId,
     required this.deviceId,
@@ -14749,8 +14639,6 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
     this.dayEventsCursor,
     this.memosCursor,
     this.fitnessCursor,
-    this.lastPushAt,
-    this.lastPullAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -14768,12 +14656,6 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
     }
     if (!nullToAbsent || fitnessCursor != null) {
       map['fitness_cursor'] = Variable<String>(fitnessCursor);
-    }
-    if (!nullToAbsent || lastPushAt != null) {
-      map['last_push_at'] = Variable<DateTime>(lastPushAt);
-    }
-    if (!nullToAbsent || lastPullAt != null) {
-      map['last_pull_at'] = Variable<DateTime>(lastPullAt);
     }
     return map;
   }
@@ -14794,12 +14676,6 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
       fitnessCursor: fitnessCursor == null && nullToAbsent
           ? const Value.absent()
           : Value(fitnessCursor),
-      lastPushAt: lastPushAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lastPushAt),
-      lastPullAt: lastPullAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lastPullAt),
     );
   }
 
@@ -14815,8 +14691,6 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
       dayEventsCursor: serializer.fromJson<String?>(json['dayEventsCursor']),
       memosCursor: serializer.fromJson<String?>(json['memosCursor']),
       fitnessCursor: serializer.fromJson<String?>(json['fitnessCursor']),
-      lastPushAt: serializer.fromJson<DateTime?>(json['lastPushAt']),
-      lastPullAt: serializer.fromJson<DateTime?>(json['lastPullAt']),
     );
   }
   @override
@@ -14829,8 +14703,6 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
       'dayEventsCursor': serializer.toJson<String?>(dayEventsCursor),
       'memosCursor': serializer.toJson<String?>(memosCursor),
       'fitnessCursor': serializer.toJson<String?>(fitnessCursor),
-      'lastPushAt': serializer.toJson<DateTime?>(lastPushAt),
-      'lastPullAt': serializer.toJson<DateTime?>(lastPullAt),
     };
   }
 
@@ -14841,8 +14713,6 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
     Value<String?> dayEventsCursor = const Value.absent(),
     Value<String?> memosCursor = const Value.absent(),
     Value<String?> fitnessCursor = const Value.absent(),
-    Value<DateTime?> lastPushAt = const Value.absent(),
-    Value<DateTime?> lastPullAt = const Value.absent(),
   }) => SyncStateData(
     accountId: accountId ?? this.accountId,
     deviceId: deviceId ?? this.deviceId,
@@ -14854,8 +14724,6 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
     fitnessCursor: fitnessCursor.present
         ? fitnessCursor.value
         : this.fitnessCursor,
-    lastPushAt: lastPushAt.present ? lastPushAt.value : this.lastPushAt,
-    lastPullAt: lastPullAt.present ? lastPullAt.value : this.lastPullAt,
   );
   SyncStateData copyWithCompanion(SyncStateCompanion data) {
     return SyncStateData(
@@ -14873,12 +14741,6 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
       fitnessCursor: data.fitnessCursor.present
           ? data.fitnessCursor.value
           : this.fitnessCursor,
-      lastPushAt: data.lastPushAt.present
-          ? data.lastPushAt.value
-          : this.lastPushAt,
-      lastPullAt: data.lastPullAt.present
-          ? data.lastPullAt.value
-          : this.lastPullAt,
     );
   }
 
@@ -14890,9 +14752,7 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
           ..write('serverCursor: $serverCursor, ')
           ..write('dayEventsCursor: $dayEventsCursor, ')
           ..write('memosCursor: $memosCursor, ')
-          ..write('fitnessCursor: $fitnessCursor, ')
-          ..write('lastPushAt: $lastPushAt, ')
-          ..write('lastPullAt: $lastPullAt')
+          ..write('fitnessCursor: $fitnessCursor')
           ..write(')'))
         .toString();
   }
@@ -14905,8 +14765,6 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
     dayEventsCursor,
     memosCursor,
     fitnessCursor,
-    lastPushAt,
-    lastPullAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -14917,9 +14775,7 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
           other.serverCursor == this.serverCursor &&
           other.dayEventsCursor == this.dayEventsCursor &&
           other.memosCursor == this.memosCursor &&
-          other.fitnessCursor == this.fitnessCursor &&
-          other.lastPushAt == this.lastPushAt &&
-          other.lastPullAt == this.lastPullAt);
+          other.fitnessCursor == this.fitnessCursor);
 }
 
 class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
@@ -14929,8 +14785,6 @@ class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
   final Value<String?> dayEventsCursor;
   final Value<String?> memosCursor;
   final Value<String?> fitnessCursor;
-  final Value<DateTime?> lastPushAt;
-  final Value<DateTime?> lastPullAt;
   final Value<int> rowid;
   const SyncStateCompanion({
     this.accountId = const Value.absent(),
@@ -14939,8 +14793,6 @@ class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
     this.dayEventsCursor = const Value.absent(),
     this.memosCursor = const Value.absent(),
     this.fitnessCursor = const Value.absent(),
-    this.lastPushAt = const Value.absent(),
-    this.lastPullAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SyncStateCompanion.insert({
@@ -14950,8 +14802,6 @@ class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
     this.dayEventsCursor = const Value.absent(),
     this.memosCursor = const Value.absent(),
     this.fitnessCursor = const Value.absent(),
-    this.lastPushAt = const Value.absent(),
-    this.lastPullAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : deviceId = Value(deviceId);
   static Insertable<SyncStateData> custom({
@@ -14961,8 +14811,6 @@ class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
     Expression<String>? dayEventsCursor,
     Expression<String>? memosCursor,
     Expression<String>? fitnessCursor,
-    Expression<DateTime>? lastPushAt,
-    Expression<DateTime>? lastPullAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -14972,8 +14820,6 @@ class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
       if (dayEventsCursor != null) 'day_events_cursor': dayEventsCursor,
       if (memosCursor != null) 'memos_cursor': memosCursor,
       if (fitnessCursor != null) 'fitness_cursor': fitnessCursor,
-      if (lastPushAt != null) 'last_push_at': lastPushAt,
-      if (lastPullAt != null) 'last_pull_at': lastPullAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -14985,8 +14831,6 @@ class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
     Value<String?>? dayEventsCursor,
     Value<String?>? memosCursor,
     Value<String?>? fitnessCursor,
-    Value<DateTime?>? lastPushAt,
-    Value<DateTime?>? lastPullAt,
     Value<int>? rowid,
   }) {
     return SyncStateCompanion(
@@ -14996,8 +14840,6 @@ class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
       dayEventsCursor: dayEventsCursor ?? this.dayEventsCursor,
       memosCursor: memosCursor ?? this.memosCursor,
       fitnessCursor: fitnessCursor ?? this.fitnessCursor,
-      lastPushAt: lastPushAt ?? this.lastPushAt,
-      lastPullAt: lastPullAt ?? this.lastPullAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -15023,12 +14865,6 @@ class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
     if (fitnessCursor.present) {
       map['fitness_cursor'] = Variable<String>(fitnessCursor.value);
     }
-    if (lastPushAt.present) {
-      map['last_push_at'] = Variable<DateTime>(lastPushAt.value);
-    }
-    if (lastPullAt.present) {
-      map['last_pull_at'] = Variable<DateTime>(lastPullAt.value);
-    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -15044,8 +14880,6 @@ class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
           ..write('dayEventsCursor: $dayEventsCursor, ')
           ..write('memosCursor: $memosCursor, ')
           ..write('fitnessCursor: $fitnessCursor, ')
-          ..write('lastPushAt: $lastPushAt, ')
-          ..write('lastPullAt: $lastPullAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -15190,17 +15024,6 @@ class $SyncPullErrorsTable extends SyncPullErrors
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _errorMessageMeta = const VerificationMeta(
-    'errorMessage',
-  );
-  @override
-  late final GeneratedColumn<String> errorMessage = GeneratedColumn<String>(
-    'error_message',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
   static const VerificationMeta _stackTraceMeta = const VerificationMeta(
     'stackTrace',
   );
@@ -15247,17 +15070,6 @@ class $SyncPullErrorsTable extends SyncPullErrors
     requiredDuringInsert: false,
     defaultValue: const Constant(1),
   );
-  static const VerificationMeta _userActionMeta = const VerificationMeta(
-    'userAction',
-  );
-  @override
-  late final GeneratedColumn<String> userAction = GeneratedColumn<String>(
-    'user_action',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
   static const VerificationMeta _resolvedAtMeta = const VerificationMeta(
     'resolvedAt',
   );
@@ -15283,12 +15095,10 @@ class $SyncPullErrorsTable extends SyncPullErrors
     action,
     rawChangeJson,
     errorClass,
-    errorMessage,
     stackTrace,
     firstSeenAt,
     lastAttemptAt,
     attemptCount,
-    userAction,
     resolvedAt,
   ];
   @override
@@ -15391,15 +15201,6 @@ class $SyncPullErrorsTable extends SyncPullErrors
         errorClass.isAcceptableOrUnknown(data['error_class']!, _errorClassMeta),
       );
     }
-    if (data.containsKey('error_message')) {
-      context.handle(
-        _errorMessageMeta,
-        errorMessage.isAcceptableOrUnknown(
-          data['error_message']!,
-          _errorMessageMeta,
-        ),
-      );
-    }
     if (data.containsKey('stack_trace')) {
       context.handle(
         _stackTraceMeta,
@@ -15435,12 +15236,6 @@ class $SyncPullErrorsTable extends SyncPullErrors
           data['attempt_count']!,
           _attemptCountMeta,
         ),
-      );
-    }
-    if (data.containsKey('user_action')) {
-      context.handle(
-        _userActionMeta,
-        userAction.isAcceptableOrUnknown(data['user_action']!, _userActionMeta),
       );
     }
     if (data.containsKey('resolved_at')) {
@@ -15506,10 +15301,6 @@ class $SyncPullErrorsTable extends SyncPullErrors
         DriftSqlType.string,
         data['${effectivePrefix}error_class'],
       ),
-      errorMessage: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}error_message'],
-      ),
       stackTrace: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}stack_trace'],
@@ -15526,10 +15317,6 @@ class $SyncPullErrorsTable extends SyncPullErrors
         DriftSqlType.int,
         data['${effectivePrefix}attempt_count'],
       )!,
-      userAction: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}user_action'],
-      ),
       resolvedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}resolved_at'],
@@ -15559,12 +15346,10 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
   final String action;
   final String rawChangeJson;
   final String? errorClass;
-  final String? errorMessage;
   final String? stackTrace;
   final DateTime firstSeenAt;
   final DateTime lastAttemptAt;
   final int attemptCount;
-  final String? userAction;
   final DateTime? resolvedAt;
   const SyncPullError({
     this.accountId,
@@ -15579,12 +15364,10 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
     required this.action,
     required this.rawChangeJson,
     this.errorClass,
-    this.errorMessage,
     this.stackTrace,
     required this.firstSeenAt,
     required this.lastAttemptAt,
     required this.attemptCount,
-    this.userAction,
     this.resolvedAt,
   });
   @override
@@ -15614,18 +15397,12 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
     if (!nullToAbsent || errorClass != null) {
       map['error_class'] = Variable<String>(errorClass);
     }
-    if (!nullToAbsent || errorMessage != null) {
-      map['error_message'] = Variable<String>(errorMessage);
-    }
     if (!nullToAbsent || stackTrace != null) {
       map['stack_trace'] = Variable<String>(stackTrace);
     }
     map['first_seen_at'] = Variable<DateTime>(firstSeenAt);
     map['last_attempt_at'] = Variable<DateTime>(lastAttemptAt);
     map['attempt_count'] = Variable<int>(attemptCount);
-    if (!nullToAbsent || userAction != null) {
-      map['user_action'] = Variable<String>(userAction);
-    }
     if (!nullToAbsent || resolvedAt != null) {
       map['resolved_at'] = Variable<DateTime>(resolvedAt);
     }
@@ -15658,18 +15435,12 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
       errorClass: errorClass == null && nullToAbsent
           ? const Value.absent()
           : Value(errorClass),
-      errorMessage: errorMessage == null && nullToAbsent
-          ? const Value.absent()
-          : Value(errorMessage),
       stackTrace: stackTrace == null && nullToAbsent
           ? const Value.absent()
           : Value(stackTrace),
       firstSeenAt: Value(firstSeenAt),
       lastAttemptAt: Value(lastAttemptAt),
       attemptCount: Value(attemptCount),
-      userAction: userAction == null && nullToAbsent
-          ? const Value.absent()
-          : Value(userAction),
       resolvedAt: resolvedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(resolvedAt),
@@ -15694,12 +15465,10 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
       action: serializer.fromJson<String>(json['action']),
       rawChangeJson: serializer.fromJson<String>(json['rawChangeJson']),
       errorClass: serializer.fromJson<String?>(json['errorClass']),
-      errorMessage: serializer.fromJson<String?>(json['errorMessage']),
       stackTrace: serializer.fromJson<String?>(json['stackTrace']),
       firstSeenAt: serializer.fromJson<DateTime>(json['firstSeenAt']),
       lastAttemptAt: serializer.fromJson<DateTime>(json['lastAttemptAt']),
       attemptCount: serializer.fromJson<int>(json['attemptCount']),
-      userAction: serializer.fromJson<String?>(json['userAction']),
       resolvedAt: serializer.fromJson<DateTime?>(json['resolvedAt']),
     );
   }
@@ -15719,12 +15488,10 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
       'action': serializer.toJson<String>(action),
       'rawChangeJson': serializer.toJson<String>(rawChangeJson),
       'errorClass': serializer.toJson<String?>(errorClass),
-      'errorMessage': serializer.toJson<String?>(errorMessage),
       'stackTrace': serializer.toJson<String?>(stackTrace),
       'firstSeenAt': serializer.toJson<DateTime>(firstSeenAt),
       'lastAttemptAt': serializer.toJson<DateTime>(lastAttemptAt),
       'attemptCount': serializer.toJson<int>(attemptCount),
-      'userAction': serializer.toJson<String?>(userAction),
       'resolvedAt': serializer.toJson<DateTime?>(resolvedAt),
     };
   }
@@ -15742,12 +15509,10 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
     String? action,
     String? rawChangeJson,
     Value<String?> errorClass = const Value.absent(),
-    Value<String?> errorMessage = const Value.absent(),
     Value<String?> stackTrace = const Value.absent(),
     DateTime? firstSeenAt,
     DateTime? lastAttemptAt,
     int? attemptCount,
-    Value<String?> userAction = const Value.absent(),
     Value<DateTime?> resolvedAt = const Value.absent(),
   }) => SyncPullError(
     accountId: accountId.present ? accountId.value : this.accountId,
@@ -15764,12 +15529,10 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
     action: action ?? this.action,
     rawChangeJson: rawChangeJson ?? this.rawChangeJson,
     errorClass: errorClass.present ? errorClass.value : this.errorClass,
-    errorMessage: errorMessage.present ? errorMessage.value : this.errorMessage,
     stackTrace: stackTrace.present ? stackTrace.value : this.stackTrace,
     firstSeenAt: firstSeenAt ?? this.firstSeenAt,
     lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
     attemptCount: attemptCount ?? this.attemptCount,
-    userAction: userAction.present ? userAction.value : this.userAction,
     resolvedAt: resolvedAt.present ? resolvedAt.value : this.resolvedAt,
   );
   SyncPullError copyWithCompanion(SyncPullErrorsCompanion data) {
@@ -15796,9 +15559,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
       errorClass: data.errorClass.present
           ? data.errorClass.value
           : this.errorClass,
-      errorMessage: data.errorMessage.present
-          ? data.errorMessage.value
-          : this.errorMessage,
       stackTrace: data.stackTrace.present
           ? data.stackTrace.value
           : this.stackTrace,
@@ -15811,9 +15571,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
       attemptCount: data.attemptCount.present
           ? data.attemptCount.value
           : this.attemptCount,
-      userAction: data.userAction.present
-          ? data.userAction.value
-          : this.userAction,
       resolvedAt: data.resolvedAt.present
           ? data.resolvedAt.value
           : this.resolvedAt,
@@ -15835,12 +15592,10 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
           ..write('action: $action, ')
           ..write('rawChangeJson: $rawChangeJson, ')
           ..write('errorClass: $errorClass, ')
-          ..write('errorMessage: $errorMessage, ')
           ..write('stackTrace: $stackTrace, ')
           ..write('firstSeenAt: $firstSeenAt, ')
           ..write('lastAttemptAt: $lastAttemptAt, ')
           ..write('attemptCount: $attemptCount, ')
-          ..write('userAction: $userAction, ')
           ..write('resolvedAt: $resolvedAt')
           ..write(')'))
         .toString();
@@ -15860,12 +15615,10 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
     action,
     rawChangeJson,
     errorClass,
-    errorMessage,
     stackTrace,
     firstSeenAt,
     lastAttemptAt,
     attemptCount,
-    userAction,
     resolvedAt,
   );
   @override
@@ -15884,12 +15637,10 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
           other.action == this.action &&
           other.rawChangeJson == this.rawChangeJson &&
           other.errorClass == this.errorClass &&
-          other.errorMessage == this.errorMessage &&
           other.stackTrace == this.stackTrace &&
           other.firstSeenAt == this.firstSeenAt &&
           other.lastAttemptAt == this.lastAttemptAt &&
           other.attemptCount == this.attemptCount &&
-          other.userAction == this.userAction &&
           other.resolvedAt == this.resolvedAt);
 }
 
@@ -15906,12 +15657,10 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
   final Value<String> action;
   final Value<String> rawChangeJson;
   final Value<String?> errorClass;
-  final Value<String?> errorMessage;
   final Value<String?> stackTrace;
   final Value<DateTime> firstSeenAt;
   final Value<DateTime> lastAttemptAt;
   final Value<int> attemptCount;
-  final Value<String?> userAction;
   final Value<DateTime?> resolvedAt;
   const SyncPullErrorsCompanion({
     this.accountId = const Value.absent(),
@@ -15926,12 +15675,10 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
     this.action = const Value.absent(),
     this.rawChangeJson = const Value.absent(),
     this.errorClass = const Value.absent(),
-    this.errorMessage = const Value.absent(),
     this.stackTrace = const Value.absent(),
     this.firstSeenAt = const Value.absent(),
     this.lastAttemptAt = const Value.absent(),
     this.attemptCount = const Value.absent(),
-    this.userAction = const Value.absent(),
     this.resolvedAt = const Value.absent(),
   });
   SyncPullErrorsCompanion.insert({
@@ -15947,12 +15694,10 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
     required String action,
     required String rawChangeJson,
     this.errorClass = const Value.absent(),
-    this.errorMessage = const Value.absent(),
     this.stackTrace = const Value.absent(),
     required DateTime firstSeenAt,
     required DateTime lastAttemptAt,
     this.attemptCount = const Value.absent(),
-    this.userAction = const Value.absent(),
     this.resolvedAt = const Value.absent(),
   }) : changeId = Value(changeId),
        entityType = Value(entityType),
@@ -15974,12 +15719,10 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
     Expression<String>? action,
     Expression<String>? rawChangeJson,
     Expression<String>? errorClass,
-    Expression<String>? errorMessage,
     Expression<String>? stackTrace,
     Expression<DateTime>? firstSeenAt,
     Expression<DateTime>? lastAttemptAt,
     Expression<int>? attemptCount,
-    Expression<String>? userAction,
     Expression<DateTime>? resolvedAt,
   }) {
     return RawValuesInsertable({
@@ -15995,12 +15738,10 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
       if (action != null) 'action': action,
       if (rawChangeJson != null) 'raw_change_json': rawChangeJson,
       if (errorClass != null) 'error_class': errorClass,
-      if (errorMessage != null) 'error_message': errorMessage,
       if (stackTrace != null) 'stack_trace': stackTrace,
       if (firstSeenAt != null) 'first_seen_at': firstSeenAt,
       if (lastAttemptAt != null) 'last_attempt_at': lastAttemptAt,
       if (attemptCount != null) 'attempt_count': attemptCount,
-      if (userAction != null) 'user_action': userAction,
       if (resolvedAt != null) 'resolved_at': resolvedAt,
     });
   }
@@ -16018,12 +15759,10 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
     Value<String>? action,
     Value<String>? rawChangeJson,
     Value<String?>? errorClass,
-    Value<String?>? errorMessage,
     Value<String?>? stackTrace,
     Value<DateTime>? firstSeenAt,
     Value<DateTime>? lastAttemptAt,
     Value<int>? attemptCount,
-    Value<String?>? userAction,
     Value<DateTime?>? resolvedAt,
   }) {
     return SyncPullErrorsCompanion(
@@ -16039,12 +15778,10 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
       action: action ?? this.action,
       rawChangeJson: rawChangeJson ?? this.rawChangeJson,
       errorClass: errorClass ?? this.errorClass,
-      errorMessage: errorMessage ?? this.errorMessage,
       stackTrace: stackTrace ?? this.stackTrace,
       firstSeenAt: firstSeenAt ?? this.firstSeenAt,
       lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
       attemptCount: attemptCount ?? this.attemptCount,
-      userAction: userAction ?? this.userAction,
       resolvedAt: resolvedAt ?? this.resolvedAt,
     );
   }
@@ -16088,9 +15825,6 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
     if (errorClass.present) {
       map['error_class'] = Variable<String>(errorClass.value);
     }
-    if (errorMessage.present) {
-      map['error_message'] = Variable<String>(errorMessage.value);
-    }
     if (stackTrace.present) {
       map['stack_trace'] = Variable<String>(stackTrace.value);
     }
@@ -16102,9 +15836,6 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
     }
     if (attemptCount.present) {
       map['attempt_count'] = Variable<int>(attemptCount.value);
-    }
-    if (userAction.present) {
-      map['user_action'] = Variable<String>(userAction.value);
     }
     if (resolvedAt.present) {
       map['resolved_at'] = Variable<DateTime>(resolvedAt.value);
@@ -16127,12 +15858,10 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
           ..write('action: $action, ')
           ..write('rawChangeJson: $rawChangeJson, ')
           ..write('errorClass: $errorClass, ')
-          ..write('errorMessage: $errorMessage, ')
           ..write('stackTrace: $stackTrace, ')
           ..write('firstSeenAt: $firstSeenAt, ')
           ..write('lastAttemptAt: $lastAttemptAt, ')
           ..write('attemptCount: $attemptCount, ')
-          ..write('userAction: $userAction, ')
           ..write('resolvedAt: $resolvedAt')
           ..write(')'))
         .toString();
@@ -17485,479 +17214,6 @@ class BackupStateCompanion extends UpdateCompanion<BackupStateData> {
           ..write('lastSuccessAt: $lastSuccessAt, ')
           ..write('currentProvider: $currentProvider, ')
           ..write('id: $id')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $RecoveryLogsTable extends RecoveryLogs
-    with TableInfo<$RecoveryLogsTable, RecoveryLog> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $RecoveryLogsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _sourceBackupNameMeta = const VerificationMeta(
-    'sourceBackupName',
-  );
-  @override
-  late final GeneratedColumn<String> sourceBackupName = GeneratedColumn<String>(
-    'source_backup_name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _targetLedgerIdMeta = const VerificationMeta(
-    'targetLedgerId',
-  );
-  @override
-  late final GeneratedColumn<String> targetLedgerId = GeneratedColumn<String>(
-    'target_ledger_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _actionMeta = const VerificationMeta('action');
-  @override
-  late final GeneratedColumn<String> action = GeneratedColumn<String>(
-    'action',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _resultMeta = const VerificationMeta('result');
-  @override
-  late final GeneratedColumn<String> result = GeneratedColumn<String>(
-    'result',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _detailMeta = const VerificationMeta('detail');
-  @override
-  late final GeneratedColumn<String> detail = GeneratedColumn<String>(
-    'detail',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    createdAt,
-    sourceBackupName,
-    targetLedgerId,
-    action,
-    result,
-    detail,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'recovery_logs';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<RecoveryLog> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('source_backup_name')) {
-      context.handle(
-        _sourceBackupNameMeta,
-        sourceBackupName.isAcceptableOrUnknown(
-          data['source_backup_name']!,
-          _sourceBackupNameMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_sourceBackupNameMeta);
-    }
-    if (data.containsKey('target_ledger_id')) {
-      context.handle(
-        _targetLedgerIdMeta,
-        targetLedgerId.isAcceptableOrUnknown(
-          data['target_ledger_id']!,
-          _targetLedgerIdMeta,
-        ),
-      );
-    }
-    if (data.containsKey('action')) {
-      context.handle(
-        _actionMeta,
-        action.isAcceptableOrUnknown(data['action']!, _actionMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_actionMeta);
-    }
-    if (data.containsKey('result')) {
-      context.handle(
-        _resultMeta,
-        result.isAcceptableOrUnknown(data['result']!, _resultMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_resultMeta);
-    }
-    if (data.containsKey('detail')) {
-      context.handle(
-        _detailMeta,
-        detail.isAcceptableOrUnknown(data['detail']!, _detailMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  RecoveryLog map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return RecoveryLog(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      sourceBackupName: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}source_backup_name'],
-      )!,
-      targetLedgerId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}target_ledger_id'],
-      ),
-      action: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}action'],
-      )!,
-      result: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}result'],
-      )!,
-      detail: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}detail'],
-      ),
-    );
-  }
-
-  @override
-  $RecoveryLogsTable createAlias(String alias) {
-    return $RecoveryLogsTable(attachedDatabase, alias);
-  }
-}
-
-class RecoveryLog extends DataClass implements Insertable<RecoveryLog> {
-  /// 本地自增行标识。
-  final int id;
-
-  /// 恢复执行时间（UTC）。
-  final DateTime createdAt;
-
-  /// 来源备份文件名（如 sesame_notes_20260821_021300.snbak）。
-  final String sourceBackupName;
-
-  /// 目标账本 id（恢复为本地/Fork 时为新 ledger id；跳过时为空）。
-  final String? targetLedgerId;
-
-  /// 动作：restore_local / fork_cloud_to_local / skip / reconnect。
-  final String action;
-
-  /// 结果：success / failed。
-  final String result;
-
-  /// 附加信息（失败原因、原账本 id 等，仅审计）。
-  final String? detail;
-  const RecoveryLog({
-    required this.id,
-    required this.createdAt,
-    required this.sourceBackupName,
-    this.targetLedgerId,
-    required this.action,
-    required this.result,
-    this.detail,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['source_backup_name'] = Variable<String>(sourceBackupName);
-    if (!nullToAbsent || targetLedgerId != null) {
-      map['target_ledger_id'] = Variable<String>(targetLedgerId);
-    }
-    map['action'] = Variable<String>(action);
-    map['result'] = Variable<String>(result);
-    if (!nullToAbsent || detail != null) {
-      map['detail'] = Variable<String>(detail);
-    }
-    return map;
-  }
-
-  RecoveryLogsCompanion toCompanion(bool nullToAbsent) {
-    return RecoveryLogsCompanion(
-      id: Value(id),
-      createdAt: Value(createdAt),
-      sourceBackupName: Value(sourceBackupName),
-      targetLedgerId: targetLedgerId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(targetLedgerId),
-      action: Value(action),
-      result: Value(result),
-      detail: detail == null && nullToAbsent
-          ? const Value.absent()
-          : Value(detail),
-    );
-  }
-
-  factory RecoveryLog.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return RecoveryLog(
-      id: serializer.fromJson<int>(json['id']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      sourceBackupName: serializer.fromJson<String>(json['sourceBackupName']),
-      targetLedgerId: serializer.fromJson<String?>(json['targetLedgerId']),
-      action: serializer.fromJson<String>(json['action']),
-      result: serializer.fromJson<String>(json['result']),
-      detail: serializer.fromJson<String?>(json['detail']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'sourceBackupName': serializer.toJson<String>(sourceBackupName),
-      'targetLedgerId': serializer.toJson<String?>(targetLedgerId),
-      'action': serializer.toJson<String>(action),
-      'result': serializer.toJson<String>(result),
-      'detail': serializer.toJson<String?>(detail),
-    };
-  }
-
-  RecoveryLog copyWith({
-    int? id,
-    DateTime? createdAt,
-    String? sourceBackupName,
-    Value<String?> targetLedgerId = const Value.absent(),
-    String? action,
-    String? result,
-    Value<String?> detail = const Value.absent(),
-  }) => RecoveryLog(
-    id: id ?? this.id,
-    createdAt: createdAt ?? this.createdAt,
-    sourceBackupName: sourceBackupName ?? this.sourceBackupName,
-    targetLedgerId: targetLedgerId.present
-        ? targetLedgerId.value
-        : this.targetLedgerId,
-    action: action ?? this.action,
-    result: result ?? this.result,
-    detail: detail.present ? detail.value : this.detail,
-  );
-  RecoveryLog copyWithCompanion(RecoveryLogsCompanion data) {
-    return RecoveryLog(
-      id: data.id.present ? data.id.value : this.id,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      sourceBackupName: data.sourceBackupName.present
-          ? data.sourceBackupName.value
-          : this.sourceBackupName,
-      targetLedgerId: data.targetLedgerId.present
-          ? data.targetLedgerId.value
-          : this.targetLedgerId,
-      action: data.action.present ? data.action.value : this.action,
-      result: data.result.present ? data.result.value : this.result,
-      detail: data.detail.present ? data.detail.value : this.detail,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('RecoveryLog(')
-          ..write('id: $id, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('sourceBackupName: $sourceBackupName, ')
-          ..write('targetLedgerId: $targetLedgerId, ')
-          ..write('action: $action, ')
-          ..write('result: $result, ')
-          ..write('detail: $detail')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    createdAt,
-    sourceBackupName,
-    targetLedgerId,
-    action,
-    result,
-    detail,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is RecoveryLog &&
-          other.id == this.id &&
-          other.createdAt == this.createdAt &&
-          other.sourceBackupName == this.sourceBackupName &&
-          other.targetLedgerId == this.targetLedgerId &&
-          other.action == this.action &&
-          other.result == this.result &&
-          other.detail == this.detail);
-}
-
-class RecoveryLogsCompanion extends UpdateCompanion<RecoveryLog> {
-  final Value<int> id;
-  final Value<DateTime> createdAt;
-  final Value<String> sourceBackupName;
-  final Value<String?> targetLedgerId;
-  final Value<String> action;
-  final Value<String> result;
-  final Value<String?> detail;
-  const RecoveryLogsCompanion({
-    this.id = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.sourceBackupName = const Value.absent(),
-    this.targetLedgerId = const Value.absent(),
-    this.action = const Value.absent(),
-    this.result = const Value.absent(),
-    this.detail = const Value.absent(),
-  });
-  RecoveryLogsCompanion.insert({
-    this.id = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    required String sourceBackupName,
-    this.targetLedgerId = const Value.absent(),
-    required String action,
-    required String result,
-    this.detail = const Value.absent(),
-  }) : sourceBackupName = Value(sourceBackupName),
-       action = Value(action),
-       result = Value(result);
-  static Insertable<RecoveryLog> custom({
-    Expression<int>? id,
-    Expression<DateTime>? createdAt,
-    Expression<String>? sourceBackupName,
-    Expression<String>? targetLedgerId,
-    Expression<String>? action,
-    Expression<String>? result,
-    Expression<String>? detail,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (createdAt != null) 'created_at': createdAt,
-      if (sourceBackupName != null) 'source_backup_name': sourceBackupName,
-      if (targetLedgerId != null) 'target_ledger_id': targetLedgerId,
-      if (action != null) 'action': action,
-      if (result != null) 'result': result,
-      if (detail != null) 'detail': detail,
-    });
-  }
-
-  RecoveryLogsCompanion copyWith({
-    Value<int>? id,
-    Value<DateTime>? createdAt,
-    Value<String>? sourceBackupName,
-    Value<String?>? targetLedgerId,
-    Value<String>? action,
-    Value<String>? result,
-    Value<String?>? detail,
-  }) {
-    return RecoveryLogsCompanion(
-      id: id ?? this.id,
-      createdAt: createdAt ?? this.createdAt,
-      sourceBackupName: sourceBackupName ?? this.sourceBackupName,
-      targetLedgerId: targetLedgerId ?? this.targetLedgerId,
-      action: action ?? this.action,
-      result: result ?? this.result,
-      detail: detail ?? this.detail,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (sourceBackupName.present) {
-      map['source_backup_name'] = Variable<String>(sourceBackupName.value);
-    }
-    if (targetLedgerId.present) {
-      map['target_ledger_id'] = Variable<String>(targetLedgerId.value);
-    }
-    if (action.present) {
-      map['action'] = Variable<String>(action.value);
-    }
-    if (result.present) {
-      map['result'] = Variable<String>(result.value);
-    }
-    if (detail.present) {
-      map['detail'] = Variable<String>(detail.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('RecoveryLogsCompanion(')
-          ..write('id: $id, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('sourceBackupName: $sourceBackupName, ')
-          ..write('targetLedgerId: $targetLedgerId, ')
-          ..write('action: $action, ')
-          ..write('result: $result, ')
-          ..write('detail: $detail')
           ..write(')'))
         .toString();
   }
@@ -20140,7 +19396,6 @@ abstract class _$SesameDatabase extends GeneratedDatabase {
   late final $SyncPullErrorsTable syncPullErrors = $SyncPullErrorsTable(this);
   late final $SyncConflictsTable syncConflicts = $SyncConflictsTable(this);
   late final $BackupStateTable backupState = $BackupStateTable(this);
-  late final $RecoveryLogsTable recoveryLogs = $RecoveryLogsTable(this);
   late final $FitnessSpacesTable fitnessSpaces = $FitnessSpacesTable(this);
   late final $FitnessEntitiesTable fitnessEntities = $FitnessEntitiesTable(
     this,
@@ -20173,7 +19428,6 @@ abstract class _$SesameDatabase extends GeneratedDatabase {
     syncPullErrors,
     syncConflicts,
     backupState,
-    recoveryLogs,
     fitnessSpaces,
     fitnessEntities,
     fitnessImportReceipts,
@@ -20277,7 +19531,6 @@ typedef $$LedgersTableCreateCompanionBuilder =
       Value<String?> originSyncId,
       Value<String?> originAccountId,
       Value<String?> originBackupId,
-      Value<int?> originLastRevision,
       Value<DateTime?> detachedAt,
       Value<DateTime> createdAt,
       required DateTime updatedAt,
@@ -20308,7 +19561,6 @@ typedef $$LedgersTableUpdateCompanionBuilder =
       Value<String?> originSyncId,
       Value<String?> originAccountId,
       Value<String?> originBackupId,
-      Value<int?> originLastRevision,
       Value<DateTime?> detachedAt,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -20498,11 +19750,6 @@ class $$LedgersTableFilterComposer
 
   ColumnFilters<String> get originBackupId => $composableBuilder(
     column: $table.originBackupId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get originLastRevision => $composableBuilder(
-    column: $table.originLastRevision,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -20724,11 +19971,6 @@ class $$LedgersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get originLastRevision => $composableBuilder(
-    column: $table.originLastRevision,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<DateTime> get detachedAt => $composableBuilder(
     column: $table.detachedAt,
     builder: (column) => ColumnOrderings(column),
@@ -20854,11 +20096,6 @@ class $$LedgersTableAnnotationComposer
 
   GeneratedColumn<String> get originBackupId => $composableBuilder(
     column: $table.originBackupId,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get originLastRevision => $composableBuilder(
-    column: $table.originLastRevision,
     builder: (column) => column,
   );
 
@@ -21007,7 +20244,6 @@ class $$LedgersTableTableManager
                 Value<String?> originSyncId = const Value.absent(),
                 Value<String?> originAccountId = const Value.absent(),
                 Value<String?> originBackupId = const Value.absent(),
-                Value<int?> originLastRevision = const Value.absent(),
                 Value<DateTime?> detachedAt = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -21036,7 +20272,6 @@ class $$LedgersTableTableManager
                 originSyncId: originSyncId,
                 originAccountId: originAccountId,
                 originBackupId: originBackupId,
-                originLastRevision: originLastRevision,
                 detachedAt: detachedAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -21067,7 +20302,6 @@ class $$LedgersTableTableManager
                 Value<String?> originSyncId = const Value.absent(),
                 Value<String?> originAccountId = const Value.absent(),
                 Value<String?> originBackupId = const Value.absent(),
-                Value<int?> originLastRevision = const Value.absent(),
                 Value<DateTime?> detachedAt = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 required DateTime updatedAt,
@@ -21096,7 +20330,6 @@ class $$LedgersTableTableManager
                 originSyncId: originSyncId,
                 originAccountId: originAccountId,
                 originBackupId: originBackupId,
-                originLastRevision: originLastRevision,
                 detachedAt: detachedAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -28669,8 +27902,6 @@ typedef $$SyncStateTableCreateCompanionBuilder =
       Value<String?> dayEventsCursor,
       Value<String?> memosCursor,
       Value<String?> fitnessCursor,
-      Value<DateTime?> lastPushAt,
-      Value<DateTime?> lastPullAt,
       Value<int> rowid,
     });
 typedef $$SyncStateTableUpdateCompanionBuilder =
@@ -28681,8 +27912,6 @@ typedef $$SyncStateTableUpdateCompanionBuilder =
       Value<String?> dayEventsCursor,
       Value<String?> memosCursor,
       Value<String?> fitnessCursor,
-      Value<DateTime?> lastPushAt,
-      Value<DateTime?> lastPullAt,
       Value<int> rowid,
     });
 
@@ -28722,16 +27951,6 @@ class $$SyncStateTableFilterComposer
 
   ColumnFilters<String> get fitnessCursor => $composableBuilder(
     column: $table.fitnessCursor,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get lastPushAt => $composableBuilder(
-    column: $table.lastPushAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get lastPullAt => $composableBuilder(
-    column: $table.lastPullAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -28774,16 +27993,6 @@ class $$SyncStateTableOrderingComposer
     column: $table.fitnessCursor,
     builder: (column) => ColumnOrderings(column),
   );
-
-  ColumnOrderings<DateTime> get lastPushAt => $composableBuilder(
-    column: $table.lastPushAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get lastPullAt => $composableBuilder(
-    column: $table.lastPullAt,
-    builder: (column) => ColumnOrderings(column),
-  );
 }
 
 class $$SyncStateTableAnnotationComposer
@@ -28818,16 +28027,6 @@ class $$SyncStateTableAnnotationComposer
 
   GeneratedColumn<String> get fitnessCursor => $composableBuilder(
     column: $table.fitnessCursor,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get lastPushAt => $composableBuilder(
-    column: $table.lastPushAt,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get lastPullAt => $composableBuilder(
-    column: $table.lastPullAt,
     builder: (column) => column,
   );
 }
@@ -28869,8 +28068,6 @@ class $$SyncStateTableTableManager
                 Value<String?> dayEventsCursor = const Value.absent(),
                 Value<String?> memosCursor = const Value.absent(),
                 Value<String?> fitnessCursor = const Value.absent(),
-                Value<DateTime?> lastPushAt = const Value.absent(),
-                Value<DateTime?> lastPullAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SyncStateCompanion(
                 accountId: accountId,
@@ -28879,8 +28076,6 @@ class $$SyncStateTableTableManager
                 dayEventsCursor: dayEventsCursor,
                 memosCursor: memosCursor,
                 fitnessCursor: fitnessCursor,
-                lastPushAt: lastPushAt,
-                lastPullAt: lastPullAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -28891,8 +28086,6 @@ class $$SyncStateTableTableManager
                 Value<String?> dayEventsCursor = const Value.absent(),
                 Value<String?> memosCursor = const Value.absent(),
                 Value<String?> fitnessCursor = const Value.absent(),
-                Value<DateTime?> lastPushAt = const Value.absent(),
-                Value<DateTime?> lastPullAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SyncStateCompanion.insert(
                 accountId: accountId,
@@ -28901,8 +28094,6 @@ class $$SyncStateTableTableManager
                 dayEventsCursor: dayEventsCursor,
                 memosCursor: memosCursor,
                 fitnessCursor: fitnessCursor,
-                lastPushAt: lastPushAt,
-                lastPullAt: lastPullAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -28944,12 +28135,10 @@ typedef $$SyncPullErrorsTableCreateCompanionBuilder =
       required String action,
       required String rawChangeJson,
       Value<String?> errorClass,
-      Value<String?> errorMessage,
       Value<String?> stackTrace,
       required DateTime firstSeenAt,
       required DateTime lastAttemptAt,
       Value<int> attemptCount,
-      Value<String?> userAction,
       Value<DateTime?> resolvedAt,
     });
 typedef $$SyncPullErrorsTableUpdateCompanionBuilder =
@@ -28966,12 +28155,10 @@ typedef $$SyncPullErrorsTableUpdateCompanionBuilder =
       Value<String> action,
       Value<String> rawChangeJson,
       Value<String?> errorClass,
-      Value<String?> errorMessage,
       Value<String?> stackTrace,
       Value<DateTime> firstSeenAt,
       Value<DateTime> lastAttemptAt,
       Value<int> attemptCount,
-      Value<String?> userAction,
       Value<DateTime?> resolvedAt,
     });
 
@@ -29044,11 +28231,6 @@ class $$SyncPullErrorsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get errorMessage => $composableBuilder(
-    column: $table.errorMessage,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<String> get stackTrace => $composableBuilder(
     column: $table.stackTrace,
     builder: (column) => ColumnFilters(column),
@@ -29066,11 +28248,6 @@ class $$SyncPullErrorsTableFilterComposer
 
   ColumnFilters<int> get attemptCount => $composableBuilder(
     column: $table.attemptCount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get userAction => $composableBuilder(
-    column: $table.userAction,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -29149,11 +28326,6 @@ class $$SyncPullErrorsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get errorMessage => $composableBuilder(
-    column: $table.errorMessage,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get stackTrace => $composableBuilder(
     column: $table.stackTrace,
     builder: (column) => ColumnOrderings(column),
@@ -29171,11 +28343,6 @@ class $$SyncPullErrorsTableOrderingComposer
 
   ColumnOrderings<int> get attemptCount => $composableBuilder(
     column: $table.attemptCount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get userAction => $composableBuilder(
-    column: $table.userAction,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -29240,11 +28407,6 @@ class $$SyncPullErrorsTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get errorMessage => $composableBuilder(
-    column: $table.errorMessage,
-    builder: (column) => column,
-  );
-
   GeneratedColumn<String> get stackTrace => $composableBuilder(
     column: $table.stackTrace,
     builder: (column) => column,
@@ -29262,11 +28424,6 @@ class $$SyncPullErrorsTableAnnotationComposer
 
   GeneratedColumn<int> get attemptCount => $composableBuilder(
     column: $table.attemptCount,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get userAction => $composableBuilder(
-    column: $table.userAction,
     builder: (column) => column,
   );
 
@@ -29325,12 +28482,10 @@ class $$SyncPullErrorsTableTableManager
                 Value<String> action = const Value.absent(),
                 Value<String> rawChangeJson = const Value.absent(),
                 Value<String?> errorClass = const Value.absent(),
-                Value<String?> errorMessage = const Value.absent(),
                 Value<String?> stackTrace = const Value.absent(),
                 Value<DateTime> firstSeenAt = const Value.absent(),
                 Value<DateTime> lastAttemptAt = const Value.absent(),
                 Value<int> attemptCount = const Value.absent(),
-                Value<String?> userAction = const Value.absent(),
                 Value<DateTime?> resolvedAt = const Value.absent(),
               }) => SyncPullErrorsCompanion(
                 accountId: accountId,
@@ -29345,12 +28500,10 @@ class $$SyncPullErrorsTableTableManager
                 action: action,
                 rawChangeJson: rawChangeJson,
                 errorClass: errorClass,
-                errorMessage: errorMessage,
                 stackTrace: stackTrace,
                 firstSeenAt: firstSeenAt,
                 lastAttemptAt: lastAttemptAt,
                 attemptCount: attemptCount,
-                userAction: userAction,
                 resolvedAt: resolvedAt,
               ),
           createCompanionCallback:
@@ -29367,12 +28520,10 @@ class $$SyncPullErrorsTableTableManager
                 required String action,
                 required String rawChangeJson,
                 Value<String?> errorClass = const Value.absent(),
-                Value<String?> errorMessage = const Value.absent(),
                 Value<String?> stackTrace = const Value.absent(),
                 required DateTime firstSeenAt,
                 required DateTime lastAttemptAt,
                 Value<int> attemptCount = const Value.absent(),
-                Value<String?> userAction = const Value.absent(),
                 Value<DateTime?> resolvedAt = const Value.absent(),
               }) => SyncPullErrorsCompanion.insert(
                 accountId: accountId,
@@ -29387,12 +28538,10 @@ class $$SyncPullErrorsTableTableManager
                 action: action,
                 rawChangeJson: rawChangeJson,
                 errorClass: errorClass,
-                errorMessage: errorMessage,
                 stackTrace: stackTrace,
                 firstSeenAt: firstSeenAt,
                 lastAttemptAt: lastAttemptAt,
                 attemptCount: attemptCount,
-                userAction: userAction,
                 resolvedAt: resolvedAt,
               ),
           withReferenceMapper: (p0) => p0
@@ -30053,242 +29202,6 @@ typedef $$BackupStateTableProcessedTableManager =
         BaseReferences<_$SesameDatabase, $BackupStateTable, BackupStateData>,
       ),
       BackupStateData,
-      PrefetchHooks Function()
-    >;
-typedef $$RecoveryLogsTableCreateCompanionBuilder =
-    RecoveryLogsCompanion Function({
-      Value<int> id,
-      Value<DateTime> createdAt,
-      required String sourceBackupName,
-      Value<String?> targetLedgerId,
-      required String action,
-      required String result,
-      Value<String?> detail,
-    });
-typedef $$RecoveryLogsTableUpdateCompanionBuilder =
-    RecoveryLogsCompanion Function({
-      Value<int> id,
-      Value<DateTime> createdAt,
-      Value<String> sourceBackupName,
-      Value<String?> targetLedgerId,
-      Value<String> action,
-      Value<String> result,
-      Value<String?> detail,
-    });
-
-class $$RecoveryLogsTableFilterComposer
-    extends Composer<_$SesameDatabase, $RecoveryLogsTable> {
-  $$RecoveryLogsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get sourceBackupName => $composableBuilder(
-    column: $table.sourceBackupName,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get targetLedgerId => $composableBuilder(
-    column: $table.targetLedgerId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get action => $composableBuilder(
-    column: $table.action,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get result => $composableBuilder(
-    column: $table.result,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get detail => $composableBuilder(
-    column: $table.detail,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$RecoveryLogsTableOrderingComposer
-    extends Composer<_$SesameDatabase, $RecoveryLogsTable> {
-  $$RecoveryLogsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get sourceBackupName => $composableBuilder(
-    column: $table.sourceBackupName,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get targetLedgerId => $composableBuilder(
-    column: $table.targetLedgerId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get action => $composableBuilder(
-    column: $table.action,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get result => $composableBuilder(
-    column: $table.result,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get detail => $composableBuilder(
-    column: $table.detail,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$RecoveryLogsTableAnnotationComposer
-    extends Composer<_$SesameDatabase, $RecoveryLogsTable> {
-  $$RecoveryLogsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<String> get sourceBackupName => $composableBuilder(
-    column: $table.sourceBackupName,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get targetLedgerId => $composableBuilder(
-    column: $table.targetLedgerId,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get action =>
-      $composableBuilder(column: $table.action, builder: (column) => column);
-
-  GeneratedColumn<String> get result =>
-      $composableBuilder(column: $table.result, builder: (column) => column);
-
-  GeneratedColumn<String> get detail =>
-      $composableBuilder(column: $table.detail, builder: (column) => column);
-}
-
-class $$RecoveryLogsTableTableManager
-    extends
-        RootTableManager<
-          _$SesameDatabase,
-          $RecoveryLogsTable,
-          RecoveryLog,
-          $$RecoveryLogsTableFilterComposer,
-          $$RecoveryLogsTableOrderingComposer,
-          $$RecoveryLogsTableAnnotationComposer,
-          $$RecoveryLogsTableCreateCompanionBuilder,
-          $$RecoveryLogsTableUpdateCompanionBuilder,
-          (
-            RecoveryLog,
-            BaseReferences<_$SesameDatabase, $RecoveryLogsTable, RecoveryLog>,
-          ),
-          RecoveryLog,
-          PrefetchHooks Function()
-        > {
-  $$RecoveryLogsTableTableManager(_$SesameDatabase db, $RecoveryLogsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$RecoveryLogsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$RecoveryLogsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$RecoveryLogsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<String> sourceBackupName = const Value.absent(),
-                Value<String?> targetLedgerId = const Value.absent(),
-                Value<String> action = const Value.absent(),
-                Value<String> result = const Value.absent(),
-                Value<String?> detail = const Value.absent(),
-              }) => RecoveryLogsCompanion(
-                id: id,
-                createdAt: createdAt,
-                sourceBackupName: sourceBackupName,
-                targetLedgerId: targetLedgerId,
-                action: action,
-                result: result,
-                detail: detail,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                required String sourceBackupName,
-                Value<String?> targetLedgerId = const Value.absent(),
-                required String action,
-                required String result,
-                Value<String?> detail = const Value.absent(),
-              }) => RecoveryLogsCompanion.insert(
-                id: id,
-                createdAt: createdAt,
-                sourceBackupName: sourceBackupName,
-                targetLedgerId: targetLedgerId,
-                action: action,
-                result: result,
-                detail: detail,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$RecoveryLogsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$SesameDatabase,
-      $RecoveryLogsTable,
-      RecoveryLog,
-      $$RecoveryLogsTableFilterComposer,
-      $$RecoveryLogsTableOrderingComposer,
-      $$RecoveryLogsTableAnnotationComposer,
-      $$RecoveryLogsTableCreateCompanionBuilder,
-      $$RecoveryLogsTableUpdateCompanionBuilder,
-      (
-        RecoveryLog,
-        BaseReferences<_$SesameDatabase, $RecoveryLogsTable, RecoveryLog>,
-      ),
-      RecoveryLog,
       PrefetchHooks Function()
     >;
 typedef $$FitnessSpacesTableCreateCompanionBuilder =
@@ -31834,8 +30747,6 @@ class $SesameDatabaseManager {
       $$SyncConflictsTableTableManager(_db, _db.syncConflicts);
   $$BackupStateTableTableManager get backupState =>
       $$BackupStateTableTableManager(_db, _db.backupState);
-  $$RecoveryLogsTableTableManager get recoveryLogs =>
-      $$RecoveryLogsTableTableManager(_db, _db.recoveryLogs);
   $$FitnessSpacesTableTableManager get fitnessSpaces =>
       $$FitnessSpacesTableTableManager(_db, _db.fitnessSpaces);
   $$FitnessEntitiesTableTableManager get fitnessEntities =>

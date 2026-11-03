@@ -367,7 +367,7 @@ Future<List<SyncIssue>> _readPendingUploadSummaries(
 String _issueColumns(Iterable<GeneratedColumn> columns, bool details) => columns
     .map((column) {
       final name = column.$name;
-      if (!details && ['stack_trace', 'error_message'].contains(name)) {
+      if (!details && name == 'stack_trace') {
         return 'NULL AS "$name"';
       }
       if (name == 'frozen_request') return 'NULL AS "$name"';

@@ -548,7 +548,7 @@ class LocalLedgerRepository {
               .get();
 
       // 目标账本行：storageMode=local、同步身份/绑定全空，
-      // origin 七字段写入溯源。
+      // 写入来源身份与复制时间，保留本地副本的溯源信息。
       await db
           .into(db.ledgers)
           .insert(

@@ -237,7 +237,7 @@ void main() {
     }
   }
 
-  test('apply：本地无冲突原 identity + 云端永远 Fork + skip 不写 + recovery_log', () async {
+  test('apply：本地无冲突保留 identity，云端 Fork，跳过项不写入', () async {
     final backup = await seedBackupSource();
     final session = await importService.openBackup(backupFile: backup);
     final items = await importService.listRecoveryItems(session);
@@ -289,18 +289,7 @@ void main() {
       )..where((c) => c.ledgerId.equals(forked.id))).get(),
       isEmpty,
     );
-    // recovery_log 审计
-    final logs = await liveDb.select(liveDb.recoveryLogs).get();
-    expect(logs, hasLength(2));
-    expect(
-      logs.map((l) => l.action),
-      containsAll(['restore_local', 'fork_cloud_to_local']),
-    );
-    expect(logs.every((l) => l.result == 'success'), isTrue);
-    expect(
-      logs.every((l) => l.sourceBackupName == p.basename(backup.path)),
-      isTrue,
-    );
+    expect(report.entries.every((entry) => entry.success), isTrue);
     await session.close();
   });
 
@@ -411,11 +400,6 @@ void main() {
       )..where((c) => c.ledgerId.equals(sourceId))).get(),
       isEmpty,
     );
-    // 审计日志记录覆盖动作（云端账本未决策 → skip 也写日志，按 action 过滤）
-    final log = (await liveDb.select(liveDb.recoveryLogs).get()).singleWhere(
-      (l) => l.action == 'restore_local',
-    );
-    expect(log.detail, contains('overwrite'));
     await session.close();
   });
 
@@ -475,10 +459,12 @@ void main() {
       reason: '恢复数据整体回滚',
     );
     expect(ledgers.where((l) => l.id == localItem.ledgerBackupId), isEmpty);
-    // 主事务成功日志随回滚消失，但失败尝试日志在回滚后单独落盘
-    final logs = await liveDb.select(liveDb.recoveryLogs).get();
-    expect(logs, hasLength(1), reason: '失败尝试必须可审计');
-    expect(logs.single.result, 'failed');
-    expect(logs.single.action, 'apply_failed');
+    expect(ledgers, hasLength(1));
+    expect(ledgers.single.name, '占位账本');
+    expect(await liveDb.select(liveDb.transactions).get(), isEmpty);
+    expect(
+      (await liveDb.select(liveDb.ledgerMembers).get()).single.displayName,
+      '冲突成员',
+    );
   });
 }

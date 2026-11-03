@@ -197,7 +197,6 @@ class SyncRuntime {
             fitnessCursor: domain == SyncDomain.fitness
                 ? d.Value(next)
                 : const d.Value.absent(),
-            lastPullAt: d.Value(DateTime.now().toUtc()),
           ),
         );
   }

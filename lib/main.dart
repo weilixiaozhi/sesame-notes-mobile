@@ -79,7 +79,7 @@ Future<void> main() async {
     overrides: applicationOverrides(),
   );
 
-  // 预加载和账号恢复前完成本机结构检查；失败保留原数据并停在独立错误界面。
+  // 预加载和账号恢复前完成结构检查与受支持的升级；失败保留原数据并停在独立错误界面。
   try {
     await container.read(databaseProvider).customSelect('SELECT 1').get();
   } catch (error, stackTrace) {

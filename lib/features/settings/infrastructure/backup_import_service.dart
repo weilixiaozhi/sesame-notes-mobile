@@ -394,8 +394,6 @@ class BackupImportService {
 
   /// 应用恢复：按每账本决策在**单个事务**内写入 live DB；
   /// 任一步失败 → 整体回滚，live DB 不变。
-  ///
-  /// 每次恢复写入 recovery_log（时间/来源备份/目标账本/动作/结果，审计）。
   Future<BackupApplyReport> apply({
     required RecoverySession session,
     required SesameDatabase liveDb,
@@ -501,17 +499,6 @@ class BackupImportService {
                 currentAccountId: currentAccountId,
                 overwrite: overwrite,
               );
-              final conflictDetail = exists == null
-                  ? ''
-                  : (overwrite ? ' overwrite' : ' conflict_fork');
-              await _writeLog(
-                liveDb,
-                sourceBackupName: backupName,
-                targetLedgerId: targetId,
-                action: 'restore_local',
-                result: 'success',
-                detail: 'source=${item.ledgerBackupId}$conflictDetail',
-              );
               entries.add(
                 BackupApplyEntry(
                   ledgerBackupId: item.ledgerBackupId,
@@ -538,14 +525,6 @@ class BackupImportService {
                 sourceDb: session.sourceDb,
                 currentAccountId: currentAccountId,
               );
-              await _writeLog(
-                liveDb,
-                sourceBackupName: backupName,
-                targetLedgerId: newId,
-                action: 'fork_cloud_to_local',
-                result: 'success',
-                detail: 'source=${item.ledgerBackupId}',
-              );
               entries.add(
                 BackupApplyEntry(
                   ledgerBackupId: item.ledgerBackupId,
@@ -556,16 +535,7 @@ class BackupImportService {
                 ),
               );
             case RecoveryDecision.reconnect:
-              // Reconnect v1：登录原账号 → 下载云端最新；备份内容不复制。
-              // 审计记录动作；数据恢复由同步引擎完成。
-              await _writeLog(
-                liveDb,
-                sourceBackupName: backupName,
-                targetLedgerId: null,
-                action: 'reconnect',
-                result: 'success',
-                detail: 'account=${item.accountReference?.accountId ?? ''}',
-              );
+              // 返回重新连接决定，由同步引擎按原账号下载云端当前内容。
               entries.add(
                 BackupApplyEntry(
                   ledgerBackupId: item.ledgerBackupId,
@@ -666,14 +636,6 @@ class BackupImportService {
               hidden: false,
             );
           }
-          await _writeLog(
-            liveDb,
-            sourceBackupName: backupName,
-            targetLedgerId: null,
-            action: 'restore_day_book',
-            result: 'success',
-            detail: 'source=${book.id};decision=${decision.name}',
-          );
         }
         for (final book in session.recoveryRepository.listMemoBooks()) {
           final decision =
@@ -690,30 +652,11 @@ class BackupImportService {
             forceCopy: decision == RecoveryDecision.forkCloudToLocal,
             cloud: decision == RecoveryDecision.reconnect,
           );
-          await _writeLog(
-            liveDb,
-            sourceBackupName: backupName,
-            targetLedgerId: null,
-            action: 'restore_memo_book',
-            result: 'success',
-            detail: 'source=${book.id};decision=${decision.name}',
-          );
         }
         validateContext?.call();
       });
     } catch (e, st) {
-      // 失败尝试在回滚后单独事务落盘（成功日志随主事务回滚消失）
-      logger.error(
-        'BackupImport',
-        '应用恢复失败（已回滚），记录失败尝试',
-        safeErrorSummary(e),
-        st,
-      );
-      await recordFailedAttempt(
-        liveDb: liveDb,
-        sourceBackupName: backupName,
-        detail: safeErrorSummary(e),
-      );
+      logger.error('BackupImport', '应用恢复失败，事务已回滚', safeErrorSummary(e), st);
       rethrow;
     }
     return BackupApplyReport(
@@ -722,56 +665,5 @@ class BackupImportService {
       memoBookResults: memoBookResults,
       fitnessSpaceResults: fitnessSpaceResults,
     );
-  }
-
-  /// 记录一次失败的恢复尝试（主事务回滚后单独事务写入）。
-  ///
-  /// 设计意图：成功记录写在应用事务内（回滚即一并消失，不产生虚假成功）；
-  /// 失败记录必须在回滚**之后**用独立事务落盘，否则失败也无从审计。
-  Future<void> recordFailedAttempt({
-    required SesameDatabase liveDb,
-    required String sourceBackupName,
-    required String detail,
-  }) async {
-    try {
-      await liveDb
-          .into(liveDb.recoveryLogs)
-          .insert(
-            RecoveryLogsCompanion.insert(
-              sourceBackupName: sourceBackupName,
-              action: 'apply_failed',
-              result: 'failed',
-              detail: d.Value(detail),
-            ),
-          );
-    } catch (e, st) {
-      logger.warning(
-        'BackupImport',
-        '失败尝试日志写入失败（不影响主流程）: ${safeErrorSummary(e)}',
-        st,
-      );
-    }
-  }
-
-  /// 写恢复审计日志（在应用事务内，回滚时日志一并回滚——不产生虚假记录）。
-  Future<void> _writeLog(
-    SesameDatabase db, {
-    required String sourceBackupName,
-    required String? targetLedgerId,
-    required String action,
-    required String result,
-    String? detail,
-  }) async {
-    await db
-        .into(db.recoveryLogs)
-        .insert(
-          RecoveryLogsCompanion.insert(
-            sourceBackupName: sourceBackupName,
-            targetLedgerId: d.Value(targetLedgerId),
-            action: action,
-            result: result,
-            detail: d.Value(detail),
-          ),
-        );
   }
 }

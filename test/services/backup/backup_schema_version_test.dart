@@ -328,9 +328,9 @@ void main() {
         try {
           // 同账号设备的备份进度与活动库冲突，另有仅存在于备份中的设备。
           raw.execute(
-            'UPDATE sync_state SET server_cursor=?,day_events_cursor=?,memos_cursor=?,fitness_cursor=?,last_push_at=?,last_pull_at=? '
+            'UPDATE sync_state SET server_cursor=?,day_events_cursor=?,memos_cursor=?,fitness_cursor=? '
             'WHERE account_id=? AND device_id=?',
-            ['321', '41', '42', '43', 3000, 4000, 'account-a', 'unknown'],
+            ['321', '41', '42', '43', 'account-a', 'unknown'],
           );
           raw.execute(
             'INSERT INTO sync_state(account_id,device_id,server_cursor) VALUES(?,?,?)',
@@ -348,14 +348,14 @@ void main() {
 
         // 同设备、其他设备和其他账号均属于当前库的消费进度，恢复内容不得替换这些事实。
         for (final values in <List<Object?>>[
-          ['account-a', 'unknown', liveCursor, '12', '0', '34', 111000, 222000],
-          ['account-a', 'completed-zero', '777', null, '23', '0', null, 333000],
-          ['account-a', 'other-device', '888', '45', null, '67', 444000, null],
-          ['account-b', 'unknown', null, '78', '89', null, 555000, 666000],
+          ['account-a', 'unknown', liveCursor, '12', '0', '34'],
+          ['account-a', 'completed-zero', '777', null, '23', '0'],
+          ['account-a', 'other-device', '888', '45', null, '67'],
+          ['account-b', 'unknown', null, '78', '89', null],
         ]) {
           await live.customStatement(
-            'INSERT INTO sync_state(account_id,device_id,server_cursor,day_events_cursor,memos_cursor,fitness_cursor,last_push_at,last_pull_at) '
-            'VALUES(?,?,?,?,?,?,?,?)',
+            'INSERT INTO sync_state(account_id,device_id,server_cursor,day_events_cursor,memos_cursor,fitness_cursor) '
+            'VALUES(?,?,?,?,?,?)',
             values,
           );
         }
@@ -445,7 +445,7 @@ void main() {
 
   test('当前清单不能让其他 SQLite 版本通过，隔离文件清理且来源字节保留', () async {
     final fixture = await _backupFixture(workspace);
-    for (final version in [7, 8, 9, currentSchemaVersion + 1]) {
+    for (final version in [7, 8, 9, 10, currentSchemaVersion + 1]) {
       final raw = sqlite3.open(fixture.sqlite.path);
       try {
         raw.execute('PRAGMA user_version=$version');

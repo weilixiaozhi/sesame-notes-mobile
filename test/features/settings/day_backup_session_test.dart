@@ -144,12 +144,23 @@ void main() {
     expect(await live.select(live.transactions).get(), isEmpty);
   });
 
-  test('财务与日子共同应用末尾失败全部回滚，零选中不写日志或其他本', () async {
+  test('财务与日子共同应用末尾失败全部回滚，零选中不写业务数据', () async {
     final archive = await fixture();
     final session = await service.openBackup(backupFile: archive);
     try {
-      await service.apply(session: session, liveDb: live, localSelfId: 'self');
-      expect(await live.select(live.recoveryLogs).get(), isEmpty);
+      final skipped = await service.apply(
+        session: session,
+        liveDb: live,
+        localSelfId: 'self',
+      );
+      expect(
+        skipped.entries.every(
+          (entry) => entry.decision == RecoveryDecision.skip,
+        ),
+        isTrue,
+      );
+      expect(await live.select(live.ledgers).get(), isEmpty);
+      expect(await live.select(live.dayBooks).get(), isEmpty);
       session.decisions[ledger] = RecoveryDecision.restoreLocal;
       session.dayBookDecisions[a] = RecoveryDecision.restoreLocal;
       var validations = 0;
@@ -167,12 +178,6 @@ void main() {
       expect(await live.select(live.ledgers).get(), isEmpty);
       expect(await live.select(live.dayBooks).get(), isEmpty);
       expect(await live.select(live.transactions).get(), isEmpty);
-      expect(
-        (await live.select(live.recoveryLogs).get()).every(
-          (row) => row.result == 'failed',
-        ),
-        isTrue,
-      );
       await service.apply(session: session, liveDb: live, localSelfId: 'self');
       expect((await live.select(live.dayBooks).get()).single.id, a);
       expect(await live.select(live.dayEvents).get(), isEmpty);
