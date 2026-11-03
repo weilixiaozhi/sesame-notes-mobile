@@ -73,6 +73,61 @@ CloudRecordHistoryEntry _entry(int version, {String? id}) =>
       },
     );
 
+/// 挂载正式统一列表，来源仍使用实际分页控制器，只有网络和本机读取可控。
+Future<void> _pumpHistorySection(
+  WidgetTester tester,
+  ProviderContainer container,
+  Future<List<RecordEditHistoryDisplay>> Function() local,
+) async {
+  try {
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: ProviderScope(
+          overrides: [
+            recordEditHistoryProvider('record').overrideWith((ref) => local()),
+          ],
+          child: MaterialApp(
+            locale: const Locale('zh'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: TransactionHistorySection(
+                  ledgerId: 'ledger',
+                  recordId: 'record',
+                  isCloud: true,
+                  displayNameOf: (_) => '本机成员',
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  } catch (error, stack) {
+    FlutterError.reportError(
+      FlutterErrorDetails(exception: error, stack: stack),
+    );
+    rethrow;
+  }
+}
+
+/// 创建带指定记录时间的已确认编辑，便于独立验证统一排序。
+CloudRecordHistoryEntry _timedEntry(
+  int version,
+  int hour,
+  String text, {
+  int minute = 0,
+}) => CloudRecordHistoryEntry(
+  id: 'cloud-$version',
+  version: version,
+  createdAt: DateTime.utc(2026, 11, 3, hour, minute),
+  operatorDisplayName: '服务端成员',
+  changes: {'note': text},
+);
+
 /// 返回固定 JSON，验证真实生成客户端的路径、分页和任意 JSON 反序列化。
 class _JsonAdapter implements HttpClientAdapter {
   _JsonAdapter(this.body);
@@ -388,7 +443,7 @@ void main() {
     );
   });
 
-  testWidgets('云端加载失败仍展示独立本机记录并提供重试', (tester) async {
+  testWidgets('一侧读取失败保留可用记录并保持原有重试操作', (tester) async {
     final container = _container(
       (query, cursor, token) async => throw StateError('网络断开'),
     );
@@ -429,6 +484,159 @@ void main() {
     expect(find.text('暂时无法读取历史，请重试。'), findsOneWidget);
     expect(find.text('暂无编辑历史'), findsNothing);
     expect(find.text('重试'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+  testWidgets('统一列表时间倒序，分页失败保留记录，重试后重新排序', (tester) async {
+    final cursors = <String?>[];
+    var failPage = true;
+    var localReads = 0;
+    final container = _container((query, cursor, token) async {
+      cursors.add(cursor);
+      if (cursor == null) {
+        return CloudRecordHistoryPage([
+          _timedEntry(5, 12, '中午编辑'),
+          _timedEntry(4, 11, '上午编辑'),
+        ], 'page-2');
+      }
+      if (failPage) throw StateError('分页暂不可用');
+      return CloudRecordHistoryPage([
+        _timedEntry(3, 10, '较早编辑', minute: 30),
+      ], null);
+    });
+    await _pumpHistorySection(tester, container, () async {
+      localReads++;
+      return [
+        RecordEditHistoryDisplay(
+          version: 2,
+          summary: '较新的记录',
+          createdAt: DateTime.utc(2026, 11, 3, 12, 30),
+        ),
+        RecordEditHistoryDisplay(
+          version: 5,
+          summary: '最早的记录',
+          createdAt: DateTime.utc(2026, 11, 3, 10),
+        ),
+        RecordEditHistoryDisplay(
+          version: 3,
+          summary: '中间的记录',
+          createdAt: DateTime.utc(2026, 11, 3, 11, 30),
+        ),
+      ];
+    });
+    for (final removed in ['云端历史', '本机历史', '仅供查看']) {
+      expect(find.text(removed), findsNothing);
+    }
+    expect(
+      tester.getTopLeft(find.text('较新的记录')).dy,
+      lessThan(tester.getTopLeft(find.text('备注: 中午编辑')).dy),
+    );
+    expect(
+      tester.getTopLeft(find.text('备注: 中午编辑')).dy,
+      lessThan(tester.getTopLeft(find.text('中间的记录')).dy),
+    );
+    expect(
+      tester.getTopLeft(find.text('中间的记录')).dy,
+      lessThan(tester.getTopLeft(find.text('备注: 上午编辑')).dy),
+    );
+    await tester.ensureVisible(find.text('加载更多'));
+    await tester.tap(find.text('加载更多'));
+    await tester.pumpAndSettle();
+    expect(find.text('最早的记录'), findsOneWidget);
+    expect(find.text('备注: 中午编辑'), findsOneWidget);
+    expect(find.text('重试'), findsOneWidget);
+    expect(find.text('暂无编辑历史'), findsNothing);
+    failPage = false;
+    await tester.ensureVisible(find.text('重试'));
+    await tester.tap(find.text('重试'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getTopLeft(find.text('备注: 较早编辑')).dy,
+      lessThan(tester.getTopLeft(find.text('最早的记录')).dy),
+    );
+    expect(find.text('重试'), findsNothing);
+    expect(cursors, [null, 'page-2', 'page-2']);
+    expect(localReads, 1);
+    expect(find.byTooltip('刷新'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('相同时间版本和文本的记录不猜测去重，相同时刻保持稳定顺序', (tester) async {
+    final container = _container(
+      (query, cursor, token) async =>
+          CloudRecordHistoryPage([_timedEntry(5, 12, '相同文字')], null),
+    );
+    await _pumpHistorySection(
+      tester,
+      container,
+      () async => [
+        RecordEditHistoryDisplay(
+          version: 5,
+          summary: '备注: 相同文字',
+          createdAt: DateTime.utc(2026, 11, 3, 12),
+        ),
+        RecordEditHistoryDisplay(
+          version: 5,
+          summary: '同刻记录甲',
+          createdAt: DateTime.utc(2026, 11, 3, 12),
+        ),
+        RecordEditHistoryDisplay(
+          version: 5,
+          summary: '同刻记录乙',
+          createdAt: DateTime.utc(2026, 11, 3, 12),
+        ),
+      ],
+    );
+    expect(find.text('备注: 相同文字'), findsNWidgets(2));
+    expect(find.text('v5'), findsNWidgets(4));
+    final duplicatePositions = tester
+        .getTopLeft(find.text('备注: 相同文字').at(0))
+        .dy;
+    expect(
+      duplicatePositions,
+      lessThan(tester.getTopLeft(find.text('备注: 相同文字').at(1)).dy),
+    );
+    expect(
+      tester.getTopLeft(find.text('同刻记录甲')).dy,
+      lessThan(tester.getTopLeft(find.text('同刻记录乙')).dy),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.getTopLeft(find.text('同刻记录甲')).dy,
+      lessThan(tester.getTopLeft(find.text('同刻记录乙')).dy),
+    );
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('本机读取失败仍展示已读历史，重试不重复请求成功来源', (tester) async {
+    var localFailed = true;
+    var requests = 0;
+    final container = _container((query, cursor, token) async {
+      requests++;
+      return CloudRecordHistoryPage([_timedEntry(5, 12, '已读记录')], null);
+    });
+    await _pumpHistorySection(tester, container, () async {
+      if (localFailed) throw StateError('读取暂不可用');
+      return [
+        RecordEditHistoryDisplay(
+          version: 2,
+          summary: '恢复的记录',
+          createdAt: DateTime.utc(2026, 11, 3, 13),
+        ),
+      ];
+    });
+    expect(find.text('备注: 已读记录'), findsOneWidget);
+    expect(find.text('暂无编辑历史'), findsNothing);
+    expect(find.text('重试'), findsOneWidget);
+    localFailed = false;
+    await tester.tap(find.text('重试'));
+    await tester.pumpAndSettle();
+    expect(find.text('恢复的记录'), findsOneWidget);
+    expect(find.text('重试'), findsNothing);
+    expect(requests, 1);
+    expect(
+      tester.getTopLeft(find.text('恢复的记录')).dy,
+      lessThan(tester.getTopLeft(find.text('备注: 已读记录')).dy),
+    );
     await tester.pumpWidget(const SizedBox.shrink());
   });
 }

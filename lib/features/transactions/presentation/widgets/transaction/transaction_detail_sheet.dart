@@ -450,20 +450,13 @@ class _TransactionDetailBodyState
               name: resolver.resolve(t.lastEditedByMemberId),
             ),
         ],
-        // 4. 编辑记录(仅供查看)
+        // 编辑历史统一按记录时间展示。
         AppTokens.cardDivider(context, indent: 0, verticalGap: 0),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: AppDimens.p8),
           child: Row(
             children: [
               _SectionLabel(text: l10n.homeDetailEditHistory, dense: true),
-              const SizedBox(width: AppDimens.p4),
-              Text(
-                l10n.homeDetailEditHistoryHint,
-                style: AppTextTokens.caption(
-                  context,
-                ).copyWith(color: AppTokens.textTertiary(context)),
-              ),
             ],
           ),
         ),

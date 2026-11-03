@@ -556,12 +556,6 @@ abstract class AppLocalizations {
   /// **'Edit history'**
   String get homeDetailEditHistory;
 
-  /// No description provided for @homeDetailEditHistoryHint.
-  ///
-  /// In en, this message translates to:
-  /// **'View only'**
-  String get homeDetailEditHistoryHint;
-
   /// No description provided for @homeDetailEditButton.
   ///
   /// In en, this message translates to:
@@ -9986,36 +9980,6 @@ abstract class AppLocalizations {
   /// **'This storage or file cannot provide verified safe deletion. You can still check files here; use the cloud storage manager to delete them.'**
   String get backupCleanupReadOnlyHint;
 
-  /// No description provided for @recordHistoryCloud.
-  ///
-  /// In en, this message translates to:
-  /// **'Cloud history'**
-  String get recordHistoryCloud;
-
-  /// No description provided for @recordHistoryLocal.
-  ///
-  /// In en, this message translates to:
-  /// **'On this device'**
-  String get recordHistoryLocal;
-
-  /// No description provided for @recordHistoryCloudHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirmed edits with their cloud save time and recorded content.'**
-  String get recordHistoryCloudHint;
-
-  /// No description provided for @recordHistoryLocalHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Edits recorded on this device, including changes that may not be synced yet.'**
-  String get recordHistoryLocalHint;
-
-  /// No description provided for @recordHistoryRefresh.
-  ///
-  /// In en, this message translates to:
-  /// **'Refresh'**
-  String get recordHistoryRefresh;
-
   /// No description provided for @recordHistoryLoadMore.
   ///
   /// In en, this message translates to:
@@ -10027,12 +9991,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'History is temporarily unavailable. Try again.'**
   String get recordHistoryLoadFailed;
-
-  /// No description provided for @recordHistoryAwaitingUpload.
-  ///
-  /// In en, this message translates to:
-  /// **'This record has not been uploaded. Sync it to view cloud history.'**
-  String get recordHistoryAwaitingUpload;
 
   /// No description provided for @recordHistoryUpdated.
   ///

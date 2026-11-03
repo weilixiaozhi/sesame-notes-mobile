@@ -253,9 +253,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeDetailEditHistory => 'Edit history';
 
   @override
-  String get homeDetailEditHistoryHint => 'View only';
-
-  @override
   String get homeDetailEditButton => 'Edit';
 
   @override
@@ -5472,32 +5469,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'This storage or file cannot provide verified safe deletion. You can still check files here; use the cloud storage manager to delete them.';
 
   @override
-  String get recordHistoryCloud => 'Cloud history';
-
-  @override
-  String get recordHistoryLocal => 'On this device';
-
-  @override
-  String get recordHistoryCloudHint =>
-      'Confirmed edits with their cloud save time and recorded content.';
-
-  @override
-  String get recordHistoryLocalHint =>
-      'Edits recorded on this device, including changes that may not be synced yet.';
-
-  @override
-  String get recordHistoryRefresh => 'Refresh';
-
-  @override
   String get recordHistoryLoadMore => 'Load more';
 
   @override
   String get recordHistoryLoadFailed =>
       'History is temporarily unavailable. Try again.';
-
-  @override
-  String get recordHistoryAwaitingUpload =>
-      'This record has not been uploaded. Sync it to view cloud history.';
 
   @override
   String get recordHistoryUpdated => 'Edit recorded';

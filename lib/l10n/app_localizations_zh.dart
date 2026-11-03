@@ -247,9 +247,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeDetailEditHistory => '编辑记录';
 
   @override
-  String get homeDetailEditHistoryHint => '仅供查看';
-
-  @override
   String get homeDetailEditButton => '编辑记账';
 
   @override
@@ -5315,28 +5312,10 @@ class AppLocalizationsZh extends AppLocalizations {
       '此来源或文件暂不支持安全删除。仍可在此检查备份，删除请使用对应云存储管理器。';
 
   @override
-  String get recordHistoryCloud => '云端历史';
-
-  @override
-  String get recordHistoryLocal => '本机历史';
-
-  @override
-  String get recordHistoryCloudHint => '按云端保存时间展示已确认的编辑及当次记录的内容。';
-
-  @override
-  String get recordHistoryLocalHint => '仅记录此设备上的编辑，可能包含尚未同步的修改。';
-
-  @override
-  String get recordHistoryRefresh => '刷新';
-
-  @override
   String get recordHistoryLoadMore => '加载更多';
 
   @override
   String get recordHistoryLoadFailed => '暂时无法读取历史，请重试。';
-
-  @override
-  String get recordHistoryAwaitingUpload => '此记录尚未上传，完成同步后可查看云端历史。';
 
   @override
   String get recordHistoryUpdated => '已记录一次编辑';
@@ -5596,9 +5575,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get homeDetailEditHistory => '編輯記錄';
-
-  @override
-  String get homeDetailEditHistoryHint => '僅供查看';
 
   @override
   String get homeDetailEditButton => '編輯記帳';
@@ -10666,28 +10642,10 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
       '此來源或檔案暫不支援安全刪除。仍可在此檢查備份，刪除請使用對應雲端儲存管理器。';
 
   @override
-  String get recordHistoryCloud => '雲端歷史';
-
-  @override
-  String get recordHistoryLocal => '本機歷史';
-
-  @override
-  String get recordHistoryCloudHint => '依雲端儲存時間顯示已確認的編輯及當次記錄的內容。';
-
-  @override
-  String get recordHistoryLocalHint => '僅記錄此裝置上的編輯，可能包含尚未同步的修改。';
-
-  @override
-  String get recordHistoryRefresh => '重新整理';
-
-  @override
   String get recordHistoryLoadMore => '載入更多';
 
   @override
   String get recordHistoryLoadFailed => '暫時無法讀取歷史，請重試。';
-
-  @override
-  String get recordHistoryAwaitingUpload => '此記錄尚未上傳，完成同步後可查看雲端歷史。';
 
   @override
   String get recordHistoryUpdated => '已記錄一次編輯';
