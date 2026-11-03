@@ -160,6 +160,8 @@ import 'package:sesame_api_client/src/model/get_sync_memo_books200_response_memo
 import 'package:sesame_api_client/src/model/get_sync_memo_books_full200_response.dart';
 import 'package:sesame_api_client/src/model/get_sync_pull200_response.dart';
 import 'package:sesame_api_client/src/model/get_sync_pull200_response_changes_inner.dart';
+import 'package:sesame_api_client/src/model/get_transaction_edit_history200_response.dart';
+import 'package:sesame_api_client/src/model/get_transaction_edit_history200_response_items_inner.dart';
 import 'package:sesame_api_client/src/model/ledger.dart';
 import 'package:sesame_api_client/src/model/list_admin_banner_targets200_response.dart';
 import 'package:sesame_api_client/src/model/list_admin_banner_targets200_response_items_inner.dart';
@@ -505,6 +507,8 @@ part 'serializers.g.dart';
   GetSyncMemoBooksFull200Response,
   GetSyncPull200Response,
   GetSyncPull200ResponseChangesInner,
+  GetTransactionEditHistory200Response,
+  GetTransactionEditHistory200ResponseItemsInner,
   Ledger,
   ListAdminBannerTargets200Response,
   ListAdminBannerTargets200ResponseItemsInner,
@@ -1079,6 +1083,11 @@ Serializers serializers = (_$serializers.toBuilder()
         ]),
         () => ListBuilder<
             GetFitnessSpacesByFitnessSpaceIdPlans200ResponseItemsInnerDaysInnerSlotExercisesInnerSetsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList,
+            [FullType(GetTransactionEditHistory200ResponseItemsInner)]),
+        () => ListBuilder<GetTransactionEditHistory200ResponseItemsInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [

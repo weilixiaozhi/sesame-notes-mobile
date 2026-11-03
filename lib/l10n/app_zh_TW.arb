@@ -2375,5 +2375,19 @@
   "backupCleanupUnknown": "無法識別 · 保留",
   "backupCleanupPending": "正在寫入 · 保留",
   "backupCleanupInUse": "正在使用 · 保留",
-  "backupCleanupReadOnlyHint": "此來源或檔案暫不支援安全刪除。仍可在此檢查備份，刪除請使用對應雲端儲存管理器。"
+  "backupCleanupReadOnlyHint": "此來源或檔案暫不支援安全刪除。仍可在此檢查備份，刪除請使用對應雲端儲存管理器。",
+  "recordHistoryCloud": "雲端歷史",
+  "recordHistoryLocal": "本機歷史",
+  "recordHistoryCloudHint": "依雲端儲存時間顯示已確認的編輯及當次記錄的內容。",
+  "recordHistoryLocalHint": "僅記錄此裝置上的編輯，可能包含尚未同步的修改。",
+  "recordHistoryRefresh": "重新整理",
+  "recordHistoryLoadMore": "載入更多",
+  "recordHistoryLoadFailed": "暫時無法讀取歷史，請重試。",
+  "recordHistoryAwaitingUpload": "此記錄尚未上傳，完成同步後可查看雲端歷史。",
+  "recordHistoryUpdated": "已記錄一次編輯",
+  "recordHistoryDeleted": "刪除記錄",
+  "recordHistoryCategoryMoved": "調整分類",
+  "recordHistoryCurrencyChanged": "調整帳本本位幣",
+  "recordHistorySharingValues": "分攤資訊",
+  "recordHistoryContextChanged": "帳號已變更，請重新開啟記錄。"
 }

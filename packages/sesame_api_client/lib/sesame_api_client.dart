@@ -181,6 +181,8 @@ export 'package:sesame_api_client/src/model/get_sync_memo_books200_response_memo
 export 'package:sesame_api_client/src/model/get_sync_memo_books_full200_response.dart';
 export 'package:sesame_api_client/src/model/get_sync_pull200_response.dart';
 export 'package:sesame_api_client/src/model/get_sync_pull200_response_changes_inner.dart';
+export 'package:sesame_api_client/src/model/get_transaction_edit_history200_response.dart';
+export 'package:sesame_api_client/src/model/get_transaction_edit_history200_response_items_inner.dart';
 export 'package:sesame_api_client/src/model/ledger.dart';
 export 'package:sesame_api_client/src/model/list_admin_banner_targets200_response.dart';
 export 'package:sesame_api_client/src/model/list_admin_banner_targets200_response_items_inner.dart';

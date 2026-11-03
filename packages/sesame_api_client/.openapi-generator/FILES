@@ -180,6 +180,8 @@ lib/src/model/get_sync_memo_books200_response_memo_books_inner.dart
 lib/src/model/get_sync_memo_books_full200_response.dart
 lib/src/model/get_sync_pull200_response.dart
 lib/src/model/get_sync_pull200_response_changes_inner.dart
+lib/src/model/get_transaction_edit_history200_response.dart
+lib/src/model/get_transaction_edit_history200_response_items_inner.dart
 lib/src/model/ledger.dart
 lib/src/model/list_admin_banner_targets200_response.dart
 lib/src/model/list_admin_banner_targets200_response_items_inner.dart

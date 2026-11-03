@@ -16,7 +16,9 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/user_display_name_resolver.dart';
 import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';
 import 'package:sesame_notes/shared/providers/ledger_identity_providers.dart';
-import 'package:sesame_notes/features/statistics/application/record_history_providers.dart';
+import 'package:sesame_notes/shared/providers/account_state_provider.dart';
+import 'package:sesame_notes/infrastructure/api/api_client_provider.dart';
+import 'transaction_history_section.dart';
 import 'package:sesame_notes/features/ledgers/application/member_directory_providers.dart';
 import 'package:sesame_notes/shared/aa/aa_statistics_service.dart' show AaMode;
 import 'package:sesame_notes/theme/colors.dart';
@@ -29,7 +31,6 @@ import 'package:sesame_notes/shared/widgets/format_money.dart';
 import 'package:sesame_notes/shared/widgets/amount_text.dart';
 import 'package:sesame_notes/shared/aa/aa_fields_utils.dart';
 import 'package:sesame_notes/shared/widgets/app_detail.dart';
-import 'package:sesame_notes/shared/widgets/detail_list_item.dart';
 
 /// 记录详情 Bottom Sheet。
 ///
@@ -116,6 +117,17 @@ class _TransactionDetailBody extends ConsumerStatefulWidget {
 
 class _TransactionDetailBodyState
     extends ConsumerState<_TransactionDetailBody> {
+  late final String? _account;
+  late final int _identityGeneration;
+
+  /// 详情快照只属于打开时的账号；切换或重新登录后需要重新打开记录。
+  @override
+  void initState() {
+    super.initState();
+    _account = ref.read(currentAccountIdProvider);
+    _identityGeneration = ref.read(authIdentityGenerationProvider);
+  }
+
   /// 关闭详情前固定编辑操作身份，后续入口只记录一次点击并沿用该操作流。
   Future<void> _editTransaction() async {
     final analyticsContext = ref
@@ -279,6 +291,10 @@ class _TransactionDetailBodyState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    if (ref.watch(currentAccountIdProvider) != _account ||
+        ref.watch(authIdentityGenerationProvider) != _identityGeneration) {
+      return AppSheet(child: Text(l10n.recordHistoryContextChanged));
+    }
     final t = widget.transaction;
     final ledger = ref.watch(ledgerByIdProvider(t.ledgerId)).value;
     if (ledger?.archivedAt != null) {
@@ -291,7 +307,6 @@ class _TransactionDetailBodyState
         ),
       );
     }
-    final historyAsync = ref.watch(recordEditHistoryProvider(t.id));
     final categoryName = widget.category?.name ?? l10n.homeDetailCategory;
     // 归档状态动态订阅；分摊开关沿用调用参数，AA 区块按当前交易分摊态渲染。
     final aaOn = widget.aaEnabled;
@@ -452,44 +467,11 @@ class _TransactionDetailBodyState
             ],
           ),
         ),
-        historyAsync.when(
-          data: (h) => h.isEmpty
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(vertical: AppDimens.p8),
-                  child: Text(
-                    l10n.homeDetailNoHistory,
-                    style: AppTextTokens.label(
-                      context,
-                    ).copyWith(color: AppTokens.textTertiary(context)),
-                  ),
-                )
-              : Column(
-                  children: [
-                    for (final e in h)
-                      _HistoryRow(e, (id) => resolver.resolve(id)),
-                  ],
-                ),
-          loading: () => const Padding(
-            padding: EdgeInsets.symmetric(vertical: AppDimens.p12),
-            child: Center(
-              child: SizedBox(
-                width: AppDimens.icon16,
-                height: AppDimens.icon16,
-                child: CircularProgressIndicator(
-                  strokeWidth: AppDimens.progressStrokeWidth,
-                ),
-              ),
-            ),
-          ),
-          error: (_, _) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppDimens.p8),
-            child: Text(
-              l10n.homeDetailNoHistory,
-              style: AppTextTokens.label(
-                context,
-              ).copyWith(color: AppTokens.textTertiary(context)),
-            ),
-          ),
+        TransactionHistorySection(
+          ledgerId: t.ledgerId,
+          recordId: t.id,
+          isCloud: ledger?.storageMode == 'cloud',
+          displayNameOf: resolver.resolve,
         ),
         const SizedBox(height: AppDimens.p16),
       ],
@@ -527,84 +509,5 @@ class _MemberRow extends StatelessWidget {
         ? AppLocalizations.of(context).aaUnknownUser
         : name;
     return AppDetailInfoRow(label: label, value: displayName);
-  }
-}
-
-/// 编辑历史行:vN 标签 + 摘要 + 操作者 · 时间。
-class _HistoryRow extends StatelessWidget {
-  final RecordEditHistoryDisplay h;
-  final String Function(String?) displayNameOf;
-  const _HistoryRow(this.h, this.displayNameOf);
-
-  @override
-  Widget build(BuildContext context) {
-    // 操作者解析不到时统一「未知」,不隐藏该行也不裸显 id。
-    final operator = displayNameOf(h.operatorMemberId);
-    final operatorName = operator.isEmpty
-        ? AppLocalizations.of(context).aaUnknownUser
-        : operator;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppDimens.p4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 版本号标签 vN
-          DetailListTag(
-            label: 'v${h.version}',
-            foregroundColor: AppTokens.primary(context),
-            backgroundColor: Theme.of(
-              context,
-            ).colorScheme.primary.withValues(alpha: 0.1),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimens.p4,
-              vertical: AppDimens.p4,
-            ),
-            emphasized: true,
-          ),
-          const SizedBox(width: AppDimens.p8),
-          // 摘要 + 操作者·时间
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  h.summary,
-                  style: AppTextTokens.label(
-                    context,
-                  ).copyWith(color: AppTokens.textPrimary(context)),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: AppDimens.p4),
-                  child: Text.rich(
-                    TextSpan(
-                      text: operatorName,
-                      style: AppTextTokens.caption(
-                        context,
-                      ).copyWith(color: AppTokens.textTertiary(context)),
-                      children: [
-                        TextSpan(
-                          text: ' · ${_fmtDate(h.createdAt)}',
-                          style: AppTextTokens.dateSecondary(
-                            context,
-                          ).copyWith(color: AppTokens.textTertiary(context)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _fmtDate(DateTime dt) {
-    final l = dt.toLocal();
-    return '${l.month.toString().padLeft(2, '0')}-${l.day.toString().padLeft(2, '0')} '
-        '${l.hour.toString().padLeft(2, '0')}:${l.minute.toString().padLeft(2, '0')}';
   }
 }

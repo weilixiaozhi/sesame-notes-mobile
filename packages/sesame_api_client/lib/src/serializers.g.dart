@@ -307,6 +307,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(GetSyncPull200ResponseChangesInner.serializer)
       ..add(GetSyncPull200ResponseChangesInnerActionEnum.serializer)
       ..add(GetSyncPull200ResponseChangesInnerEntityTypeEnum.serializer)
+      ..add(GetTransactionEditHistory200Response.serializer)
+      ..add(GetTransactionEditHistory200ResponseItemsInner.serializer)
       ..add(Ledger.serializer)
       ..add(LedgerRoleEnum.serializer)
       ..add(ListAdminBannerTargets200Response.serializer)
@@ -1204,6 +1206,11 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList,
               const [const FullType(GetSyncPull200ResponseChangesInner)]),
           () => ListBuilder<GetSyncPull200ResponseChangesInner>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [
+            const FullType(GetTransactionEditHistory200ResponseItemsInner)
+          ]),
+          () => ListBuilder<GetTransactionEditHistory200ResponseItemsInner>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [
             const FullType(ListAdminBannerTargets200ResponseItemsInner)

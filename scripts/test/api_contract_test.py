@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 ARTIFACT = ROOT / "api/openapi/sesame-notes-api-v1.0.0.json"
-EXPECTED_SHA256 = "CC0A05120A585478FDEEDFF23229108A8B85F3D1F5B3288A87806F094FE8FED0"
+EXPECTED_SHA256 = "324C3613C4EB5B1771821CA1E30536D3952B02811E50323EA73937C5B2C996FB"
 # 内置训练内容与主仓 apps/api/test/fitness-library.test.ts 共用同一份内容哨兵。
 FITNESS_LIBRARY = ROOT / "assets/fitness/library.json"
 EXPECTED_FITNESS_LIBRARY_SHA256 = "daafbb470c0ff449292b28518ad9fc6b11c44f4c42997f8f672358f76676ded8"

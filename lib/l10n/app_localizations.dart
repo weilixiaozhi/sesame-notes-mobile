@@ -9985,6 +9985,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This storage or file cannot provide verified safe deletion. You can still check files here; use the cloud storage manager to delete them.'**
   String get backupCleanupReadOnlyHint;
+
+  /// No description provided for @recordHistoryCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud history'**
+  String get recordHistoryCloud;
+
+  /// No description provided for @recordHistoryLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'On this device'**
+  String get recordHistoryLocal;
+
+  /// No description provided for @recordHistoryCloudHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed edits with their cloud save time and recorded content.'**
+  String get recordHistoryCloudHint;
+
+  /// No description provided for @recordHistoryLocalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Edits recorded on this device, including changes that may not be synced yet.'**
+  String get recordHistoryLocalHint;
+
+  /// No description provided for @recordHistoryRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get recordHistoryRefresh;
+
+  /// No description provided for @recordHistoryLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get recordHistoryLoadMore;
+
+  /// No description provided for @recordHistoryLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'History is temporarily unavailable. Try again.'**
+  String get recordHistoryLoadFailed;
+
+  /// No description provided for @recordHistoryAwaitingUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'This record has not been uploaded. Sync it to view cloud history.'**
+  String get recordHistoryAwaitingUpload;
+
+  /// No description provided for @recordHistoryUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit recorded'**
+  String get recordHistoryUpdated;
+
+  /// No description provided for @recordHistoryDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Record deleted'**
+  String get recordHistoryDeleted;
+
+  /// No description provided for @recordHistoryCategoryMoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Category changed'**
+  String get recordHistoryCategoryMoved;
+
+  /// No description provided for @recordHistoryCurrencyChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Ledger currency changed'**
+  String get recordHistoryCurrencyChanged;
+
+  /// No description provided for @recordHistorySharingValues.
+  ///
+  /// In en, this message translates to:
+  /// **'Split information'**
+  String get recordHistorySharingValues;
+
+  /// No description provided for @recordHistoryContextChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'The account has changed. Reopen this record.'**
+  String get recordHistoryContextChanged;
 }
 
 class _AppLocalizationsDelegate
