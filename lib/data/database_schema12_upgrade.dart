@@ -1,35 +1,61 @@
 part of 'db.dart';
 
-/// 结构转换只移除明确停用的可空字段，不重建业务行或同步状态。
-const _schema10RemovedColumns = {
-  'ledgers': [('origin_last_revision', 'INTEGER')],
-  'sync_state': [('last_push_at', 'INTEGER'), ('last_pull_at', 'INTEGER')],
-  'sync_pull_errors': [('user_action', 'TEXT'), ('error_message', 'TEXT')],
+/// 待删列的名称、SQL 类型、非空标记和 SQL 默认值。
+typedef _RetiredColumn = (String, String, int, String?);
+
+const _schema10RemovedColumns = <String, List<_RetiredColumn>>{
+  'ledgers': [('origin_last_revision', 'INTEGER', 0, null)],
+  'sync_state': [
+    ('last_push_at', 'INTEGER', 0, null),
+    ('last_pull_at', 'INTEGER', 0, null),
+  ],
+  'sync_pull_errors': [
+    ('user_action', 'TEXT', 0, null),
+    ('error_message', 'TEXT', 0, null),
+  ],
+};
+
+const _schema11RemovedColumns = <String, List<_RetiredColumn>>{
+  'ledger_members': [('origin_account_id', 'TEXT', 0, null)],
+  'sync_pull_errors': [
+    ('first_seen_at', 'INTEGER', 1, null),
+    ('last_attempt_at', 'INTEGER', 1, null),
+    ('attempt_count', 'INTEGER', 1, '1'),
+  ],
 };
 
 /// 活动库使用单一受支持的结构升级入口，备份读取独立禁止迁移。
-extension _Schema11DatabaseUpgrade on SesameDatabase {
+extension _Schema12DatabaseUpgrade on SesameDatabase {
   /// 来源校验、删列和版本提交共用事务，任何失败都恢复原结构和所有记录。
-  Future<void> _upgradeSchema10Database(Migrator _, int from, int to) async {
+  Future<void> _upgradeDatabase(Migrator _, int from, int to) async {
     try {
-      if (from != 10 || to != 11 || to != currentSchemaVersion) {
+      if ((from != 10 && from != 11) ||
+          to != 12 ||
+          to != currentSchemaVersion) {
         throw StateError('本机数据库版本不受支持，请保留原文件并使用受支持的版本处理；当前数据未修改。');
       }
+      final hasRecoveryLogs = from == 10;
+      final retiredColumns = [
+        if (from == 10) _schema10RemovedColumns,
+        _schema11RemovedColumns,
+      ];
       await transaction(() async {
-        await _requireColumnCleanupStructure(source: true);
+        await _requireColumnCleanupStructure(retiredColumns, hasRecoveryLogs);
         await _requireColumnCleanupIntegrity();
 
         // 原生 DROP COLUMN 保留行身份、其余字段、索引及触发器；依赖目标列的未知对象使事务失败。
-        for (final entry in _schema10RemovedColumns.entries) {
-          for (final column in entry.value) {
-            await customStatement(
-              'ALTER TABLE "${entry.key}" DROP COLUMN "${column.$1}"',
-            );
+        for (final group in retiredColumns) {
+          for (final entry in group.entries) {
+            for (final (name, _, _, _) in entry.value) {
+              await customStatement(
+                'ALTER TABLE "${entry.key}" DROP COLUMN "$name"',
+              );
+            }
           }
         }
-        await customStatement('DROP TABLE recovery_logs');
+        if (hasRecoveryLogs) await customStatement('DROP TABLE recovery_logs');
         await customStatement('PRAGMA user_version=$to');
-        await _requireColumnCleanupStructure(source: false);
+        await _requireColumnCleanupStructure(const [], false);
         await _requireColumnCleanupIntegrity();
         final version = await customSelect('PRAGMA user_version').getSingle();
         if (version.read<int>('user_version') != to) {
@@ -48,7 +74,10 @@ extension _Schema11DatabaseUpgrade on SesameDatabase {
   }
 
   /// 核验全部表、列类型、空值、默认值和主键；来源只接受声明的待删列与表。
-  Future<void> _requireColumnCleanupStructure({required bool source}) async {
+  Future<void> _requireColumnCleanupStructure(
+    List<Map<String, List<_RetiredColumn>>> retiredColumns,
+    bool hasRecoveryLogs,
+  ) async {
     try {
       final tables = (await customSelect(
         "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
@@ -56,7 +85,7 @@ extension _Schema11DatabaseUpgrade on SesameDatabase {
       final expectedTables = allTables
           .map((table) => table.actualTableName)
           .toSet();
-      if (source) expectedTables.add('recovery_logs');
+      if (hasRecoveryLogs) expectedTables.add('recovery_logs');
       if (tables.length != expectedTables.length ||
           !tables.containsAll(expectedTables)) {
         throw StateError(incompleteSchemaMessage);
@@ -70,16 +99,18 @@ extension _Schema11DatabaseUpgrade on SesameDatabase {
         final expectedNames = table.$columns
             .map((column) => column.$name)
             .toSet();
-        final removedColumns = source ? _schema10RemovedColumns[name] : null;
-        for (final removed in removedColumns ?? <(String, String)>[]) {
-          expectedNames.add(removed.$1);
-          final stored = actual[removed.$1];
-          if (stored == null ||
-              stored.read<String>('type').toUpperCase() != removed.$2 ||
-              stored.read<int>('notnull') != 0 ||
-              stored.readNullable<String>('dflt_value') != null ||
-              stored.read<int>('pk') != 0) {
-            throw StateError(incompleteSchemaMessage);
+        for (final group in retiredColumns) {
+          for (final (column, type, notNull, defaultValue)
+              in group[name] ?? const <_RetiredColumn>[]) {
+            expectedNames.add(column);
+            final stored = actual[column];
+            if (stored == null ||
+                stored.read<String>('type').toUpperCase() != type ||
+                stored.read<int>('notnull') != notNull ||
+                stored.readNullable<String>('dflt_value') != defaultValue ||
+                stored.read<int>('pk') != 0) {
+              throw StateError(incompleteSchemaMessage);
+            }
           }
         }
         if (actual.length != expectedNames.length ||
@@ -114,7 +145,7 @@ extension _Schema11DatabaseUpgrade on SesameDatabase {
           }
         }
       }
-      if (source) await _requireRetiredRecoveryTable();
+      if (hasRecoveryLogs) await _requireRetiredRecoveryTable();
     } catch (error, stack) {
       logger.error(
         'Database',

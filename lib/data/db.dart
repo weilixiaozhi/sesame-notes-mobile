@@ -10,7 +10,7 @@ import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/models/day_event.dart' show DayLimits;
 
 part 'db.g.dart';
-part 'database_schema11_upgrade.dart';
+part 'database_schema12_upgrade.dart';
 
 /// 同步版本及其墓碑以 UTC 毫秒存储，保留权威时间在持久化往返中的精度。
 class MillisecondTimestampConverter extends TypeConverter<DateTime, int> {
@@ -188,9 +188,6 @@ class LedgerMembers extends Table {
 
   /// 溯源:来源云端成员 id(备份恢复/映射场景保留,不参与认证)。
   TextColumn get originMemberId => text().nullable()();
-
-  /// 溯源:来源云端账号 id(备份恢复/映射场景保留,不参与认证)。
-  TextColumn get originAccountId => text().nullable()();
 
   /// 成员角色(客户端镜像语义,与契约 role 对齐):owner/editor（邀请即编辑，无只读档）。
   TextColumn get role => text().withDefault(const Constant('editor'))();
@@ -934,12 +931,6 @@ class SyncPullErrors extends Table {
 
   TextColumn get stackTrace => text().nullable()();
 
-  DateTimeColumn get firstSeenAt => dateTime()();
-
-  DateTimeColumn get lastAttemptAt => dateTime()();
-
-  IntColumn get attemptCount => integer().withDefault(const Constant(1))();
-
   DateTimeColumn get resolvedAt => dateTime().nullable()();
 }
 
@@ -1021,7 +1012,7 @@ class BackupState extends Table {
 }
 
 /// 活动数据库升级目标与备份恢复使用的结构版本。
-const currentSchemaVersion = 11;
+const currentSchemaVersion = 12;
 
 /// 结构不完整的数据库拒绝打开，原文件和业务内容保持不变。
 const incompleteSchemaMessage = '本机数据库结构不完整，请先保留原文件并从备份恢复；当前数据未修改。';
@@ -1093,7 +1084,7 @@ class SesameDatabase extends _$SesameDatabase {
         rethrow;
       }
     },
-    onUpgrade: _upgradeSchema10Database,
+    onUpgrade: _upgradeDatabase,
   );
 
   /// 分类父子查询使用同一账号域索引，编号重复不会跨账号匹配。

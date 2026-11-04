@@ -89,7 +89,6 @@ class SyncRuntime {
     Object error,
     StackTrace stackTrace,
   ) async {
-    final now = DateTime.now().toUtc();
     await inAccountTransaction(accountId, () async {
       if (change.fitnessSpaceId != null) {
         await (db.update(db.fitnessSpaces)..where(
@@ -99,54 +98,38 @@ class SyncRuntime {
             ))
             .write(const FitnessSpacesCompanion(isStale: d.Value(true)));
       }
-      final old =
-          await (db.select(db.syncPullErrors)..where(
-                (e) =>
-                    e.changeId.equals(change.changeId) &
-                    e.accountId.equals(accountId),
-              ))
+      final existing =
+          await (db.selectOnly(db.syncPullErrors)
+                ..addColumns([db.syncPullErrors.id])
+                ..where(
+                  db.syncPullErrors.changeId.equals(change.changeId) &
+                      db.syncPullErrors.accountId.equals(accountId),
+                ))
               .getSingleOrNull();
-      if (old == null) {
-        await db
-            .into(db.syncPullErrors)
-            .insert(
-              SyncPullErrorsCompanion.insert(
-                changeId: change.changeId,
-                accountId: d.Value(accountId),
-                dayBookId: d.Value(change.dayBookId),
-                memoBookId: d.Value(change.memoBookId),
-                fitnessSpaceId: d.Value(change.fitnessSpaceId),
-                ledgerId: d.Value(change.ledgerId),
-                entityType:
-                    modelMap(
-                          change,
-                          GetSyncPull200ResponseChangesInner.serializer,
-                        )['entity_type']
-                        as String,
-                entityId: change.entityId,
-                action: change.action.name,
-                rawChangeJson: jsonEncode(
-                  modelMap(
-                    change,
-                    GetSyncPull200ResponseChangesInner.serializer,
-                  ),
-                ),
-                errorClass: d.Value(error.runtimeType.toString()),
-                stackTrace: d.Value(stackTrace.toString()),
-                firstSeenAt: now,
-                lastAttemptAt: now,
-              ),
-            );
-      } else {
-        await (db.update(
-          db.syncPullErrors,
-        )..where((e) => e.id.equals(old.id))).write(
-          SyncPullErrorsCompanion(
-            lastAttemptAt: d.Value(now),
-            attemptCount: d.Value(old.attemptCount + 1),
-          ),
-        );
-      }
+      // 同一账号的同一变更只登记一次，保留首次隔离的载荷和诊断原文。
+      if (existing != null) return;
+      final payload = modelMap(
+        change,
+        GetSyncPull200ResponseChangesInner.serializer,
+      );
+      await db
+          .into(db.syncPullErrors)
+          .insert(
+            SyncPullErrorsCompanion.insert(
+              changeId: change.changeId,
+              accountId: d.Value(accountId),
+              dayBookId: d.Value(change.dayBookId),
+              memoBookId: d.Value(change.memoBookId),
+              fitnessSpaceId: d.Value(change.fitnessSpaceId),
+              ledgerId: d.Value(change.ledgerId),
+              entityType: payload['entity_type'] as String,
+              entityId: change.entityId,
+              action: change.action.name,
+              rawChangeJson: jsonEncode(payload),
+              errorClass: d.Value(error.runtimeType.toString()),
+              stackTrace: d.Value(stackTrace.toString()),
+            ),
+          );
     });
   }
 

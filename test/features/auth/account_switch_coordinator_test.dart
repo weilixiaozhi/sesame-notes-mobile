@@ -1723,8 +1723,6 @@ void main() {
               entityId: 'tx-a',
               action: 'upsert',
               rawChangeJson: '{}',
-              firstSeenAt: now,
-              lastAttemptAt: now,
             ),
           );
       when(

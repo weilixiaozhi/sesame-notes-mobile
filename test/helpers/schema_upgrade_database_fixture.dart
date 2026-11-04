@@ -13,10 +13,13 @@ const schemaTenFrozen =
     '{\n  "mutation_id": "unchanged-mutation",\n'
     '  "payload": {"amount":"12.3400","exclude_from_stats":true,"extra":[1,2]}\n}';
 
-/// 按固定 SQL 结构创建独立文件，并写入覆盖各业务域的原始数据。
-Future<void> createSchemaTenDatabaseFixture(File file) async {
+/// 按固定 SQL 结构创建指定版本的独立文件，并写入覆盖各业务域的原始数据。
+Future<void> createSchemaUpgradeDatabaseFixture(File file, int version) async {
   sql.Database? raw;
   try {
+    if (version != 10 && version != 11) {
+      throw ArgumentError.value(version, 'version', '无对应的数据库测试夹具');
+    }
     final fixture =
         jsonDecode(
               await File(
@@ -34,7 +37,6 @@ Future<void> createSchemaTenDatabaseFixture(File file) async {
       for (final object in fixture['objects'] as List<dynamic>) {
         raw.execute((object as Map<String, dynamic>)['sql'] as String);
       }
-      raw.execute('PRAGMA user_version=10');
       _seedSchemaTenRows(raw);
       raw.execute('UPDATE ledgers SET origin_last_revision=7');
       raw.execute("UPDATE sync_pull_errors SET user_action='retry_requested'");
@@ -48,6 +50,20 @@ Future<void> createSchemaTenDatabaseFixture(File file) async {
         );
       }
       raw.execute('UPDATE ledger_members SET updated_at=updated_at*1000');
+      if (version == 11) {
+        // 用固定 DDL 构造已发布的版本 11，测试来源独立于当前迁移代码。
+        for (final statement in [
+          'ALTER TABLE ledgers DROP COLUMN origin_last_revision',
+          'ALTER TABLE sync_state DROP COLUMN last_push_at',
+          'ALTER TABLE sync_state DROP COLUMN last_pull_at',
+          'ALTER TABLE sync_pull_errors DROP COLUMN user_action',
+          'ALTER TABLE sync_pull_errors DROP COLUMN error_message',
+          'DROP TABLE recovery_logs',
+        ]) {
+          raw.execute(statement);
+        }
+      }
+      raw.execute('PRAGMA user_version=$version');
       if (raw.select('PRAGMA foreign_key_check').isNotEmpty) {
         throw StateError('测试夹具存在未满足的外键');
       }
@@ -58,8 +74,8 @@ Future<void> createSchemaTenDatabaseFixture(File file) async {
     }
   } catch (error, stack) {
     logger.error(
-      'SchemaTenFixture',
-      '创建结构6测试夹具失败',
+      'SchemaUpgradeFixture',
+      '创建本机数据库测试夹具失败：版本=$version',
       safeErrorSummary(error),
       stack,
     );
@@ -94,14 +110,16 @@ void _seedSchemaTenRows(sql.Database raw) {
   ]) {
     raw.execute(
       'INSERT INTO ledger_members(id,ledger_id,display_name,member_type,'
-      'linked_account_id,joined_at,created_at,updated_at,deleted_at) '
-      'VALUES(?,?,?,?,?,?,?,?,?)',
+      'linked_account_id,origin_member_id,origin_account_id,joined_at,created_at,updated_at,deleted_at) '
+      'VALUES(?,?,?,?,?,?,?,?,?,?,?)',
       [
         id,
         ledger,
         '保留成员 $id',
         type,
         linked,
+        '保留成员来源 $id',
+        '待清理成员来源账号 $id',
         schemaTenSeconds - 50,
         schemaTenSeconds - 100,
         schemaTenSeconds,
@@ -312,15 +330,20 @@ void _seedSchemaTenRows(sql.Database raw) {
   );
   raw.execute(
     'INSERT INTO sync_pull_errors(account_id,change_id,entity_type,entity_id,action,raw_change_json,'
-    'error_message,first_seen_at,last_attempt_at) '
+    'error_message,error_class,stack_trace,first_seen_at,last_attempt_at,attempt_count,resolved_at) '
     "VALUES(?,'900719925474099312346','transaction','transaction','upsert',?,"
-    "'保留拉取错误',?,?)",
+    "'保留拉取错误','FormatException',?, ?,?,4,?)",
     [
       schemaTenAccount,
-      '{ "evidence":"保留" }',
+      '{ "action":"upsert", "evidence":"保留" }\n',
+      '完整堆栈原文\n#0 触发位置',
+      schemaTenSeconds - 10,
       schemaTenSeconds,
-      schemaTenSeconds,
+      schemaTenSeconds + 1,
     ],
+  );
+  raw.execute(
+    "UPDATE sqlite_sequence SET seq=42 WHERE name='sync_pull_errors'",
   );
   raw.execute(
     'INSERT INTO backup_state(id,dirty_since,last_success_at,current_provider) '
@@ -335,7 +358,7 @@ void _seedSchemaTenRows(sql.Database raw) {
 }
 
 /// 固定逐表内容，包含自增序号，以核验所有非目标字段保持原值。
-Map<String, List<Map<String, Object?>>> schemaTenRows(sql.Database raw) {
+Map<String, List<Map<String, Object?>>> databaseRows(sql.Database raw) {
   try {
     return {
       for (final entry in raw.select(
@@ -347,13 +370,13 @@ Map<String, List<Map<String, Object?>>> schemaTenRows(sql.Database raw) {
             .toList(),
     };
   } catch (error, stack) {
-    logger.error('SchemaTenFixture', '读取逐表校验快照失败', error, stack);
+    logger.error('SchemaUpgradeFixture', '读取逐表校验快照失败', error, stack);
     rethrow;
   }
 }
 
 /// 版本、结构对象和全部行共同组成回滚证据，不能只比较行数。
-String schemaTenSnapshot(sql.Database raw) {
+String databaseSnapshot(sql.Database raw) {
   try {
     return jsonEncode({
       'version': raw.select('PRAGMA user_version').single.values.single,
@@ -361,37 +384,42 @@ String schemaTenSnapshot(sql.Database raw) {
           .select('SELECT * FROM sqlite_master ORDER BY type,name')
           .map((row) => Map<String, Object?>.from(row))
           .toList(),
-      'rows': schemaTenRows(raw),
+      'rows': databaseRows(raw),
     });
   } catch (error, stack) {
-    logger.error('SchemaTenFixture', '读取数据库完整校验快照失败', error, stack);
+    logger.error('SchemaUpgradeFixture', '读取数据库完整校验快照失败', error, stack);
     rethrow;
   }
 }
 
 /// 预期只移除明确停用的列，其余所有字段与原始字节保持一致。
-Map<String, List<Map<String, Object?>>> expectedSchemaTenRows(
+Map<String, List<Map<String, Object?>>> expectedUpgradedRows(
   Map<String, List<Map<String, Object?>>> source,
-) => {
-  for (final entry in source.entries)
-    if (entry.key != 'recovery_logs')
-      entry.key: [
-        for (final row in entry.value)
-          if (!(entry.key == 'sqlite_sequence' &&
-              row['name'] == 'recovery_logs'))
-            {
-              for (final field in row.entries)
-                if (!(entry.key == 'ledgers' &&
-                        field.key == 'origin_last_revision') &&
-                    !(entry.key == 'sync_state' &&
-                        field.key == 'last_push_at') &&
-                    !(entry.key == 'sync_state' &&
-                        field.key == 'last_pull_at') &&
-                    !(entry.key == 'sync_pull_errors' &&
-                        field.key == 'user_action') &&
-                    !(entry.key == 'sync_pull_errors' &&
-                        field.key == 'error_message'))
-                  field.key: field.value,
-            },
-      ],
-};
+) {
+  const removedColumns = {
+    'ledgers': {'origin_last_revision'},
+    'ledger_members': {'origin_account_id'},
+    'sync_state': {'last_push_at', 'last_pull_at'},
+    'sync_pull_errors': {
+      'user_action',
+      'error_message',
+      'first_seen_at',
+      'last_attempt_at',
+      'attempt_count',
+    },
+  };
+  return {
+    for (final entry in source.entries)
+      if (entry.key != 'recovery_logs')
+        entry.key: [
+          for (final row in entry.value)
+            if (!(entry.key == 'sqlite_sequence' &&
+                row['name'] == 'recovery_logs'))
+              {
+                for (final field in row.entries)
+                  if (removedColumns[entry.key]?.contains(field.key) != true)
+                    field.key: field.value,
+              },
+        ],
+  };
+}

@@ -8,6 +8,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sesame_api_client/sesame_api_client.dart';
+import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/db.dart' hide Transaction;
 import 'package:sesame_notes/sync/sync_service.dart';
 
@@ -320,6 +321,40 @@ void main() {
     expect(await db.select(db.syncChanges).get(), pending);
     expect((await db.select(db.syncConflicts).getSingle()).status, 'OPEN');
     expect((await db.select(db.syncState).getSingle()).serverCursor, '1');
+  });
+
+  test('同一已解决变更再次拉取失败时保留首次隔离载荷和诊断', () async {
+    try {
+      await service.pull();
+      page = _page(_transaction(revision: 2)..remove('amount'), cursor: '2');
+      await expectLater(service.pull(), throwsA(isA<DeserializationError>()));
+      final failure = await db.select(db.syncPullErrors).getSingle();
+      final resolvedAt = DateTime.utc(2026, 9, 14);
+      await (db.update(db.syncPullErrors)
+            ..where((row) => row.id.equals(failure.id)))
+          .write(SyncPullErrorsCompanion(resolvedAt: d.Value(resolvedAt)));
+      final resolved = await db.select(db.syncPullErrors).getSingle();
+
+      // 同一变更编号返回不同的坏载荷时，不覆盖原来的隔离证据或解决状态。
+      page = _page(
+        _transaction(revision: 2)..remove('happened_at'),
+        cursor: '2',
+      );
+      await expectLater(service.pull(), throwsA(isA<DeserializationError>()));
+      expect(await db.select(db.syncPullErrors).getSingle(), resolved);
+      expect(resolved.resolvedAt?.isAtSameMomentAs(resolvedAt), isTrue);
+      expect(resolved.rawChangeJson, failure.rawChangeJson);
+      expect(resolved.stackTrace, failure.stackTrace);
+      expect((await db.select(db.syncState).getSingle()).serverCursor, '1');
+    } catch (error, stack) {
+      logger.error(
+        'TransactionProjectionTest',
+        '重复拉取隔离验证失败',
+        safeErrorSummary(error),
+        stack,
+      );
+      rethrow;
+    }
   });
 
   final corruptions = <String, void Function(Map<String, Object?>)>{

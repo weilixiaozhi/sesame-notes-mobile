@@ -37,10 +37,9 @@ Future<void> _seedCurrentDatabase(Database raw) async {
       ['{ "name": "保留正文", "level": 1 }\n', _stamp, '{ 未确认冻结原文'],
     );
     raw.execute(
-      'INSERT INTO sync_pull_errors(account_id,change_id,entity_type,entity_id,action,raw_change_json,'
-      'first_seen_at,last_attempt_at) '
-      "VALUES('account','1234','category','category','upsert',?,?,?)",
-      ['{ "saved": true }', _stamp ~/ 1000, _stamp ~/ 1000],
+      'INSERT INTO sync_pull_errors(account_id,change_id,entity_type,entity_id,action,raw_change_json) '
+      "VALUES('account','1234','category','category','upsert',?)",
+      ['{ "saved": true }'],
     );
   } catch (error, stackTrace) {
     logger.error('SchemaBoundaryTest', '创建当前数据库夹具失败', error, stackTrace);

@@ -7080,17 +7080,6 @@ class $LedgerMembersTable extends LedgerMembers
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _originAccountIdMeta = const VerificationMeta(
-    'originAccountId',
-  );
-  @override
-  late final GeneratedColumn<String> originAccountId = GeneratedColumn<String>(
-    'origin_account_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
   static const VerificationMeta _roleMeta = const VerificationMeta('role');
   @override
   late final GeneratedColumn<String> role = GeneratedColumn<String>(
@@ -7186,7 +7175,6 @@ class $LedgerMembersTable extends LedgerMembers
     memberType,
     linkedAccountId,
     originMemberId,
-    originAccountId,
     role,
     avatarUrl,
     avatarVersion,
@@ -7255,15 +7243,6 @@ class $LedgerMembersTable extends LedgerMembers
         originMemberId.isAcceptableOrUnknown(
           data['origin_member_id']!,
           _originMemberIdMeta,
-        ),
-      );
-    }
-    if (data.containsKey('origin_account_id')) {
-      context.handle(
-        _originAccountIdMeta,
-        originAccountId.isAcceptableOrUnknown(
-          data['origin_account_id']!,
-          _originAccountIdMeta,
         ),
       );
     }
@@ -7345,10 +7324,6 @@ class $LedgerMembersTable extends LedgerMembers
         DriftSqlType.string,
         data['${effectivePrefix}origin_member_id'],
       ),
-      originAccountId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}origin_account_id'],
-      ),
       role: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}role'],
@@ -7417,9 +7392,6 @@ class LedgerMember extends DataClass
   /// 溯源:来源云端成员 id(备份恢复/映射场景保留,不参与认证)。
   final String? originMemberId;
 
-  /// 溯源:来源云端账号 id(备份恢复/映射场景保留,不参与认证)。
-  final String? originAccountId;
-
   /// 成员角色(客户端镜像语义,与契约 role 对齐):owner/editor（邀请即编辑，无只读档）。
   final String role;
 
@@ -7447,7 +7419,6 @@ class LedgerMember extends DataClass
     required this.memberType,
     this.linkedAccountId,
     this.originMemberId,
-    this.originAccountId,
     required this.role,
     this.avatarUrl,
     required this.avatarVersion,
@@ -7469,9 +7440,6 @@ class LedgerMember extends DataClass
     }
     if (!nullToAbsent || originMemberId != null) {
       map['origin_member_id'] = Variable<String>(originMemberId);
-    }
-    if (!nullToAbsent || originAccountId != null) {
-      map['origin_account_id'] = Variable<String>(originAccountId);
     }
     map['role'] = Variable<String>(role);
     if (!nullToAbsent || avatarUrl != null) {
@@ -7504,9 +7472,6 @@ class LedgerMember extends DataClass
       originMemberId: originMemberId == null && nullToAbsent
           ? const Value.absent()
           : Value(originMemberId),
-      originAccountId: originAccountId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(originAccountId),
       role: Value(role),
       avatarUrl: avatarUrl == null && nullToAbsent
           ? const Value.absent()
@@ -7534,7 +7499,6 @@ class LedgerMember extends DataClass
       memberType: serializer.fromJson<String>(json['memberType']),
       linkedAccountId: serializer.fromJson<String?>(json['linkedAccountId']),
       originMemberId: serializer.fromJson<String?>(json['originMemberId']),
-      originAccountId: serializer.fromJson<String?>(json['originAccountId']),
       role: serializer.fromJson<String>(json['role']),
       avatarUrl: serializer.fromJson<String?>(json['avatarUrl']),
       avatarVersion: serializer.fromJson<int>(json['avatarVersion']),
@@ -7555,7 +7519,6 @@ class LedgerMember extends DataClass
       'memberType': serializer.toJson<String>(memberType),
       'linkedAccountId': serializer.toJson<String?>(linkedAccountId),
       'originMemberId': serializer.toJson<String?>(originMemberId),
-      'originAccountId': serializer.toJson<String?>(originAccountId),
       'role': serializer.toJson<String>(role),
       'avatarUrl': serializer.toJson<String?>(avatarUrl),
       'avatarVersion': serializer.toJson<int>(avatarVersion),
@@ -7574,7 +7537,6 @@ class LedgerMember extends DataClass
     String? memberType,
     Value<String?> linkedAccountId = const Value.absent(),
     Value<String?> originMemberId = const Value.absent(),
-    Value<String?> originAccountId = const Value.absent(),
     String? role,
     Value<String?> avatarUrl = const Value.absent(),
     int? avatarVersion,
@@ -7594,9 +7556,6 @@ class LedgerMember extends DataClass
     originMemberId: originMemberId.present
         ? originMemberId.value
         : this.originMemberId,
-    originAccountId: originAccountId.present
-        ? originAccountId.value
-        : this.originAccountId,
     role: role ?? this.role,
     avatarUrl: avatarUrl.present ? avatarUrl.value : this.avatarUrl,
     avatarVersion: avatarVersion ?? this.avatarVersion,
@@ -7622,9 +7581,6 @@ class LedgerMember extends DataClass
       originMemberId: data.originMemberId.present
           ? data.originMemberId.value
           : this.originMemberId,
-      originAccountId: data.originAccountId.present
-          ? data.originAccountId.value
-          : this.originAccountId,
       role: data.role.present ? data.role.value : this.role,
       avatarUrl: data.avatarUrl.present ? data.avatarUrl.value : this.avatarUrl,
       avatarVersion: data.avatarVersion.present
@@ -7647,7 +7603,6 @@ class LedgerMember extends DataClass
           ..write('memberType: $memberType, ')
           ..write('linkedAccountId: $linkedAccountId, ')
           ..write('originMemberId: $originMemberId, ')
-          ..write('originAccountId: $originAccountId, ')
           ..write('role: $role, ')
           ..write('avatarUrl: $avatarUrl, ')
           ..write('avatarVersion: $avatarVersion, ')
@@ -7668,7 +7623,6 @@ class LedgerMember extends DataClass
     memberType,
     linkedAccountId,
     originMemberId,
-    originAccountId,
     role,
     avatarUrl,
     avatarVersion,
@@ -7688,7 +7642,6 @@ class LedgerMember extends DataClass
           other.memberType == this.memberType &&
           other.linkedAccountId == this.linkedAccountId &&
           other.originMemberId == this.originMemberId &&
-          other.originAccountId == this.originAccountId &&
           other.role == this.role &&
           other.avatarUrl == this.avatarUrl &&
           other.avatarVersion == this.avatarVersion &&
@@ -7706,7 +7659,6 @@ class LedgerMembersCompanion extends UpdateCompanion<LedgerMember> {
   final Value<String> memberType;
   final Value<String?> linkedAccountId;
   final Value<String?> originMemberId;
-  final Value<String?> originAccountId;
   final Value<String> role;
   final Value<String?> avatarUrl;
   final Value<int> avatarVersion;
@@ -7723,7 +7675,6 @@ class LedgerMembersCompanion extends UpdateCompanion<LedgerMember> {
     this.memberType = const Value.absent(),
     this.linkedAccountId = const Value.absent(),
     this.originMemberId = const Value.absent(),
-    this.originAccountId = const Value.absent(),
     this.role = const Value.absent(),
     this.avatarUrl = const Value.absent(),
     this.avatarVersion = const Value.absent(),
@@ -7741,7 +7692,6 @@ class LedgerMembersCompanion extends UpdateCompanion<LedgerMember> {
     required String memberType,
     this.linkedAccountId = const Value.absent(),
     this.originMemberId = const Value.absent(),
-    this.originAccountId = const Value.absent(),
     this.role = const Value.absent(),
     this.avatarUrl = const Value.absent(),
     this.avatarVersion = const Value.absent(),
@@ -7763,7 +7713,6 @@ class LedgerMembersCompanion extends UpdateCompanion<LedgerMember> {
     Expression<String>? memberType,
     Expression<String>? linkedAccountId,
     Expression<String>? originMemberId,
-    Expression<String>? originAccountId,
     Expression<String>? role,
     Expression<String>? avatarUrl,
     Expression<int>? avatarVersion,
@@ -7781,7 +7730,6 @@ class LedgerMembersCompanion extends UpdateCompanion<LedgerMember> {
       if (memberType != null) 'member_type': memberType,
       if (linkedAccountId != null) 'linked_account_id': linkedAccountId,
       if (originMemberId != null) 'origin_member_id': originMemberId,
-      if (originAccountId != null) 'origin_account_id': originAccountId,
       if (role != null) 'role': role,
       if (avatarUrl != null) 'avatar_url': avatarUrl,
       if (avatarVersion != null) 'avatar_version': avatarVersion,
@@ -7801,7 +7749,6 @@ class LedgerMembersCompanion extends UpdateCompanion<LedgerMember> {
     Value<String>? memberType,
     Value<String?>? linkedAccountId,
     Value<String?>? originMemberId,
-    Value<String?>? originAccountId,
     Value<String>? role,
     Value<String?>? avatarUrl,
     Value<int>? avatarVersion,
@@ -7819,7 +7766,6 @@ class LedgerMembersCompanion extends UpdateCompanion<LedgerMember> {
       memberType: memberType ?? this.memberType,
       linkedAccountId: linkedAccountId ?? this.linkedAccountId,
       originMemberId: originMemberId ?? this.originMemberId,
-      originAccountId: originAccountId ?? this.originAccountId,
       role: role ?? this.role,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       avatarVersion: avatarVersion ?? this.avatarVersion,
@@ -7852,9 +7798,6 @@ class LedgerMembersCompanion extends UpdateCompanion<LedgerMember> {
     }
     if (originMemberId.present) {
       map['origin_member_id'] = Variable<String>(originMemberId.value);
-    }
-    if (originAccountId.present) {
-      map['origin_account_id'] = Variable<String>(originAccountId.value);
     }
     if (role.present) {
       map['role'] = Variable<String>(role.value);
@@ -7897,7 +7840,6 @@ class LedgerMembersCompanion extends UpdateCompanion<LedgerMember> {
           ..write('memberType: $memberType, ')
           ..write('linkedAccountId: $linkedAccountId, ')
           ..write('originMemberId: $originMemberId, ')
-          ..write('originAccountId: $originAccountId, ')
           ..write('role: $role, ')
           ..write('avatarUrl: $avatarUrl, ')
           ..write('avatarVersion: $avatarVersion, ')
@@ -15035,41 +14977,6 @@ class $SyncPullErrorsTable extends SyncPullErrors
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _firstSeenAtMeta = const VerificationMeta(
-    'firstSeenAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> firstSeenAt = GeneratedColumn<DateTime>(
-    'first_seen_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _lastAttemptAtMeta = const VerificationMeta(
-    'lastAttemptAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> lastAttemptAt =
-      GeneratedColumn<DateTime>(
-        'last_attempt_at',
-        aliasedName,
-        false,
-        type: DriftSqlType.dateTime,
-        requiredDuringInsert: true,
-      );
-  static const VerificationMeta _attemptCountMeta = const VerificationMeta(
-    'attemptCount',
-  );
-  @override
-  late final GeneratedColumn<int> attemptCount = GeneratedColumn<int>(
-    'attempt_count',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(1),
-  );
   static const VerificationMeta _resolvedAtMeta = const VerificationMeta(
     'resolvedAt',
   );
@@ -15096,9 +15003,6 @@ class $SyncPullErrorsTable extends SyncPullErrors
     rawChangeJson,
     errorClass,
     stackTrace,
-    firstSeenAt,
-    lastAttemptAt,
-    attemptCount,
     resolvedAt,
   ];
   @override
@@ -15207,37 +15111,6 @@ class $SyncPullErrorsTable extends SyncPullErrors
         stackTrace.isAcceptableOrUnknown(data['stack_trace']!, _stackTraceMeta),
       );
     }
-    if (data.containsKey('first_seen_at')) {
-      context.handle(
-        _firstSeenAtMeta,
-        firstSeenAt.isAcceptableOrUnknown(
-          data['first_seen_at']!,
-          _firstSeenAtMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_firstSeenAtMeta);
-    }
-    if (data.containsKey('last_attempt_at')) {
-      context.handle(
-        _lastAttemptAtMeta,
-        lastAttemptAt.isAcceptableOrUnknown(
-          data['last_attempt_at']!,
-          _lastAttemptAtMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_lastAttemptAtMeta);
-    }
-    if (data.containsKey('attempt_count')) {
-      context.handle(
-        _attemptCountMeta,
-        attemptCount.isAcceptableOrUnknown(
-          data['attempt_count']!,
-          _attemptCountMeta,
-        ),
-      );
-    }
     if (data.containsKey('resolved_at')) {
       context.handle(
         _resolvedAtMeta,
@@ -15305,18 +15178,6 @@ class $SyncPullErrorsTable extends SyncPullErrors
         DriftSqlType.string,
         data['${effectivePrefix}stack_trace'],
       ),
-      firstSeenAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}first_seen_at'],
-      )!,
-      lastAttemptAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}last_attempt_at'],
-      )!,
-      attemptCount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}attempt_count'],
-      )!,
       resolvedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}resolved_at'],
@@ -15347,9 +15208,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
   final String rawChangeJson;
   final String? errorClass;
   final String? stackTrace;
-  final DateTime firstSeenAt;
-  final DateTime lastAttemptAt;
-  final int attemptCount;
   final DateTime? resolvedAt;
   const SyncPullError({
     this.accountId,
@@ -15365,9 +15223,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
     required this.rawChangeJson,
     this.errorClass,
     this.stackTrace,
-    required this.firstSeenAt,
-    required this.lastAttemptAt,
-    required this.attemptCount,
     this.resolvedAt,
   });
   @override
@@ -15400,9 +15255,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
     if (!nullToAbsent || stackTrace != null) {
       map['stack_trace'] = Variable<String>(stackTrace);
     }
-    map['first_seen_at'] = Variable<DateTime>(firstSeenAt);
-    map['last_attempt_at'] = Variable<DateTime>(lastAttemptAt);
-    map['attempt_count'] = Variable<int>(attemptCount);
     if (!nullToAbsent || resolvedAt != null) {
       map['resolved_at'] = Variable<DateTime>(resolvedAt);
     }
@@ -15438,9 +15290,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
       stackTrace: stackTrace == null && nullToAbsent
           ? const Value.absent()
           : Value(stackTrace),
-      firstSeenAt: Value(firstSeenAt),
-      lastAttemptAt: Value(lastAttemptAt),
-      attemptCount: Value(attemptCount),
       resolvedAt: resolvedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(resolvedAt),
@@ -15466,9 +15315,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
       rawChangeJson: serializer.fromJson<String>(json['rawChangeJson']),
       errorClass: serializer.fromJson<String?>(json['errorClass']),
       stackTrace: serializer.fromJson<String?>(json['stackTrace']),
-      firstSeenAt: serializer.fromJson<DateTime>(json['firstSeenAt']),
-      lastAttemptAt: serializer.fromJson<DateTime>(json['lastAttemptAt']),
-      attemptCount: serializer.fromJson<int>(json['attemptCount']),
       resolvedAt: serializer.fromJson<DateTime?>(json['resolvedAt']),
     );
   }
@@ -15489,9 +15335,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
       'rawChangeJson': serializer.toJson<String>(rawChangeJson),
       'errorClass': serializer.toJson<String?>(errorClass),
       'stackTrace': serializer.toJson<String?>(stackTrace),
-      'firstSeenAt': serializer.toJson<DateTime>(firstSeenAt),
-      'lastAttemptAt': serializer.toJson<DateTime>(lastAttemptAt),
-      'attemptCount': serializer.toJson<int>(attemptCount),
       'resolvedAt': serializer.toJson<DateTime?>(resolvedAt),
     };
   }
@@ -15510,9 +15353,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
     String? rawChangeJson,
     Value<String?> errorClass = const Value.absent(),
     Value<String?> stackTrace = const Value.absent(),
-    DateTime? firstSeenAt,
-    DateTime? lastAttemptAt,
-    int? attemptCount,
     Value<DateTime?> resolvedAt = const Value.absent(),
   }) => SyncPullError(
     accountId: accountId.present ? accountId.value : this.accountId,
@@ -15530,9 +15370,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
     rawChangeJson: rawChangeJson ?? this.rawChangeJson,
     errorClass: errorClass.present ? errorClass.value : this.errorClass,
     stackTrace: stackTrace.present ? stackTrace.value : this.stackTrace,
-    firstSeenAt: firstSeenAt ?? this.firstSeenAt,
-    lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
-    attemptCount: attemptCount ?? this.attemptCount,
     resolvedAt: resolvedAt.present ? resolvedAt.value : this.resolvedAt,
   );
   SyncPullError copyWithCompanion(SyncPullErrorsCompanion data) {
@@ -15562,15 +15399,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
       stackTrace: data.stackTrace.present
           ? data.stackTrace.value
           : this.stackTrace,
-      firstSeenAt: data.firstSeenAt.present
-          ? data.firstSeenAt.value
-          : this.firstSeenAt,
-      lastAttemptAt: data.lastAttemptAt.present
-          ? data.lastAttemptAt.value
-          : this.lastAttemptAt,
-      attemptCount: data.attemptCount.present
-          ? data.attemptCount.value
-          : this.attemptCount,
       resolvedAt: data.resolvedAt.present
           ? data.resolvedAt.value
           : this.resolvedAt,
@@ -15593,9 +15421,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
           ..write('rawChangeJson: $rawChangeJson, ')
           ..write('errorClass: $errorClass, ')
           ..write('stackTrace: $stackTrace, ')
-          ..write('firstSeenAt: $firstSeenAt, ')
-          ..write('lastAttemptAt: $lastAttemptAt, ')
-          ..write('attemptCount: $attemptCount, ')
           ..write('resolvedAt: $resolvedAt')
           ..write(')'))
         .toString();
@@ -15616,9 +15441,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
     rawChangeJson,
     errorClass,
     stackTrace,
-    firstSeenAt,
-    lastAttemptAt,
-    attemptCount,
     resolvedAt,
   );
   @override
@@ -15638,9 +15460,6 @@ class SyncPullError extends DataClass implements Insertable<SyncPullError> {
           other.rawChangeJson == this.rawChangeJson &&
           other.errorClass == this.errorClass &&
           other.stackTrace == this.stackTrace &&
-          other.firstSeenAt == this.firstSeenAt &&
-          other.lastAttemptAt == this.lastAttemptAt &&
-          other.attemptCount == this.attemptCount &&
           other.resolvedAt == this.resolvedAt);
 }
 
@@ -15658,9 +15477,6 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
   final Value<String> rawChangeJson;
   final Value<String?> errorClass;
   final Value<String?> stackTrace;
-  final Value<DateTime> firstSeenAt;
-  final Value<DateTime> lastAttemptAt;
-  final Value<int> attemptCount;
   final Value<DateTime?> resolvedAt;
   const SyncPullErrorsCompanion({
     this.accountId = const Value.absent(),
@@ -15676,9 +15492,6 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
     this.rawChangeJson = const Value.absent(),
     this.errorClass = const Value.absent(),
     this.stackTrace = const Value.absent(),
-    this.firstSeenAt = const Value.absent(),
-    this.lastAttemptAt = const Value.absent(),
-    this.attemptCount = const Value.absent(),
     this.resolvedAt = const Value.absent(),
   });
   SyncPullErrorsCompanion.insert({
@@ -15695,17 +15508,12 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
     required String rawChangeJson,
     this.errorClass = const Value.absent(),
     this.stackTrace = const Value.absent(),
-    required DateTime firstSeenAt,
-    required DateTime lastAttemptAt,
-    this.attemptCount = const Value.absent(),
     this.resolvedAt = const Value.absent(),
   }) : changeId = Value(changeId),
        entityType = Value(entityType),
        entityId = Value(entityId),
        action = Value(action),
-       rawChangeJson = Value(rawChangeJson),
-       firstSeenAt = Value(firstSeenAt),
-       lastAttemptAt = Value(lastAttemptAt);
+       rawChangeJson = Value(rawChangeJson);
   static Insertable<SyncPullError> custom({
     Expression<String>? accountId,
     Expression<String>? dayBookId,
@@ -15720,9 +15528,6 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
     Expression<String>? rawChangeJson,
     Expression<String>? errorClass,
     Expression<String>? stackTrace,
-    Expression<DateTime>? firstSeenAt,
-    Expression<DateTime>? lastAttemptAt,
-    Expression<int>? attemptCount,
     Expression<DateTime>? resolvedAt,
   }) {
     return RawValuesInsertable({
@@ -15739,9 +15544,6 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
       if (rawChangeJson != null) 'raw_change_json': rawChangeJson,
       if (errorClass != null) 'error_class': errorClass,
       if (stackTrace != null) 'stack_trace': stackTrace,
-      if (firstSeenAt != null) 'first_seen_at': firstSeenAt,
-      if (lastAttemptAt != null) 'last_attempt_at': lastAttemptAt,
-      if (attemptCount != null) 'attempt_count': attemptCount,
       if (resolvedAt != null) 'resolved_at': resolvedAt,
     });
   }
@@ -15760,9 +15562,6 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
     Value<String>? rawChangeJson,
     Value<String?>? errorClass,
     Value<String?>? stackTrace,
-    Value<DateTime>? firstSeenAt,
-    Value<DateTime>? lastAttemptAt,
-    Value<int>? attemptCount,
     Value<DateTime?>? resolvedAt,
   }) {
     return SyncPullErrorsCompanion(
@@ -15779,9 +15578,6 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
       rawChangeJson: rawChangeJson ?? this.rawChangeJson,
       errorClass: errorClass ?? this.errorClass,
       stackTrace: stackTrace ?? this.stackTrace,
-      firstSeenAt: firstSeenAt ?? this.firstSeenAt,
-      lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
-      attemptCount: attemptCount ?? this.attemptCount,
       resolvedAt: resolvedAt ?? this.resolvedAt,
     );
   }
@@ -15828,15 +15624,6 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
     if (stackTrace.present) {
       map['stack_trace'] = Variable<String>(stackTrace.value);
     }
-    if (firstSeenAt.present) {
-      map['first_seen_at'] = Variable<DateTime>(firstSeenAt.value);
-    }
-    if (lastAttemptAt.present) {
-      map['last_attempt_at'] = Variable<DateTime>(lastAttemptAt.value);
-    }
-    if (attemptCount.present) {
-      map['attempt_count'] = Variable<int>(attemptCount.value);
-    }
     if (resolvedAt.present) {
       map['resolved_at'] = Variable<DateTime>(resolvedAt.value);
     }
@@ -15859,9 +15646,6 @@ class SyncPullErrorsCompanion extends UpdateCompanion<SyncPullError> {
           ..write('rawChangeJson: $rawChangeJson, ')
           ..write('errorClass: $errorClass, ')
           ..write('stackTrace: $stackTrace, ')
-          ..write('firstSeenAt: $firstSeenAt, ')
-          ..write('lastAttemptAt: $lastAttemptAt, ')
-          ..write('attemptCount: $attemptCount, ')
           ..write('resolvedAt: $resolvedAt')
           ..write(')'))
         .toString();
@@ -23601,7 +23385,6 @@ typedef $$LedgerMembersTableCreateCompanionBuilder =
       required String memberType,
       Value<String?> linkedAccountId,
       Value<String?> originMemberId,
-      Value<String?> originAccountId,
       Value<String> role,
       Value<String?> avatarUrl,
       Value<int> avatarVersion,
@@ -23620,7 +23403,6 @@ typedef $$LedgerMembersTableUpdateCompanionBuilder =
       Value<String> memberType,
       Value<String?> linkedAccountId,
       Value<String?> originMemberId,
-      Value<String?> originAccountId,
       Value<String> role,
       Value<String?> avatarUrl,
       Value<int> avatarVersion,
@@ -23690,11 +23472,6 @@ class $$LedgerMembersTableFilterComposer
 
   ColumnFilters<String> get originMemberId => $composableBuilder(
     column: $table.originMemberId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get originAccountId => $composableBuilder(
-    column: $table.originAccountId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -23797,11 +23574,6 @@ class $$LedgerMembersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get originAccountId => $composableBuilder(
-    column: $table.originAccountId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get role => $composableBuilder(
     column: $table.role,
     builder: (column) => ColumnOrderings(column),
@@ -23898,11 +23670,6 @@ class $$LedgerMembersTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get originAccountId => $composableBuilder(
-    column: $table.originAccountId,
-    builder: (column) => column,
-  );
-
   GeneratedColumn<String> get role =>
       $composableBuilder(column: $table.role, builder: (column) => column);
 
@@ -23989,7 +23756,6 @@ class $$LedgerMembersTableTableManager
                 Value<String> memberType = const Value.absent(),
                 Value<String?> linkedAccountId = const Value.absent(),
                 Value<String?> originMemberId = const Value.absent(),
-                Value<String?> originAccountId = const Value.absent(),
                 Value<String> role = const Value.absent(),
                 Value<String?> avatarUrl = const Value.absent(),
                 Value<int> avatarVersion = const Value.absent(),
@@ -24006,7 +23772,6 @@ class $$LedgerMembersTableTableManager
                 memberType: memberType,
                 linkedAccountId: linkedAccountId,
                 originMemberId: originMemberId,
-                originAccountId: originAccountId,
                 role: role,
                 avatarUrl: avatarUrl,
                 avatarVersion: avatarVersion,
@@ -24025,7 +23790,6 @@ class $$LedgerMembersTableTableManager
                 required String memberType,
                 Value<String?> linkedAccountId = const Value.absent(),
                 Value<String?> originMemberId = const Value.absent(),
-                Value<String?> originAccountId = const Value.absent(),
                 Value<String> role = const Value.absent(),
                 Value<String?> avatarUrl = const Value.absent(),
                 Value<int> avatarVersion = const Value.absent(),
@@ -24042,7 +23806,6 @@ class $$LedgerMembersTableTableManager
                 memberType: memberType,
                 linkedAccountId: linkedAccountId,
                 originMemberId: originMemberId,
-                originAccountId: originAccountId,
                 role: role,
                 avatarUrl: avatarUrl,
                 avatarVersion: avatarVersion,
@@ -28136,9 +27899,6 @@ typedef $$SyncPullErrorsTableCreateCompanionBuilder =
       required String rawChangeJson,
       Value<String?> errorClass,
       Value<String?> stackTrace,
-      required DateTime firstSeenAt,
-      required DateTime lastAttemptAt,
-      Value<int> attemptCount,
       Value<DateTime?> resolvedAt,
     });
 typedef $$SyncPullErrorsTableUpdateCompanionBuilder =
@@ -28156,9 +27916,6 @@ typedef $$SyncPullErrorsTableUpdateCompanionBuilder =
       Value<String> rawChangeJson,
       Value<String?> errorClass,
       Value<String?> stackTrace,
-      Value<DateTime> firstSeenAt,
-      Value<DateTime> lastAttemptAt,
-      Value<int> attemptCount,
       Value<DateTime?> resolvedAt,
     });
 
@@ -28233,21 +27990,6 @@ class $$SyncPullErrorsTableFilterComposer
 
   ColumnFilters<String> get stackTrace => $composableBuilder(
     column: $table.stackTrace,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get firstSeenAt => $composableBuilder(
-    column: $table.firstSeenAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get lastAttemptAt => $composableBuilder(
-    column: $table.lastAttemptAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get attemptCount => $composableBuilder(
-    column: $table.attemptCount,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -28331,21 +28073,6 @@ class $$SyncPullErrorsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get firstSeenAt => $composableBuilder(
-    column: $table.firstSeenAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get lastAttemptAt => $composableBuilder(
-    column: $table.lastAttemptAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get attemptCount => $composableBuilder(
-    column: $table.attemptCount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<DateTime> get resolvedAt => $composableBuilder(
     column: $table.resolvedAt,
     builder: (column) => ColumnOrderings(column),
@@ -28412,21 +28139,6 @@ class $$SyncPullErrorsTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<DateTime> get firstSeenAt => $composableBuilder(
-    column: $table.firstSeenAt,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get lastAttemptAt => $composableBuilder(
-    column: $table.lastAttemptAt,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get attemptCount => $composableBuilder(
-    column: $table.attemptCount,
-    builder: (column) => column,
-  );
-
   GeneratedColumn<DateTime> get resolvedAt => $composableBuilder(
     column: $table.resolvedAt,
     builder: (column) => column,
@@ -28483,9 +28195,6 @@ class $$SyncPullErrorsTableTableManager
                 Value<String> rawChangeJson = const Value.absent(),
                 Value<String?> errorClass = const Value.absent(),
                 Value<String?> stackTrace = const Value.absent(),
-                Value<DateTime> firstSeenAt = const Value.absent(),
-                Value<DateTime> lastAttemptAt = const Value.absent(),
-                Value<int> attemptCount = const Value.absent(),
                 Value<DateTime?> resolvedAt = const Value.absent(),
               }) => SyncPullErrorsCompanion(
                 accountId: accountId,
@@ -28501,9 +28210,6 @@ class $$SyncPullErrorsTableTableManager
                 rawChangeJson: rawChangeJson,
                 errorClass: errorClass,
                 stackTrace: stackTrace,
-                firstSeenAt: firstSeenAt,
-                lastAttemptAt: lastAttemptAt,
-                attemptCount: attemptCount,
                 resolvedAt: resolvedAt,
               ),
           createCompanionCallback:
@@ -28521,9 +28227,6 @@ class $$SyncPullErrorsTableTableManager
                 required String rawChangeJson,
                 Value<String?> errorClass = const Value.absent(),
                 Value<String?> stackTrace = const Value.absent(),
-                required DateTime firstSeenAt,
-                required DateTime lastAttemptAt,
-                Value<int> attemptCount = const Value.absent(),
                 Value<DateTime?> resolvedAt = const Value.absent(),
               }) => SyncPullErrorsCompanion.insert(
                 accountId: accountId,
@@ -28539,9 +28242,6 @@ class $$SyncPullErrorsTableTableManager
                 rawChangeJson: rawChangeJson,
                 errorClass: errorClass,
                 stackTrace: stackTrace,
-                firstSeenAt: firstSeenAt,
-                lastAttemptAt: lastAttemptAt,
-                attemptCount: attemptCount,
                 resolvedAt: resolvedAt,
               ),
           withReferenceMapper: (p0) => p0

@@ -8,6 +8,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:sesame_cloud_backup/sesame_cloud_backup.dart';
+import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/features/settings/application/backup_cleanup_controller.dart';
 import 'package:sesame_notes/features/settings/domain/backup_cleanup.dart';
@@ -19,6 +20,7 @@ import 'package:sesame_notes/features/settings/infrastructure/local_backup_servi
 import 'package:sqlite3/sqlite3.dart' as sqlite;
 import 'package:uuid/uuid.dart';
 
+import '../../helpers/schema_upgrade_database_fixture.dart';
 import '../../helpers/test_isolation.dart';
 
 const _prefix = 'sesame_notes_backups';
@@ -444,6 +446,67 @@ void main() {
     expect((result.deletedCount, result.failedCount), (1, 0));
     expect(await unknown.readAsString(), '{"note":"保留"}');
   });
+
+  for (final version in [10, 11]) {
+    test('真实结构$version备份拒绝恢复，仍可作为已核实历史备份清理', () async {
+      try {
+        final source = File(p.join(workspace.path, 'source-v$version.sqlite'));
+        await createSchemaUpgradeDatabaseFixture(source, version);
+        final sourceBytes = await source.readAsBytes();
+        final manifest = BackupManifest(
+          formatVersion: backupFormatVersion,
+          dbSchemaVersion: version,
+          createdAt: DateTime.utc(2026, 10, 19),
+          deviceId: 'cleanup-fixture',
+          ledgers: const [],
+          accounts: const [],
+        );
+        final historicalBytes = BackupPayloadCodec.encode(
+          BackupManifestCodec.encodeJson(manifest),
+          sourceBytes,
+        );
+        final oldBackup = await File(
+          p.join(backups.path, _old),
+        ).writeAsBytes(historicalBytes);
+        final kept = await File(
+          p.join(backups.path, _a),
+        ).writeAsBytes(currentA);
+
+        final importer = BackupImportService(tempDirOverride: workspace);
+        await expectLater(
+          importer.openBackup(backupFile: oldBackup),
+          throwsA(
+            isA<BackupFormatException>().having(
+              (error) => error.reason,
+              '恢复边界',
+              BackupOpenError.unsupportedSchema,
+            ),
+          ),
+        );
+        expect(await oldBackup.readAsBytes(), historicalBytes);
+
+        final manager = localManager();
+        var preview = await manager.preview('local');
+        preview = await manager.inspect(preview, _a);
+        preview = await manager.inspect(preview, _old);
+        final entry = preview.entries.singleWhere((entry) => entry.key == _old);
+        expect(entry.status, BackupCleanupStatus.unsupported);
+        expect(entry.canDelete, isTrue);
+        final result = await manager.delete(preview, {_old});
+        expect((result.deletedCount, result.failedCount), (1, 0));
+        expect(await kept.readAsBytes(), currentA);
+        expect(await source.readAsBytes(), sourceBytes);
+      } catch (error, stack) {
+        logger.error(
+          'BackupCleanupTest',
+          '历史备份边界验证失败：版本=$version',
+          safeErrorSummary(error),
+          stack,
+        );
+        rethrow;
+      }
+    });
+  }
 
   for (final version in [currentSchemaVersion + 1, 999]) {
     test('未来schema$version及辅助后缀不能取得历史删除资格', () async {

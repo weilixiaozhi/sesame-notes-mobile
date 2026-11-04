@@ -68,8 +68,6 @@ Future<void> seedSyncBookkeeping(
           entityId: 'tx-2',
           action: 'upsert',
           rawChangeJson: '{}',
-          firstSeenAt: now,
-          lastAttemptAt: now,
         ),
       );
 }

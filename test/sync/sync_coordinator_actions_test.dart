@@ -288,8 +288,6 @@ void main() {
                 entityId: 'record',
                 action: 'upsert',
                 rawChangeJson: '不能重放的原始内容',
-                firstSeenAt: now,
-                lastAttemptAt: now,
               ),
             ),
       );
