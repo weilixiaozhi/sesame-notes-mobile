@@ -427,14 +427,7 @@ class SyncCoordinator implements MutationExecutor {
     final account = _account;
     if (account == null) throw StateError('请先登录');
     final db = ref.read(databaseProvider);
-    final issues = await readSyncIssues(
-      db,
-      account: account.$1,
-      includeDetails: false,
-    );
-    final issue = issues
-        .where((i) => i.kind == SyncIssueKind.pullError && i.id == id)
-        .firstOrNull;
+    final issue = await readPullErrorTarget(db, id, account: account.$1);
     if (issue == null) throw StateError('事项已变化，请刷新');
     final target = issue.target;
     final parentType = target.type.startsWith('fitness_')
@@ -465,7 +458,8 @@ class SyncCoordinator implements MutationExecutor {
     if (account != _account) throw StateError('账号已变化');
     await (db.update(db.syncPullErrors)..where(
           (row) =>
-              row.id.equals(int.parse(id.substring(5))) &
+              row.id.equals(issue.id) &
+              row.accountId.equals(account.$1) &
               row.resolvedAt.isNull(),
         ))
         .write(

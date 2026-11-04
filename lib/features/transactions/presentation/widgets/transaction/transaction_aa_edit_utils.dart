@@ -17,7 +17,6 @@ import 'package:sesame_notes/shared/widgets/toast.dart';
 import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/infrastructure/api/api_client_provider.dart';
-import 'package:sesame_notes/features/statistics/application/statistics_providers.dart';
 import 'package:sesame_notes/features/statistics/application/record_history_providers.dart';
 
 /// 从详情页直接编辑分摊的工具(绕过编辑记账器)。
@@ -159,9 +158,6 @@ class TransactionAaEditUtils {
       );
       if (!context.mounted) return;
       ref.invalidate(recordEditHistoryProvider(transaction.id));
-
-      // 统计依赖数据库监听自动更新，此处只失效显式的笔数缓存。
-      ref.invalidate(countsForLedgerProvider(ledgerId));
 
       if (context.mounted) {
         showToast(context, AppLocalizations.of(context).commonSave);

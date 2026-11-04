@@ -1,4 +1,3 @@
-import 'package:sesame_notes/data/models/accounting_records.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'local_ledger_repository.dart';
 
@@ -31,26 +30,20 @@ mixin LocalLedgerOperations on LocalAccountingContext {
     () => ledgerStore.setLedgerArchived(id, archived, deviceId: deviceId),
   );
 
-  /// 提供 getCountsForLedger 对应的持久化能力。
+  /// 读取账本的未删除交易笔数。
   @override
-  Future<({int dayCount, int txCount})> getCountsForLedger({
-    required String ledgerId,
-  }) => ledgerStore.getCountsForLedger(ledgerId: ledgerId);
-
-  /// 提供 getLedgerStats 对应的持久化能力。
-  @override
-  Future<({double expenseTotal, int transactionCount})> getLedgerStats({
-    required String ledgerId,
-    List<TransactionSnapshot>? transactions,
-  }) => ledgerStore.getLedgerStats(
-    ledgerId: ledgerId,
-    transactions: transactions,
+  Future<int> countLedgerTransactions(String ledgerId) => guard(
+    'countLedgerTransactions($ledgerId)',
+    () => ledgerStore.countLedgerTransactions(ledgerId),
   );
 
-  /// 提供 getAllLedgerStats 对应的持久化能力。
+  /// 聚合指定可见账本的支出金额与交易笔数。
   @override
   Future<Map<String, ({double expenseTotal, int transactionCount})>>
-  getAllLedgerStats() => ledgerStore.getAllLedgerStats();
+  getLedgerListStats(Set<String> ledgerIds) => guard(
+    'getLedgerListStats',
+    () => ledgerStore.getLedgerListStats(ledgerIds),
+  );
 
   /// 提供 createLedger 对应的持久化能力。
   @override

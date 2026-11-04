@@ -12,20 +12,6 @@ final ledgerAnalyticsPeriodProvider =
       () => SimpleStateNotifier((ref) => AnalyticsPeriod.month),
     );
 
-// 统计：某账本的记账天数与总笔数
-final countsForLedgerProvider = FutureProvider.family
-    .autoDispose<({int dayCount, int txCount}), String>((ref, ledgerId) async {
-      final repo = ref.watch(statisticsDataAccessProvider);
-      // 依赖统一数据变更信号触发刷新（任何业务表写入都会自动重算）。
-      ref.watch(accountingDataChangeSignalProvider);
-      final link = ref.keepAlive();
-      try {
-        return await repo.getCountsForLedger(ledgerId: ledgerId);
-      } finally {
-        link.close();
-      }
-    }, retry: (_, _) => null);
-
 // 统计：月度支出汇总最近值（避免 loading 闪烁），全局仅支出模式
 final lastMonthlyTotalsProvider = NotifierProvider.autoDispose
     .family<

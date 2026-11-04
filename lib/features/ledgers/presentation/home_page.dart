@@ -394,7 +394,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                     action: ProductAction.accountingTransactionDeleted,
                     context: completedContext,
                   );
-              ref.invalidate(countsForLedgerProvider(ledgerId));
               if (mounted) {
                 showToast(context, l10n.ledgersDeleted);
               }

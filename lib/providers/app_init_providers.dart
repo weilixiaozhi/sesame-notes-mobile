@@ -294,24 +294,6 @@ final appSplashInitProvider = FutureProvider<void>((ref) async {
       '月度统计预加载完成: ${DateTime.now().difference(stepTime).inMilliseconds}ms',
     );
 
-    // 账本统计异步加载（不阻塞启动）
-    _afterFirstFrame(() async {
-      try {
-        final start = DateTime.now();
-        if (!ref.mounted) return;
-        await readProviderFutureFromRef(
-          ref,
-          countsForLedgerProvider(ledgerId).future,
-        );
-        logger.info(
-          tag,
-          '账本统计(异步): ${DateTime.now().difference(start).inMilliseconds}ms',
-        );
-      } catch (error, stackTrace) {
-        logger.error(tag, '账本统计预加载未完成', safeErrorSummary(error), stackTrace);
-      }
-    });
-
     // 周期交易生成放到启动后异步执行：内部是「账本×模板×每笔」的 N+1 查询，
     // 因此不阻塞首屏；写库后的页面更新由数据库监听统一处理。
     _afterFirstFrame(() async {

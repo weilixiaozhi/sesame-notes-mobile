@@ -11,6 +11,71 @@ void main() {
   late SesameDatabase db;
   setUp(() => db = SesameDatabase.withExecutor(NativeDatabase.memory()));
   tearDown(() => db.close());
+
+  test('单条拉取错误详情读取当前父本名称并复核账号和解决状态', () async {
+    try {
+      await db
+          .into(db.ledgers)
+          .insert(
+            LedgersCompanion.insert(
+              id: 'book',
+              name: '原账本',
+              updatedAt: DateTime.utc(2026),
+              scopeAccountId: const d.Value('a'),
+            ),
+          );
+      final id = await db
+          .into(db.syncPullErrors)
+          .insert(
+            SyncPullErrorsCompanion.insert(
+              accountId: const d.Value('a'),
+              ledgerId: const d.Value('book'),
+              changeId: '1',
+              entityType: 'transaction',
+              entityId: 'record',
+              action: 'upsert',
+              rawChangeJson: '隔离原始载荷',
+            ),
+          );
+      final summary = (await readSyncIssues(
+        db,
+        account: 'a',
+        includeDetails: false,
+      )).single;
+      expect(summary.title, '原账本');
+      await (db.update(db.ledgers)..where((book) => book.id.equals('book')))
+          .write(const LedgersCompanion(name: d.Value('新名称')));
+      final details = await readSyncIssueDetails(db, summary, account: 'a');
+      expect(details.title, '新名称');
+      expect(details.target, summary.target);
+      await expectLater(
+        readSyncIssueDetails(db, summary, account: 'b'),
+        throwsStateError,
+      );
+      await (db.update(
+        db.syncPullErrors,
+      )..where((row) => row.id.equals(id))).write(
+        SyncPullErrorsCompanion(resolvedAt: d.Value(DateTime.utc(2026))),
+      );
+      await expectLater(
+        readSyncIssueDetails(db, summary, account: 'a'),
+        throwsStateError,
+      );
+      expect(
+        (await db.select(db.syncPullErrors).getSingle()).rawChangeJson,
+        '隔离原始载荷',
+      );
+    } catch (error, stack) {
+      logger.error(
+        'SyncIssuesTest',
+        '拉取错误定位验收失败',
+        safeErrorSummary(error),
+        stack,
+      );
+      rethrow;
+    }
+  });
+
   test('全局常驻摘要不携带正文，可见项才读详情并复核账号和解决状态', () async {
     final body = '字' * 100000;
     await db.batch(

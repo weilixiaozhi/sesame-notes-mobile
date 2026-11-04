@@ -157,16 +157,6 @@ void main() {
       2,
     );
     expect(ids(await repo.getTransactionsByLedger(ledgerId)), expected);
-    expect(
-      ids(
-        await repo.getTransactionsByLedgerInRange(
-          ledgerId: ledgerId,
-          start: start,
-          end: end,
-        ),
-      ),
-      expected,
-    );
     expect(ids(await repo.getAaTransactionsByLedger(ledgerId)), {activeAaId});
     expect(joinedIds(await repo.watchExcludedAaTransactions(ledgerId).first), {
       activeExcludedId,

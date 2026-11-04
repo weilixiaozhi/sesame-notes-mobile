@@ -107,47 +107,56 @@ class SyncRejectionRecovery {
   Future<void> categoryAvailable(String categoryId, String account) async {
     try {
       await transaction(account, () async {
+        final categories = db.categories;
         final category =
-            await (db.select(db.categories)..where(
-                  (c) =>
-                      c.id.equals(categoryId) &
-                      c.scopeAccountId.equals(account) &
-                      c.deletedAt.isNull(),
-                ))
+            await (db.selectOnly(categories)
+                  ..addColumns([categories.level])
+                  ..where(
+                    categories.id.equals(categoryId) &
+                        categories.scopeAccountId.equals(account) &
+                        categories.deletedAt.isNull(),
+                  ))
                 .getSingleOrNull();
         if (category == null) return;
+        final changes = db.syncChanges;
         final categoryPending =
-            await (db.select(db.syncChanges)..where(
-                  (c) =>
-                      c.accountId.equals(account) &
-                      c.entityType.equals('category') &
-                      c.entityId.equals(categoryId) &
-                      c.pushedAt.isNull(),
-                ))
-                .get();
+            await (db.selectOnly(changes)
+                  ..addColumns([changes.id])
+                  ..where(
+                    changes.accountId.equals(account) &
+                        changes.entityType.equals('category') &
+                        changes.entityId.equals(categoryId) &
+                        changes.pushedAt.isNull(),
+                  )
+                  ..limit(1))
+                .getSingleOrNull();
+        if (categoryPending != null) return;
+        final conflictRows = db.syncConflicts;
         final conflicts =
-            await (db.select(db.syncConflicts)..where(
-                  (c) =>
-                      c.accountId.equals(account) &
-                      c.entityType.equals('category') &
-                      c.entityId.equals(categoryId) &
-                      c.status.equals('OPEN'),
-                ))
-                .get();
-        if (categoryPending.isNotEmpty || conflicts.isNotEmpty) return;
-        final ledgers =
-            await (db.select(db.ledgers)..where(
-                  (l) =>
-                      categoryLedgerPredicate(l, account) &
-                      l.deletedAt.isNull(),
-                ))
-                .get();
+            await (db.selectOnly(conflictRows)
+                  ..addColumns([conflictRows.id])
+                  ..where(
+                    conflictRows.accountId.equals(account) &
+                        conflictRows.entityType.equals('category') &
+                        conflictRows.entityId.equals(categoryId) &
+                        conflictRows.status.equals('OPEN'),
+                  )
+                  ..limit(1))
+                .getSingleOrNull();
+        if (conflicts != null) return;
+        final ledgers = db.ledgers;
+        final ownedLedgerIds = db.selectOnly(ledgers)
+          ..addColumns([ledgers.id])
+          ..where(
+            categoryLedgerPredicate(ledgers, account) &
+                ledgers.deletedAt.isNull(),
+          );
         final rejected =
             await (db.select(db.syncChanges)..where(
                   (c) =>
                       c.accountId.equals(account) &
                       c.pushedAt.isNull() &
-                      ((c.ledgerId.isIn(ledgers.map((l) => l.id)) &
+                      ((c.ledgerId.isInQuery(ownedLedgerIds) &
                               c.entityType.isIn([
                                 'transaction',
                                 'recurring_transaction',
@@ -163,7 +172,7 @@ class SyncRejectionRecovery {
           rejected,
           categoryId,
           account,
-          allowChildCategories: category.level == 1,
+          allowChildCategories: category.read(categories.level) == 1,
         );
         if (recovered > 0) {
           logger.info(

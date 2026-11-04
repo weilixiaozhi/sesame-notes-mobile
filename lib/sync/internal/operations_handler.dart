@@ -405,22 +405,38 @@ class SyncDataOperations {
     required Future<void> Function() mark,
   }) async {
     final branch = await scopeBranchKey(target, account);
-    final localDelete =
-        await (_runtime.db.select(_runtime.db.syncChanges)
-              ..where(
-                (c) =>
-                    _runtime.scopeChanges(c, target) &
-                    c.entityType.equals(target.type) &
-                    c.entityId.equals(target.id) &
-                    c.pushedAt.isNull() &
-                    (account == null
-                        ? c.accountId.isNull()
-                        : c.accountId.equals(account)),
-              )
-              ..orderBy([(c) => d.OrderingTerm.desc(c.id)])
-              ..limit(1))
-            .getSingleOrNull();
-    if (branch != null && (!deleted || localDelete?.action != 'delete')) {
+    var localDelete = false;
+    if (branch != null && deleted) {
+      final db = _runtime.db;
+      final changes = db.syncChanges;
+      try {
+        final latest =
+            await (db.selectOnly(changes)
+                  ..addColumns([changes.action])
+                  ..where(
+                    _runtime.scopeChanges(changes, target) &
+                        changes.entityType.equals(target.type) &
+                        changes.entityId.equals(target.id) &
+                        changes.pushedAt.isNull() &
+                        (account == null
+                            ? changes.accountId.isNull()
+                            : changes.accountId.equals(account)),
+                  )
+                  ..orderBy([d.OrderingTerm.desc(changes.id)])
+                  ..limit(1))
+                .getSingleOrNull();
+        localDelete = latest?.read(changes.action) == 'delete';
+      } catch (error, stack) {
+        logger.error(
+          'SyncService',
+          '读取同步分支的父本操作失败',
+          safeErrorSummary(error),
+          stack,
+        );
+        rethrow;
+      }
+    }
+    if (branch != null && !localDelete) {
       try {
         await protect(branch);
       } catch (error, stack) {

@@ -1,4 +1,3 @@
-import 'package:sesame_notes/data/models/accounting_records.dart';
 import 'package:sesame_notes/utils/text_validation.dart';
 import 'dart:convert';
 import 'sync_edit_clock.dart';
@@ -101,96 +100,52 @@ class LocalLedgerRepository {
     }
   });
 
-  Future<({int dayCount, int txCount})> getCountsForLedger({
-    required String ledgerId,
-  }) async {
-    if (await getLedgerById(ledgerId) == null) {
-      return (dayCount: 0, txCount: 0);
-    }
-    final txRow = await db
-        .customSelect(
-          'SELECT COUNT(*) AS c FROM transactions '
-          'WHERE ledger_id = ?1 AND deleted_at IS NULL',
-          variables: [d.Variable.withString(ledgerId)],
-          readsFrom: {db.transactions},
-        )
-        .getSingle();
-    // 计算记账天数：今天 - 第一笔记账日期 + 1
-    final dayRow = await db
-        .customSelect(
-          """
-      SELECT CASE
-        WHEN MIN(happened_at) IS NULL THEN 0
-        ELSE CAST(julianday('now', 'localtime', 'start of day') - julianday(MIN(happened_at), 'unixepoch', 'localtime', 'start of day') + 1 AS INTEGER)
-      END AS c
-      FROM transactions
-      WHERE ledger_id = ?1 AND deleted_at IS NULL
-      """,
-          variables: [d.Variable.withString(ledgerId)],
-          readsFrom: {db.transactions},
-        )
-        .getSingle();
-
-    int parse(dynamic v) {
-      if (v is int) return v;
-      if (v is BigInt) return v.toInt();
-      if (v is num) return v.toInt();
-      return 0;
-    }
-
-    return (dayCount: parse(dayRow.data['c']), txCount: parse(txRow.data['c']));
+  /// 只计数存活账本的未删除交易，供切换本位币确认使用。
+  Future<int> countLedgerTransactions(String ledgerId) async {
+    final tx = db.transactions;
+    final ledger = db.ledgers;
+    final count = tx.id.count();
+    final activeLedger = db.selectOnly(ledger)
+      ..addColumns([ledger.id])
+      ..where(ledger.id.equals(ledgerId) & ledger.deletedAt.isNull());
+    final query = db.selectOnly(tx)
+      ..addColumns([count])
+      ..where(tx.ledgerId.isInQuery(activeLedger) & tx.deletedAt.isNull());
+    return (await query.getSingle()).read(count) ?? 0;
   }
 
-  /// 账本支出总额：金额为规范化 decimal 字符串，累加用 Decimal 保持精度，
-  /// 返回 double 仅为兼容既有 UI 展示接口。
-  Future<({double expenseTotal, int transactionCount})> getLedgerStats({
-    required String ledgerId,
-    List<TransactionSnapshot>? transactions,
-  }) async {
-    if (await getLedgerById(ledgerId) == null) {
-      return (expenseTotal: 0.0, transactionCount: 0);
-    }
-    final rows =
-        transactions
-            ?.where((transaction) => transaction.deletedAt == null)
-            .toList() ??
-        await (db.select(db.transactions)..where(
-              (transaction) =>
-                  transaction.ledgerId.equals(ledgerId) &
-                  transaction.deletedAt.isNull(),
-            ))
-            .get();
-
-    final transactionCount = rows.length;
-    var total = Decimal.zero;
-    for (final t in rows) {
-      // 折算快照优先，缺失才回退原币金额（契约：本位币交易二者相等）。
-      final v = Decimal.tryParse(t.nativeAmount) ?? Decimal.tryParse(t.amount);
-      if (v != null) total += v;
-    }
-    return (expenseTotal: total.toDouble(), transactionCount: transactionCount);
-  }
-
-  /// 全部账本支出总额使用 Decimal 聚合，避免 SQL 浮点转换损失精度。
+  /// 只读取列表可见账本的金额列，使用 Decimal 聚合支出。
   Future<Map<String, ({double expenseTotal, int transactionCount})>>
-  getAllLedgerStats() async {
-    final activeLedgerIds = (await getAllLedgers()).map((ledger) => ledger.id);
-    if (activeLedgerIds.isEmpty) return const {};
+  getLedgerListStats(Set<String> ledgerIds) async {
+    if (ledgerIds.isEmpty) return const {};
+    final ledger = db.ledgers;
+    final tx = db.transactions;
+    final activeLedgerIds = db.selectOnly(ledger)
+      ..addColumns([ledger.id])
+      ..where(
+        ledger.id.isIn(ledgerIds) &
+            ledger.bindingStatus.isNotValue('pending_local_move') &
+            ledger.deletedAt.isNull(),
+      );
     final rows =
-        await (db.select(db.transactions)..where(
-              (transaction) =>
-                  transaction.ledgerId.isIn(activeLedgerIds) &
-                  transaction.deletedAt.isNull(),
-            ))
+        await (db.selectOnly(tx)
+              ..addColumns([tx.ledgerId, tx.amount, tx.nativeAmount])
+              ..where(
+                tx.ledgerId.isInQuery(activeLedgerIds) & tx.deletedAt.isNull(),
+              ))
             .get();
     final totals = <String, Decimal>{};
     final counts = <String, int>{};
-    for (final t in rows) {
-      final v = Decimal.tryParse(t.nativeAmount) ?? Decimal.tryParse(t.amount);
+    for (final row in rows) {
+      final id = row.read(tx.ledgerId)!;
+      // 优先累加折算快照，无法解析时使用原币金额文本。
+      final v =
+          Decimal.tryParse(row.read(tx.nativeAmount)!) ??
+          Decimal.tryParse(row.read(tx.amount)!);
       if (v != null) {
-        totals[t.ledgerId] = (totals[t.ledgerId] ?? Decimal.zero) + v;
+        totals[id] = (totals[id] ?? Decimal.zero) + v;
       }
-      counts[t.ledgerId] = (counts[t.ledgerId] ?? 0) + 1;
+      counts[id] = (counts[id] ?? 0) + 1;
     }
     return {
       for (final id in totals.keys)

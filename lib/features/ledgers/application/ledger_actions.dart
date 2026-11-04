@@ -93,14 +93,13 @@ class LedgerActions {
   Future<List<LedgerDisplayItem>> getAllWithStats({
     bool archived = false,
   }) async {
-    final account = ref.read(currentAccountIdProvider);
-    final generation = ref.read(authIdentityGenerationProvider);
+    final identity = _identity();
     final rows = await readPublishedLedgers(ref.read, archived: archived);
-    final stats = await _repo.getAllLedgerStats();
-    if (account != ref.read(currentAccountIdProvider) ||
-        generation != ref.read(authIdentityGenerationProvider)) {
-      return [];
-    }
+    if (rows.isEmpty || !ref.mounted || _identity() != identity) return [];
+    final stats = await _repo.getLedgerListStats({
+      for (final row in rows) row.id,
+    });
+    if (!ref.mounted || _identity() != identity) return [];
     return [
       for (final row in rows)
         row.toDisplayItem(
@@ -110,10 +109,9 @@ class LedgerActions {
     ];
   }
 
-  /// 取单个账本统计（交易笔数用于「切本位币是否需重算」的判断）。
-  Future<({double expenseTotal, int transactionCount})> getStats({
-    required String ledgerId,
-  }) => _repo.getLedgerStats(ledgerId: ledgerId);
+  /// 统计切换本位币时涉及的未删除交易笔数。
+  Future<int> countTransactions(String ledgerId) =>
+      _repo.countLedgerTransactions(ledgerId);
 
   /// 统计尚未折算到本位币的交易笔数。
   Future<int> countUnconvertedForeignTx(String ledgerId) =>

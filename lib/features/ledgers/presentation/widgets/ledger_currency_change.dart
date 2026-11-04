@@ -77,10 +77,10 @@ Future<bool> applyLedgerCurrencyChange(
   if (ledger.currency.toUpperCase() == next) return false;
 
   // 2. 有交易时弹拦截确认:必须告知「切换即覆盖、往返不可还原」
-  final stats = await actions.getStats(ledgerId: ledgerId);
-  final txCount = stats.transactionCount;
+  final txCount = await actions.countTransactions(ledgerId);
+  if (!context.mounted) return false;
+  requireIdentity();
   if (txCount > 0) {
-    if (!context.mounted) return false;
     final l10n = AppLocalizations.of(context);
     final confirmed = await AppDialog.confirm(
       context,

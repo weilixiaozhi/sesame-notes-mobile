@@ -349,10 +349,7 @@ void main() {
         happenedAt: happenedAt,
       );
       expect(await repo.getTransactionById(transactionId), isNotNull);
-      expect(
-        (await repo.getLedgerStats(ledgerId: ledgerId)).transactionCount,
-        1,
-      );
+      expect(await repo.countLedgerTransactions(ledgerId), 1);
       expect(
         (await repo.getRecurringTransactionsByLedger(
           ledgerId,

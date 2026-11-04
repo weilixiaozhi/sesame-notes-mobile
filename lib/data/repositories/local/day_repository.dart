@@ -38,27 +38,32 @@ class DayRepository
 
   /// 仅查询当前本子的待办事实，文件交换用例不读取同步表结构。
   @override
-  Future<bool> hasUnsettledChanges(String bookId) =>
-      _guard('读取日子未完成同步状态', () async {
-        final pending =
-            await (db.select(db.syncChanges)
-                  ..where(
-                    (row) =>
-                        row.dayBookId.equals(bookId) & row.pushedAt.isNull(),
-                  )
-                  ..limit(1))
-                .get();
-        if (pending.isNotEmpty) return true;
-        final errors =
-            await (db.select(db.syncPullErrors)
-                  ..where(
-                    (row) =>
-                        row.dayBookId.equals(bookId) & row.resolvedAt.isNull(),
-                  )
-                  ..limit(1))
-                .get();
-        return errors.isNotEmpty;
-      });
+  Future<bool> hasUnsettledChanges(String bookId) => _guard(
+    '读取日子未完成同步状态',
+    () async {
+      final changes = db.syncChanges;
+      final pending =
+          await (db.selectOnly(changes)
+                ..addColumns([changes.id])
+                ..where(
+                  changes.dayBookId.equals(bookId) & changes.pushedAt.isNull(),
+                )
+                ..limit(1))
+              .getSingleOrNull();
+      if (pending != null) return true;
+      final pullErrors = db.syncPullErrors;
+      final errors =
+          await (db.selectOnly(pullErrors)
+                ..addColumns([pullErrors.id])
+                ..where(
+                  pullErrors.dayBookId.equals(bookId) &
+                      pullErrors.resolvedAt.isNull(),
+                )
+                ..limit(1))
+              .getSingleOrNull();
+      return errors != null;
+    },
+  );
 
   final SesameDatabase db;
   final DayEventDefinition Function(DayEventDefinition) validateAndProject;

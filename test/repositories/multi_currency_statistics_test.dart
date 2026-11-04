@@ -143,10 +143,10 @@ void main() {
     expect(expense, 42.0);
   });
 
-  test('getLedgerStats 账本支出总额折 nativeAmount(账本维度,反馈:改账本币种要更新)', () async {
+  test('账本列表的支出总额使用本位币折算金额', () async {
     final lid = await seedMixed();
     // CNY 账本 + USD $12(native 86.4) + 本位币支出 100 → 支出总额 = 86.4+100
-    final stats = await repo.getLedgerStats(ledgerId: lid);
+    final stats = (await repo.getLedgerListStats({lid}))[lid]!;
     expect(
       stats.expenseTotal,
       closeTo(186.4, 1e-9),

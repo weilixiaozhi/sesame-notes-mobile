@@ -206,17 +206,6 @@ mixin LocalTransactionOperations on LocalAccountingContext {
   Future<List<Transaction>> getAaTransactionsByLedger(String ledgerId) =>
       transactionStore.getAaTransactionsByLedger(ledgerId);
 
-  /// 提供 getTransactionsByLedgerInRange 对应的持久化能力。
-  Future<List<Transaction>> getTransactionsByLedgerInRange({
-    required String ledgerId,
-    required DateTime start,
-    required DateTime end,
-  }) => transactionStore.getTransactionsByLedgerInRange(
-    ledgerId: ledgerId,
-    start: start,
-    end: end,
-  );
-
   /// 提供 getDailyTotalsByMonth 对应的持久化能力。
   @override
   Future<Map<String, double>> getDailyTotalsByMonth({

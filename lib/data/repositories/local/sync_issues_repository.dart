@@ -23,6 +23,51 @@ Map<String, dynamic> _snapshot(String value) {
   }
 }
 
+const _issueTargetColumns =
+    'entity_type, entity_id, '
+    'COALESCE(ledger_id, day_book_id, memo_book_id, fitness_space_id) AS parent_id';
+
+/// 从同一投影解析事项所属实体和父本。
+SyncTarget _issueTarget(QueryRow row) => SyncTarget(
+  row.read<String>('entity_type'),
+  row.read<String>('entity_id'),
+  parentId: row.readNullable<String>('parent_id'),
+);
+
+/// 只读取当前账号尚未解决的拉取错误定位。
+Selectable<QueryRow> _openPullErrors(
+  SesameDatabase db,
+  String account, {
+  int? id,
+}) => db.customSelect(
+  'SELECT id, $_issueTargetColumns FROM sync_pull_errors '
+  'WHERE resolved_at IS NULL AND account_id=?${id == null ? '' : ' AND id=?'}',
+  variables: [Variable(account), if (id != null) Variable(id)],
+);
+
+/// 重试只需要隔离错误的标识和目标，且仅接受列表发出的规范标识。
+Future<({int id, SyncTarget target})?> readPullErrorTarget(
+  SesameDatabase db,
+  String issueId, {
+  required String? account,
+}) async {
+  try {
+    if (account == null || !issueId.startsWith('pull:')) return null;
+    final id = int.tryParse(issueId.substring(5));
+    if (id == null || issueId != 'pull:$id') return null;
+    final row = await _openPullErrors(db, account, id: id).getSingleOrNull();
+    return row == null ? null : (id: id, target: _issueTarget(row));
+  } catch (error, stackTrace) {
+    logger.error(
+      'SyncIssues',
+      '读取拉取错误定位失败',
+      safeErrorSummary(error),
+      stackTrace,
+    );
+    rethrow;
+  }
+}
+
 /// 全局待处理事实的唯一查询，供同步结果、页面与退出保护共同使用。
 Future<List<SyncIssue>> readSyncIssues(
   SesameDatabase db, {
@@ -72,25 +117,28 @@ Future<List<SyncIssue>> readSyncIssues(
         for (final b in fitnessSpaces) b.id: b.name,
       };
       final conflicts = account == null
-          ? <SyncConflict>[]
+          ? <QueryRow>[]
           : await db
                 .customSelect(
-                  "SELECT ${_issueColumns(db.syncConflicts.$columns, includeDetails)} FROM sync_conflicts WHERE account_id=? AND (status='OPEN' OR (resolved_at IS NULL AND local_mutation_id LIKE 'fitness-recovery:%'))",
+                  'SELECT id, $_issueTargetColumns, local_mutation_id, '
+                  'resolution_request IS NOT NULL AS resolution_pending'
+                  "${includeDetails ? ', local_payload, remote_payload' : ''} "
+                  "FROM sync_conflicts WHERE account_id=? AND (status='OPEN' OR (resolved_at IS NULL AND local_mutation_id LIKE 'fitness-recovery:%'))",
                   variables: [Variable(account)],
                 )
-                .map((row) => db.syncConflicts.map(row.data))
                 .get();
       final pending = account == null
-          ? <SyncChange>[]
+          ? <QueryRow>[]
           : await db
                 .customSelect(
-                  "SELECT ${_issueColumns(db.syncChanges.$columns, includeDetails)} FROM sync_changes WHERE account_id=? AND pushed_at IS NULL AND (rejection_reason IS NOT NULL OR action='delete')",
+                  'SELECT id, $_issueTargetColumns, action, rejection_reason, rejection_code'
+                  "${includeDetails ? ', payload' : ''} "
+                  "FROM sync_changes WHERE account_id=? AND pushed_at IS NULL AND (rejection_reason IS NOT NULL OR action='delete')",
                   variables: [Variable(account)],
                 )
-                .map((row) => db.syncChanges.map(row.data))
                 .get();
       // 正常待上传只汇总数量，常驻提示不反复读取所有笔记正文和训练组数据。
-      final uploading = account == null
+      final uploading = account == null || expandPendingUploads
           ? 0
           : (await db
                     .customSelect(
@@ -100,14 +148,8 @@ Future<List<SyncIssue>> readSyncIssues(
                     .getSingle())
                 .read<int>('total');
       final pullErrors = account == null
-          ? <SyncPullError>[]
-          : await db
-                .customSelect(
-                  'SELECT ${_issueColumns(db.syncPullErrors.$columns, false)} FROM sync_pull_errors WHERE resolved_at IS NULL AND account_id=?',
-                  variables: [Variable(account)],
-                )
-                .map((row) => db.syncPullErrors.map(row.data))
-                .get();
+          ? <QueryRow>[]
+          : await _openPullErrors(db, account).get();
       String title(String id, Map<String, dynamic> payload, {String? parent}) =>
           (payload['name'] ??
                   payload['title'] ??
@@ -116,67 +158,71 @@ Future<List<SyncIssue>> readSyncIssues(
                   names[parent] ??
                   '')
               .toString();
-      SyncIssue conflictIssue(SyncConflict c) {
+      SyncIssue conflictIssue(QueryRow row) {
+        final target = _issueTarget(row);
         final local = includeDetails
-            ? _snapshot(c.localPayload)
+            ? _snapshot(row.read<String>('local_payload'))
             : const <String, dynamic>{};
         final remote = includeDetails
-            ? _snapshot(c.remotePayload)
+            ? _snapshot(row.read<String>('remote_payload'))
             : const <String, dynamic>{};
         return SyncIssue(
-          id: c.id,
+          id: row.read<String>('id'),
           kind: SyncIssueKind.conflict,
-          target: SyncTarget(
-            c.entityType,
-            c.entityId,
-            parentId:
-                c.ledgerId ?? c.dayBookId ?? c.memoBookId ?? c.fitnessSpaceId,
-          ),
-          title: title(
-            c.entityId,
-            local,
-            parent:
-                c.ledgerId ?? c.dayBookId ?? c.memoBookId ?? c.fitnessSpaceId,
-          ),
+          target: target,
+          title: title(target.id, local, parent: target.parentId),
           local: includeDetails
-              ? c.entityType == 'category'
+              ? target.type == 'category'
                     ? categoryConflictDisplay(local)
                     : local
               : null,
           remote: includeDetails
-              ? c.entityType == 'category'
+              ? target.type == 'category'
                     ? categoryConflictDisplay(remote)
                     : remote
               : null,
-          resolutionPending: c.resolutionRequest != null,
-          decisionVersion: c.entityType == 'category'
+          resolutionPending: row.read<int>('resolution_pending') != 0,
+          decisionVersion: target.type == 'category'
               ? categoryDecisionVersion(remote)
               : null,
-          recovery: c.localMutationId.startsWith('fitness-recovery:'),
+          recovery: row
+              .read<String>('local_mutation_id')
+              .startsWith('fitness-recovery:'),
           deletion: local['deleted'] == true,
+        );
+      }
+
+      /// 仅详情模式读取正文，摘要沿用实体或父本名称。
+      SyncIssue pendingIssue(QueryRow row) {
+        final target = _issueTarget(row);
+        final reason = row.readNullable<String>('rejection_reason');
+        final deletion = row.read<String>('action') == 'delete';
+        final local = includeDetails
+            ? _snapshot(row.read<String>('payload'))
+            : null;
+        return SyncIssue(
+          id: row.read<int>('id').toString(),
+          kind: reason != null
+              ? SyncIssueKind.rejected
+              : deletion
+              ? SyncIssueKind.pendingDelete
+              : SyncIssueKind.pendingUpload,
+          target: target,
+          title: title(target.id, local ?? const {}, parent: target.parentId),
+          reason: reason,
+          rejectionCode: row.readNullable<String>('rejection_code'),
+          local: local,
+          deletion: deletion,
         );
       }
 
       return [
         for (final row in pullErrors)
           SyncIssue(
-            id: 'pull:${row.id}',
+            id: 'pull:${row.read<int>('id')}',
             kind: SyncIssueKind.pullError,
-            target: SyncTarget(
-              row.entityType,
-              row.entityId,
-              parentId:
-                  row.ledgerId ??
-                  row.dayBookId ??
-                  row.memoBookId ??
-                  row.fitnessSpaceId,
-            ),
-            title:
-                names[row.ledgerId ??
-                    row.dayBookId ??
-                    row.memoBookId ??
-                    row.fitnessSpaceId] ??
-                '',
+            target: _issueTarget(row),
+            title: names[row.readNullable<String>('parent_id')] ?? '',
           ),
         if (uploading > 0 && !expandPendingUploads)
           SyncIssue(
@@ -189,31 +235,7 @@ Future<List<SyncIssue>> readSyncIssues(
         if (expandPendingUploads && account != null)
           ...await _readPendingUploadSummaries(db, account, names),
         for (final c in conflicts) conflictIssue(c),
-        for (final c in pending)
-          SyncIssue(
-            id: c.id.toString(),
-            kind: c.rejectionReason != null
-                ? SyncIssueKind.rejected
-                : c.action == 'delete'
-                ? SyncIssueKind.pendingDelete
-                : SyncIssueKind.pendingUpload,
-            target: SyncTarget(
-              c.entityType,
-              c.entityId,
-              parentId:
-                  c.ledgerId ?? c.dayBookId ?? c.memoBookId ?? c.fitnessSpaceId,
-            ),
-            title: title(
-              c.entityId,
-              _snapshot(c.payload),
-              parent:
-                  c.ledgerId ?? c.dayBookId ?? c.memoBookId ?? c.fitnessSpaceId,
-            ),
-            reason: c.rejectionReason,
-            rejectionCode: c.rejectionCode,
-            local: includeDetails ? _snapshot(c.payload) : null,
-            deletion: c.action == 'delete',
-          ),
+        for (final row in pending) pendingIssue(row),
         for (final b in ledgers)
           if (b.bindingStatus == 'stale' ||
               b.bindingStatus == 'pending_local_move' &&
@@ -363,29 +385,29 @@ Future<List<SyncIssue>> _readPendingUploadSummaries(
   }
 }
 
-/// 常驻摘要不把历史正文和冻结请求带入 Dart；字段列表来自生成表结构。
-String _issueColumns(Iterable<GeneratedColumn> columns, bool details) => columns
-    .map((column) {
-      final name = column.$name;
-      if (!details && name == 'stack_trace') {
-        return 'NULL AS "$name"';
-      }
-      if (name == 'frozen_request') return 'NULL AS "$name"';
-      if (!details && name == 'resolution_request') {
-        return 'CASE WHEN resolution_request IS NULL THEN NULL ELSE \'{}\' END AS "$name"';
-      }
-      if (!details &&
-          [
-            'local_payload',
-            'remote_payload',
-            'payload',
-            'raw_change_json',
-          ].contains(name)) {
-        return "'{}' AS \"$name\"";
-      }
-      return '"$name"';
-    })
-    .join(',');
+/// 只读取目标父本名称。同一标识命中多个域时，优先级与事项摘要一致。
+Future<String> _readIssueParentName(
+  SesameDatabase db,
+  String? parentId,
+  String account,
+) async {
+  if (parentId == null) return '';
+  const tables = ['fitness_spaces', 'memo_books', 'day_books', 'ledgers'];
+  final names = [
+    for (final (priority, table) in tables.indexed)
+      'SELECT name, $priority AS priority FROM $table '
+          'WHERE id=? AND (scope_account_id=? OR scope_account_id IS NULL)',
+  ].join(' UNION ALL ');
+  final row = await db
+      .customSelect(
+        '$names ORDER BY priority LIMIT 1',
+        variables: [
+          for (final _ in tables) ...[Variable(parentId), Variable(account)],
+        ],
+      )
+      .getSingleOrNull();
+  return row?.read<String>('name') ?? '';
+}
 
 /// 从当前账号的账本与分类镜像解析交易摘要；金额和日期只读取已可见事项的载荷。
 Future<SyncIssueAccountingContext> _readAccountingContext(
@@ -395,14 +417,16 @@ Future<SyncIssueAccountingContext> _readAccountingContext(
   String account,
 ) async {
   try {
+    final ledgers = db.ledgers;
     final ledger = target.parentId == null
         ? null
-        : await (db.select(db.ledgers)..where(
-                (row) =>
-                    row.id.equals(target.parentId!) &
-                    (row.scopeAccountId.equals(account) |
-                        row.scopeAccountId.isNull()),
-              ))
+        : await (db.selectOnly(ledgers)
+                ..addColumns([ledgers.name])
+                ..where(
+                  ledgers.id.equals(target.parentId!) &
+                      (ledgers.scopeAccountId.equals(account) |
+                          ledgers.scopeAccountId.isNull()),
+                ))
               .getSingleOrNull();
     String? categoryName;
     final categoryId = payload['category_id'];
@@ -411,7 +435,7 @@ Future<SyncIssueAccountingContext> _readAccountingContext(
       try {
         final categories = await readLedgerCategoryCatalog(
           db,
-          ledger.id,
+          target.parentId!,
           categoryIds: [categoryId],
         );
         categoryName = categories[categoryId]?.name;
@@ -426,7 +450,7 @@ Future<SyncIssueAccountingContext> _readAccountingContext(
       }
     }
     return SyncIssueAccountingContext(
-      bookName: ledger?.name,
+      bookName: ledger?.read(ledgers.name),
       categoryName: categoryName,
       categoryId: categoryId is String && categoryId.isNotEmpty
           ? categoryId
@@ -456,21 +480,27 @@ Future<SyncIssue> readSyncIssueDetails(
 }) async {
   try {
     if (summary.kind == SyncIssueKind.pullError) {
-      final issues = await readSyncIssues(
-        db,
-        account: account,
-        includeDetails: false,
-      );
-      final current = issues
-          .where(
-            (issue) =>
-                issue.kind == SyncIssueKind.pullError && issue.id == summary.id,
-          )
-          .firstOrNull;
-      if (current == null || current.target != summary.target) {
-        throw StateError('事项已变化，请刷新');
-      }
-      return current;
+      if (account == null) throw StateError('事项已变化，请刷新');
+      return await db.transaction(() async {
+        final current = await readPullErrorTarget(
+          db,
+          summary.id,
+          account: account,
+        );
+        if (current == null || current.target != summary.target) {
+          throw StateError('事项已变化，请刷新');
+        }
+        return SyncIssue(
+          id: summary.id,
+          kind: SyncIssueKind.pullError,
+          target: current.target,
+          title: await _readIssueParentName(
+            db,
+            current.target.parentId,
+            account,
+          ),
+        );
+      });
     }
     Map<String, dynamic>? local, remote;
     var resolutionPending = summary.resolutionPending;
@@ -480,42 +510,44 @@ Future<SyncIssue> readSyncIssueDetails(
     var uploadOutcomeUnknown = summary.uploadOutcomeUnknown;
     SyncIssueAccountingContext? accountingContext;
     if (summary.kind == SyncIssueKind.conflict) {
-      final row =
-          await (db.select(db.syncConflicts)..where(
-                (c) =>
-                    c.id.equals(summary.id) &
-                    (account == null
-                        ? c.accountId.isNull()
-                        : c.accountId.equals(account)) &
-                    (c.status.equals('OPEN') |
-                        (c.resolvedAt.isNull() &
-                            c.localMutationId.like('fitness-recovery:%'))),
-              ))
-              .getSingleOrNull();
+      final row = await db
+          .customSelect(
+            'SELECT entity_id, entity_type, local_payload, remote_payload, '
+            'resolution_request IS NOT NULL AS resolution_pending '
+            "FROM sync_conflicts WHERE id=? AND account_id IS ? AND "
+            "(status='OPEN' OR (resolved_at IS NULL AND local_mutation_id LIKE 'fitness-recovery:%'))",
+            variables: [Variable(summary.id), Variable(account)],
+          )
+          .getSingleOrNull();
       if (row == null) throw StateError('事项已变化，请刷新');
-      if (row.entityId != summary.target.id ||
-          row.entityType != summary.target.type) {
+      final entityType = row.read<String>('entity_type');
+      if (row.read<String>('entity_id') != summary.target.id ||
+          entityType != summary.target.type) {
         throw StateError('事项已变化，请刷新');
       }
 
-      local = _snapshot(row.localPayload);
-      remote = _snapshot(row.remotePayload);
-      resolutionPending = row.resolutionRequest != null;
-      if (row.entityType == 'category') {
+      local = _snapshot(row.read<String>('local_payload'));
+      remote = _snapshot(row.read<String>('remote_payload'));
+      resolutionPending = row.read<int>('resolution_pending') != 0;
+      if (entityType == 'category') {
         decisionVersion = categoryDecisionVersion(remote);
         local = categoryConflictDisplay(local);
         remote = categoryConflictDisplay(remote);
         for (final payload in [local, remote]) {
           final parent = payload['parent_id'];
           if (parent is String && account != null) {
+            final categories = db.categories;
             final category =
-                await (db.select(db.categories)..where(
-                      (c) =>
-                          c.id.equals(parent) &
-                          c.scopeAccountId.equals(account),
-                    ))
+                await (db.selectOnly(categories)
+                      ..addColumns([categories.name])
+                      ..where(
+                        categories.id.equals(parent) &
+                            categories.scopeAccountId.equals(account),
+                      ))
                     .getSingleOrNull();
-            if (category != null) payload['parent_name'] = category.name;
+            if (category != null) {
+              payload['parent_name'] = category.read(categories.name);
+            }
           }
         }
       }

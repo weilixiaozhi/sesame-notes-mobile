@@ -86,7 +86,7 @@ void main() {
       ),
       2,
     );
-    final ledgerStats = await repo.getLedgerStats(ledgerId: lid);
+    final ledgerStats = (await repo.getLedgerListStats({lid}))[lid]!;
     expect(ledgerStats.transactionCount, 3);
     expect(ledgerStats.expenseTotal, 800);
   });
@@ -106,7 +106,7 @@ void main() {
       happenedAt: DateTime(2026, 6, 18),
     );
 
-    final stats = await repo.getLedgerStats(ledgerId: lid);
+    final stats = (await repo.getLedgerListStats({lid}))[lid]!;
 
     // 账本总览覆盖全部未删除交易。
     expect(stats.expenseTotal, 600.0);

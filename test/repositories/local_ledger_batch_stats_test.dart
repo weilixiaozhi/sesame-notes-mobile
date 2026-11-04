@@ -73,21 +73,21 @@ void main() {
       currency: 'CNY',
     );
 
-    final stats = await repo.getAllLedgerStats();
+    final stats = await repo.getLedgerListStats({l1, l2, l3});
 
     expect(stats.keys, containsAll([l1, l2]));
     expect(stats.containsKey(l3), isFalse, reason: '无交易账本不占位，调用方按 0/0 兜底');
     expect(
       stats[l1]!.expenseTotal,
       closeTo(186.4, 1e-9),
-      reason: '批量口径与 getLedgerStats 一致：折 nativeAmount 后转元',
+      reason: '账本列表累计本位币折算金额',
     );
     expect(stats[l1]!.transactionCount, 2);
     expect(stats[l2]!.expenseTotal, 80.0);
     expect(stats[l2]!.transactionCount, 3);
   });
 
-  test('批量统计与逐本 getLedgerStats 结果一致（回归锁）', () async {
+  test('账本列表只聚合所选账本，Decimal 累加与换币计数保留口径', () async {
     final l1 = await repo.createLedger(
       storageMode: 'cloud',
       name: 'A',
@@ -96,20 +96,25 @@ void main() {
     await repo.addTransaction(
       ledgerId: l1,
       type: 'expense',
-      amount: '12.34',
+      amount: '0.1',
       happenedAt: DateTime(2026, 7, 5),
     );
     await repo.addTransaction(
       ledgerId: l1,
       type: 'expense',
-      amount: '87.66',
+      amount: '0.2',
       happenedAt: DateTime(2026, 7, 6),
     );
+    final l2 = await repo.createLedger(storageMode: 'local', name: '其他账本');
+    await repo.addTransaction(
+      ledgerId: l2,
+      type: 'expense',
+      amount: '1000',
+      happenedAt: DateTime(2026, 7, 5),
+    );
 
-    final batch = await repo.getAllLedgerStats();
-    final single = await repo.getLedgerStats(ledgerId: l1);
-
-    expect(batch[l1]!.expenseTotal, single.expenseTotal);
-    expect(batch[l1]!.transactionCount, single.transactionCount);
+    final batch = await repo.getLedgerListStats({l1});
+    expect(batch, {l1: (expenseTotal: 0.3, transactionCount: 2)});
+    expect(await repo.countLedgerTransactions(l1), 2);
   });
 }

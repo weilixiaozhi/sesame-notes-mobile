@@ -865,28 +865,6 @@ class LocalTransactionRepository implements CurrencyTransactionRepository {
         .get();
   }
 
-  Future<List<Transaction>> getTransactionsByLedgerInRange({
-    required String ledgerId,
-    required DateTime start,
-    required DateTime end,
-  }) async {
-    return await (db.select(db.transactions)
-          ..where(
-            (t) =>
-                t.ledgerId.equals(ledgerId) &
-                t.deletedAt.isNull() &
-                t.happenedAt.isBiggerOrEqualValue(start) &
-                t.happenedAt.isSmallerThanValue(end),
-          )
-          ..orderBy([
-            (t) => d.OrderingTerm(
-              expression: t.happenedAt,
-              mode: d.OrderingMode.desc,
-            ),
-          ]))
-        .get();
-  }
-
   /// 跨账本移动交易（保留原 UUID）。
   ///
   /// 限制：服务端禁止同一 UUID 跨账本 upsert（ENTITY_SCOPE_CONFLICT），

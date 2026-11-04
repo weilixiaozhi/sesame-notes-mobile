@@ -5,8 +5,7 @@ import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:decimal/decimal.dart';
 import 'package:sesame_notes/data/models.dart';
-// 列表项的删除/编辑动作由调用方注入，组件内不直接依赖 repositoryProvider、
-// currentLedgerIdProvider、countsForLedgerProvider 等 provider，故不 import 对应模块。
+// 列表项的删除和编辑动作由调用方注入。
 import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';
 // 精确导入而非 barrel 自引用，避免 biz.dart export 本文件时形成循环依赖
 import 'package:sesame_notes/shared/widgets/app_empty.dart';

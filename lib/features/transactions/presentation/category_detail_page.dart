@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/shared/providers/simple_state_notifier.dart';
 import 'package:sesame_notes/features/transactions/application/transaction_actions.dart';
 import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';
-import 'package:sesame_notes/features/statistics/application/statistics_providers.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/features/transactions/domain/category_detail_summary.dart';
 import 'package:sesame_notes/data/models.dart' as db;
@@ -395,7 +394,6 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
   ) async {
     if (_deleting) return;
     _deleting = true;
-    final ledgerId = _ledgerId;
     final l10n = AppLocalizations.of(context);
 
     try {
@@ -409,9 +407,6 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
               context: analyticsContext,
             );
       }
-
-      // 刷新：账本笔数与全局统计
-      if (mounted) ref.invalidate(countsForLedgerProvider(ledgerId));
     } catch (e, st) {
       logger.error('CategoryDetailPage', '删除交易失败 tx=${transaction.id}', e, st);
       if (mounted) {

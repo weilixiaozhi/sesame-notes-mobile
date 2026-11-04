@@ -120,30 +120,9 @@ void main() {
 
     await repo.deleteLedger(deletedId);
 
-    expect(await repo.getCountsForLedger(ledgerId: deletedId), (
-      dayCount: 0,
-      txCount: 0,
-    ));
-    expect(await repo.getLedgerStats(ledgerId: deletedId), (
-      expenseTotal: 0.0,
-      transactionCount: 0,
-    ));
-    expect((await repo.getCountsForLedger(ledgerId: activeId)).txCount, 1);
-    expect(await repo.getLedgerStats(ledgerId: activeId), (
-      expenseTotal: 10.0,
-      transactionCount: 1,
-    ));
-    final rawActiveRows = await (db.select(
-      db.transactions,
-    )..where((transaction) => transaction.ledgerId.equals(activeId))).get();
-    expect(
-      await repo.getLedgerStats(
-        ledgerId: activeId,
-        transactions: rawActiveRows,
-      ),
-      (expenseTotal: 10.0, transactionCount: 1),
-    );
-    final allStats = await repo.getAllLedgerStats();
+    expect(await repo.countLedgerTransactions(deletedId), 0);
+    expect(await repo.countLedgerTransactions(activeId), 1);
+    final allStats = await repo.getLedgerListStats({activeId, deletedId});
     expect(allStats.keys, {activeId});
     expect(allStats[activeId]?.transactionCount, 1);
     expect(allStats[activeId]?.expenseTotal, 10);

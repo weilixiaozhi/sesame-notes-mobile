@@ -19,11 +19,26 @@ import 'package:sesame_notes/shared/providers/ui_state_providers.dart';
 import '../../helpers/test_isolation.dart';
 import '../../helpers/bound_ledger_seed.dart';
 
+/// 记录交给真实统计仓储的账本范围。
+class _StatsRepository extends LocalRepository {
+  _StatsRepository(super.db) : super(accountIdGetter: () => 'account');
+
+  final requestedLedgerIds = <Set<String>>[];
+
+  /// 保留真实 SQLite 查询，记录列表入口实际请求的范围。
+  @override
+  Future<Map<String, ({double expenseTotal, int transactionCount})>>
+  getLedgerListStats(Set<String> ledgerIds) {
+    requestedLedgerIds.add(Set.of(ledgerIds));
+    return super.getLedgerListStats(ledgerIds);
+  }
+}
+
 /// 前台选择只接受已发布内容，后台任务不成为手动下载入口。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late SesameDatabase db;
-  late LocalRepository repo;
+  late _StatsRepository repo;
   late ProviderContainer container;
   late String localId;
 
@@ -31,7 +46,7 @@ void main() {
     resetGlobalTestState();
     await logger.clear();
     db = SesameDatabase.withExecutor(NativeDatabase.memory());
-    repo = LocalRepository(db, accountIdGetter: () => 'account');
+    repo = _StatsRepository(db);
     container = ProviderContainer(
       overrides: [
         databaseProvider.overrideWithValue(db),
@@ -115,6 +130,51 @@ void main() {
     expect(container.read(currentLedgerIdProvider), isEmpty);
     expect(await container.read(ledgerActionsProvider).getAll(), isEmpty);
     expect(await repo.getLedgerById('unpublished'), isNotNull);
+  });
+
+  test('列表统计只查询当前账号与归档筛选下的已发布账本', () async {
+    try {
+      await seedBoundLedger(
+        db,
+        accountId: 'other-account',
+        id: 'other-ledger',
+        name: '其他账号账本',
+      );
+      final archivedId = await repo.createLedger(
+        name: '已归档',
+        storageMode: 'local',
+      );
+      await repo.setLedgerArchived(archivedId, true);
+      await repo.addTransaction(
+        ledgerId: localId,
+        type: 'expense',
+        amount: '12.5',
+        happenedAt: DateTime.utc(2026, 10, 19),
+      );
+
+      final actions = container.read(ledgerActionsProvider);
+      final active = (await actions.getAllWithStats()).single;
+      expect(
+        (active.id, active.expenseTotal, active.transactionCount),
+        (localId, 12.5, 1),
+      );
+      expect(
+        (await actions.getAllWithStats(archived: true)).single.id,
+        archivedId,
+      );
+      expect(repo.requestedLedgerIds, [
+        {localId},
+        {archivedId},
+      ]);
+    } catch (error, stackTrace) {
+      logger.error(
+        'LedgerAvailabilityTest',
+        '可见账本统计范围验证失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      rethrow;
+    }
   });
 
   test('恢复未发布本不会使它成为当前本', () async {

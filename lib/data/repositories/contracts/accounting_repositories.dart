@@ -183,9 +183,9 @@ abstract interface class LedgerRepository {
   /// 账本与成员管理所需的detachFromCloud能力。
   Future<void> detachFromCloud(String id);
 
-  /// 账本与成员管理所需的getAllLedgerStats能力。
+  /// 读取列表已选定的可见账本的金额和笔数。
   Future<Map<String, ({double expenseTotal, int transactionCount})>>
-  getAllLedgerStats();
+  getLedgerListStats(Set<String> ledgerIds);
 
   /// 账本与成员管理所需的getAllLedgers能力。
   Future<List<LedgerSnapshot>> getAllLedgers();
@@ -193,11 +193,8 @@ abstract interface class LedgerRepository {
   /// 账本与成员管理所需的getLedgerById能力。
   Future<LedgerSnapshot?> getLedgerById(String id);
 
-  /// 账本与成员管理所需的getLedgerStats能力。
-  Future<({double expenseTotal, int transactionCount})> getLedgerStats({
-    required String ledgerId,
-    List<TransactionSnapshot>? transactions,
-  });
+  /// 统计存活账本的未删除交易笔数。
+  Future<int> countLedgerTransactions(String ledgerId);
 
   /// 账本与成员管理所需的purgeLedger能力。
   Future<void> purgeLedger(String id);
@@ -359,11 +356,6 @@ abstract interface class StatisticsRepository {
 
   /// 统计与分摊查询所需的getAaTransactionsByLedger能力。
   Future<List<TransactionSnapshot>> getAaTransactionsByLedger(String ledgerId);
-
-  /// 统计与分摊查询所需的getCountsForLedger能力。
-  Future<({int dayCount, int txCount})> getCountsForLedger({
-    required String ledgerId,
-  });
 
   /// 统计与分摊查询所需的getDailyTotalsByMonth能力。
   Future<Map<String, double>> getDailyTotalsByMonth({
