@@ -555,21 +555,14 @@ class _FitnessPlanEditPageState extends ConsumerState<FitnessPlanEditPage> {
               (AppIcons.darkMode, l.fitnessPlanDayRestHint),
               (AppIcons.calendar, l.fitnessPlanStartHint),
             ])
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppDimens.p4),
-                child: Row(
-                  children: [
-                    Icon(
-                      item.$1,
-                      size: AppDimens.icon20,
-                      color: AppTokens.primary(context),
-                    ),
-                    const SizedBox(width: AppDimens.p12),
-                    Expanded(
-                      child: Text(item.$2, style: AppTextTokens.body(context)),
-                    ),
-                  ],
+              AppListTile(
+                leadingWidget: Icon(
+                  item.$1,
+                  size: AppDimens.icon20,
+                  color: AppTokens.primary(context),
                 ),
+                title: item.$2,
+                titleMaxLines: null,
               ),
           ],
         ),
