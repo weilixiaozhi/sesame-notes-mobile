@@ -1736,7 +1736,6 @@
   "fitnessActiveExists": "已有进行中训练，请继续或先结束它。",
   "fitnessPaused": "已暂停",
   "fitnessStartDate": "开始日期",
-  "fitnessCycleDays": "计划循环周期（含休息）",
   "fitnessRestDay": "休息日",
   "fitnessPin": "置顶动作",
   "fitnessUnpin": "取消置顶",
@@ -1869,8 +1868,6 @@
   "fitnessPlanSchedule": "周期安排",
   "fitnessDeletePlan": "删除计划",
   "fitnessDeletePlanMessage": "仅删除此计划？已经生成的全部训练与休息记录将保留，包含已完成训练。",
-  "fitnessPlanEnabled": "计划启动",
-  "fitnessPlanStartDateRequired": "请选择开始日期后启动计划",
   "syncCenterTitle": "同步处理",
   "syncCenterLoadFailed": "无法读取同步状态，请重试",
   "syncCenterActionFailed": "操作未完成，数据已保留，请重试",
@@ -1900,11 +1897,7 @@
     }
   },
   "syncCenterUploading": "等待上传",
-  "fitnessPlanUnfilled": "待填充",
-  "fitnessPlanFillHint": "点击模板填充到日期中",
-  "fitnessPlanFillDays": "请为每天选择训练模板或休息",
   "fitnessPlanSetRest": "设为休息日",
-  "fitnessPlanReplaceHint": "点击模板替换当前安排",
   "syncCenterDeleteReview": "确认删除「{name}」？云端当前有 {count} 条记录，本机对此本尚未同步的修改也将一并删除。",
   "@syncCenterDeleteReview": {
     "placeholders": {
@@ -2403,5 +2396,196 @@
   "recordHistoryCategoryMoved": "调整分类",
   "recordHistoryCurrencyChanged": "调整账本本位币",
   "recordHistorySharingValues": "分摊信息",
-  "recordHistoryContextChanged": "账号已变化，请重新打开记录。"
+  "recordHistoryContextChanged": "账号已变化，请重新打开记录。",
+  "fitnessPlanChooseTitle": "选一套训练安排",
+  "fitnessPlanDetailTitle": "计划详情",
+  "fitnessPlanAdjustAndUse": "调整后使用",
+  "fitnessPlanCycleCount": "{count} 天一循环",
+  "@fitnessPlanCycleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanDayNumber": "第 {day} 天",
+  "@fitnessPlanDayNumber": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanDaySummary": "{exercises} 个动作 · {sets} 组",
+  "@fitnessPlanDaySummary": {
+    "placeholders": {
+      "exercises": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanNoTraining": "不安排训练",
+  "fitnessPlanOpenExercises": "点开查看动作",
+  "fitnessPlanSegment": "第 {from}–{to} 天 / 共 {total} 天",
+  "@fitnessPlanSegment": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanPreviousSegment": "上一段",
+  "fitnessPlanNextSegment": "下一段",
+  "fitnessPlanSetCount": "{count} 组",
+  "@fitnessPlanSetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanRepCount": "{count} 次",
+  "@fitnessPlanRepCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanNewTitle": "新建计划",
+  "fitnessPlanEditTitle": "编辑计划",
+  "fitnessPlanBasicStep": "基本设置",
+  "fitnessPlanScheduleStep": "周期编排",
+  "fitnessPlanConfirmStep": "确认创建",
+  "fitnessPlanCycleLabel": "循环天数",
+  "fitnessPlanCycleHint": "包含训练日和休息日",
+  "fitnessPlanNameHint": "例如：我的三分化训练",
+  "fitnessPlanBasicHint": "接下来，逐天安排训练",
+  "fitnessPlanDayTemplateHint": "每一天选择一个训练模板",
+  "fitnessPlanDayRestHint": "为休息日选择休息",
+  "fitnessPlanStartHint": "最后确认开始日期和是否启用",
+  "fitnessPlanNextSchedule": "下一步：周期编排",
+  "fitnessPlanNextConfirm": "下一步：确认创建",
+  "fitnessPlanPreviousStep": "上一步",
+  "fitnessPlanExitTitle": "退出新建计划？",
+  "fitnessPlanExitEditTitle": "退出编辑计划？",
+  "fitnessPlanExitMessage": "退出后，本次填写的内容不会保存。",
+  "fitnessPlanContinueEditing": "继续编辑",
+  "fitnessPlanExitDiscard": "退出，不保存",
+  "fitnessPlanAssigned": "已安排 {filled}/{total} 天",
+  "@fitnessPlanAssigned": {
+    "placeholders": {
+      "filled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanUnassigned": "还有 {count} 天待安排",
+  "@fitnessPlanUnassigned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanAllAssigned": "已全部安排",
+  "fitnessPlanArrangeDay": "安排第 {day} 天",
+  "@fitnessPlanArrangeDay": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanArrangeOrRest": "安排训练或休息",
+  "fitnessPlanClearDay": "清空当天",
+  "fitnessPlanRestRemaining": "将未安排的 {count} 天设为休息",
+  "@fitnessPlanRestRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanRestConfirmTitle": "将未安排日设为休息？",
+  "fitnessPlanRestConfirmMessage": "共 {count} 天。已安排的训练和休息日保持不变。",
+  "@fitnessPlanRestConfirmMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanShrinkTitle": "缩短为 {count} 天？",
+  "@fitnessPlanShrinkTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanShrinkMessage": "第 {from}–{to} 天将被移除，其中已有 {count} 天安排。前 {kept} 天保持原样。",
+  "@fitnessPlanShrinkMessage": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      },
+      "kept": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanNameInvalid": "请填写 1–100 个字的计划名称。",
+  "fitnessPlanNeedTraining": "至少安排 1 天训练，才能创建训练计划。",
+  "fitnessPlanDateFrom": "第 1 天从 {date} 开始",
+  "@fitnessPlanDateFrom": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "fitnessPlanStartChoice": "创建后如何开始",
+  "fitnessPlanEnableOnDate": "按开始日期启用计划",
+  "fitnessPlanSaveDisabled": "先保存，暂不启用",
+  "fitnessPlanCreateEnabled": "创建并启用",
+  "fitnessPlanCreated": "计划已创建",
+  "fitnessPlanCreatedEnabled": "将从 {date} 起按周期安排训练",
+  "@fitnessPlanCreatedEnabled": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "fitnessPlanCreatedDisabled": "已保存到我的计划，尚未启用",
+  "fitnessPlanCompleteCycle": "完整周期安排",
+  "fitnessPlanDone": "完成，查看我的计划",
+  "fitnessPlanPendingChange": "周期编排将在下一周期生效，已生成的训练保持原样。",
+  "fitnessPlanStartLocked": "开始日期已锁定",
+  "fitnessPlanChooseLibrary": "去模板库选择",
+  "fitnessPlanUnarranged": "待安排",
+  "fitnessPlanSelectTemplate": "选择",
+  "fitnessPlanCreatedTitle": "创建完成",
+  "fitnessPlanConfirmSave": "确认保存",
+  "fitnessPlanNextConfirmSave": "下一步：确认保存",
+  "fitnessPlanEditStartChoice": "计划启用状态"
 }

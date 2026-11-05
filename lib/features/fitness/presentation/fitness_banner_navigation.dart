@@ -13,6 +13,7 @@ import '../../../navigation/route_consts.dart';
 import '../../../shared/providers/fitness_library_provider.dart';
 import '../../../shared/widgets/widgets.dart';
 import '../application/fitness_actions.dart';
+import 'fitness_official_plan_detail_page.dart';
 
 /// 横幅直接打开官方条目，继续使用内容库的本地读取、在线刷新和确认页参数。
 Future<void> openFitnessBannerContent(
@@ -54,7 +55,11 @@ Future<void> openFitnessBannerContent(
         startDate: DateTime.now(),
         target: draftTarget!,
       );
-      await context.pushNamed(Routes.fitnessPlanEdit, extra: draft);
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => FitnessOfficialPlanDetailPage(importDraft: draft),
+        ),
+      );
     } else {
       final template = library.templates
           .where((value) => value.id == id)

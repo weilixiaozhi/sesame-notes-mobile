@@ -4,7 +4,6 @@ import 'package:sesame_notes/features/fitness/presentation/fitness_workout_navig
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sesame_notes/data/models/fitness.dart';
-import 'package:sesame_notes/data/models/fitness_library.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/navigation/route_consts.dart';
 import 'package:sesame_notes/features/fitness/application/fitness_catalog_provider.dart';
@@ -305,50 +304,6 @@ class FitnessHomePlanCard extends StatelessWidget {
                 l.fitnessPlanRestDays(plan.days.length - training),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 官方计划卡片：与首页计划卡同一版式，只读展示训练与休息天数。
-class FitnessLibraryPlanCard extends StatelessWidget {
-  const FitnessLibraryPlanCard({
-    super.key,
-    required this.name,
-    required this.plan,
-    required this.onTap,
-  });
-  final String name;
-  final OfficialFitnessPlan plan;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    final training = plan.days.where((day) => day.templateId != null).length;
-    return FitnessHomeCard(
-      name: name,
-      icon: AppIcons.calendar,
-      onTap: onTap,
-      trailing: Icon(
-        AppIcons.chevronRight,
-        size: AppDimens.icon20,
-        color: AppTokens.iconSecondary(context),
-      ),
-      child: Wrap(
-        spacing: AppDimens.p12,
-        runSpacing: AppDimens.p4,
-        children: [
-          _fitnessHomeMetric(
-            context,
-            AppIcons.fitness,
-            l.fitnessPlanTrainingDays(training),
-          ),
-          _fitnessHomeMetric(
-            context,
-            AppIcons.darkMode,
-            l.fitnessPlanRestDays(plan.days.length - training),
           ),
         ],
       ),

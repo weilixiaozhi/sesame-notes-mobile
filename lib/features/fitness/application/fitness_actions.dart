@@ -81,10 +81,18 @@ class FitnessActions {
   Future<FitnessTemplate> copyTemplate(String id, {String? name}) =>
       _run('在当前空间复制模板并保持新身份', () => _library.copyTemplate(id, name: name));
 
-  /// 保存计划并按用户选择处理日程重建。
-  Future<FitnessPlan> savePlan(FitnessPlan plan, {String? restartDate}) => _run(
+  /// 保存用户确认的周期内容，并原子复制实际使用的官方模板。
+  Future<FitnessPlan> savePlan(
+    FitnessPlan plan, {
+    String? restartDate,
+    Map<String, FitnessTemplate> officialTemplates = const {},
+  }) => _run(
     '保存计划并按用户选择处理日程重建',
-    () => _library.savePlan(plan, restartDate: restartDate),
+    () => _library.savePlan(
+      plan,
+      restartDate: restartDate,
+      officialTemplates: officialTemplates,
+    ),
   );
 
   /// 创建未开始的训练供编辑。

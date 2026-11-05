@@ -1,624 +1,906 @@
-import 'package:sesame_notes/providers/product_analytics_providers.dart';
-import 'package:sesame_notes/domain/analytics/product_analytics_actions.dart';
-import 'package:sesame_notes/features/fitness/application/fitness_actions.dart';
-import 'package:sesame_notes/utils/text_validation.dart';
-import '../../../data/models/private_book.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import 'package:sesame_notes/data/models/fitness.dart';
-import 'package:sesame_notes/data/models/fitness_library.dart';
-import 'package:go_router/go_router.dart';
-import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/navigation/route_consts.dart';
-import 'package:sesame_notes/shared/widgets/widgets.dart';
-import 'package:sesame_notes/shared/widgets/app_calendar.dart';
-import 'package:sesame_notes/shared/widgets/app_form_section.dart';
-import 'package:sesame_notes/theme/colors.dart';
-import 'package:sesame_notes/theme/dimens.dart';
-import 'package:sesame_notes/theme/typography.dart';
-import 'package:sesame_notes/theme/icons/app_icons.dart';
+
+import '../../../core/logging/logger_service.dart';
+import '../../../data/models/fitness.dart';
+import '../../../data/models/fitness_library.dart';
+import '../../../data/models/private_book.dart';
+import '../../../domain/analytics/product_analytics_actions.dart';
+import '../../../domain/fitness/fitness_rules.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../navigation/route_consts.dart';
+import '../../../providers/product_analytics_providers.dart';
+import '../../../shared/widgets/app_form_section.dart';
+import '../../../shared/widgets/widgets.dart';
+import '../../../theme/colors.dart';
+import '../../../theme/dimens.dart';
+import '../../../theme/icons/app_icons.dart';
+import '../../../theme/typography.dart';
+import '../../../utils/text_validation.dart';
+import '../application/fitness_actions.dart';
 import '../application/fitness_providers.dart';
-import 'widgets/fitness_library_widgets.dart';
+import 'widgets/fitness_plan_day_sheet.dart';
+import 'widgets/fitness_plan_widgets.dart';
 import 'widgets/fitness_widgets.dart';
-import 'package:sesame_notes/domain/fitness/fitness_rules.dart';
 
-/// 计划页的模板按钮：固定两列尺寸、统一主题色，长名称省略号收尾。
-/// 我的计划点击后安排到当天，官方计划点击后进入只读模板详情。
-class _PlanTemplateButtons extends StatelessWidget {
-  const _PlanTemplateButtons({
-    super.key,
-    required this.items,
-    required this.onSelected,
-  });
-  final List<({String id, String name})> items;
-  final ValueChanged<String> onSelected;
-  @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      const gap = AppDimens.p8;
-      // 固定两列：按钮宽度只跟可用宽度有关，不随名称长度变化。
-      final width = (constraints.maxWidth - gap) / 2;
-      return Wrap(
-        spacing: gap,
-        runSpacing: gap,
-        children: [
-          for (final item in items)
-            SizedBox(
-              key: ValueKey('fitness-plan-template-${item.id}'),
-              width: width,
-              height: AppDimens.actionButtonMinHeight,
-              child: AppInputSurface(
-                onTap: () => onSelected(item.id),
-                child: Row(
-                  children: [
-                    Icon(
-                      AppIcons.fitness,
-                      size: AppDimens.icon16,
-                      color: AppTokens.iconSecondary(context),
-                    ),
-                    const SizedBox(width: AppDimens.p8),
-                    Expanded(
-                      child: Text(
-                        item.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextTokens.label(
-                          context,
-                        ).copyWith(color: AppTokens.textPrimary(context)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      );
-    },
-  );
-}
-
+/// 新建、调整官方计划和编辑已有计划共用三个明确的表单步骤。
 class FitnessPlanEditPage extends ConsumerStatefulWidget {
-  const FitnessPlanEditPage({super.key, this.plan, this.importDraft})
-    : assert(plan == null || importDraft == null);
+  /// 官方计划从周期编排开始，自建计划从基本设置开始。
+  const FitnessPlanEditPage({
+    super.key,
+    this.plan,
+    this.importDraft,
+    this.owner,
+  }) : assert(plan == null || importDraft == null);
+
   final FitnessPlan? plan;
   final FitnessPlanImportDraft? importDraft;
+  final PrivateBookTarget? owner;
+
+  /// 每次进入均创建临时状态，只有确认提交才持久化。
   @override
   ConsumerState<FitnessPlanEditPage> createState() =>
       _FitnessPlanEditPageState();
 }
 
 class _FitnessPlanEditPageState extends ConsumerState<FitnessPlanEditPage> {
-  late final FitnessPlan? _saved = widget.importDraft == null
-      ? widget.plan
-      : null;
-  late FitnessPlan _draft =
-      widget.importDraft?.plan ??
-      widget.plan ??
-      FitnessPlan(
-        name: '',
-        status: 'in_progress',
-        startDate: fitnessDate(DateTime.now()),
-        cycleDays: 7,
-        days: List.generate(7, (i) => FitnessPlanDay(dayIndex: i)),
-      );
-  late final _name = TextEditingController(text: _draft.name);
-  final _formKey = GlobalKey<FormState>();
-  int _selected = 0;
-  late Set<int> _filled = widget.plan == null && widget.importDraft == null
-      ? {}
-      : {for (final day in _draft.days) day.dayIndex};
+  late FitnessPlan _draft;
+  late final TextEditingController _name;
+  late final Set<int> _filled;
+  final Map<String, FitnessTemplate> _officialTemplates = {};
+  PrivateBookTarget? _owner;
+  FitnessPlan? _created;
+  int _step = 0;
+  int? _focusDay;
+  int _focusRequest = 0;
+  String? _error;
   String? _restartDate;
   bool _busy = false;
-  late PrivateBookTarget? _owner = widget.importDraft?.target;
+  bool _exiting = false;
+  bool _allowPop = false;
 
-  /// 官方计划确认页：只读展示周期安排，底部只保留"添加到我的计划"。
-  bool get _readOnly => widget.importDraft != null;
+  /// 已生成周期的运行计划由仓储锁定开始日期。
+  bool get _dateLocked =>
+      widget.plan?.status == 'in_progress' &&
+      widget.plan?.generationState.nextCycleStartDate != null;
 
+  /// 新建与编辑沿用各自的退出提示和保存语义。
+  bool get _editing => widget.plan != null;
+
+  /// 所有空白日期都使用当天，已有待生效安排作为本次编辑内容。
   @override
   void initState() {
     super.initState();
-    if (_draft.startDate == null) {
-      _draft = _draft.copyWith(startDate: fitnessDate(DateTime.now()));
-    }
-    if (_draft.pendingSchedule case final schedule?) {
+    _draft =
+        widget.importDraft?.plan ??
+        widget.plan ??
+        FitnessPlan(
+          name: '',
+          status: 'in_progress',
+          startDate: fitnessDate(DateTime.now()),
+          cycleDays: 7,
+          days: List.generate(7, (i) => FitnessPlanDay(dayIndex: i)),
+        );
+    if (_draft.pendingSchedule case final pending?) {
       _draft = _draft.copyWith(
-        cycleDays: schedule.cycleDays,
-        days: schedule.days,
+        cycleDays: pending.cycleDays,
+        days: pending.days,
       );
     }
     _draft = _draft.copyWith(
+      startDate: _draft.startDate ?? fitnessDate(DateTime.now()),
       days: [..._draft.days]..sort((a, b) => a.dayIndex.compareTo(b.dayIndex)),
     );
+    _filled = widget.plan == null && widget.importDraft == null
+        ? <int>{}
+        : {for (final day in _draft.days) day.dayIndex};
+    _name = TextEditingController(text: _draft.name);
+    _officialTemplates.addAll(widget.importDraft?.officialTemplates ?? {});
+    _owner = widget.owner ?? widget.importDraft?.target;
+    _step = widget.plan != null || widget.importDraft != null ? 1 : 0;
   }
 
+  /// 输入控制器随页面释放，不留下未提交状态。
   @override
   void dispose() {
     _name.dispose();
     super.dispose();
   }
 
-  void _assign(FitnessTemplate? template) => setState(() {
-    final days = [..._draft.days];
-    _filled.add(_selected);
-    days[_selected] = FitnessPlanDay(
-      dayIndex: _selected,
-      slot: template == null
-          ? null
-          : FitnessPlanSlot(
-              id: const Uuid().v4(),
-              sourceTemplateId: template.id,
-              name: template.name,
-              exercises: fitnessSnapshotExercises(template.exercises),
-            ),
-    );
-    _draft = _draft.copyWith(days: days);
-    if (_selected < days.length - 1) _selected++;
-  });
-
-  /// 只读态展示当天安排的官方模板按钮，与我的计划同一规格，
-  /// 区别只是点击进入只读模板详情而不是安排到当天。
-  Widget _arrangedTemplate(BuildContext context) {
-    final library = widget.importDraft?.library;
-    final sourceId = _draft.days[_selected].slot?.sourceTemplateId;
-    final template = sourceId == null || library == null
-        ? null
-        : library.templateOrNull(sourceId);
-    if (template == null) return const SizedBox.shrink();
-    return _PlanTemplateButtons(
-      key: const ValueKey('fitness-plan-arranged-template'),
-      items: [
-        (
-          id: template.id,
-          name: template.name.resolve(Localizations.localeOf(context)),
-        ),
-      ],
-      onSelected: (_) =>
-          context.pushNamed(Routes.fitnessTemplateDetail, extra: template),
-    );
+  /// 处理标题关闭和系统返回，两者均明确告知未保存内容会丢失。
+  Future<void> _requestExit() async {
+    if (_busy || _exiting) return;
+    if (_created != null) {
+      _finish();
+      return;
+    }
+    _exiting = true;
+    try {
+      final l = AppLocalizations.of(context);
+      final exit = await AppDialog.confirm(
+        context,
+        title: _editing ? l.fitnessPlanExitEditTitle : l.fitnessPlanExitTitle,
+        message: l.fitnessPlanExitMessage,
+        cancelLabel: l.fitnessPlanContinueEditing,
+        okLabel: l.fitnessPlanExitDiscard,
+      );
+      if (exit == true && mounted) {
+        setState(() => _allowPop = true);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) Navigator.of(context).pop();
+        });
+      }
+    } catch (error, stackTrace) {
+      logger.error('FitnessPlanEditor', '退出计划编辑失败', error, stackTrace);
+      if (mounted) {
+        showToast(context, AppLocalizations.of(context).commonOperationFailed);
+      }
+    } finally {
+      _exiting = false;
+    }
   }
 
-  void _reorder(int from, int to) => setState(() {
-    final days = fitnessReorderItems(_draft.days, from, to);
-    // 已填充标记跟随安排一起移动，拖动后安排的训练不会落回原位置。
-    final filled = fitnessReorderItems(
-      [for (var i = 0; i < days.length; i++) _filled.contains(i)],
-      from,
-      to,
-    );
-    _filled = {
-      for (var i = 0; i < filled.length; i++)
-        if (filled[i]) i,
-    };
-    _draft = _draft.copyWith(
-      days: [
-        for (var i = 0; i < days.length; i++) days[i].copyWith(dayIndex: i),
-      ],
-    );
-    _selected = to;
-  });
-
-  Future<void> _resize() async {
-    final value = await fitnessInput(
-      context,
-      title: AppLocalizations.of(context).fitnessCycleDays,
-      initial: '${_draft.cycleDays}',
-      numeric: true,
-      minValue: 1,
-      maxValue: FitnessDefaults.maxCycleDays,
-    );
-    if (value == null || !mounted) return;
-    final count = int.parse(value);
-    setState(() {
-      _draft = _draft.copyWith(
-        cycleDays: count,
-        days: List.generate(
-          count,
-          (i) => i < _draft.days.length
-              ? _draft.days[i]
-              : FitnessPlanDay(dayIndex: i),
+  /// 只写入被点击的当天；选中模板后保持当前滚动位置。
+  Future<void> _pickDay(int index) async {
+    if (_busy) return;
+    try {
+      final choice = await showAppSheet<FitnessPlanDaySelection>(
+        context: context,
+        child: FitnessPlanDaySheet(
+          dayIndex: index,
+          filled: _filled.contains(index),
+          currentSlot: _draft.days[index].slot,
         ),
       );
-      _selected = _selected.clamp(0, count - 1);
-      _filled.removeWhere((i) => i >= count);
-    });
+      if (choice == null || !mounted) return;
+      final target = ref.read(fitnessActionsProvider).target;
+      if (_owner != null && !matchesPrivateBookTarget(_owner!, target)) {
+        throw StateError('FITNESS_TARGET_CHANGED');
+      }
+      setState(() {
+        _error = null;
+        final days = [..._draft.days];
+        if (choice.kind == FitnessPlanDaySelectionKind.clear) {
+          _filled.remove(index);
+          days[index] = FitnessPlanDay(dayIndex: index);
+        } else {
+          _filled.add(index);
+          final template = choice.template;
+          if (choice.official && template != null) {
+            _officialTemplates[template.id] = template;
+          }
+          days[index] = FitnessPlanDay(
+            dayIndex: index,
+            slot: template == null
+                ? null
+                : FitnessPlanSlot(
+                    id: const Uuid().v4(),
+                    sourceTemplateId: template.id,
+                    name: template.name,
+                    exercises: fitnessSnapshotExercises(template.exercises),
+                  ),
+          );
+        }
+        _draft = _draft.copyWith(days: days);
+      });
+    } catch (error, stackTrace) {
+      logger.error('FitnessPlanEditor', '安排当天训练失败', error, stackTrace);
+      if (mounted) {
+        showToast(context, AppLocalizations.of(context).fitnessLoadFailed);
+      }
+    }
   }
 
+  /// 扩展周期只新增未安排天数，缩短前先说明已有内容的影响。
+  Future<void> _resize(int count) async {
+    if (_busy || count == _draft.cycleDays) return;
+    try {
+      if (count < 1 || count > FitnessDefaults.maxCycleDays) return;
+      final lost = _filled.where((day) => day >= count).length;
+      if (lost > 0) {
+        final l = AppLocalizations.of(context);
+        final confirmed = await AppDialog.confirm(
+          context,
+          title: l.fitnessPlanShrinkTitle(count),
+          message: l.fitnessPlanShrinkMessage(
+            count + 1,
+            _draft.cycleDays,
+            lost,
+            count,
+          ),
+        );
+        if (confirmed != true || !mounted) return;
+      }
+      setState(() {
+        _draft = _draft.copyWith(
+          cycleDays: count,
+          days: List.generate(
+            count,
+            (i) => i < _draft.days.length
+                ? _draft.days[i]
+                : FitnessPlanDay(dayIndex: i),
+          ),
+        );
+        _filled.removeWhere((day) => day >= count);
+        _focusDay = null;
+        _error = null;
+      });
+    } catch (error, stackTrace) {
+      logger.error('FitnessPlanEditor', '修改计划周期失败', error, stackTrace);
+      if (mounted) {
+        showToast(context, AppLocalizations.of(context).commonOperationFailed);
+      }
+    }
+  }
+
+  /// 自定义天数使用现有数字输入与领域容量校验。
+  Future<void> _customCycle() async {
+    try {
+      final value = await fitnessInput(
+        context,
+        title: AppLocalizations.of(context).fitnessPlanCycleLabel,
+        initial: '${_draft.cycleDays}',
+        numeric: true,
+        minValue: 1,
+        maxValue: FitnessDefaults.maxCycleDays,
+      );
+      if (value != null && mounted) await _resize(int.parse(value));
+    } catch (error, stackTrace) {
+      logger.error('FitnessPlanEditor', '读取自定义周期失败', error, stackTrace);
+      if (mounted) {
+        showToast(context, AppLocalizations.of(context).commonOperationFailed);
+      }
+    }
+  }
+
+  /// 只有用户明确确认后，才把未安排天数批量设置为休息。
+  Future<void> _restRemaining() async {
+    try {
+      final count = _draft.cycleDays - _filled.length;
+      if (count == 0) return;
+      final l = AppLocalizations.of(context);
+      if (await AppDialog.confirm(
+                context,
+                title: l.fitnessPlanRestConfirmTitle,
+                message: l.fitnessPlanRestConfirmMessage(count),
+              ) !=
+              true ||
+          !mounted) {
+        return;
+      }
+      setState(() {
+        _filled.addAll(Iterable.generate(_draft.cycleDays));
+        _error = null;
+      });
+    } catch (error, stackTrace) {
+      logger.error('FitnessPlanEditor', '批量安排休息失败', error, stackTrace);
+      if (mounted) {
+        showToast(context, AppLocalizations.of(context).commonOperationFailed);
+      }
+    }
+  }
+
+  /// 开始日期与已生成周期的锁定、关闭后重新启用规则一致。
   Future<bool> _pickStart() async {
-    final today = DateUtils.dateOnly(DateTime.now());
-    final initial = DateTime.tryParse(_draft.startDate ?? '') ?? today;
-    final date = await showWheelDatePicker(
-      context,
-      initial: initial.isBefore(today) ? today : initial,
-      minDate: today,
-      title: AppLocalizations.of(context).fitnessStartDate,
-    );
-    if (date == null || !mounted) return false;
-    setState(() {
-      final start = fitnessDate(date);
-      _restartDate = _saved?.createdAt != null && _saved!.status == 'closed'
-          ? start
-          : null;
-      _draft = _draft.copyWith(startDate: start);
-      _selected = 0;
-    });
+    try {
+      if (_dateLocked) return false;
+      final today = DateUtils.dateOnly(DateTime.now());
+      final stored = DateTime.tryParse(_draft.startDate ?? '') ?? today;
+      final date = await showWheelDatePicker(
+        context,
+        initial: stored.isBefore(today) ? today : stored,
+        minDate: today,
+        title: AppLocalizations.of(context).fitnessStartDate,
+      );
+      if (date == null || !mounted) return false;
+      setState(() {
+        final start = fitnessDate(date);
+        _draft = _draft.copyWith(startDate: start);
+        if (widget.plan?.status == 'closed' &&
+            widget.plan?.generationState.nextCycleStartDate != null) {
+          _restartDate = start;
+        }
+        _error = null;
+      });
+      return true;
+    } catch (error, stackTrace) {
+      logger.error('FitnessPlanEditor', '选择计划开始日期失败', error, stackTrace);
+      if (mounted) {
+        showToast(context, AppLocalizations.of(context).commonOperationFailed);
+      }
+      return false;
+    }
+  }
+
+  /// 重新启用已结束的生成计划时，先确认新的开始日期。
+  Future<void> _setEnabled(bool enabled) async {
+    if (_busy) return;
+    final start = _draft.startDate;
+    final pastStart =
+        start != null && start.compareTo(fitnessDate(DateTime.now())) < 0;
+    final needsRestart =
+        widget.plan?.generationState.nextCycleStartDate != null &&
+        _restartDate == null;
+    if (enabled &&
+        widget.plan?.status == 'closed' &&
+        (pastStart || needsRestart) &&
+        !await _pickStart()) {
+      return;
+    }
+    if (mounted) {
+      setState(
+        () => _draft = _draft.copyWith(
+          status: enabled ? 'in_progress' : 'closed',
+        ),
+      );
+    }
+  }
+
+  /// 对名称、未安排日和全休息分别提示，并定位到对应步骤。
+  bool _validate(int step) {
+    final l = AppLocalizations.of(context);
+    if (!fitnessValidName(normalizeName(_name.text))) {
+      setState(() {
+        _error = l.fitnessPlanNameInvalid;
+        _step = 0;
+      });
+      return false;
+    }
+    if (step > 0) {
+      final unfilled = fitnessPlanUnfilledDay(_draft.cycleDays, _filled);
+      if (unfilled != null) {
+        setState(() {
+          _error = l.fitnessPlanUnassigned(_draft.cycleDays - _filled.length);
+          _step = 1;
+          _focusDay = unfilled;
+          _focusRequest++;
+        });
+        return false;
+      }
+      if (!_draft.days.any((day) => day.slot != null)) {
+        setState(() {
+          _error = l.fitnessPlanNeedTraining;
+          _step = 1;
+        });
+        return false;
+      }
+    }
     return true;
   }
 
-  Future<void> _setEnabled(bool enabled) async {
-    if (enabled &&
-        _saved?.status == 'closed' &&
-        _saved?.generationState.nextCycleStartDate != null &&
-        _restartDate == null) {
-      if (!await _pickStart() || !mounted) return;
-    }
-    setState(
-      () =>
-          _draft = _draft.copyWith(status: enabled ? 'in_progress' : 'closed'),
-    );
+  /// 步骤回退仅改变当前表单阶段，不保存或复制数据。
+  void _previous() {
+    if (_busy || _step == 0) return;
+    setState(() {
+      _step--;
+      _error = null;
+    });
   }
 
-  /// 保存点击和实际写入分别统计，取消模板复用选择不构成保存成功。
+  /// 只有第三步的确认操作会写入计划。
+  Future<void> _next() async {
+    if (_busy || !_validate(_step)) return;
+    if (_step == 2) {
+      await _save();
+      return;
+    }
+    setState(() {
+      _draft = _draft.copyWith(name: normalizeName(_name.text));
+      _step++;
+      _error = null;
+    });
+  }
+
+  /// 原子保存当前安排，库模板只按实际引用物化，提交后不再要求选版本。
   Future<void> _save() async {
     if (_busy) return;
-    final analyticsContext = ref
-        .read(productAnalyticsControllerProvider)
-        .beginFlow();
-    final analyticsPage = _readOnly
-        ? 'fitness.plans.library.detail'
-        : 'fitness.plans.edit';
-    final completed = ref
-        .read(productAnalyticsControllerProvider)
-        .captureCompletion(pageId: analyticsPage, context: analyticsContext);
-    ref
-        .read(productAnalyticsControllerProvider)
-        .trackAction(
-          pageId: analyticsPage,
-          action: _readOnly
-              ? ProductAction.fitnessPlanAddClick
-              : ProductAction.fitnessPlanSaveClick,
-          context: analyticsContext,
-        );
-    final l = AppLocalizations.of(context);
-    final importDraft = widget.importDraft;
-    // 只读确认页不做编辑校验，直接把草稿整体复制进当前训练空间。
-    if (importDraft != null) {
-      setState(() => _busy = true);
-      var added = false;
-      try {
-        // 选择副本期间也保持单次提交，重复点击不能并行创建两个计划。
-        final reusableIds = await _chooseReusableTemplates(importDraft);
-        if (reusableIds == null || !mounted) return;
-        final repo = ref.read(fitnessActionsProvider);
-        final ok = await fitnessRun(context, () async {
-          if (_owner != null &&
-              !matchesPrivateBookTarget(_owner!, repo.target)) {
-            throw StateError('FITNESS_TARGET_CHANGED');
-          }
-          await repo.importCatalogPlan(
-            _draft,
-            importDraft.officialTemplates,
-            reusableTemplateIds: reusableIds,
-          );
-        });
-        if (ok) completed(ProductAction.fitnessPlanAdded);
-        added = ok;
-      } finally {
-        if (mounted) setState(() => _busy = false);
-      }
-      if (added && mounted) {
-        fitnessReturnTo(context, Routes.fitnessPlans);
-      }
-      return;
-    }
-    if (!_formKey.currentState!.validate()) return;
-    final unfilled = fitnessPlanUnfilledDay(_draft.cycleDays, _filled);
-    if (unfilled != null) {
-      setState(() => _selected = unfilled);
-      showToast(context, l.fitnessPlanFillDays);
-      return;
-    }
-    if (!_draft.days.any((day) => day.slot != null)) {
-      showToast(context, l.fitnessInvalidForm);
-      return;
-    }
-    if (_draft.startDate == null) {
-      showToast(context, l.fitnessPlanStartDateRequired);
-      return;
-    }
-    final repo = ref.read(fitnessActionsProvider);
-    if (_owner != null && !matchesPrivateBookTarget(_owner!, repo.target)) {
-      throw StateError('FITNESS_TARGET_CHANGED');
-    }
     setState(() => _busy = true);
-    final ok = await fitnessRun(context, () async {
-      final normalized = _draft.copyWith(name: normalizeName(_name.text));
-      await repo.savePlan(
-        normalized,
+    try {
+      final actions = ref.read(fitnessActionsProvider);
+      if (_owner != null &&
+          !matchesPrivateBookTarget(_owner!, actions.target)) {
+        throw StateError('FITNESS_TARGET_CHANGED');
+      }
+      final analytics = ref.read(productAnalyticsControllerProvider);
+      final flow = analytics.beginFlow();
+      final fromLibrary = widget.importDraft != null;
+      final pageId = fromLibrary
+          ? 'fitness.plans.library.detail'
+          : 'fitness.plans.edit';
+      analytics.trackAction(
+        pageId: pageId,
+        action: fromLibrary
+            ? ProductAction.fitnessPlanAddClick
+            : ProductAction.fitnessPlanSaveClick,
+        context: flow,
+      );
+      final complete = analytics.captureCompletion(
+        pageId: pageId,
+        context: flow,
+      );
+      final result = await actions.savePlan(
+        _draft.copyWith(name: normalizeName(_name.text)),
+        officialTemplates: _officialTemplates,
         restartDate: _draft.status == 'in_progress' ? _restartDate : null,
       );
-    });
-    if (ok) completed(ProductAction.fitnessPlanSaved);
-    if (!mounted) return;
-    setState(() => _busy = false);
-    if (ok) {
-      Navigator.pop(context);
+      complete(
+        fromLibrary
+            ? ProductAction.fitnessPlanAdded
+            : ProductAction.fitnessPlanSaved,
+      );
+      if (!mounted) return;
+      if (_editing) {
+        setState(() {
+          _allowPop = true;
+          _busy = false;
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) Navigator.of(context).pop(true);
+        });
+      } else {
+        setState(() {
+          _created = result;
+          _busy = false;
+          _error = null;
+        });
+      }
+    } catch (error, stackTrace) {
+      logger.error('FitnessPlanEditor', '保存计划及所选模板失败', error, stackTrace);
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _error = AppLocalizations.of(context).fitnessSaveFailed;
+        });
+      }
     }
   }
 
-  /// 官方计划引用到的模板已有同源副本时，让用户逐条选择复用或新建；
-  /// 没有副本直接新建，取消选择返回 null。
-  Future<Map<String, String>?> _chooseReusableTemplates(
-    FitnessPlanImportDraft draft,
-  ) async {
-    final l = AppLocalizations.of(context);
-    final copies = await loadUserTemplates(ref);
-    if (!mounted) return null;
-    final referenced = {
-      for (final id in draft.officialTemplates.keys)
-        if (fitnessLatestCopy(copies, id) != null) id,
-    };
-    if (referenced.isEmpty) return const {};
-    return chooseTemplateCopies(
-      context,
-      title: l.fitnessAddToMyPlan,
-      labels: {
-        for (final id in referenced) id: draft.officialTemplates[id]!.name,
-      },
-      candidates: {
-        for (final id in referenced) id: fitnessCopiesOfOrigin(copies, id),
-      },
+  /// 完成后返回原计划列表；跳转入口不在栈中时回到原页面。
+  void _finish() {
+    if (_busy) return;
+    setState(() => _allowPop = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) fitnessReturnTo(context, Routes.fitnessPlans);
+    });
+  }
+
+  /// 进度标签使用相同名称，辅助模式也能读出当前步骤。
+  Widget _steps(AppLocalizations l) => Padding(
+    padding: const EdgeInsets.all(AppDimens.p16),
+    child: Row(
+      children: [
+        for (var i = 0; i < 3; i++) ...[
+          if (i > 0)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppDimens.p4),
+              child: Icon(AppIcons.chevronRight, size: AppDimens.icon12),
+            ),
+          Expanded(
+            child: Semantics(
+              selected: i == _step,
+              child: Text(
+                '${i + 1}  ${[l.fitnessPlanBasicStep, l.fitnessPlanScheduleStep, _editing ? l.fitnessPlanConfirmSave : l.fitnessPlanConfirmStep][i]}',
+                key: ValueKey('fitness-plan-step-${i + 1}'),
+                style: AppTextTokens.caption(context).copyWith(
+                  color: i == _step
+                      ? AppTokens.primary(context)
+                      : AppTokens.textSecondary(context),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    ),
+  );
+
+  /// 基本设置只显示计划名称、周期和下一阶段的内容说明。
+  Widget _basic(AppLocalizations l) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      AppFormSection(
+        title: l.fitnessName,
+        child: TextField(
+          key: const ValueKey('fitness-plan-name'),
+          controller: _name,
+          textInputAction: TextInputAction.done,
+          decoration: InputDecoration(hintText: l.fitnessPlanNameHint),
+        ),
+      ),
+      Text(l.fitnessPlanCycleLabel, style: AppTextTokens.strongTitle(context)),
+      const SizedBox(height: AppDimens.p8),
+      Row(
+        children: [
+          for (final count in [4, 7, 14]) ...[
+            Expanded(
+              child: OutlinedButton(
+                key: ValueKey('fitness-plan-cycle-$count'),
+                onPressed: () => _resize(count),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: AppDimens.p8),
+                  backgroundColor: _draft.cycleDays == count
+                      ? AppTokens.surfaceSelected(context)
+                      : null,
+                  foregroundColor: _draft.cycleDays == count
+                      ? AppTokens.primary(context)
+                      : null,
+                ),
+                child: Text(l.dayDaysValue(count)),
+              ),
+            ),
+            const SizedBox(width: AppDimens.p8),
+          ],
+          Expanded(
+            child: OutlinedButton(
+              key: const ValueKey('fitness-plan-cycle-custom'),
+              onPressed: _customCycle,
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: AppDimens.p8),
+              ),
+              child: Text(l.fitnessCustom),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: AppDimens.p8),
+      Text(
+        '${l.fitnessPlanCycleCount(_draft.cycleDays)} · ${l.fitnessPlanCycleHint}',
+        style: AppTextTokens.caption(context),
+      ),
+      const SizedBox(height: AppDimens.p20),
+      SectionCard(
+        margin: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l.fitnessPlanBasicHint,
+              style: AppTextTokens.strongTitle(context),
+            ),
+            const SizedBox(height: AppDimens.p12),
+            for (final item in [
+              (AppIcons.fitness, l.fitnessPlanDayTemplateHint),
+              (AppIcons.darkMode, l.fitnessPlanDayRestHint),
+              (AppIcons.calendar, l.fitnessPlanStartHint),
+            ])
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppDimens.p4),
+                child: Row(
+                  children: [
+                    Icon(
+                      item.$1,
+                      size: AppDimens.icon20,
+                      color: AppTokens.primary(context),
+                    ),
+                    const SizedBox(width: AppDimens.p12),
+                    Expanded(
+                      child: Text(item.$2, style: AppTextTokens.body(context)),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    ],
+  );
+
+  /// 周期编排逐天展示，未安排日与休息日由独立状态区分。
+  Widget _schedule(AppLocalizations l) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(_name.text, style: AppTextTokens.strongTitle(context)),
+      const SizedBox(height: AppDimens.p4),
+      Text(
+        l.fitnessPlanCycleCount(_draft.cycleDays),
+        style: AppTextTokens.caption(context),
+      ),
+      const SizedBox(height: AppDimens.p16),
+      Text(
+        l.fitnessPlanAssigned(_filled.length, _draft.cycleDays),
+        style: AppTextTokens.body(context),
+      ),
+      const SizedBox(height: AppDimens.p12),
+      FitnessPlanDayList(
+        key: ValueKey('fitness-plan-focus-$_focusRequest'),
+        days: _draft.days,
+        filledDays: _filled,
+        onDayTap: _pickDay,
+        focusDayIndex: _focusDay,
+      ),
+      if (_filled.length < _draft.cycleDays)
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton(
+            key: const ValueKey('fitness-plan-rest-remaining'),
+            onPressed: _restRemaining,
+            child: Text(
+              l.fitnessPlanRestRemaining(_draft.cycleDays - _filled.length),
+            ),
+          ),
+        ),
+    ],
+  );
+
+  /// 确认页只设置日期和启用方式，所有训练内容沿用周期编排结果。
+  Widget _review(AppLocalizations l) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      FitnessPlanSummary(plan: _draft.copyWith(name: _name.text)),
+      const SizedBox(height: AppDimens.p16),
+      AppFormSection(
+        title: l.fitnessStartDate,
+        child: AppSelectionField(
+          title: _draft.startDate ?? l.fitnessPlanNoStartDate,
+          enabled: !_dateLocked,
+          onTap: _dateLocked ? null : _pickStart,
+        ),
+      ),
+      Text(
+        _dateLocked
+            ? l.fitnessPlanStartLocked
+            : l.fitnessPlanDateFrom(_draft.startDate ?? ''),
+        style: AppTextTokens.caption(context),
+      ),
+      const SizedBox(height: AppDimens.p16),
+      SectionCard(
+        margin: EdgeInsets.zero,
+        padding: const EdgeInsets.all(AppDimens.p12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _editing
+                  ? l.fitnessPlanEditStartChoice
+                  : l.fitnessPlanStartChoice,
+              style: AppTextTokens.strongTitle(context),
+            ),
+            RadioGroup<bool>(
+              groupValue: _draft.status == 'in_progress',
+              onChanged: (value) {
+                if (value != null) _setEnabled(value);
+              },
+              child: Column(
+                children: [
+                  RadioListTile<bool>(
+                    key: const ValueKey('fitness-plan-enabled'),
+                    value: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      l.fitnessPlanEnableOnDate,
+                      style: AppTextTokens.body(context),
+                    ),
+                  ),
+                  RadioListTile<bool>(
+                    key: const ValueKey('fitness-plan-disabled'),
+                    value: false,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      l.fitnessPlanSaveDisabled,
+                      style: AppTextTokens.body(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      if (_editing &&
+          widget.plan!.generationState.nextCycleStartDate != null) ...[
+        const SizedBox(height: AppDimens.p12),
+        Text(l.fitnessPlanPendingChange, style: AppTextTokens.caption(context)),
+      ],
+      const SizedBox(height: AppDimens.p20),
+      Text(l.fitnessPlanSchedule, style: AppTextTokens.strongTitle(context)),
+      const SizedBox(height: AppDimens.p8),
+      FitnessPlanDayList(days: _draft.days),
+    ],
+  );
+
+  /// 创建成功后展示完整周期，而不截断为首个训练日。
+  Widget _success(AppLocalizations l) {
+    final plan = _created!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: AppDimens.p20),
+        Icon(
+          AppIcons.checkCircle,
+          size: AppDimens.icon40,
+          color: AppTokens.primary(context),
+        ),
+        const SizedBox(height: AppDimens.p12),
+        Text(
+          l.fitnessPlanCreated,
+          textAlign: TextAlign.center,
+          style: AppTextTokens.display1(context),
+        ),
+        const SizedBox(height: AppDimens.p8),
+        Text(
+          plan.status == 'in_progress'
+              ? l.fitnessPlanCreatedEnabled(plan.startDate ?? '')
+              : l.fitnessPlanCreatedDisabled,
+          textAlign: TextAlign.center,
+          style: AppTextTokens.caption(context),
+        ),
+        const SizedBox(height: AppDimens.p20),
+        FitnessPlanSummary(plan: plan),
+        const SizedBox(height: AppDimens.p20),
+        Text(
+          l.fitnessPlanCompleteCycle,
+          style: AppTextTokens.strongTitle(context),
+        ),
+        const SizedBox(height: AppDimens.p8),
+        FitnessPlanDayList(days: plan.days),
+      ],
     );
   }
 
-  Widget _marker(int index) {
-    final l = AppLocalizations.of(context);
-    final empty = !_filled.contains(index);
-    final labels = [
-      empty
-          ? l.fitnessPlanUnfilled
-          : _draft.days[index].slot?.name ?? l.fitnessRestDay,
-    ];
-    final marker = AppCalendarLabels(
-      labels: labels,
-      isPlaceholder: empty,
-      tooltipTriggerMode: TooltipTriggerMode.manual,
-    );
-    return DragTarget<int>(
-      onWillAcceptWithDetails: (details) => !_readOnly && details.data != index,
-      onAcceptWithDetails: (details) => _reorder(details.data, index),
-      builder: (_, _, _) => LongPressDraggable<int>(
-        key: ValueKey('fitness-plan-day-$index'),
-        data: index,
-        maxSimultaneousDrags: _readOnly || empty ? 0 : 1,
-        feedback: Material(
-          type: MaterialType.transparency,
-          child: SizedBox(
-            width: AppDimens.calendarDayDiameter * 2,
-            child: marker,
+  /// 底部统一提供阶段回退和主操作，按钮文案与步骤名称保持一致。
+  Widget _footer(AppLocalizations l, bool available) {
+    if (_created != null) {
+      return AppEditorFooter(label: l.fitnessPlanDone, onPressed: _finish);
+    }
+    final training = _draft.days
+        .where((day) => _filled.contains(day.dayIndex) && day.slot != null)
+        .length;
+    final rest = _filled.length - training;
+    final label = _step == 0
+        ? l.fitnessPlanNextSchedule
+        : _step == 1
+        ? (_editing ? l.fitnessPlanNextConfirmSave : l.fitnessPlanNextConfirm)
+        : _editing || _draft.status == 'closed'
+        ? l.commonSave
+        : l.fitnessPlanCreateEnabled;
+    return Material(
+      color: AppTokens.surface(context),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimens.p16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_step > 0) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${l.fitnessPlanTrainingDays(training)} · ${l.fitnessPlanRestDays(rest)}',
+                        style: AppTextTokens.caption(context),
+                      ),
+                    ),
+                    Flexible(
+                      child: Text(
+                        _filled.length == _draft.cycleDays
+                            ? l.fitnessPlanAllAssigned
+                            : l.fitnessPlanUnassigned(
+                                _draft.cycleDays - _filled.length,
+                              ),
+                        style: AppTextTokens.caption(context),
+                        textAlign: TextAlign.end,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppDimens.p8),
+              ],
+              Row(
+                children: [
+                  if (_step > 0) ...[
+                    Expanded(
+                      child: OutlinedButton(
+                        key: const ValueKey('fitness-plan-previous'),
+                        onPressed: _busy ? null : _previous,
+                        child: Text(l.fitnessPlanPreviousStep),
+                      ),
+                    ),
+                    const SizedBox(width: AppDimens.p8),
+                  ],
+                  Expanded(
+                    child: AppPrimaryButton(
+                      key: const ValueKey('fitness-plan-next'),
+                      label: label,
+                      busy: _busy,
+                      onPressed: available ? _next : null,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ),
-        child: InkWell(
-          onTap: () => setState(() => _selected = index),
-          child: marker,
         ),
       ),
     );
   }
 
+  /// 系统返回始终走退出确认，成功页的完整周期可以直接返回列表。
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final repo = ref.watch(fitnessActionsProvider);
-    final templateState = ref.watch(fitnessTemplatesProvider);
-    _owner ??= repo.target;
-    if (matchesPrivateBookTarget(_owner!, repo.target)) _owner = repo.target;
-    final available = matchesPrivateBookTarget(_owner!, repo.target);
-    final persisted = _saved?.createdAt != null;
-    // 同源官方计划已经在当前空间存在时，按钮提示为再次添加。
-    final importOrigin = widget.importDraft?.plan.catalogOrigin?.itemId;
-    final importAdded =
-        importOrigin != null &&
-        (ref
-                .watch(fitnessPlansProvider)
-                .value
-                ?.any((plan) => plan.catalogOrigin?.itemId == importOrigin) ??
-            false);
-    final dateLocked =
-        _saved?.status == 'in_progress' &&
-        _saved?.generationState.nextCycleStartDate != null;
-    final start = fitnessParseDate(_draft.startDate!);
-    final selectedDate = fitnessParseDate(
-      fitnessAddDays(_draft.startDate!, _selected),
-    );
-    final selectedName = _filled.contains(_selected)
-        ? (_draft.days[_selected].slot?.name ?? l.fitnessRestDay)
-        : l.fitnessPlanUnfilled;
-    final rowHeight = AppCalendarLabels.rowHeight(context, 1);
-    return PopScope(
-      canPop: !_busy,
+    final actions = ref.watch(fitnessActionsProvider);
+    ref.watch(fitnessTemplatesProvider);
+    _owner ??= actions.target;
+    final available = matchesPrivateBookTarget(_owner!, actions.target);
+    if (available) _owner = actions.target;
+    final title = _created != null
+        ? l.fitnessPlanCreatedTitle
+        : _editing
+        ? l.fitnessPlanEditTitle
+        : l.fitnessPlanNewTitle;
+    return PopScope<Object?>(
+      canPop: _allowPop,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _requestExit();
+      },
       child: Scaffold(
         body: Column(
           children: [
             PrimaryHeader(
-              title: _readOnly
-                  ? _draft.name
-                  : persisted
-                  ? l.fitnessPlans
-                  : l.fitnessNewPlan,
-              showBack: true,
-              subtitle: persisted && _draft.startDate != null
-                  ? (_saved!.status == 'closed'
-                        ? l.fitnessClosed
-                        : l.fitnessActive)
+              title: title,
+              titleWidget: Row(
+                children: [
+                  HeaderIconAction(
+                    key: const ValueKey('fitness-plan-exit'),
+                    icon: _created != null ? AppIcons.back : AppIcons.close,
+                    tooltip: l.commonBack,
+                    onPressed: _busy ? null : _requestExit,
+                  ),
+                  const SizedBox(width: AppDimens.p8),
+                  Expanded(child: Text(title)),
+                ],
+              ),
+              actions: _created == null
+                  ? [
+                      Text(
+                        '${_step + 1} / 3',
+                        style: AppTextTokens.caption(context),
+                      ),
+                    ]
                   : null,
             ),
+            if (_created == null) _steps(l),
             Expanded(
               child: !available
                   ? AppEmpty(text: l.fitnessLoadFailed)
                   : AbsorbPointer(
                       absorbing: _busy,
-                      child: Form(
-                        key: _formKey,
-                        child: ListView(
-                          padding: const EdgeInsets.all(AppDimens.p16),
-                          children: [
-                            if (!_readOnly) ...[
-                              SectionTitle(
-                                title: l.fitnessPlanEnabled,
-                                trailing: Switch.adaptive(
-                                  key: const ValueKey('fitness-plan-enabled'),
-                                  value: _draft.status == 'in_progress',
-                                  onChanged: _setEnabled,
-                                ),
-                              ),
-                              const SizedBox(height: AppDimens.p16),
-                            ],
-
-                            AppFormSection(
-                              title: l.fitnessName,
-                              child: _readOnly
-                                  ? AppSelectionField(
-                                      title: _draft.name,
-                                      // 与全局禁用态一致：只读字段用禁用色而非正文色。
-                                      enabled: false,
-                                    )
-                                  : TextFormField(
-                                      controller: _name,
-                                      validator: (value) =>
-                                          fitnessValidName(value?.trim() ?? '')
-                                          ? null
-                                          : l.fitnessInvalidForm,
-                                    ),
-                            ),
-                            AppFormSection(
-                              title: l.fitnessCycleDays,
-                              child: AppSelectionField(
-                                title: '${_draft.cycleDays}',
-                                enabled: !_readOnly,
-                                onTap: _readOnly ? null : _resize,
-                              ),
-                            ),
-                            AppFormSection(
-                              title: l.fitnessStartDate,
-                              child: AppSelectionField(
-                                title:
-                                    _draft.startDate ??
-                                    l.fitnessPlanNoStartDate,
-                                enabled: !dateLocked,
-                                // 官方计划同样可选开始日期，选完下面的排布随之刷新。
-                                onTap: dateLocked ? null : _pickStart,
-                              ),
-                            ),
-                            SectionTitle(title: l.fitnessPlanSchedule),
-                            const SizedBox(height: AppDimens.p8),
-                            AppCalendar<Object>(
-                              firstDay: start,
-                              lastDay: fitnessParseDate(
-                                fitnessAddDays(
-                                  _draft.startDate!,
-                                  _draft.cycleDays - 1,
-                                ),
-                              ),
-                              focusedDay: start,
-                              rangeOnly: true,
-                              rowHeight: rowHeight,
-                              selectedDayPredicate: (date) =>
-                                  fitnessDaysBetween(
-                                    _draft.startDate!,
-                                    fitnessDate(date),
-                                  ) ==
-                                  _selected,
-                              onDaySelected: (date, _) => setState(
-                                () => _selected = fitnessDaysBetween(
-                                  _draft.startDate!,
-                                  fitnessDate(date),
-                                ),
-                              ),
-                              onPageChanged: (_) {},
-                              dayMarkerBuilder: (_, date, _) => _marker(
-                                fitnessDaysBetween(
-                                  _draft.startDate!,
-                                  fitnessDate(date),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: AppDimens.p16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    '${AppCalendarDateSectionHeader.dateLabel(context, selectedDate)} · $selectedName',
-                                    style: AppTextTokens.dateHeading(context),
-                                  ),
-                                ),
-                                if (!_readOnly)
-                                  TextButton.icon(
-                                    key: const ValueKey('fitness-plan-rest'),
-                                    onPressed: () => _assign(null),
-                                    icon: const Icon(
-                                      AppIcons.darkMode,
-                                      size: AppDimens.icon16,
-                                    ),
-                                    label: Text(l.fitnessPlanSetRest),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: AppDimens.p16),
-                            if (_readOnly)
-                              _arrangedTemplate(context)
-                            else ...[
-                              if (templateState.value?.isNotEmpty == true)
-                                Text(
-                                  _filled.contains(_selected)
-                                      ? l.fitnessPlanReplaceHint
-                                      : l.fitnessPlanFillHint,
-                                  style: AppTextTokens.label(context),
-                                ),
-                              const SizedBox(height: AppDimens.p8),
-                              templateState.when(
-                                loading: () => const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                                error: (_, _) => AppLoadError(
-                                  message: l.fitnessLoadFailed,
-                                  onRetry: () =>
-                                      ref.invalidate(fitnessTemplatesProvider),
-                                ),
-                                data: (templates) => templates.isEmpty
-                                    ? AppEmpty(
-                                        icon: AppIcons.fitness,
-                                        text: l.fitnessNoTemplates,
-                                      )
-                                    : _PlanTemplateButtons(
-                                        items: [
-                                          for (final template in templates)
-                                            (
-                                              id: template.id,
-                                              name: template.name,
-                                            ),
-                                        ],
-                                        onSelected: (id) => _assign(
-                                          templates.firstWhere(
-                                            (template) => template.id == id,
-                                          ),
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ],
+                      child: ListView(
+                        key: ValueKey(
+                          'fitness-plan-content-${_created != null ? 'success' : _step}',
                         ),
+                        padding: const EdgeInsets.all(AppDimens.p16),
+                        children: [
+                          if (_error != null)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: AppDimens.p12,
+                              ),
+                              child: Semantics(
+                                liveRegion: true,
+                                child: Text(
+                                  _error!,
+                                  style: AppTextTokens.body(
+                                    context,
+                                  ).copyWith(color: AppTokens.error(context)),
+                                ),
+                              ),
+                            ),
+                          if (_created != null)
+                            _success(l)
+                          else
+                            switch (_step) {
+                              0 => _basic(l),
+                              1 => _schedule(l),
+                              _ => _review(l),
+                            },
+                        ],
                       ),
                     ),
             ),
-            if (available)
-              AppEditorFooter(
-                onPressed: _save,
-                busy: _busy,
-                label: _readOnly
-                    ? (importAdded ? l.fitnessAddAgain : l.fitnessAddToMyPlan)
-                    : l.commonSave,
-              ),
+            _footer(l, available),
           ],
         ),
       ),

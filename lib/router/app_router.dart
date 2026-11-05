@@ -153,8 +153,11 @@ List<GoRoute> buildAppRoutes({Map<String, WidgetBuilder> stubs = const {}}) {
       Routes.fitnessPlanDetail,
       (state) => FitnessPlanDetailPage(
         planId: state.extra as String,
-        editorBuilder: (plan) =>
-            FitnessPlanEditPage(key: ValueKey(plan.id), plan: plan),
+        editorBuilder: (plan, target) => FitnessPlanEditPage(
+          key: ValueKey(plan.id),
+          plan: plan,
+          owner: target,
+        ),
       ),
     ),
     extraRoute(

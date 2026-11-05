@@ -1743,7 +1743,6 @@
   "fitnessActiveExists": "A workout is already running. Continue it or finish it first.",
   "fitnessPaused": "Paused",
   "fitnessStartDate": "Start date",
-  "fitnessCycleDays": "Plan cycle (including rest)",
   "fitnessRestDay": "Rest day",
   "fitnessPin": "Pin exercise",
   "fitnessUnpin": "Unpin exercise",
@@ -1876,8 +1875,6 @@
   "fitnessPlanSchedule": "Cycle schedule",
   "fitnessDeletePlan": "Delete plan",
   "fitnessDeletePlanMessage": "Delete only this plan? All generated workouts and rest days, including completed workouts, will be kept.",
-  "fitnessPlanEnabled": "Enable plan",
-  "fitnessPlanStartDateRequired": "Choose a start date to enable the plan",
   "syncCenterTitle": "Sync Management",
   "syncCenterLoadFailed": "Could not load sync status. Try again.",
   "syncCenterActionFailed": "Operation incomplete. Your data is preserved. Try again.",
@@ -1907,11 +1904,7 @@
     }
   },
   "syncCenterUploading": "Waiting to upload",
-  "fitnessPlanUnfilled": "Empty",
-  "fitnessPlanFillHint": "Tap a template to fill a date",
-  "fitnessPlanFillDays": "Choose a template or rest for every day",
   "fitnessPlanSetRest": "Set rest day",
-  "fitnessPlanReplaceHint": "Tap a template to replace this assignment",
   "syncCenterDeleteReview": "Delete “{name}”? It currently contains {count} cloud records. Unsynced local changes to this book will also be deleted.",
   "@syncCenterDeleteReview": {
     "placeholders": {
@@ -2503,5 +2496,196 @@
   "recordHistoryCategoryMoved": "Category changed",
   "recordHistoryCurrencyChanged": "Ledger currency changed",
   "recordHistorySharingValues": "Split information",
-  "recordHistoryContextChanged": "The account has changed. Reopen this record."
+  "recordHistoryContextChanged": "The account has changed. Reopen this record.",
+  "fitnessPlanChooseTitle": "Choose a training plan",
+  "fitnessPlanDetailTitle": "Plan details",
+  "fitnessPlanAdjustAndUse": "Adjust and use",
+  "fitnessPlanCycleCount": "{count}-day cycle",
+  "@fitnessPlanCycleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanDayNumber": "Day {day}",
+  "@fitnessPlanDayNumber": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanDaySummary": "Exercises: {exercises} · Sets: {sets}",
+  "@fitnessPlanDaySummary": {
+    "placeholders": {
+      "exercises": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanNoTraining": "No training scheduled",
+  "fitnessPlanOpenExercises": "Tap to view exercises",
+  "fitnessPlanSegment": "Days {from}–{to} / {total}",
+  "@fitnessPlanSegment": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanPreviousSegment": "Previous days",
+  "fitnessPlanNextSegment": "Next days",
+  "fitnessPlanSetCount": "Sets: {count}",
+  "@fitnessPlanSetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanRepCount": "Reps: {count}",
+  "@fitnessPlanRepCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanNewTitle": "New plan",
+  "fitnessPlanEditTitle": "Edit plan",
+  "fitnessPlanBasicStep": "Basic settings",
+  "fitnessPlanScheduleStep": "Cycle schedule",
+  "fitnessPlanConfirmStep": "Confirm creation",
+  "fitnessPlanCycleLabel": "Cycle length",
+  "fitnessPlanCycleHint": "Includes training and rest days",
+  "fitnessPlanNameHint": "For example: My three-way split",
+  "fitnessPlanBasicHint": "Next, schedule each day",
+  "fitnessPlanDayTemplateHint": "Choose one training template for each day",
+  "fitnessPlanDayRestHint": "Choose rest for rest days",
+  "fitnessPlanStartHint": "Finally, confirm the start date and whether to enable the plan",
+  "fitnessPlanNextSchedule": "Next: Cycle schedule",
+  "fitnessPlanNextConfirm": "Next: Confirm creation",
+  "fitnessPlanPreviousStep": "Previous step",
+  "fitnessPlanExitTitle": "Exit new plan?",
+  "fitnessPlanExitEditTitle": "Exit plan editing?",
+  "fitnessPlanExitMessage": "The information entered this time will not be saved if you exit.",
+  "fitnessPlanContinueEditing": "Continue editing",
+  "fitnessPlanExitDiscard": "Exit without saving",
+  "fitnessPlanAssigned": "Scheduled: {filled}/{total} days",
+  "@fitnessPlanAssigned": {
+    "placeholders": {
+      "filled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanUnassigned": "Days still to schedule: {count}",
+  "@fitnessPlanUnassigned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanAllAssigned": "All days scheduled",
+  "fitnessPlanArrangeDay": "Schedule day {day}",
+  "@fitnessPlanArrangeDay": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanArrangeOrRest": "Schedule training or rest",
+  "fitnessPlanClearDay": "Clear day",
+  "fitnessPlanRestRemaining": "Set {count} unscheduled days to rest",
+  "@fitnessPlanRestRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanRestConfirmTitle": "Set unscheduled days to rest?",
+  "fitnessPlanRestConfirmMessage": "This applies to {count} days. Existing training and rest days stay as they are.",
+  "@fitnessPlanRestConfirmMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanShrinkTitle": "Shorten to {count} days?",
+  "@fitnessPlanShrinkTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanShrinkMessage": "Days {from}–{to} will be removed, including {count} scheduled days. The first {kept} days stay as they are.",
+  "@fitnessPlanShrinkMessage": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      },
+      "kept": {
+        "type": "int"
+      }
+    }
+  },
+  "fitnessPlanNameInvalid": "Enter a plan name of 1–100 characters.",
+  "fitnessPlanNeedTraining": "Schedule at least one training day to create a training plan.",
+  "fitnessPlanDateFrom": "Day 1 starts on {date}",
+  "@fitnessPlanDateFrom": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "fitnessPlanStartChoice": "How to start after creation",
+  "fitnessPlanEnableOnDate": "Enable the plan from the start date",
+  "fitnessPlanSaveDisabled": "Save without enabling",
+  "fitnessPlanCreateEnabled": "Create and enable",
+  "fitnessPlanCreated": "Plan created",
+  "fitnessPlanCreatedEnabled": "Training will follow the cycle from {date}",
+  "@fitnessPlanCreatedEnabled": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "fitnessPlanCreatedDisabled": "Saved to My plans, but not enabled",
+  "fitnessPlanCompleteCycle": "Full cycle schedule",
+  "fitnessPlanDone": "Done, view My plans",
+  "fitnessPlanPendingChange": "The cycle schedule will take effect next cycle. Existing scheduled workouts stay as they are.",
+  "fitnessPlanStartLocked": "Start date locked",
+  "fitnessPlanChooseLibrary": "Choose from the template library",
+  "fitnessPlanUnarranged": "Unscheduled",
+  "fitnessPlanSelectTemplate": "Choose",
+  "fitnessPlanCreatedTitle": "Creation complete",
+  "fitnessPlanConfirmSave": "Confirm save",
+  "fitnessPlanNextConfirmSave": "Next: Confirm save",
+  "fitnessPlanEditStartChoice": "Plan enabled status"
 }

@@ -12,6 +12,7 @@ import 'package:sesame_notes/data/models/app_banner.dart';
 import 'package:sesame_notes/data/models/fitness_library.dart';
 import 'package:sesame_notes/features/fitness/application/fitness_actions.dart';
 import 'package:sesame_notes/features/fitness/presentation/fitness_banner_navigation.dart';
+import 'package:sesame_notes/features/fitness/presentation/fitness_official_plan_detail_page.dart';
 import 'package:sesame_notes/infrastructure/api/api_client_provider.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/navigation/route_consts.dart';
@@ -43,9 +44,7 @@ void main() {
       when(() => actions.target).thenReturn(bookTarget);
       final plan = target == AppBannerTarget.officialPlan;
       final id = plan ? library.plans.first.id : library.templates.first.id;
-      final route = plan
-          ? Routes.fitnessPlanEdit
-          : Routes.fitnessTemplateDetail;
+      final route = Routes.fitnessTemplateDetail;
       Object? extra;
       final router = GoRouter(
         routes: [
@@ -89,13 +88,18 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('打开'));
       await tester.pumpAndSettle();
-      expect(find.text('官方详情'), findsOneWidget);
       if (plan) {
-        final draft = extra as FitnessPlanImportDraft;
+        expect(find.byType(FitnessOfficialPlanDetailPage), findsOneWidget);
+        final draft = tester
+            .widget<FitnessOfficialPlanDetailPage>(
+              find.byType(FitnessOfficialPlanDetailPage),
+            )
+            .importDraft;
         expect(draft.target, bookTarget);
         expect(draft.plan.catalogOrigin!.itemId, id);
         expect(draft.officialTemplates, isNotEmpty);
       } else {
+        expect(find.text('官方详情'), findsOneWidget);
         expect((extra as OfficialFitnessTemplate).id, id);
       }
       await tester.pumpWidget(const SizedBox.shrink());

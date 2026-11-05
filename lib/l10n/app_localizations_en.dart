@@ -3611,9 +3611,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fitnessStartDate => 'Start date';
 
   @override
-  String get fitnessCycleDays => 'Plan cycle (including rest)';
-
-  @override
   String get fitnessRestDay => 'Rest day';
 
   @override
@@ -3983,13 +3980,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Delete only this plan? All generated workouts and rest days, including completed workouts, will be kept.';
 
   @override
-  String get fitnessPlanEnabled => 'Enable plan';
-
-  @override
-  String get fitnessPlanStartDateRequired =>
-      'Choose a start date to enable the plan';
-
-  @override
   String get syncCenterTitle => 'Sync Management';
 
   @override
@@ -4060,20 +4050,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncCenterUploading => 'Waiting to upload';
 
   @override
-  String get fitnessPlanUnfilled => 'Empty';
-
-  @override
-  String get fitnessPlanFillHint => 'Tap a template to fill a date';
-
-  @override
-  String get fitnessPlanFillDays => 'Choose a template or rest for every day';
-
-  @override
   String get fitnessPlanSetRest => 'Set rest day';
-
-  @override
-  String get fitnessPlanReplaceHint =>
-      'Tap a template to replace this assignment';
 
   @override
   String syncCenterDeleteReview(String name, int count) {
@@ -5493,4 +5470,234 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get recordHistoryContextChanged =>
       'The account has changed. Reopen this record.';
+
+  @override
+  String get fitnessPlanChooseTitle => 'Choose a training plan';
+
+  @override
+  String get fitnessPlanDetailTitle => 'Plan details';
+
+  @override
+  String get fitnessPlanAdjustAndUse => 'Adjust and use';
+
+  @override
+  String fitnessPlanCycleCount(int count) {
+    return '$count-day cycle';
+  }
+
+  @override
+  String fitnessPlanDayNumber(int day) {
+    return 'Day $day';
+  }
+
+  @override
+  String fitnessPlanDaySummary(int exercises, int sets) {
+    return 'Exercises: $exercises · Sets: $sets';
+  }
+
+  @override
+  String get fitnessPlanNoTraining => 'No training scheduled';
+
+  @override
+  String get fitnessPlanOpenExercises => 'Tap to view exercises';
+
+  @override
+  String fitnessPlanSegment(int from, int to, int total) {
+    return 'Days $from–$to / $total';
+  }
+
+  @override
+  String get fitnessPlanPreviousSegment => 'Previous days';
+
+  @override
+  String get fitnessPlanNextSegment => 'Next days';
+
+  @override
+  String fitnessPlanSetCount(int count) {
+    return 'Sets: $count';
+  }
+
+  @override
+  String fitnessPlanRepCount(int count) {
+    return 'Reps: $count';
+  }
+
+  @override
+  String get fitnessPlanNewTitle => 'New plan';
+
+  @override
+  String get fitnessPlanEditTitle => 'Edit plan';
+
+  @override
+  String get fitnessPlanBasicStep => 'Basic settings';
+
+  @override
+  String get fitnessPlanScheduleStep => 'Cycle schedule';
+
+  @override
+  String get fitnessPlanConfirmStep => 'Confirm creation';
+
+  @override
+  String get fitnessPlanCycleLabel => 'Cycle length';
+
+  @override
+  String get fitnessPlanCycleHint => 'Includes training and rest days';
+
+  @override
+  String get fitnessPlanNameHint => 'For example: My three-way split';
+
+  @override
+  String get fitnessPlanBasicHint => 'Next, schedule each day';
+
+  @override
+  String get fitnessPlanDayTemplateHint =>
+      'Choose one training template for each day';
+
+  @override
+  String get fitnessPlanDayRestHint => 'Choose rest for rest days';
+
+  @override
+  String get fitnessPlanStartHint =>
+      'Finally, confirm the start date and whether to enable the plan';
+
+  @override
+  String get fitnessPlanNextSchedule => 'Next: Cycle schedule';
+
+  @override
+  String get fitnessPlanNextConfirm => 'Next: Confirm creation';
+
+  @override
+  String get fitnessPlanPreviousStep => 'Previous step';
+
+  @override
+  String get fitnessPlanExitTitle => 'Exit new plan?';
+
+  @override
+  String get fitnessPlanExitEditTitle => 'Exit plan editing?';
+
+  @override
+  String get fitnessPlanExitMessage =>
+      'The information entered this time will not be saved if you exit.';
+
+  @override
+  String get fitnessPlanContinueEditing => 'Continue editing';
+
+  @override
+  String get fitnessPlanExitDiscard => 'Exit without saving';
+
+  @override
+  String fitnessPlanAssigned(int filled, int total) {
+    return 'Scheduled: $filled/$total days';
+  }
+
+  @override
+  String fitnessPlanUnassigned(int count) {
+    return 'Days still to schedule: $count';
+  }
+
+  @override
+  String get fitnessPlanAllAssigned => 'All days scheduled';
+
+  @override
+  String fitnessPlanArrangeDay(int day) {
+    return 'Schedule day $day';
+  }
+
+  @override
+  String get fitnessPlanArrangeOrRest => 'Schedule training or rest';
+
+  @override
+  String get fitnessPlanClearDay => 'Clear day';
+
+  @override
+  String fitnessPlanRestRemaining(int count) {
+    return 'Set $count unscheduled days to rest';
+  }
+
+  @override
+  String get fitnessPlanRestConfirmTitle => 'Set unscheduled days to rest?';
+
+  @override
+  String fitnessPlanRestConfirmMessage(int count) {
+    return 'This applies to $count days. Existing training and rest days stay as they are.';
+  }
+
+  @override
+  String fitnessPlanShrinkTitle(int count) {
+    return 'Shorten to $count days?';
+  }
+
+  @override
+  String fitnessPlanShrinkMessage(int from, int to, int count, int kept) {
+    return 'Days $from–$to will be removed, including $count scheduled days. The first $kept days stay as they are.';
+  }
+
+  @override
+  String get fitnessPlanNameInvalid => 'Enter a plan name of 1–100 characters.';
+
+  @override
+  String get fitnessPlanNeedTraining =>
+      'Schedule at least one training day to create a training plan.';
+
+  @override
+  String fitnessPlanDateFrom(String date) {
+    return 'Day 1 starts on $date';
+  }
+
+  @override
+  String get fitnessPlanStartChoice => 'How to start after creation';
+
+  @override
+  String get fitnessPlanEnableOnDate => 'Enable the plan from the start date';
+
+  @override
+  String get fitnessPlanSaveDisabled => 'Save without enabling';
+
+  @override
+  String get fitnessPlanCreateEnabled => 'Create and enable';
+
+  @override
+  String get fitnessPlanCreated => 'Plan created';
+
+  @override
+  String fitnessPlanCreatedEnabled(String date) {
+    return 'Training will follow the cycle from $date';
+  }
+
+  @override
+  String get fitnessPlanCreatedDisabled => 'Saved to My plans, but not enabled';
+
+  @override
+  String get fitnessPlanCompleteCycle => 'Full cycle schedule';
+
+  @override
+  String get fitnessPlanDone => 'Done, view My plans';
+
+  @override
+  String get fitnessPlanPendingChange =>
+      'The cycle schedule will take effect next cycle. Existing scheduled workouts stay as they are.';
+
+  @override
+  String get fitnessPlanStartLocked => 'Start date locked';
+
+  @override
+  String get fitnessPlanChooseLibrary => 'Choose from the template library';
+
+  @override
+  String get fitnessPlanUnarranged => 'Unscheduled';
+
+  @override
+  String get fitnessPlanSelectTemplate => 'Choose';
+
+  @override
+  String get fitnessPlanCreatedTitle => 'Creation complete';
+
+  @override
+  String get fitnessPlanConfirmSave => 'Confirm save';
+
+  @override
+  String get fitnessPlanNextConfirmSave => 'Next: Confirm save';
+
+  @override
+  String get fitnessPlanEditStartChoice => 'Plan enabled status';
 }

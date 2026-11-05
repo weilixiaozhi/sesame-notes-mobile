@@ -6698,12 +6698,6 @@ abstract class AppLocalizations {
   /// **'Start date'**
   String get fitnessStartDate;
 
-  /// No description provided for @fitnessCycleDays.
-  ///
-  /// In en, this message translates to:
-  /// **'Plan cycle (including rest)'**
-  String get fitnessCycleDays;
-
   /// No description provided for @fitnessRestDay.
   ///
   /// In en, this message translates to:
@@ -7412,18 +7406,6 @@ abstract class AppLocalizations {
   /// **'Delete only this plan? All generated workouts and rest days, including completed workouts, will be kept.'**
   String get fitnessDeletePlanMessage;
 
-  /// No description provided for @fitnessPlanEnabled.
-  ///
-  /// In en, this message translates to:
-  /// **'Enable plan'**
-  String get fitnessPlanEnabled;
-
-  /// No description provided for @fitnessPlanStartDateRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a start date to enable the plan'**
-  String get fitnessPlanStartDateRequired;
-
   /// No description provided for @syncCenterTitle.
   ///
   /// In en, this message translates to:
@@ -7556,35 +7538,11 @@ abstract class AppLocalizations {
   /// **'Waiting to upload'**
   String get syncCenterUploading;
 
-  /// No description provided for @fitnessPlanUnfilled.
-  ///
-  /// In en, this message translates to:
-  /// **'Empty'**
-  String get fitnessPlanUnfilled;
-
-  /// No description provided for @fitnessPlanFillHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap a template to fill a date'**
-  String get fitnessPlanFillHint;
-
-  /// No description provided for @fitnessPlanFillDays.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a template or rest for every day'**
-  String get fitnessPlanFillDays;
-
   /// No description provided for @fitnessPlanSetRest.
   ///
   /// In en, this message translates to:
   /// **'Set rest day'**
   String get fitnessPlanSetRest;
-
-  /// No description provided for @fitnessPlanReplaceHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap a template to replace this assignment'**
-  String get fitnessPlanReplaceHint;
 
   /// No description provided for @syncCenterDeleteReview.
   ///
@@ -10027,6 +9985,396 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The account has changed. Reopen this record.'**
   String get recordHistoryContextChanged;
+
+  /// No description provided for @fitnessPlanChooseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a training plan'**
+  String get fitnessPlanChooseTitle;
+
+  /// No description provided for @fitnessPlanDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan details'**
+  String get fitnessPlanDetailTitle;
+
+  /// No description provided for @fitnessPlanAdjustAndUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust and use'**
+  String get fitnessPlanAdjustAndUse;
+
+  /// No description provided for @fitnessPlanCycleCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}-day cycle'**
+  String fitnessPlanCycleCount(int count);
+
+  /// No description provided for @fitnessPlanDayNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Day {day}'**
+  String fitnessPlanDayNumber(int day);
+
+  /// No description provided for @fitnessPlanDaySummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercises: {exercises} · Sets: {sets}'**
+  String fitnessPlanDaySummary(int exercises, int sets);
+
+  /// No description provided for @fitnessPlanNoTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'No training scheduled'**
+  String get fitnessPlanNoTraining;
+
+  /// No description provided for @fitnessPlanOpenExercises.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to view exercises'**
+  String get fitnessPlanOpenExercises;
+
+  /// No description provided for @fitnessPlanSegment.
+  ///
+  /// In en, this message translates to:
+  /// **'Days {from}–{to} / {total}'**
+  String fitnessPlanSegment(int from, int to, int total);
+
+  /// No description provided for @fitnessPlanPreviousSegment.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous days'**
+  String get fitnessPlanPreviousSegment;
+
+  /// No description provided for @fitnessPlanNextSegment.
+  ///
+  /// In en, this message translates to:
+  /// **'Next days'**
+  String get fitnessPlanNextSegment;
+
+  /// No description provided for @fitnessPlanSetCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets: {count}'**
+  String fitnessPlanSetCount(int count);
+
+  /// No description provided for @fitnessPlanRepCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Reps: {count}'**
+  String fitnessPlanRepCount(int count);
+
+  /// No description provided for @fitnessPlanNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New plan'**
+  String get fitnessPlanNewTitle;
+
+  /// No description provided for @fitnessPlanEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit plan'**
+  String get fitnessPlanEditTitle;
+
+  /// No description provided for @fitnessPlanBasicStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic settings'**
+  String get fitnessPlanBasicStep;
+
+  /// No description provided for @fitnessPlanScheduleStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycle schedule'**
+  String get fitnessPlanScheduleStep;
+
+  /// No description provided for @fitnessPlanConfirmStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm creation'**
+  String get fitnessPlanConfirmStep;
+
+  /// No description provided for @fitnessPlanCycleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycle length'**
+  String get fitnessPlanCycleLabel;
+
+  /// No description provided for @fitnessPlanCycleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Includes training and rest days'**
+  String get fitnessPlanCycleHint;
+
+  /// No description provided for @fitnessPlanNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example: My three-way split'**
+  String get fitnessPlanNameHint;
+
+  /// No description provided for @fitnessPlanBasicHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Next, schedule each day'**
+  String get fitnessPlanBasicHint;
+
+  /// No description provided for @fitnessPlanDayTemplateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose one training template for each day'**
+  String get fitnessPlanDayTemplateHint;
+
+  /// No description provided for @fitnessPlanDayRestHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose rest for rest days'**
+  String get fitnessPlanDayRestHint;
+
+  /// No description provided for @fitnessPlanStartHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Finally, confirm the start date and whether to enable the plan'**
+  String get fitnessPlanStartHint;
+
+  /// No description provided for @fitnessPlanNextSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: Cycle schedule'**
+  String get fitnessPlanNextSchedule;
+
+  /// No description provided for @fitnessPlanNextConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: Confirm creation'**
+  String get fitnessPlanNextConfirm;
+
+  /// No description provided for @fitnessPlanPreviousStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous step'**
+  String get fitnessPlanPreviousStep;
+
+  /// No description provided for @fitnessPlanExitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit new plan?'**
+  String get fitnessPlanExitTitle;
+
+  /// No description provided for @fitnessPlanExitEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit plan editing?'**
+  String get fitnessPlanExitEditTitle;
+
+  /// No description provided for @fitnessPlanExitMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The information entered this time will not be saved if you exit.'**
+  String get fitnessPlanExitMessage;
+
+  /// No description provided for @fitnessPlanContinueEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue editing'**
+  String get fitnessPlanContinueEditing;
+
+  /// No description provided for @fitnessPlanExitDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit without saving'**
+  String get fitnessPlanExitDiscard;
+
+  /// No description provided for @fitnessPlanAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled: {filled}/{total} days'**
+  String fitnessPlanAssigned(int filled, int total);
+
+  /// No description provided for @fitnessPlanUnassigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Days still to schedule: {count}'**
+  String fitnessPlanUnassigned(int count);
+
+  /// No description provided for @fitnessPlanAllAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'All days scheduled'**
+  String get fitnessPlanAllAssigned;
+
+  /// No description provided for @fitnessPlanArrangeDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule day {day}'**
+  String fitnessPlanArrangeDay(int day);
+
+  /// No description provided for @fitnessPlanArrangeOrRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule training or rest'**
+  String get fitnessPlanArrangeOrRest;
+
+  /// No description provided for @fitnessPlanClearDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear day'**
+  String get fitnessPlanClearDay;
+
+  /// No description provided for @fitnessPlanRestRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {count} unscheduled days to rest'**
+  String fitnessPlanRestRemaining(int count);
+
+  /// No description provided for @fitnessPlanRestConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set unscheduled days to rest?'**
+  String get fitnessPlanRestConfirmTitle;
+
+  /// No description provided for @fitnessPlanRestConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This applies to {count} days. Existing training and rest days stay as they are.'**
+  String fitnessPlanRestConfirmMessage(int count);
+
+  /// No description provided for @fitnessPlanShrinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shorten to {count} days?'**
+  String fitnessPlanShrinkTitle(int count);
+
+  /// No description provided for @fitnessPlanShrinkMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Days {from}–{to} will be removed, including {count} scheduled days. The first {kept} days stay as they are.'**
+  String fitnessPlanShrinkMessage(int from, int to, int count, int kept);
+
+  /// No description provided for @fitnessPlanNameInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a plan name of 1–100 characters.'**
+  String get fitnessPlanNameInvalid;
+
+  /// No description provided for @fitnessPlanNeedTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule at least one training day to create a training plan.'**
+  String get fitnessPlanNeedTraining;
+
+  /// No description provided for @fitnessPlanDateFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 1 starts on {date}'**
+  String fitnessPlanDateFrom(String date);
+
+  /// No description provided for @fitnessPlanStartChoice.
+  ///
+  /// In en, this message translates to:
+  /// **'How to start after creation'**
+  String get fitnessPlanStartChoice;
+
+  /// No description provided for @fitnessPlanEnableOnDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable the plan from the start date'**
+  String get fitnessPlanEnableOnDate;
+
+  /// No description provided for @fitnessPlanSaveDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Save without enabling'**
+  String get fitnessPlanSaveDisabled;
+
+  /// No description provided for @fitnessPlanCreateEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Create and enable'**
+  String get fitnessPlanCreateEnabled;
+
+  /// No description provided for @fitnessPlanCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan created'**
+  String get fitnessPlanCreated;
+
+  /// No description provided for @fitnessPlanCreatedEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Training will follow the cycle from {date}'**
+  String fitnessPlanCreatedEnabled(String date);
+
+  /// No description provided for @fitnessPlanCreatedDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to My plans, but not enabled'**
+  String get fitnessPlanCreatedDisabled;
+
+  /// No description provided for @fitnessPlanCompleteCycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Full cycle schedule'**
+  String get fitnessPlanCompleteCycle;
+
+  /// No description provided for @fitnessPlanDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done, view My plans'**
+  String get fitnessPlanDone;
+
+  /// No description provided for @fitnessPlanPendingChange.
+  ///
+  /// In en, this message translates to:
+  /// **'The cycle schedule will take effect next cycle. Existing scheduled workouts stay as they are.'**
+  String get fitnessPlanPendingChange;
+
+  /// No description provided for @fitnessPlanStartLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Start date locked'**
+  String get fitnessPlanStartLocked;
+
+  /// No description provided for @fitnessPlanChooseLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from the template library'**
+  String get fitnessPlanChooseLibrary;
+
+  /// No description provided for @fitnessPlanUnarranged.
+  ///
+  /// In en, this message translates to:
+  /// **'Unscheduled'**
+  String get fitnessPlanUnarranged;
+
+  /// No description provided for @fitnessPlanSelectTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose'**
+  String get fitnessPlanSelectTemplate;
+
+  /// No description provided for @fitnessPlanCreatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Creation complete'**
+  String get fitnessPlanCreatedTitle;
+
+  /// No description provided for @fitnessPlanConfirmSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm save'**
+  String get fitnessPlanConfirmSave;
+
+  /// No description provided for @fitnessPlanNextConfirmSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: Confirm save'**
+  String get fitnessPlanNextConfirmSave;
+
+  /// No description provided for @fitnessPlanEditStartChoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan enabled status'**
+  String get fitnessPlanEditStartChoice;
 }
 
 class _AppLocalizationsDelegate

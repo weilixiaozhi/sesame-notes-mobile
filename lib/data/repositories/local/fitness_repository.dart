@@ -591,14 +591,20 @@ class FitnessRepository
   Future<FitnessPlan> savePlan(
     FitnessPlan plan, {
     String? restartDate,
+    Map<String, FitnessTemplate> officialTemplates = const {},
   }) => _write(() async {
-    final id = plan.id.isEmpty ? const Uuid().v4() : plan.id;
+    // 官方来源只用于识别尚未保存的库模板；个人模板保留编排时选定的身份与快照。
+    final prepared = await _materializeOfficialPlanTemplates(
+      plan,
+      officialTemplates,
+    );
+    final id = prepared.id.isEmpty ? const Uuid().v4() : prepared.id;
     final row = await _row(id, 'fitness_plan');
     final old = row == null ? null : FitnessPlan.fromJson(_json(row));
     final restarting =
         old != null &&
         old.status != 'in_progress' &&
-        plan.status == 'in_progress';
+        prepared.status == 'in_progress';
     fitnessRequire(
       !restarting ||
           old.generationState.nextCycleStartDate == null ||
@@ -606,13 +612,13 @@ class FitnessRepository
       'FITNESS_START_DATE_REQUIRED',
     );
     fitnessRequire(restartDate == null || restarting, 'FITNESS_PLAN_STATUS');
-    var next = plan.copyWith(
+    var next = prepared.copyWith(
       id: id,
       generationState: old?.generationState ?? const FitnessGenerationState(),
       pendingSchedule: null,
     );
     if (restarting) {
-      next = next.copyWith(startDate: restartDate ?? plan.startDate);
+      next = next.copyWith(startDate: restartDate ?? prepared.startDate);
     }
     if (next.startDate != null) {
       fitnessParseDate(next.startDate!);
@@ -645,7 +651,7 @@ class FitnessRepository
       );
     }
     validateFitnessSchedule(
-      FitnessSchedule(cycleDays: plan.cycleDays, days: plan.days),
+      FitnessSchedule(cycleDays: prepared.cycleDays, days: prepared.days),
     );
     fitnessRequire(
       ['in_progress', 'closed'].contains(next.status),
@@ -678,6 +684,59 @@ class FitnessRepository
       await _save('fitness_plan', id, result.plan.toJson()),
     );
   });
+
+  /// 只复制周期中仍被引用的库模板，保存失败时由外层事务一并回滚。
+  Future<FitnessPlan> _materializeOfficialPlanTemplates(
+    FitnessPlan plan,
+    Map<String, FitnessTemplate> officialTemplates,
+  ) async {
+    if (officialTemplates.isEmpty) return plan;
+    final selected = <String, FitnessPlanSlot>{
+      for (final day in plan.days)
+        if (day.slot case final slot?)
+          if (officialTemplates.containsKey(slot.sourceTemplateId))
+            slot.sourceTemplateId!: slot,
+    };
+    if (selected.isEmpty) return plan;
+    final copies = <String, FitnessTemplate>{};
+    for (final entry in selected.entries) {
+      final officialId = entry.key;
+      final source = officialTemplates[officialId]!;
+      fitnessRequire(
+        source.id == officialId &&
+            source.catalogOrigin?.source == 'official' &&
+            source.catalogOrigin?.itemId == officialId,
+        'FITNESS_CATALOG_ORIGIN',
+      );
+      // 模板和计划均采用用户看到的处方；已有同源个人模板不参与隐式复用。
+      copies[officialId] = await saveTemplate(
+        source.copyWith(
+          id: const Uuid().v4(),
+          name: entry.value.name,
+          exercises: fitnessSnapshotExercises(
+            entry.value.exercises,
+            newIds: true,
+          ),
+          createdAt: null,
+          updatedAt: null,
+        ),
+      );
+    }
+    return plan.copyWith(
+      days: [
+        for (final day in plan.days)
+          if (day.slot case final slot?)
+            day.copyWith(
+              slot: slot.copyWith(
+                sourceTemplateId:
+                    copies[slot.sourceTemplateId]?.id ?? slot.sourceTemplateId,
+              ),
+            )
+          else
+            day,
+      ],
+    );
+  }
 
   Future<FitnessGenerationResult> _generate(
     FitnessPlan plan, {

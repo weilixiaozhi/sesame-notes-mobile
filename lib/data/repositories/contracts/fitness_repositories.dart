@@ -129,8 +129,12 @@ abstract interface class FitnessLibraryWriteRepository {
   /// 提供当前用例所需的 copyTemplate 能力，身份与事务由实现维护。
   Future<FitnessTemplate> copyTemplate(String id, {String? name});
 
-  /// 提供当前用例所需的 savePlan 能力，身份与事务由实现维护。
-  Future<FitnessPlan> savePlan(FitnessPlan plan, {String? restartDate});
+  /// 保存周期安排，并在同一事务中复制实际选用的官方模板。
+  Future<FitnessPlan> savePlan(
+    FitnessPlan plan, {
+    String? restartDate,
+    Map<String, FitnessTemplate> officialTemplates = const {},
+  });
 
   /// 提供当前用例所需的 updateWorkoutTemplate 能力，身份与事务由实现维护。
   Future<FitnessTemplate> updateWorkoutTemplate(String workoutId);

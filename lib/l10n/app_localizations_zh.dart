@@ -3522,9 +3522,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fitnessStartDate => '开始日期';
 
   @override
-  String get fitnessCycleDays => '计划循环周期（含休息）';
-
-  @override
   String get fitnessRestDay => '休息日';
 
   @override
@@ -3883,12 +3880,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fitnessDeletePlanMessage => '仅删除此计划？已经生成的全部训练与休息记录将保留，包含已完成训练。';
 
   @override
-  String get fitnessPlanEnabled => '计划启动';
-
-  @override
-  String get fitnessPlanStartDateRequired => '请选择开始日期后启动计划';
-
-  @override
   String get syncCenterTitle => '同步处理';
 
   @override
@@ -3958,19 +3949,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get syncCenterUploading => '等待上传';
 
   @override
-  String get fitnessPlanUnfilled => '待填充';
-
-  @override
-  String get fitnessPlanFillHint => '点击模板填充到日期中';
-
-  @override
-  String get fitnessPlanFillDays => '请为每天选择训练模板或休息';
-
-  @override
   String get fitnessPlanSetRest => '设为休息日';
-
-  @override
-  String get fitnessPlanReplaceHint => '点击模板替换当前安排';
 
   @override
   String syncCenterDeleteReview(String name, int count) {
@@ -5334,6 +5313,231 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get recordHistoryContextChanged => '账号已变化，请重新打开记录。';
+
+  @override
+  String get fitnessPlanChooseTitle => '选一套训练安排';
+
+  @override
+  String get fitnessPlanDetailTitle => '计划详情';
+
+  @override
+  String get fitnessPlanAdjustAndUse => '调整后使用';
+
+  @override
+  String fitnessPlanCycleCount(int count) {
+    return '$count 天一循环';
+  }
+
+  @override
+  String fitnessPlanDayNumber(int day) {
+    return '第 $day 天';
+  }
+
+  @override
+  String fitnessPlanDaySummary(int exercises, int sets) {
+    return '$exercises 个动作 · $sets 组';
+  }
+
+  @override
+  String get fitnessPlanNoTraining => '不安排训练';
+
+  @override
+  String get fitnessPlanOpenExercises => '点开查看动作';
+
+  @override
+  String fitnessPlanSegment(int from, int to, int total) {
+    return '第 $from–$to 天 / 共 $total 天';
+  }
+
+  @override
+  String get fitnessPlanPreviousSegment => '上一段';
+
+  @override
+  String get fitnessPlanNextSegment => '下一段';
+
+  @override
+  String fitnessPlanSetCount(int count) {
+    return '$count 组';
+  }
+
+  @override
+  String fitnessPlanRepCount(int count) {
+    return '$count 次';
+  }
+
+  @override
+  String get fitnessPlanNewTitle => '新建计划';
+
+  @override
+  String get fitnessPlanEditTitle => '编辑计划';
+
+  @override
+  String get fitnessPlanBasicStep => '基本设置';
+
+  @override
+  String get fitnessPlanScheduleStep => '周期编排';
+
+  @override
+  String get fitnessPlanConfirmStep => '确认创建';
+
+  @override
+  String get fitnessPlanCycleLabel => '循环天数';
+
+  @override
+  String get fitnessPlanCycleHint => '包含训练日和休息日';
+
+  @override
+  String get fitnessPlanNameHint => '例如：我的三分化训练';
+
+  @override
+  String get fitnessPlanBasicHint => '接下来，逐天安排训练';
+
+  @override
+  String get fitnessPlanDayTemplateHint => '每一天选择一个训练模板';
+
+  @override
+  String get fitnessPlanDayRestHint => '为休息日选择休息';
+
+  @override
+  String get fitnessPlanStartHint => '最后确认开始日期和是否启用';
+
+  @override
+  String get fitnessPlanNextSchedule => '下一步：周期编排';
+
+  @override
+  String get fitnessPlanNextConfirm => '下一步：确认创建';
+
+  @override
+  String get fitnessPlanPreviousStep => '上一步';
+
+  @override
+  String get fitnessPlanExitTitle => '退出新建计划？';
+
+  @override
+  String get fitnessPlanExitEditTitle => '退出编辑计划？';
+
+  @override
+  String get fitnessPlanExitMessage => '退出后，本次填写的内容不会保存。';
+
+  @override
+  String get fitnessPlanContinueEditing => '继续编辑';
+
+  @override
+  String get fitnessPlanExitDiscard => '退出，不保存';
+
+  @override
+  String fitnessPlanAssigned(int filled, int total) {
+    return '已安排 $filled/$total 天';
+  }
+
+  @override
+  String fitnessPlanUnassigned(int count) {
+    return '还有 $count 天待安排';
+  }
+
+  @override
+  String get fitnessPlanAllAssigned => '已全部安排';
+
+  @override
+  String fitnessPlanArrangeDay(int day) {
+    return '安排第 $day 天';
+  }
+
+  @override
+  String get fitnessPlanArrangeOrRest => '安排训练或休息';
+
+  @override
+  String get fitnessPlanClearDay => '清空当天';
+
+  @override
+  String fitnessPlanRestRemaining(int count) {
+    return '将未安排的 $count 天设为休息';
+  }
+
+  @override
+  String get fitnessPlanRestConfirmTitle => '将未安排日设为休息？';
+
+  @override
+  String fitnessPlanRestConfirmMessage(int count) {
+    return '共 $count 天。已安排的训练和休息日保持不变。';
+  }
+
+  @override
+  String fitnessPlanShrinkTitle(int count) {
+    return '缩短为 $count 天？';
+  }
+
+  @override
+  String fitnessPlanShrinkMessage(int from, int to, int count, int kept) {
+    return '第 $from–$to 天将被移除，其中已有 $count 天安排。前 $kept 天保持原样。';
+  }
+
+  @override
+  String get fitnessPlanNameInvalid => '请填写 1–100 个字的计划名称。';
+
+  @override
+  String get fitnessPlanNeedTraining => '至少安排 1 天训练，才能创建训练计划。';
+
+  @override
+  String fitnessPlanDateFrom(String date) {
+    return '第 1 天从 $date 开始';
+  }
+
+  @override
+  String get fitnessPlanStartChoice => '创建后如何开始';
+
+  @override
+  String get fitnessPlanEnableOnDate => '按开始日期启用计划';
+
+  @override
+  String get fitnessPlanSaveDisabled => '先保存，暂不启用';
+
+  @override
+  String get fitnessPlanCreateEnabled => '创建并启用';
+
+  @override
+  String get fitnessPlanCreated => '计划已创建';
+
+  @override
+  String fitnessPlanCreatedEnabled(String date) {
+    return '将从 $date 起按周期安排训练';
+  }
+
+  @override
+  String get fitnessPlanCreatedDisabled => '已保存到我的计划，尚未启用';
+
+  @override
+  String get fitnessPlanCompleteCycle => '完整周期安排';
+
+  @override
+  String get fitnessPlanDone => '完成，查看我的计划';
+
+  @override
+  String get fitnessPlanPendingChange => '周期编排将在下一周期生效，已生成的训练保持原样。';
+
+  @override
+  String get fitnessPlanStartLocked => '开始日期已锁定';
+
+  @override
+  String get fitnessPlanChooseLibrary => '去模板库选择';
+
+  @override
+  String get fitnessPlanUnarranged => '待安排';
+
+  @override
+  String get fitnessPlanSelectTemplate => '选择';
+
+  @override
+  String get fitnessPlanCreatedTitle => '创建完成';
+
+  @override
+  String get fitnessPlanConfirmSave => '确认保存';
+
+  @override
+  String get fitnessPlanNextConfirmSave => '下一步：确认保存';
+
+  @override
+  String get fitnessPlanEditStartChoice => '计划启用状态';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -8852,9 +9056,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get fitnessStartDate => '開始日期';
 
   @override
-  String get fitnessCycleDays => '計劃循環週期（含休息）';
-
-  @override
   String get fitnessRestDay => '休息日';
 
   @override
@@ -9213,12 +9414,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get fitnessDeletePlanMessage => '僅刪除此計劃？已經產生的全部訓練與休息記錄將保留，包含已完成訓練。';
 
   @override
-  String get fitnessPlanEnabled => '計劃啟動';
-
-  @override
-  String get fitnessPlanStartDateRequired => '請選擇開始日期後啟動計劃';
-
-  @override
   String get syncCenterTitle => '同步處理';
 
   @override
@@ -9288,19 +9483,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get syncCenterUploading => '等待上传';
 
   @override
-  String get fitnessPlanUnfilled => '待填充';
-
-  @override
-  String get fitnessPlanFillHint => '點擊範本填充到日期中';
-
-  @override
-  String get fitnessPlanFillDays => '請為每天選擇訓練範本或休息';
-
-  @override
   String get fitnessPlanSetRest => '設為休息日';
-
-  @override
-  String get fitnessPlanReplaceHint => '點擊範本替換目前安排';
 
   @override
   String syncCenterDeleteReview(String name, int count) {
@@ -10664,4 +10847,229 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get recordHistoryContextChanged => '帳號已變更，請重新開啟記錄。';
+
+  @override
+  String get fitnessPlanChooseTitle => '選一套訓練安排';
+
+  @override
+  String get fitnessPlanDetailTitle => '計畫詳情';
+
+  @override
+  String get fitnessPlanAdjustAndUse => '調整後使用';
+
+  @override
+  String fitnessPlanCycleCount(int count) {
+    return '$count 天一循環';
+  }
+
+  @override
+  String fitnessPlanDayNumber(int day) {
+    return '第 $day 天';
+  }
+
+  @override
+  String fitnessPlanDaySummary(int exercises, int sets) {
+    return '$exercises 個動作 · $sets 組';
+  }
+
+  @override
+  String get fitnessPlanNoTraining => '不安排訓練';
+
+  @override
+  String get fitnessPlanOpenExercises => '點開查看動作';
+
+  @override
+  String fitnessPlanSegment(int from, int to, int total) {
+    return '第 $from–$to 天 / 共 $total 天';
+  }
+
+  @override
+  String get fitnessPlanPreviousSegment => '上一段';
+
+  @override
+  String get fitnessPlanNextSegment => '下一段';
+
+  @override
+  String fitnessPlanSetCount(int count) {
+    return '$count 組';
+  }
+
+  @override
+  String fitnessPlanRepCount(int count) {
+    return '$count 次';
+  }
+
+  @override
+  String get fitnessPlanNewTitle => '新建計畫';
+
+  @override
+  String get fitnessPlanEditTitle => '編輯計畫';
+
+  @override
+  String get fitnessPlanBasicStep => '基本設定';
+
+  @override
+  String get fitnessPlanScheduleStep => '週期編排';
+
+  @override
+  String get fitnessPlanConfirmStep => '確認建立';
+
+  @override
+  String get fitnessPlanCycleLabel => '循環天數';
+
+  @override
+  String get fitnessPlanCycleHint => '包含訓練日和休息日';
+
+  @override
+  String get fitnessPlanNameHint => '例如：我的三分化訓練';
+
+  @override
+  String get fitnessPlanBasicHint => '接下來，逐天安排訓練';
+
+  @override
+  String get fitnessPlanDayTemplateHint => '每一天選擇一個訓練範本';
+
+  @override
+  String get fitnessPlanDayRestHint => '為休息日選擇休息';
+
+  @override
+  String get fitnessPlanStartHint => '最後確認開始日期和是否啟用';
+
+  @override
+  String get fitnessPlanNextSchedule => '下一步：週期編排';
+
+  @override
+  String get fitnessPlanNextConfirm => '下一步：確認建立';
+
+  @override
+  String get fitnessPlanPreviousStep => '上一步';
+
+  @override
+  String get fitnessPlanExitTitle => '退出新建計畫？';
+
+  @override
+  String get fitnessPlanExitEditTitle => '退出編輯計畫？';
+
+  @override
+  String get fitnessPlanExitMessage => '退出後，本次填寫的內容不會儲存。';
+
+  @override
+  String get fitnessPlanContinueEditing => '繼續編輯';
+
+  @override
+  String get fitnessPlanExitDiscard => '退出，不儲存';
+
+  @override
+  String fitnessPlanAssigned(int filled, int total) {
+    return '已安排 $filled/$total 天';
+  }
+
+  @override
+  String fitnessPlanUnassigned(int count) {
+    return '還有 $count 天待安排';
+  }
+
+  @override
+  String get fitnessPlanAllAssigned => '已全部安排';
+
+  @override
+  String fitnessPlanArrangeDay(int day) {
+    return '安排第 $day 天';
+  }
+
+  @override
+  String get fitnessPlanArrangeOrRest => '安排訓練或休息';
+
+  @override
+  String get fitnessPlanClearDay => '清空當天';
+
+  @override
+  String fitnessPlanRestRemaining(int count) {
+    return '將未安排的 $count 天設為休息';
+  }
+
+  @override
+  String get fitnessPlanRestConfirmTitle => '將未安排日設為休息？';
+
+  @override
+  String fitnessPlanRestConfirmMessage(int count) {
+    return '共 $count 天。已安排的訓練和休息日保持不變。';
+  }
+
+  @override
+  String fitnessPlanShrinkTitle(int count) {
+    return '縮短為 $count 天？';
+  }
+
+  @override
+  String fitnessPlanShrinkMessage(int from, int to, int count, int kept) {
+    return '第 $from–$to 天將被移除，其中已有 $count 天安排。前 $kept 天保持原樣。';
+  }
+
+  @override
+  String get fitnessPlanNameInvalid => '請填寫 1–100 個字的計畫名稱。';
+
+  @override
+  String get fitnessPlanNeedTraining => '至少安排 1 天訓練，才能建立訓練計畫。';
+
+  @override
+  String fitnessPlanDateFrom(String date) {
+    return '第 1 天從 $date 開始';
+  }
+
+  @override
+  String get fitnessPlanStartChoice => '建立後如何開始';
+
+  @override
+  String get fitnessPlanEnableOnDate => '按開始日期啟用計畫';
+
+  @override
+  String get fitnessPlanSaveDisabled => '先儲存，暫不啟用';
+
+  @override
+  String get fitnessPlanCreateEnabled => '建立並啟用';
+
+  @override
+  String get fitnessPlanCreated => '計畫已建立';
+
+  @override
+  String fitnessPlanCreatedEnabled(String date) {
+    return '將從 $date 起按週期安排訓練';
+  }
+
+  @override
+  String get fitnessPlanCreatedDisabled => '已儲存到我的計畫，尚未啟用';
+
+  @override
+  String get fitnessPlanCompleteCycle => '完整週期安排';
+
+  @override
+  String get fitnessPlanDone => '完成，查看我的計畫';
+
+  @override
+  String get fitnessPlanPendingChange => '週期編排將在下一週期生效，已產生的訓練保持原樣。';
+
+  @override
+  String get fitnessPlanStartLocked => '開始日期已鎖定';
+
+  @override
+  String get fitnessPlanChooseLibrary => '去範本庫選擇';
+
+  @override
+  String get fitnessPlanUnarranged => '待安排';
+
+  @override
+  String get fitnessPlanSelectTemplate => '選擇';
+
+  @override
+  String get fitnessPlanCreatedTitle => '建立完成';
+
+  @override
+  String get fitnessPlanConfirmSave => '確認儲存';
+
+  @override
+  String get fitnessPlanNextConfirmSave => '下一步：確認儲存';
+
+  @override
+  String get fitnessPlanEditStartChoice => '計畫啟用狀態';
 }
