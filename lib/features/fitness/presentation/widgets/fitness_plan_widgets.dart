@@ -45,7 +45,7 @@ class FitnessPlanSummary extends StatelessWidget {
 
 /// 计划库使用独立卡片，不改变首页和我的计划卡片。
 class FitnessPlanLibraryTile extends StatelessWidget {
-  /// 库卡片只显示名称、循环统计与每日节奏。
+  /// 库卡片只显示计划名称和循环统计副标题。
   const FitnessPlanLibraryTile({
     super.key,
     required this.plan,
@@ -55,7 +55,7 @@ class FitnessPlanLibraryTile extends StatelessWidget {
   final FitnessPlan plan;
   final VoidCallback onTap;
 
-  /// 周期预览与详情共享同一份模板快照。
+  /// 卡片标题与统计均读取同一份计划快照。
   @override
   Widget build(BuildContext context) => SectionCard(
     margin: const EdgeInsets.only(bottom: AppDimens.p12),
@@ -84,8 +84,6 @@ class FitnessPlanLibraryTile extends StatelessWidget {
         ),
         const SizedBox(height: AppDimens.p12),
         _PlanMetrics(plan: plan),
-        const SizedBox(height: AppDimens.p12),
-        _PlanRhythm(days: plan.days),
       ],
     ),
   );
@@ -122,68 +120,6 @@ class _PlanMetrics extends StatelessWidget {
           style: AppTextTokens.label(context),
         ),
       ],
-    );
-  }
-}
-
-/// 库卡片用紧凑色块预览前七天，完整内容由计划详情承接。
-class _PlanRhythm extends StatelessWidget {
-  /// 传入的顺序在展示时按周期日期归一。
-  const _PlanRhythm({required this.days});
-
-  final List<FitnessPlanDay> days;
-
-  /// 每项保留完整语义名称，长文字允许换行而不扩大横向宽度。
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    final ordered = [...days]..sort((a, b) => a.dayIndex.compareTo(b.dayIndex));
-    final visible = ordered.take(7).toList(growable: false);
-    if (visible.isEmpty) return const SizedBox.shrink();
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width =
-            (constraints.maxWidth - AppDimens.p4 * (visible.length - 1)) /
-            visible.length;
-        return Wrap(
-          spacing: AppDimens.p4,
-          runSpacing: AppDimens.p4,
-          children: [
-            for (final day in visible)
-              Semantics(
-                label:
-                    '${l.fitnessPlanDayNumber(day.dayIndex + 1)}：'
-                    '${day.slot?.name ?? l.fitnessCalendarRest}',
-                child: Container(
-                  width: width,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimens.p3,
-                    vertical: AppDimens.p8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: day.slot == null
-                        ? AppTokens.surfaceSecondary(context)
-                        : AppTokens.surfaceSelected(context),
-                    borderRadius: BorderRadius.circular(
-                      AppTokens.inputRadius(context),
-                    ),
-                  ),
-                  child: Text(
-                    day.slot?.name.split('·').last ?? l.fitnessCalendarRest,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextTokens.caption(context).copyWith(
-                      color: day.slot == null
-                          ? AppTokens.textSecondary(context)
-                          : AppTokens.textLink(context),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        );
-      },
     );
   }
 }
