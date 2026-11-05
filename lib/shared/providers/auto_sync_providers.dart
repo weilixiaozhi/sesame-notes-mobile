@@ -2,8 +2,6 @@
 /// 本地变更防抖合并，可恢复失败有界指数退避；离线和闸门期间暂停。
 library;
 
-import 'package:sesame_notes/shared/providers/cloud_capability_provider.dart';
-
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

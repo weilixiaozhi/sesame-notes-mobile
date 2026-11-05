@@ -123,9 +123,18 @@ void main() {
         .write(
           const RecurringTransactionsCompanion(protocolVersion: d.Value(2)),
         );
+    final unsupported = (await repo.getAllRecurringTransactions()).single;
     await expectLater(
-      RecurringTransactionService(repo).generatePendingTransactions(),
+      repo.generateRecurringTransaction(
+        recurring: unsupported,
+        happenedAt: day,
+      ),
       throwsStateError,
+    );
+    expect(
+      await RecurringTransactionService(repo).generatePendingTransactions(),
+      isEmpty,
+      reason: '不受支持的单个模板不能阻断独立模板的扫描',
     );
     final ordinary = await repo.addTransaction(
       ledgerId: ledgerId,

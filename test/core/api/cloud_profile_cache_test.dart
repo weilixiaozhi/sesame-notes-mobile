@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
 import 'package:sesame_notes/infrastructure/account/cloud_profile_cache.dart';
+import 'package:sesame_notes/core/logging/logger_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +43,46 @@ void main() {
       final cache = CloudProfileCache(prefs);
       expect(cache.read('user-x'), isNull);
     });
+
+    for (final throwOnWrite in [false, true]) {
+      test('平台写入${throwOnWrite ? '抛错' : '拒绝'}时不发布资料且记录脱敏诊断', () async {
+        final previous = SharedPreferencesStorePlatform.instance;
+        SharedPreferences.resetStatic();
+        SharedPreferencesStorePlatform.instance = _RejectingProfileStore(
+          throwOnWrite: throwOnWrite,
+        );
+        try {
+          await logger.clear();
+          final prefs = await SharedPreferences.getInstance();
+          var notifications = 0;
+          final cache = CloudProfileCache(
+            prefs,
+            onWrite: (_) => notifications++,
+          );
+          await cache.write(
+            const CloudProfile(
+              userId: 'sensitive-profile-user',
+              displayName: 'sensitive-profile-name',
+              phone: 'sensitive-profile-phone',
+            ),
+          );
+          expect(notifications, 0);
+          final entries = logger.logs
+              .where((entry) => entry.tag == 'CloudProfileCache')
+              .toList();
+          expect(entries, hasLength(1));
+          expect(entries.single.stackTrace, isNotNull);
+          final diagnostic = entries.single.toJson().toString();
+          expect(diagnostic, isNot(contains('sensitive-profile-user')));
+          expect(diagnostic, isNot(contains('sensitive-profile-name')));
+          expect(diagnostic, isNot(contains('sensitive-profile-phone')));
+        } finally {
+          await logger.clear();
+          SharedPreferencesStorePlatform.instance = previous;
+          SharedPreferences.resetStatic();
+        }
+      });
+    }
   });
 
   group('CloudProfile 序列化', () {
@@ -94,4 +136,21 @@ void main() {
       expect(decoded.phone, '+8613800138000');
     });
   });
+}
+
+/// 只拒绝资料缓存写入，让日志自身的偏好写入仍可正常执行。
+class _RejectingProfileStore extends InMemorySharedPreferencesStore {
+  _RejectingProfileStore({required this.throwOnWrite}) : super.withData({});
+
+  final bool throwOnWrite;
+
+  /// 覆盖平台的false和异常两种真实失败契约。
+  @override
+  Future<bool> setValue(String valueType, String key, Object value) async {
+    if (key.startsWith('flutter.sesame_notes_cloud_profile_')) {
+      if (throwOnWrite) throw StateError(value.toString());
+      return false;
+    }
+    return super.setValue(valueType, key, value);
+  }
 }

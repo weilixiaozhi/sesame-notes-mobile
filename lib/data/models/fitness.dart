@@ -385,11 +385,6 @@ class FitnessSchedule {
     'cycle_days': cycleDays,
     'days': days.map((v) => v.toJson()).toList(),
   };
-  FitnessSchedule copyWith({int? cycleDays, List<FitnessPlanDay>? days}) =>
-      FitnessSchedule(
-        cycleDays: cycleDays ?? this.cycleDays,
-        days: days ?? this.days,
-      );
 }
 
 class FitnessGeneratedCycle {
@@ -429,19 +424,6 @@ class FitnessGeneratedCycle {
     'generated_from_date': generatedFromDate,
     'rest_dates': restDates,
   };
-  FitnessGeneratedCycle copyWith({
-    int? cycleIndex,
-    String? startDate,
-    int? cycleDays,
-    String? generatedFromDate,
-    List<String>? restDates,
-  }) => FitnessGeneratedCycle(
-    cycleIndex: cycleIndex ?? this.cycleIndex,
-    startDate: startDate ?? this.startDate,
-    cycleDays: cycleDays ?? this.cycleDays,
-    generatedFromDate: generatedFromDate ?? this.generatedFromDate,
-    restDates: restDates ?? this.restDates,
-  );
 }
 
 class FitnessGenerationState {
@@ -477,17 +459,6 @@ class FitnessGenerationState {
     'next_cycle_index': nextCycleIndex,
     'generated_cycles': generatedCycles.map((v) => v.toJson()).toList(),
   };
-  FitnessGenerationState copyWith({
-    Object? nextCycleStartDate = _unsetFitness,
-    int? nextCycleIndex,
-    List<FitnessGeneratedCycle>? generatedCycles,
-  }) => FitnessGenerationState(
-    nextCycleStartDate: identical(nextCycleStartDate, _unsetFitness)
-        ? this.nextCycleStartDate
-        : nextCycleStartDate as String?,
-    nextCycleIndex: nextCycleIndex ?? this.nextCycleIndex,
-    generatedCycles: generatedCycles ?? this.generatedCycles,
-  );
 }
 
 class FitnessPlan {

@@ -215,6 +215,7 @@ class LocalStatisticsRepository {
     return false;
   }
 
+  /// 按半开区间读取有效支出，以十进制快照累计后仅在显示边界转为 double。
   Future<double> totalsInRange({
     required String ledgerId,
     required DateTime start,
@@ -239,29 +240,28 @@ class LocalStatisticsRepository {
     return total.toDouble();
   }
 
+  /// 月账期只负责确定边界，金额与删除过滤复用统一的区间聚合口径。
   Future<double> monthlyTotals({
     required String ledgerId,
     required DateTime month,
   }) async {
-    final sd = await ledgerMonthStartDay(db, ledgerId);
-    final range = periodForLabel(month.year, month.month, sd);
-    // 金额为十进制文本，使用 Decimal 累加以避免 SQL 浮点转换损失精度。
-    final rows =
-        await (db.select(db.transactions)..where(
-              (t) =>
-                  t.ledgerId.equals(ledgerId) &
-                  t.txType.equals('expense') &
-                  t.deletedAt.isNull() &
-                  t.happenedAt.isBiggerOrEqualValue(range.start) &
-                  t.happenedAt.isSmallerThanValue(range.end),
-            ))
-            .get();
-    var total = Decimal.zero;
-    for (final t in rows) {
-      final v = Decimal.tryParse(t.nativeAmount) ?? Decimal.tryParse(t.amount);
-      if (v != null) total += v;
+    try {
+      final sd = await ledgerMonthStartDay(db, ledgerId);
+      final range = periodForLabel(month.year, month.month, sd);
+      return await totalsInRange(
+        ledgerId: ledgerId,
+        start: range.start,
+        end: range.end,
+      );
+    } catch (error, stackTrace) {
+      logger.error(
+        'Statistics',
+        '读取月账期汇总失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      rethrow;
     }
-    return total.toDouble();
   }
 
   Future<double> todayExpense({

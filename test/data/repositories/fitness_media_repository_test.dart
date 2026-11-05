@@ -1,0 +1,297 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:crypto/crypto.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sesame_notes/core/logging/logger_service.dart';
+import 'package:sesame_notes/data/repositories/fitness_media_repository.dart';
+import 'package:sesame_notes/data/repositories/support/fitness_media_cache.dart';
+
+import '../../helpers/test_isolation.dart';
+
+/// 媒体超时必须停止实际传输，容量策略不能删除唯一的离线图片。
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  late Directory root;
+  final bytes = Uint8List.fromList([...ascii.encode('GIF89a'), 1, 2]);
+
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    await logger.clear();
+    root = await createTestTempDirectory('fitness-media-cache-');
+  });
+  tearDown(() async {
+    await logger.clear();
+    await root.delete(recursive: true);
+  });
+
+  /// 缓存测试只授权显式给出的可替代身份，未知文件默认受保护。
+  FitnessMediaCache cache({
+    int limit = 16,
+    Set<String> replaceable = const {},
+  }) => FitnessMediaCache(
+    directory: () async => root,
+    maxBytes: limit,
+    reclaimableKeys: () async => replaceable,
+    verifyReclaimable: (key, file) async => replaceable.contains(key),
+  );
+
+  /// 生成合法摘要文件身份，避免测试绕过正式的路径边界。
+  String key(String value) => sha256.convert(utf8.encode(value)).toString();
+
+  /// 直接读取本次独占缓存夹具，断言磁盘内容没有被回收或覆盖。
+  File file(String identity) =>
+      File('${root.path}${Platform.pathSeparator}$identity.gif');
+
+  test('达到预算时不落新文件，保留已有唯一离线图片并记录拒写次数', () async {
+    final first = key('unique');
+    final second = key('new');
+    final store = cache(limit: bytes.length);
+    expect(await store.write(first, bytes), isTrue);
+    expect(await store.write(second, bytes), isFalse);
+    expect(await file(first).readAsBytes(), bytes);
+    expect(await file(second).exists(), isFalse);
+    expect(
+      logger.logs.any(
+        (entry) =>
+            entry.tag == 'FitnessMediaCache' &&
+            entry.message.contains('rejected_writes: 1'),
+      ),
+      isTrue,
+    );
+  });
+
+  test('跨仓储实例的并发写入共用容量检查，不能同时越过预算', () async {
+    final results = await Future.wait([
+      cache(limit: bytes.length).write(key('a'), bytes),
+      cache(limit: bytes.length).write(key('b'), bytes),
+    ]);
+    expect(results.where((saved) => saved), hasLength(1));
+    final files = await root
+        .list()
+        .where((entity) => entity is File)
+        .cast<File>()
+        .toList();
+    expect(files, hasLength(1));
+    expect(await files.single.length(), bytes.length);
+  });
+
+  test('只回收有可靠随包替身的旧副本，读取中的独立字节和唯一媒体保留', () async {
+    final safe = key('builtin');
+    final unique = key('uploaded');
+    final next = key('next');
+    final store = cache(replaceable: {safe});
+    expect(await store.write(safe, bytes), isTrue);
+    expect(await store.write(unique, bytes), isTrue);
+    final decodedInput = await store.read(
+      safe,
+      maxFileBytes: 20,
+      valid: (_) => true,
+    );
+    expect(await store.write(next, bytes), isTrue);
+    expect(await file(safe).exists(), isFalse);
+    expect(decodedInput, bytes);
+    expect(await file(unique).readAsBytes(), bytes);
+    expect(await file(next).readAsBytes(), bytes);
+  });
+
+  test('旧缓存已超限时保持可读且不继续增长，未知文件和目录不删除', () async {
+    final unique = key('legacy');
+    await file(unique).writeAsBytes(bytes);
+    final unknown = File('${root.path}${Platform.pathSeparator}old-format.bin');
+    await unknown.writeAsBytes(bytes);
+    final store = cache(limit: 4);
+    expect(
+      await store.read(unique, maxFileBytes: 20, valid: (_) => true),
+      bytes,
+    );
+    expect(await store.write(key('new'), bytes), isFalse);
+    expect(await unknown.readAsBytes(), bytes);
+    final unsafe = Directory(file(key('directory')).path);
+    await unsafe.create();
+    expect(await store.write(key('directory'), bytes), isFalse);
+    expect(await unsafe.exists(), isTrue);
+  });
+
+  test('媒体逻辑超时取消传输并释放单飞任务，下一次重试可以成功', () async {
+    final cancelled = Completer<void>();
+    var requests = 0;
+    final dio = Dio(BaseOptions(baseUrl: 'https://fitness.example.test'))
+      ..httpClientAdapter = _Adapter((options, cancel) {
+        requests++;
+        if (requests == 1) {
+          cancel?.then((_) {
+            if (!cancelled.isCompleted) cancelled.complete();
+          });
+          return Completer<ResponseBody>().future;
+        }
+        return Future.value(ResponseBody.fromBytes(bytes, 200));
+      });
+    addTearDown(() => dio.close(force: true));
+    final repository = FitnessMediaRepository(
+      dio: dio,
+      directory: () async => root,
+      requestTimeout: const Duration(milliseconds: 40),
+    );
+    final path = '/api/v1/fitness/media/${sha256.convert(bytes)}';
+    final first = repository.load(path);
+    expect(identical(first, repository.load(path)), isTrue);
+    expect(await first, isNull);
+    await cancelled.future.timeout(const Duration(seconds: 1));
+    expect(await repository.load(path), bytes);
+    expect(requests, 2);
+    expect(await repository.load(path), bytes);
+    expect(requests, 2);
+  });
+
+  test('空间已满仍返回新网络图片，原有媒体在离线时继续可读', () async {
+    var offline = false;
+    final source = 'https://fitness.example.test';
+    final dio = Dio(BaseOptions(baseUrl: source))
+      ..httpClientAdapter = _Adapter((options, _) async {
+        if (offline) {
+          throw DioException(
+            requestOptions: options,
+            type: DioExceptionType.connectionError,
+          );
+        }
+        return ResponseBody.fromBytes(bytes, 200);
+      });
+    addTearDown(() => dio.close(force: true));
+    final oldPath = '/api/v1/fitness/media/builtin-0025';
+    final folder = Directory(
+      '${root.path}${Platform.pathSeparator}fitness-media',
+    );
+    await folder.create();
+    final old = File(
+      '${folder.path}${Platform.pathSeparator}${key('$source|$oldPath')}.gif',
+    );
+    await old.writeAsBytes(bytes);
+    final repository = FitnessMediaRepository(
+      dio: dio,
+      directory: () async => root,
+      assetBundle: _BuiltinBundle(false),
+      cacheLimitBytes: bytes.length,
+    );
+    final newPath = '/api/v1/fitness/media/${sha256.convert(bytes)}';
+    expect(await repository.load(newPath), bytes);
+    expect(await old.exists(), isTrue);
+    offline = true;
+    expect(await repository.load(oldPath), bytes);
+    expect(await repository.load(newPath), isNull);
+  });
+
+  test('只有目录身份与实际打包资源同时证明存在时才回收builtin副本', () async {
+    const source = 'https://fitness.example.test';
+    final dio = Dio(BaseOptions(baseUrl: source))
+      ..httpClientAdapter = _Adapter(
+        (_, _) async => ResponseBody.fromBytes(bytes, 200),
+      );
+    addTearDown(() => dio.close(force: true));
+    const oldPath = '/api/v1/fitness/media/builtin-0025';
+    final folder = Directory(
+      '${root.path}${Platform.pathSeparator}fitness-media',
+    );
+    await folder.create();
+    final old = File(
+      '${folder.path}${Platform.pathSeparator}${key('$source|$oldPath')}.gif',
+    );
+    await old.writeAsBytes(bytes);
+    final repository = FitnessMediaRepository(
+      dio: dio,
+      directory: () async => root,
+      assetBundle: _BuiltinBundle(true),
+      cacheLimitBytes: bytes.length,
+    );
+    expect(
+      await repository.load('/api/v1/fitness/media/${sha256.convert(bytes)}'),
+      bytes,
+    );
+    expect(await old.exists(), isFalse);
+    expect(await folder.list().where((entity) => entity is File).length, 1);
+  });
+
+  test('builtin缓存与当前随包字节不同也保留，不能用同名素材替代历史图片', () async {
+    const source = 'https://fitness.example.test';
+    final dio = Dio(BaseOptions(baseUrl: source))
+      ..httpClientAdapter = _Adapter(
+        (_, _) async => ResponseBody.fromBytes(bytes, 200),
+      );
+    addTearDown(() => dio.close(force: true));
+    const path = '/api/v1/fitness/media/builtin-0025';
+    final folder = Directory(
+      '${root.path}${Platform.pathSeparator}fitness-media',
+    );
+    await folder.create();
+    final historical = Uint8List.fromList([...ascii.encode('GIF89a'), 9, 9]);
+    final old = File(
+      '${folder.path}${Platform.pathSeparator}${key('$source|$path')}.gif',
+    );
+    await old.writeAsBytes(historical);
+    final repository = FitnessMediaRepository(
+      dio: dio,
+      directory: () async => root,
+      assetBundle: _BuiltinBundle(true),
+      cacheLimitBytes: bytes.length,
+    );
+    expect(
+      await repository.load('/api/v1/fitness/media/${sha256.convert(bytes)}'),
+      bytes,
+    );
+    expect(await old.readAsBytes(), historical);
+    expect(await folder.list().where((entity) => entity is File).length, 1);
+  });
+}
+
+/// 测试网络只消费预设响应并允许观测实际取消信号，不连接外部服务器。
+class _Adapter implements HttpClientAdapter {
+  /// 为每次请求注入响应及取消观察器。
+  _Adapter(this.respond);
+  final Future<ResponseBody> Function(RequestOptions, Future<void>?) respond;
+
+  /// 返回测试控制的异步响应，保留Dio真实的令牌取消链。
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) => respond(options, cancelFuture);
+
+  /// 测试适配器没有系统连接需要释放。
+  @override
+  void close({bool force = false}) {}
+}
+
+/// 目录中声明的builtin图片可独立模拟已打包或缺失，验证回收证明不能只看字符串。
+class _BuiltinBundle extends CachingAssetBundle {
+  /// 指定目标GIF是否真实存在于构建资源清单。
+  _BuiltinBundle(this.available);
+  final bool available;
+  static const asset = 'assets/fitness/videos/0025-example.gif';
+
+  /// 返回受控目录内容，避免访问仓库资源或设备数据。
+  @override
+  Future<String> loadString(String key, {bool cache = true}) async =>
+      jsonEncode({
+        'exercises': [
+          {'id': '0025', 'gif_asset': asset},
+        ],
+      });
+
+  /// 提供Flutter实际使用的二进制资源清单。
+  @override
+  Future<ByteData> load(String key) async {
+    if (key == asset && available) {
+      return ByteData.sublistView(
+        Uint8List.fromList([...ascii.encode('GIF89a'), 1, 2]),
+      );
+    }
+    return const StandardMessageCodec().encodeMessage(
+      available ? {asset: <Object?>[]} : <String, Object?>{},
+    )!;
+  }
+}

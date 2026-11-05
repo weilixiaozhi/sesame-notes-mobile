@@ -3,6 +3,13 @@
 /// 用于让 caller 把"撞了不允许的状态"显式 handle,而不是被静默吞掉。
 library;
 
+/// 缺少有效折算汇率时保留原始意图，补齐汇率后可以重新生成。
+class MissingExchangeRateException extends StateError {
+  /// 币种代码只用于固定业务提示，不包含金额或账号资料。
+  MissingExchangeRateException({required String from, required String to})
+    : super('缺少 $from 到 $to 的有效汇率，周期账单未生成，请更新汇率后重试。');
+}
+
 /// 分类树或关联记录超出已确认范围时，要求重新查看而不扩大删除操作。
 class CategoryReviewChangedException implements Exception {
   /// 固定提示不包含账号资料、分类正文或底层错误。

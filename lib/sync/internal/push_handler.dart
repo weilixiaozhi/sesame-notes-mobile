@@ -713,7 +713,8 @@ class SyncPushCoordinator {
           throw const FormatException('同步确认身份不一致');
         }
         if (change.action == 'delete' &&
-            ['ledger', 'day_book', 'memo_book'].contains(change.entityType) &&
+            (syncParentPolicies[change.entityType]?.confirmIgnoredDeletion ??
+                false) &&
             outcome.status ==
                 PostSyncPush200ResponseOutcomesInnerStatusEnum.ignored) {
           _runtime.requireAccount(accountId);
@@ -991,12 +992,7 @@ class SyncPushCoordinator {
       );
     }
     if (change.action == 'delete' &&
-        [
-          'ledger',
-          'day_book',
-          'memo_book',
-          'fitness_space',
-        ].contains(change.entityType) &&
+        syncParentPolicies.containsKey(change.entityType) &&
         (outcome.status ==
                 PostSyncPush200ResponseOutcomesInnerStatusEnum.accepted ||
             outcome.status ==

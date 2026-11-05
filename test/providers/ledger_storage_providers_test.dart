@@ -1,3 +1,4 @@
+import 'package:sesame_notes/utils/default_category_ids.dart';
 import 'dart:convert';
 
 import 'package:sesame_notes/data/models/transaction_split_input.dart';
@@ -24,7 +25,6 @@ import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/data_lifecycle_provider.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
-import 'package:sesame_notes/shared/services/seed_service.dart';
 import 'package:sesame_notes/utils/member_id.dart';
 
 import '../helpers/test_isolation.dart';
@@ -701,10 +701,7 @@ void main() {
     final id = await seedLocalLedger('种子分类账本');
     final categoryTime = DateTime.utc(2024, 1, 1);
     // 默认 UUID 稳定；不同账号或本地域各自持有独立分类身份。
-    final seedCatId = SeedService.deterministicCategorySyncId(
-      level: 1,
-      key: 'dining',
-    );
+    final seedCatId = defaultCategoryId(level: 1, key: 'dining');
     await db
         .into(db.categories)
         .insert(

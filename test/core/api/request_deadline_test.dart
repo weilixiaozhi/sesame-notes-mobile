@@ -16,9 +16,16 @@ const _deadline = Duration(milliseconds: 100);
 
 /// 传输资源实际监听 Dio 取消信号，持续数据流不能绕过请求总期限。
 class _Adapter implements HttpClientAdapter {
-  _Adapter({this.drip = false, this.upload = false});
+  _Adapter({
+    this.drip = false,
+    this.upload = false,
+    this.onRequestReady,
+    this.onRequestAborted,
+  });
   bool drip;
   final bool upload;
+  final void Function()? onRequestReady;
+  final void Function()? onRequestAborted;
   int calls = 0;
   int aborted = 0;
   int chunks = 0;
@@ -56,8 +63,11 @@ class _Adapter implements HttpClientAdapter {
       cancelFuture?.then((_) {
         aborted++;
         release();
+        onRequestAborted?.call();
       }),
     );
+    // 已注册真实取消信号后才发布进入事实，调用方无需猜测传输何时启动。
+    onRequestReady?.call();
     if (upload) {
       sending = requestStream?.listen(
         (_) => chunks++,
@@ -226,7 +236,19 @@ void main() {
   });
 
   test('调用者主动取消共享请求保留取消原因，不误报网络超时', () async {
-    final adapter = _Adapter(drip: true);
+    final started = Completer<void>();
+    final aborted = Completer<void>();
+    var readyCount = 0;
+    var abortedCount = 0;
+    final adapter = _Adapter(
+      drip: true,
+      onRequestReady: () {
+        if (++readyCount == 2) started.complete();
+      },
+      onRequestAborted: () {
+        if (++abortedCount == 2) aborted.complete();
+      },
+    );
     dio.httpClientAdapter = adapter;
     final caller = CancelToken();
     final first = dio.get<void>('/one', cancelToken: caller);
@@ -240,9 +262,11 @@ void main() {
       expectLater(first, cancelled),
       expectLater(second, cancelled),
     ]);
-    await Future<void>.delayed(const Duration(milliseconds: 20));
+    // 只在两个传输都已受理后触发取消，避免提前取消合法地绕过适配器。
+    await started.future.timeout(const Duration(seconds: 5));
     caller.cancel('用户取消');
     await observed;
+    await aborted.future.timeout(const Duration(seconds: 5));
     expect(adapter.aborted, 2);
     expect(
       container.read(cloudConnectionProvider),

@@ -1,0 +1,4 @@
+// 测试环境使用独立沙箱和钥匙串身份，各构建模式保持相同归属。
+SESAME_APP_ENV = test
+SESAME_BUNDLE_IDENTIFIER = com.sesame.notes.test
+DART_DEFINES = $(inherited),QVBQX0VOVj10ZXN0

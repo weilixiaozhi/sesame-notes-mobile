@@ -1,4 +1,3 @@
-import 'package:sesame_notes/shared/providers/cloud_capability_provider.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/language_provider.dart';
 import 'package:sesame_notes/shared/services/reminder_monitor_service.dart';
@@ -18,12 +17,11 @@ import 'package:sesame_notes/features/days/application/day_providers.dart';
 import 'package:sesame_notes/features/memos/application/memo_providers.dart';
 import 'package:sesame_notes/features/statistics/application/statistics_providers.dart';
 import 'package:sesame_notes/features/transactions/application/currency_providers.dart';
-import 'package:sesame_notes/features/transactions/application/recurring_transaction_service.dart';
+import 'package:sesame_notes/features/transactions/application/recurring_generation_providers.dart';
 import 'package:sesame_notes/shared/providers/app_bootstrap_providers.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/fitness_space_provider.dart';
 import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';
-import 'package:sesame_notes/shared/providers/published_ledger_queries.dart';
 import 'package:sesame_notes/shared/providers/realtime_providers.dart';
 import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/shared/providers/ui_state_providers.dart';
@@ -298,17 +296,12 @@ final appSplashInitProvider = FutureProvider<void>((ref) async {
     // 因此不阻塞首屏；写库后的页面更新由数据库监听统一处理。
     _afterFirstFrame(() async {
       try {
-        // 任务开始时重新解析仓库，避免捕获到启动阶段可能已失效的旧实例。
-        final freshRepo = ref.read(repositoryProvider);
-        // 只扫描当前账号已发布的账本；归档账本仍按模板正常生成。
-        final ledgers = await readPublishedLedgers(ref.read, archived: null);
-        final generatedLedgerIds =
-            await RecurringTransactionService.generatePendingTransactionsStatic(
-              repository: freshRepo,
-              ledgers: ledgers,
-            );
+        if (!ref.mounted) return;
+        final generatedLedgerIds = await ref.read(
+          startupRecurringGenerationProvider,
+        )();
         if (generatedLedgerIds.isNotEmpty) {
-          logger.info(tag, '周期交易生成完成(启动后异步): ${generatedLedgerIds.length} 本账本');
+          logger.info(tag, '启动周期扫描已补记 ${generatedLedgerIds.length} 本账本');
         }
       } catch (e, stackTrace) {
         logger.error(tag, '周期交易生成失败', e, stackTrace);

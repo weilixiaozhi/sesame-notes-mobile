@@ -8,7 +8,7 @@ import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/models/recurring_transaction_display.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/features/ledgers/application/ledger_actions.dart';
-import 'package:sesame_notes/features/ledgers/domain/ledger_storage_choice.dart';
+import 'package:sesame_notes/shared/domain/book_storage_choice.dart';
 import 'package:sesame_notes/shared/providers/cloud_ledger_download_providers.dart';
 import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';

@@ -15,8 +15,8 @@ import 'package:sesame_notes/infrastructure/account/device_identity.dart';
 import 'package:sesame_notes/infrastructure/account/secure_account_store.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/core/network/request_deadline.dart';
+import 'package:sesame_notes/core/policy/cloud_capability.dart';
 import 'api_serializers.dart';
-import 'package:sesame_notes/shared/providers/cloud_capability_provider.dart';
 
 /// 服务端地址，HTTP 与 WebSocket 连接统一由该地址派生。
 class ApiConfig {
@@ -130,6 +130,15 @@ final apiClientProvider = Provider<SesameApiClient>((ref) {
 });
 
 final apiConfigProvider = Provider<ApiConfig>((ref) => const ApiConfig());
+
+/// 配置与内存会话在网络装配处合成为所有云功能共用的能力事实。
+final cloudCapabilityProvider = Provider<CloudCapability>((ref) {
+  return CloudCapability(
+    serverConfigured: ref.watch(apiConfigProvider).isConfigured,
+    syncEnabled: ref.watch(accountSyncEnabledProvider),
+    hasSession: ref.watch(authSessionProvider) != null,
+  );
+});
 
 /// 单个云请求完整期限可独立注入，认证刷新及重放不延长原请求的等待预算。
 final apiRequestDeadlineProvider = Provider<Duration>(

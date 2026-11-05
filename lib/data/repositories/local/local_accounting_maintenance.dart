@@ -217,11 +217,13 @@ mixin LocalMaintenanceOperations on LocalAccountingContext {
               ))
               .getSingleOrNull();
       if (current == null || !current.enabled) {
-        throw StateError('周期账单已变更，请刷新后重试。');
+        throw RecurringGenerationRejectedException('周期账单已变更，请刷新后重试。');
       }
       // 归档只影响入口展示，既有周期规则仍补记；删除账本才终止生成。
       final ledger = await getLedgerById(current.ledgerId);
-      if (ledger == null) throw StateError('账本已不存在，周期账单未生成。');
+      if (ledger == null) {
+        throw RecurringGenerationRejectedException('账本已不存在，周期账单未生成。');
+      }
       final day = recurringCalendarDate(happenedAt);
       final dayKey = recurringDateKey(day);
       final txId = recurringOccurrenceId(current.ledgerId, current.id, dayKey);
@@ -231,7 +233,7 @@ mixin LocalMaintenanceOperations on LocalAccountingContext {
       if (existing != null &&
           (existing.recurringId != current.id ||
               existing.occurrenceDate != dayKey)) {
-        throw StateError('周期发生标识冲突，原交易未修改。');
+        throw RecurringGenerationRejectedException('周期发生标识冲突，原交易未修改。');
       }
       final next = nextRecurringDate(
         current,
@@ -246,7 +248,7 @@ mixin LocalMaintenanceOperations on LocalAccountingContext {
             )) {
           return txId;
         }
-        throw StateError('周期排期已变更，请重新计算下一发生日期。');
+        throw RecurringGenerationRejectedException('周期排期已变更，请重新计算下一发生日期。');
       }
       if (existing == null) {
         final ledgerOwner =

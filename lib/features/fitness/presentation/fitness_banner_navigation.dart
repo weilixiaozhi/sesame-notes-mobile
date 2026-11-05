@@ -3,16 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/logging/logger_service.dart';
-import '../../../core/storage/shared_preferences_provider.dart';
 import '../../../data/models/app_banner.dart';
 import '../../../data/models/fitness_library.dart';
-import '../../../data/repositories/fitness_library_repository.dart';
-import '../../../infrastructure/api/api_client_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../navigation/route_consts.dart';
-import '../../../shared/providers/fitness_library_provider.dart';
 import '../../../shared/widgets/widgets.dart';
 import '../application/fitness_actions.dart';
+import '../application/fitness_library_queries.dart';
 import 'fitness_official_plan_detail_page.dart';
 
 /// 横幅直接打开官方条目，继续使用内容库的本地读取、在线刷新和确认页参数。
@@ -30,19 +27,9 @@ Future<void> openFitnessBannerContent(
     final draftTarget = planTarget
         ? ref.read(fitnessActionsProvider).target
         : null;
-    var library = await ref.read(fitnessLibraryProvider.future);
-    if (!_contains(library, planTarget, id)) {
-      // 新配置可能先于本机内容库缓存生效，只在缺失目标时主动补齐官方库。
-      final preferences = await ref.read(sharedPreferencesProvider.future);
-      final repository = FitnessLibraryRepository(
-        dio: ref.read(apiClientProvider).dio,
-        preferences: preferences,
-      );
-      if (await repository.refresh()) {
-        ref.invalidate(fitnessLibraryProvider);
-        library = await ref.read(fitnessLibraryProvider.future);
-      }
-    }
+    final library = await ref
+        .read(fitnessLibraryQueriesProvider)
+        .ensureOfficialContent(id: id, plan: planTarget);
     if (!context.mounted || ModalRoute.isCurrentOf(context) != true) return;
     if (planTarget) {
       if (ref.read(fitnessActionsProvider).target != draftTarget) return;
@@ -81,8 +68,3 @@ Future<void> openFitnessBannerContent(
     await context.pushNamed(fallback);
   }
 }
-
-/// 查找明确的官方身份，不使用名称或其他业务字段推断目标。
-bool _contains(FitnessLibrary library, bool plan, String id) => plan
-    ? library.plans.any((value) => value.id == id)
-    : library.templates.any((value) => value.id == id);

@@ -165,3 +165,62 @@ adb shell am start -n com.sesame.notes.test.probe/com.sesame.notes.MainActivity
 5. `am force-stop` 仅作独立限制对照，会清除系统任务；产品重新打开后才恢复未来提醒。探针启动和恢复不自动重排。“读取通知中心和缓存”可查看系统通知及登记/到期时间；原生日志标签为 `ReminderAlarm`、`FitnessRestAlarm`。
 
 结束用“清理本探针 ID”撤销任务，在授权范围内卸载测试包；不能通过清除生产包数据复现问题。
+
+## 只读架构与符号审计
+
+在仓库根目录使用已经解析的本地依赖执行，不运行生成器、不连接设备或服务、不安装工具：
+
+```powershell
+dart scripts/audit/architecture.dart
+dart scripts/audit/architecture.dart --symbols --json > Temp/architecture-audit.json
+dart scripts/audit/architecture_test.dart
+```
+
+重定向前自行确认目标文件不存在；所有一次性报告存放在本仓 `Temp/`，不要覆盖既有报告。工具本身只读源码，默认输出覆盖、手写生产 library SCC、明确边界违规和解析失败。`--symbols` 使用固定的 analyzer 12.1.0 解析元素身份和消费者，JSON 另含全部 import/export/条件分支/part、目录 SCC、模块引用广度、声明及零显式消费者候选。首次完整符号分析比快速边界检查耗时更长。
+
+包路径取当前 `.dart_tool/package_config.json` 的实际根和 `packageUri`，支持本地包目录与包名不同、URI 有无末尾斜杠；相对路径归一化。`part` 与 `part of` 归属同一 library，不能机械构成普通循环。`show`、`hide`、export 转发、命名 extension、构造/注解引用按解析元素记录。生成 part 和生成 SDK 参与消费核查，手写生产主图分别排除生成物、测试、工具及 e2e。模块边的强度为不同引用源 library 数，目录聚合环不能等同真实文件循环。
+
+明确边界按职责失败：core 不依赖 features/shared/infrastructure/顶层 providers；API 传输不反引 shared/features；启动端口不读取顶层启动实现或 features；共享领域不依赖业务实现/状态装配；领域规则不读取 presentation/application/共享 Provider；备份核心不依赖应用或具体备份服务商。生成边同样接受对应边界检查。没有按现有违规个数建立白名单或阈值。退出码 `0` 表示本次边界和解析检查完成，`1` 表示明确边界违规，`2` 表示参数/依赖配置/语法/符号解析不完整；候选数及 SCC 数不控制退出码。
+
+零显式消费者只作为人工候选。接口虚分派、框架回调、原生/后台入口、动态注册、JSON约定、资源、跨仓 API/Web/Admin 消费和历史数据/备份兼容仍需单独核查。条件分支全部进入编译图，符号消费对应当前分析配置，不能证明每种目标平台的运行行为。当前工具不删除任何声明，不自动收窄出口，不以扫描成功证明绝对不存在死代码。`orphans.dart` 的文本扫描仍是启发式补充，不能代替元素身份分析。
+
+语义回归脚本只在 `Temp/` 建立独占夹具，验证包名映射、无末尾斜杠 URI、show/hide 转发、同名符号、命名 extension、条件导入、生成 part 消费、只读性及真实边界失败，结束清理本次夹具。手动 Test 工作流配置了快速边界检查和语义回归；工作流仍仅由 `workflow_dispatch` 触发，启动或重跑须明确同意，本工具不会触发 CI。
+
+## iOS 环境与安装身份
+
+共享 Xcode 方案 `test`、`prod` 分别包含 Debug、Profile、Release 三种配置。测试环境使用 `com.sesame.notes.test`，正式环境保持 `com.sesame.notes`；钥匙串组随 Bundle ID 分开，两个应用可以并装。默认 Runner 方案的 Debug 使用测试身份，Profile/Release 使用正式身份。
+
+在已有 macOS/Xcode/Flutter 环境中，从仓库根目录运行：
+
+```sh
+flutter run --flavor test --dart-define-from-file=config/test.local.json
+flutter build ios --release --flavor prod --dart-define-from-file=config/prod.local.json --no-pub
+```
+
+私有地址继续从各自忽略的配置文件注入，正式签名沿用开发者自己的 Xcode 配置。`ios/Flutter/Environment*.xcconfig` 将 `APP_ENV` 与原生身份绑定；编译前的 `scripts/ios/check_environment.py` 要求 Xcode 配置、Bundle ID、全部 `APP_ENV` 声明一致，冲突或缺失直接失败，不打印配置值。不要把测试配置文件用于正式方案。
+
+不依赖 Xcode 的配置回归：
+
+```powershell
+python -B scripts/test/ios_environment_test.py
+```
+
+这项回归覆盖配置、共享方案和混用拒绝规则；iOS 签名、打包、系统权限与真机并装仍应在 macOS/iOS 环境验收。方案和配置的对应方式见 [Flutter 官方说明](https://docs.flutter.dev/deployment/flavors-ios)。
+## Android R8 规则与 APK 只读测量
+
+正式包只为 Flutter 反射注册入口、通知持久化模型字段/构造器及序列化元数据配置应用规则。通知样式的简单类名、枚举与字段名参与历史 Gson 缓存，不能随混淆改名。Flutter JNI 与类级 `@Keep` 入口由 Android 默认规则和 AndroidX 消费者规则保护，清单组件由 AAPT 生成规则保留；升级 Flutter、AGP 或插件时需要重新核对合并配置与产物。
+
+使用已经安装的 Python 标准库读取现有 APK、同轮 R8 输出与该 SDK 的 release 引擎 JAR：
+
+```powershell
+python -B scripts/audit/apk_r8_report.py --apk <旧APK> --mapping-dir <旧构建mapping目录> --engine-jar <FlutterSDK>/bin/cache/artifacts/engine/android-arm64-release/flutter.jar --json-output Temp/r8-baseline.json
+python -B scripts/audit/apk_r8_report.py --apk <新APK> --mapping-dir <新构建mapping目录> --engine-jar <FlutterSDK>/bin/cache/artifacts/engine/android-arm64-release/flutter.jar --baseline Temp/r8-baseline.json --json-output Temp/r8-current.json
+```
+
+`mapping目录`应同时包含 `configuration.txt`、`mapping.txt`、`seeds.txt`、`usage.txt`。报告文件必须不存在，且位于当前仓库根目录的 `Temp/`；工具不会覆盖已有报告、改写 APK/规则/映射、启动构建、连接设备或下载依赖。终端输出聚合字节、符号数量、关键保护结果与可选基准差异；完整 JSON 仅额外保存产物摘要和代码入口名，不输出配置正文、签名材料、地址或用户数据。
+
+测量分别统计根目录 `classes*.dex` 的原始字节、ZIP 压缩字节和实际定义类数，以及 R8 seeds 的类/成员保留根和 mapping 的类名变化。解析 DEX 035–040；未知格式、损坏输入或缺失文件会失败，不能据不完整解析宣布通过。JVM classfile 解析区分类注解与成员注解，从传入引擎 JAR 的真实 `@Keep`/native 声明生成入口要求，再关联 mapping 与 DEX 的定义名称；同时核对反射注册器、应用清单组件和通知模型。传入 `--baseline` 后继续校验旧包的通知模型及其字段，避免只用新包剩下的字段自证升级兼容。
+
+退出码 `0` 表示本次名称/定义保护检查通过，`1` 表示保护检查失败，`2` 表示输入、格式或报告写入错误。seeds 不是 DEX 大小或运行频率，mapping 与 APK 的关键入口相符也不能证明它们来自同一完整构建；应保存同轮文件。DEX 字节差异只说明这些产物的体积变化，其他源码/SDK/依赖变化也会影响结果，不能直接归因某条 keep 规则或宣称启动/内存提升。
+
+名称检查不验证所有 JNI 重载描述符、Android 系统权限、ROM 后台限制或 Gson 实际往返。收窄规则后仍须用压缩正式包验收冷启动、全部插件、旧通知缓存恢复、定时/BOOT/时区/休息提醒、应用锁、图片/分享、后台下载与更新安装；涉及设备操作沿用原有授权要求。不能因为静态名称检查通过就删掉旧缓存或跳过真机验收。

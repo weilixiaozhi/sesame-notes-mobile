@@ -654,9 +654,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importFieldNote => 'Note';
 
   @override
-  String get importKeepOriginalName => 'Keep original name';
-
-  @override
   String get importNextStep => 'Next Step';
 
   @override
@@ -785,9 +782,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryNameHint => 'Enter category name';
 
   @override
-  String get categoryNameDuplicate => 'Category name already exists';
-
-  @override
   String get categoryIconLabel => 'Category Icon';
 
   @override
@@ -833,11 +827,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryDeleteError => 'Delete failed';
-
-  @override
-  String categorySubCategoryCreated(Object name) {
-    return 'Subcategory added: $name';
-  }
 
   @override
   String get categoryParentCategoryTitle => 'Belongs To';
@@ -3441,9 +3430,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fitnessTemplateLibrary => 'Template library';
-
-  @override
-  String get fitnessAddToMyPlan => 'Add to my plans';
 
   @override
   String get fitnessAddToMyTemplate => 'Add to my templates';

@@ -1,6 +1,8 @@
 import 'package:sesame_notes/shared/providers/cloud_capability_provider.dart';
 import 'package:sesame_notes/data/models/category_conflict_state.dart';
 import 'package:sesame_notes/shared/application/ports/mutation_executor.dart';
+export 'package:sesame_notes/shared/application/ports/mutation_executor.dart'
+    show DataMutationPausedException;
 import 'package:sesame_notes/data/db.dart' show SyncPullErrorsCompanion;
 import '../../data/models/private_book.dart';
 export '../../data/models/private_book.dart' show BookDirectoryStatus;
@@ -10,7 +12,6 @@ import 'dart:convert';
 import 'package:sesame_notes/data/models/sync_issue.dart';
 import 'package:sesame_notes/data/models/sync_operation_failure.dart';
 import 'package:sesame_notes/data/repositories/local/sync_issues_repository.dart';
-import 'package:sesame_notes/data/models/day_book.dart' as days;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart';
@@ -221,14 +222,6 @@ class SyncRunResult {
       : _cloudSynced
       ? DataRefreshOutcome.cloudSynced
       : DataRefreshOutcome.localOnly;
-}
-
-/// 账号切换或显式云端决策期间，本机写入立即返回可展示说明，不排队等待网络。
-class DataMutationPausedException extends StateError {
-  /// 提示仅来自本机固定文案，不包含请求、账号资料或底层异常内容。
-  DataMutationPausedException(this.userMessage) : super(userMessage);
-
-  final String userMessage;
 }
 
 /// 同步编排：按「先推后拉」顺序执行完整一轮，异常时记录日志并返回错误信息。
@@ -733,24 +726,6 @@ class SyncCoordinator implements MutationExecutor {
       }
     }
   }
-
-  /// 云本复制与转换在同一串行队列中完成，保持服务端确认和本地事务顺序。
-  Future<days.DayBook> _convertDayBook(
-    String dayBookId, {
-    required bool move,
-  }) => runDataOperation(
-    (service) => move
-        ? service.moveDayBookToLocal(dayBookId: dayBookId)
-        : service.copyDayBookToLocal(dayBookId: dayBookId),
-  );
-
-  /// 复制为本机本，完整快照和未确认分支保护由同步服务统一处理。
-  Future<days.DayBook> copyDayBookToLocal({required String dayBookId}) =>
-      _convertDayBook(dayBookId, move: false);
-
-  /// 云端删除确认后发布稳定的本机副本，失败后沿用原操作重试。
-  Future<days.DayBook> moveDayBookToLocal({required String dayBookId}) =>
-      _convertDayBook(dayBookId, move: true);
 
   /// 用户同步决策必须在同一账号的增量同步之后执行，并返回可直接展示的结果。
   Future<SyncRunResult> _userAction(

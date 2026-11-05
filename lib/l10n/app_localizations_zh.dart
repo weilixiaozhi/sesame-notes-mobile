@@ -640,9 +640,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importFieldNote => '备注';
 
   @override
-  String get importKeepOriginalName => '保持原名（自动创建/合并）';
-
-  @override
   String get importNextStep => '下一步';
 
   @override
@@ -770,9 +767,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get categoryNameHint => '请输入分类名称';
 
   @override
-  String get categoryNameDuplicate => '分类名称已存在';
-
-  @override
   String get categoryIconLabel => '分类图标';
 
   @override
@@ -818,11 +812,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get categoryDeleteError => '删除失败';
-
-  @override
-  String categorySubCategoryCreated(Object name) {
-    return '已添加子分类：$name';
-  }
 
   @override
   String get categoryParentCategoryTitle => '所属分类';
@@ -3358,9 +3347,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fitnessTemplateLibrary => '模板库';
-
-  @override
-  String get fitnessAddToMyPlan => '添加到我的计划';
 
   @override
   String get fitnessAddToMyTemplate => '添加到我的模板';
@@ -6168,9 +6154,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get importFieldNote => '備註';
 
   @override
-  String get importKeepOriginalName => '保持原名（自動建立/合併）';
-
-  @override
   String get importNextStep => '下一步';
 
   @override
@@ -6298,9 +6281,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get categoryNameHint => '請輸入分類名稱';
 
   @override
-  String get categoryNameDuplicate => '分類名稱已存在';
-
-  @override
   String get categoryIconLabel => '分類圖示';
 
   @override
@@ -6346,11 +6326,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get categoryDeleteError => '刪除失敗';
-
-  @override
-  String categorySubCategoryCreated(Object name) {
-    return '已添加子分類：$name';
-  }
 
   @override
   String get categoryParentCategoryTitle => '所屬分類';
@@ -8886,9 +8861,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get fitnessTemplateLibrary => '範本庫';
-
-  @override
-  String get fitnessAddToMyPlan => '添加到我的計畫';
 
   @override
   String get fitnessAddToMyTemplate => '添加到我的範本';

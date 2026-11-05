@@ -90,6 +90,8 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
+  # 只读架构审计使用已解析的Dart符号身份与语法树。
+  analyzer: 12.1.0
 
   # 与 drift 2.34.0 配套；勿单独升级到 ≥2.34.1（见上方 drift 注释）。
   build_runner: ^2.15.1

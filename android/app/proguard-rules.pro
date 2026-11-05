@@ -1,58 +1,25 @@
--keep class com.sesame.notes.MainActivity { *; }
-
-# 保留系统通过清单实例化的广播接收器
--keep public class * extends android.content.BroadcastReceiver
-
-# 保留应用广播接收方法
--keepclassmembers class com.sesame.notes.** {
-    public void onReceive(android.content.Context, android.content.Intent);
+# Flutter 引擎按固定类名反射调用插件注册入口。
+-keep class io.flutter.plugins.GeneratedPluginRegistrant {
+    public static void registerWith(io.flutter.embedding.engine.FlutterEngine);
 }
 
-# 保留 Flutter 通知插件类
--keep class io.flutter.** { *; }
--keep class com.dexterous.** { *; }
+# 通知缓存由 Gson 反射读写字段，样式子类的简单类名和枚举名称属于历史格式。
+# 只保护持久化模型、字段和构造器，普通插件实现继续接受 R8 裁剪与混淆。
+-keep class com.dexterous.flutterlocalnotifications.models.** {
+    <fields>;
+    <init>(...);
+}
 
-# 保留插件反射需要的类型元数据
--keepattributes Signature
--keepattributes InnerClasses
--keepattributes EnclosingMethod
+# 泛型类型、内部类型关系和序列化注解用于通知历史数据反序列化。
+-keepattributes Signature,InnerClasses,EnclosingMethod,*Annotation*
 
-# 保留通知调度使用的时区数据
--keep class net.danlew.android.joda.** { *; }
-
-# 保留通知插件通过反射读取的枚举
--keep class * extends java.lang.Enum { *; }
-
-# 保留通知渠道相关类
--keep class android.app.NotificationChannel { *; }
--keep class android.app.NotificationManager { *; }
--keep class androidx.core.app.NotificationCompat** { *; }
-
-# 保留 Android 系统 XML 接口及解析实现
--keep interface org.xmlpull.v1.XmlPullParser { *; }
-
--keep class org.xmlpull.v1.** { *; }
--dontwarn org.xmlpull.v1.**
-
-# 保留运行时读取的注解信息
--keepattributes *Annotation*
-
-# 保留 Android 系统 XML 接口
--keep interface android.content.res.** { *; }
--keep class android.content.res.** { *; }
-
-# 保留崩溃诊断所需的源码与行号
+# 源文件与行号支持正式包崩溃定位。
 -keepattributes SourceFile,LineNumberTable
 
-# 保留系统通过清单实例化的应用组件
--keep public class * extends android.app.Application
--keep public class * extends android.app.Activity
--keep public class * extends android.app.Service
+# JNI 方法与 @Keep 入口由 Android 默认规则和 AndroidX 消费者规则保留。
+# Android 清单中的组件及构造器由资源处理生成的 aapt 规则保留。
 
-# 直发 APK 不包含 Google Play Core
+# 直发 APK 的 Flutter 引擎包含可选 Play 动态组件引用。
 -dontwarn com.google.android.play.core.**
--keep class com.google.android.play.core.** { *; }
-
-# 直发 APK 不使用 Flutter Play 动态组件
 -dontwarn io.flutter.app.FlutterPlayStoreSplitApplication
 -dontwarn io.flutter.embedding.engine.deferredcomponents.PlayStoreDeferredComponentManager**

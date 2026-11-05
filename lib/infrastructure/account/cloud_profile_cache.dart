@@ -82,7 +82,13 @@ class CloudProfile {
         phone: json['phone'] as String?,
         gender: json['gender'] as String? ?? 'UNSPECIFIED',
       );
-    } catch (_) {
+    } catch (error, stackTrace) {
+      logger.error(
+        'CloudProfileCache',
+        '云资料缓存结构无效，本次按缺失处理',
+        safeErrorSummary(error),
+        stackTrace,
+      );
       return null;
     }
   }
@@ -105,7 +111,13 @@ class CloudProfileCache {
       final raw = _prefs.getString(_keyPrefix + userId);
       if (raw == null || raw.isEmpty) return null;
       return CloudProfile.fromJson(jsonDecode(raw) as Map<String, dynamic>);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      logger.error(
+        'CloudProfileCache',
+        '读取云资料缓存失败，本次按缺失处理',
+        safeErrorSummary(error),
+        stackTrace,
+      );
       return null;
     }
   }
@@ -116,26 +128,41 @@ class CloudProfileCache {
       if (isCurrent != null && !isCurrent()) return;
       final key = _keyPrefix + profile.userId;
       final value = jsonEncode(profile.toJson());
-      await _prefs.setString(key, value);
+      if (!await _prefs.setString(key, value)) {
+        throw StateError('云资料缓存写入未被系统确认');
+      }
       // 退出可能与平台写入交错；只撤回本次仍占据的缓存值，不覆盖后来的资料。
       if (isCurrent != null && !isCurrent()) {
         if (_prefs.getString(key) == value) await _prefs.remove(key);
         return;
       }
-      // 写入成功才发信号：写失败（异常被吞）不触发内存同步，避免误报新值
+      // 只有平台确认写入后才发布缓存变更，避免失败写入触发资料刷新。
       onWrite?.call(profile);
-    } catch (_) {
-      // 缓存写入失败不影响主流程；下次在线刷新会重写
+    } catch (error, stackTrace) {
+      // 可选缓存失败保持降级；诊断只包含操作、类型和堆栈，不记录资料正文。
+      logger.error(
+        'CloudProfileCache',
+        '保存云资料缓存失败，本次继续使用已有身份',
+        safeErrorSummary(error),
+        stackTrace,
+      );
     }
   }
 
   /// 清除指定账号的缓存（登出/凭证失效时调用）。
   Future<void> clear(String userId) async {
     try {
-      await _prefs.remove(_keyPrefix + userId);
+      if (!await _prefs.remove(_keyPrefix + userId)) {
+        throw StateError('云资料缓存清除未被系统确认');
+      }
     } catch (error, stackTrace) {
       // 登出后残留旧账号资料会破坏账号隔离：降级放行但必须留痕。
-      logger.error('CloudProfileCache', '清除云资料缓存失败', error, stackTrace);
+      logger.error(
+        'CloudProfileCache',
+        '清除云资料缓存失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
     }
   }
 }

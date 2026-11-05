@@ -1,0 +1,4 @@
+// 正式应用保持已发布身份，凭据和数据沿原升级链继续使用。
+SESAME_APP_ENV = prod
+SESAME_BUNDLE_IDENTIFIER = com.sesame.notes
+DART_DEFINES = $(inherited),QVBQX0VOVj1wcm9k

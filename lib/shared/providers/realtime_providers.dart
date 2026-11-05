@@ -1,4 +1,3 @@
-import 'package:sesame_notes/shared/providers/cloud_capability_provider.dart';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

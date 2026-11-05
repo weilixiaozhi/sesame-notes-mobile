@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_api_client/sesame_api_client.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/models/fitness.dart' as fitness;
+import 'package:sesame_notes/data/models/sync_issue.dart';
 import 'package:sesame_notes/data/repositories/local/fitness_repository.dart';
 import 'package:sesame_notes/sync/storage/change_recorder_impl.dart';
 import 'package:sesame_notes/sync/sync_service.dart';
@@ -228,6 +229,51 @@ void main() {
       }
     });
   }
+
+  test('父空间删除丢失回执后原样重放，ignored确认墓碑且不额外联网', () async {
+    await bound();
+    final preview = await sync.prepareScopeDelete(
+      SyncTarget('fitness_space', repo.spaceId),
+    );
+    await sync.confirmScopeDelete(preview);
+    String? frozen;
+    var pushes = 0;
+    adapter.respond = (request, data) async {
+      // 当前协议的健身墓碑不能通过普通恢复重新激活，重放只确认首次删除。
+      expect(request.path, '/api/v1/sync/push');
+      final change = Map<String, dynamic>.from(
+        (data!['changes'] as List).single as Map,
+      );
+      expect(change['entity_type'], 'fitness_space');
+      expect(change['action'], 'delete');
+      expect(change['sync_id'], binding);
+      final current = (await pending()).single.frozenRequest!;
+      if (pushes++ == 0) {
+        frozen = current;
+        // 服务端已提交、响应丢失：客户端只能保留未知结果的原请求。
+        throw DioException(
+          requestOptions: request,
+          type: DioExceptionType.connectionError,
+        );
+      }
+      expect(current, frozen);
+      final result = accepted(change, revision: 2);
+      (result['outcomes'] as List).single['status'] = 'ignored';
+      return result;
+    };
+    await expectLater(sync.push(), throwsA(isA<DioException>()));
+    expect((await pending()).single.frozenRequest, frozen);
+    await sync.push();
+    expect(pushes, 2);
+    expect(await pending(), isEmpty);
+    final space = await (db.select(
+      db.fitnessSpaces,
+    )..where((b) => b.id.equals(repo.spaceId))).getSingle();
+    expect(space.pendingLocalDelete, isFalse);
+    expect(space.deletedAt, isNotNull);
+    expect(space.isStale, isFalse);
+    expect((await row(templateId)).deletedAt, isNotNull);
+  });
 
   test('空间与其他本共用父依赖：父空间确认之后才上传子记录', () async {
     const id = '77777777-7777-4777-8777-777777777777';

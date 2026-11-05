@@ -363,10 +363,6 @@ class FitnessLibrary {
   /// 按稳定官方身份读取模板；内容图已校验，所以缺失属于编程错误。
   OfficialFitnessTemplate template(String id) =>
       templates.firstWhere((template) => template.id == id);
-
-  /// 只读页面按当前内容快照查找官方身份，快照中缺少该项时返回 null。
-  OfficialFitnessTemplate? templateOrNull(String id) =>
-      templates.where((template) => template.id == id).firstOrNull;
 }
 
 /// 从计划库进入只读确认页时携带的临时草稿、官方内容库与模板快照。

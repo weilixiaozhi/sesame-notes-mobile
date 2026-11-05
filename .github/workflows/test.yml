@@ -39,6 +39,14 @@ jobs:
       - name: 静态分析（仓库约定零告警）
         run: flutter analyze --no-pub
 
+      - name: 架构边界与符号解析语义回归
+        run: |
+          dart scripts/audit/architecture_test.dart
+          dart scripts/audit/architecture.dart
+
+      - name: iOS 环境配置回归
+        run: python3 -B scripts/test/ios_environment_test.py
+
       - name: API 契约固定测试（契约哈希与乐观锁约定）
         run: |
           python3 scripts/test/api_contract_test.py

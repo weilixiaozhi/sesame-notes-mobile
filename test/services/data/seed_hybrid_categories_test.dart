@@ -1,3 +1,4 @@
+import 'package:sesame_notes/utils/default_category_ids.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:drift/native.dart';
@@ -26,7 +27,7 @@ void main() {
   /// `children == null` 为独立一级（仅 sid(1)），否则为父子组（sid(1) + 各子 sid(2)）。
   Set<String> expectedSyncIds() {
     String sid(int level, String key) =>
-        SeedService.deterministicCategorySyncId(level: level, key: key);
+        defaultCategoryId(level: level, key: key);
     return {
       for (final entry in SeedService.hybridCategoryTemplate) ...[
         sid(1, entry.key),
@@ -52,14 +53,14 @@ void main() {
         );
 
         // ② id 确定性：实际集合与期望集合完全一致（无缺失、无多余）。
-        // 分类 id 使用 deterministicCategorySyncId 生成的确定性 UUID。
+        // 分类 id 使用稳定模板键派生的确定性 UUID。
         final actualSyncIds = {for (final c in cats) c.id};
         expect(actualSyncIds, expectedSyncIds());
 
         // ③ 层级挂接：按确定性 id 反推 key，子的父必须是 hybridCategoryTemplate 中
         //    该父子组声明的父（children != null 的条目）
         String sidOf(int level, String key) =>
-            SeedService.deterministicCategorySyncId(level: level, key: key);
+            defaultCategoryId(level: level, key: key);
         final byId = {for (final c in cats) c.id: c};
         for (final entry in SeedService.hybridCategoryTemplate) {
           final children = entry.children;
@@ -114,11 +115,8 @@ void main() {
       l10n,
       scopeAccountId: 'test-account',
     );
-    final id = SeedService.deterministicCategorySyncId(level: 1, key: 'dining');
-    final deletedId = SeedService.deterministicCategorySyncId(
-      level: 2,
-      key: 'dining_breakfast',
-    );
+    final id = defaultCategoryId(level: 1, key: 'dining');
+    final deletedId = defaultCategoryId(level: 2, key: 'dining_breakfast');
     final webTime = DateTime.utc(2024, 1, 2);
     await (db.update(db.categories)..where((c) => c.id.equals(id))).write(
       CategoriesCompanion(
@@ -174,10 +172,7 @@ void main() {
       await SeedService.createHybridCategories(db, l10n);
       final cats = await db.select(db.categories).get();
 
-      final housingSid = SeedService.deterministicCategorySyncId(
-        level: 1,
-        key: 'housing',
-      );
+      final housingSid = defaultCategoryId(level: 1, key: 'housing');
       final housing = cats.firstWhere((c) => c.id == housingSid);
       // 子类按 sortOrder 升序即为 seed 写入顺序
       final children = cats.where((c) => c.parentId == housing.id).toList()
@@ -210,7 +205,7 @@ void main() {
       addTearDown(database.close);
       final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
       final id = tombstone
-          ? SeedService.deterministicCategorySyncId(level: 1, key: 'dining')
+          ? defaultCategoryId(level: 1, key: 'dining')
           : 'custom-category';
       await database
           .into(database.categories)

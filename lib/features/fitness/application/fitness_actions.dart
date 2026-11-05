@@ -63,20 +63,6 @@ class FitnessActions {
     ),
   );
 
-  /// 原子保存官方计划及其使用的模板副本。
-  Future<FitnessPlan> importCatalogPlan(
-    FitnessPlan draft,
-    Map<String, FitnessTemplate> officialTemplates, {
-    Map<String, String> reusableTemplateIds = const {},
-  }) => _run(
-    '原子保存官方计划及其使用的模板副本',
-    () => _library.importCatalogPlan(
-      draft,
-      officialTemplates,
-      reusableTemplateIds: reusableTemplateIds,
-    ),
-  );
-
   /// 在当前空间复制模板并保持新身份。
   Future<FitnessTemplate> copyTemplate(String id, {String? name}) =>
       _run('在当前空间复制模板并保持新身份', () => _library.copyTemplate(id, name: name));

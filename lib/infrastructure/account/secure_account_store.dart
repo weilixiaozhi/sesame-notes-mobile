@@ -105,11 +105,11 @@ class SecureAccountStore {
   Future<ActiveCredential?> load({bool requireReadable = false}) async {
     try {
       final raw = await store.read();
-      _lastError = null;
+      _activeReadError = null;
       if (raw == null || raw.isEmpty) return null;
       return ActiveCredential.decode(raw);
     } catch (error, stackTrace) {
-      _lastError = (error, stackTrace);
+      _activeReadError = (error, stackTrace);
       if (requireReadable) {
         logger.error(
           'AccountStore',
@@ -124,10 +124,10 @@ class SecureAccountStore {
     }
   }
 
-  (Object, StackTrace)? _lastError;
+  (Object, StackTrace)? _activeReadError;
 
-  /// 最近一次读取失败（测试与诊断用）。
-  (Object, StackTrace)? get lastError => _lastError;
+  /// 最近一次当前凭证读取错误；仅由该槽的读取更新，辅助槽诊断不会改变认证判断。
+  (Object, StackTrace)? get lastError => _activeReadError;
 
   /// 原子写入凭证束。
   Future<void> save(ActiveCredential credential) =>
@@ -162,7 +162,12 @@ class SecureAccountStore {
     } catch (error, stackTrace) {
       // 读失败不等于"没有候选"：候选槽可能还留着未撤销的 refresh token。
       // 语义仍按无候选降级（启动恢复下次会重试），但失败必须留痕。
-      logger.error('AccountStore', '读取候选凭证失败，本次按无候选处理', error, stackTrace);
+      logger.error(
+        'AccountStore',
+        '读取候选凭证失败，本次按无候选处理',
+        safeErrorSummary(error),
+        stackTrace,
+      );
       return null;
     }
   }
@@ -170,12 +175,17 @@ class SecureAccountStore {
   /// 写入候选凭证槽；启动恢复会把未提交候选移入服务端撤销待办。
   ///
   /// 辅助槽位写失败不阻断主流程（ActiveCredential 原子写入才是提交闸门），
-  /// 失败保存在 lastError 供诊断；不可用平台不阻断登录。
+  /// 失败以脱敏日志留痕，独立于当前凭证读取结果；不可用平台不阻断登录。
   Future<void> savePending(ActiveCredential credential) async {
     try {
       await pendingStore.write(credential.encode());
     } catch (error, stackTrace) {
-      _lastError = (error, stackTrace);
+      logger.error(
+        'AccountStore',
+        '保存候选凭证失败，当前账号提交仍由主凭证槽确认',
+        safeErrorSummary(error),
+        stackTrace,
+      );
     }
   }
 
@@ -184,7 +194,12 @@ class SecureAccountStore {
     try {
       await pendingStore.delete();
     } catch (error, stackTrace) {
-      _lastError = (error, stackTrace);
+      logger.error(
+        'AccountStore',
+        '清除候选凭证失败，保留诊断供下次恢复检查',
+        safeErrorSummary(error),
+        stackTrace,
+      );
     }
   }
 
@@ -253,7 +268,6 @@ class SecureAccountStore {
           );
         }
       } catch (error, stackTrace) {
-        _lastError = (error, stackTrace);
         logger.error(
           'AccountStore',
           '保存待撤销会话失败',

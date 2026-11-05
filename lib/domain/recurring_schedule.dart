@@ -10,6 +10,12 @@ import 'package:sesame_notes/data/models/accounting_records.dart';
 /// 周期协议固定版本；普通交易不依赖此协议。
 const recurringProtocolVersion = 1;
 
+/// 模板已失效或规则不受支持时只暂停该模板，数据库和未知异常仍向外传播。
+class RecurringGenerationRejectedException extends StateError {
+  /// 使用可展示的规则提示，不携带交易正文或账号资料。
+  RecurringGenerationRejectedException(super.message);
+}
+
 /// 与跨端协议保持相同的四位年份范围，避免本地生成无法上传的发生。
 void validateRecurringDateRange(DateTime start, DateTime? end) {
   if (start.year < 1000 ||
@@ -102,7 +108,7 @@ DateTime recurringToday(String timeZone, DateTime instant) {
 /// 返回连续游标之后的下一发生日期；从开始日补齐，结束日当天仍可生成。
 DateTime? nextRecurringDate(RecurringTransactionSnapshot rule, DateTime today) {
   if (rule.protocolVersion != recurringProtocolVersion) {
-    throw StateError('周期规则的协议格式无效，原数据未修改。');
+    throw RecurringGenerationRejectedException('周期规则的协议格式无效，原数据未修改。');
   }
   if (!rule.enabled || rule.deletedAt != null) return null;
   validateRecurringDateRange(rule.startDate.toUtc(), rule.endDate?.toUtc());

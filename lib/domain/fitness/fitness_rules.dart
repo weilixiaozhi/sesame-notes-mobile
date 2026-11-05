@@ -124,15 +124,6 @@ String fitnessAddDays(String value, int days) {
   return fitnessDate(DateTime(date.year, date.month, date.day + days));
 }
 
-int fitnessDaysBetween(String a, String b) {
-  final x = fitnessParseDate(a), y = fitnessParseDate(b);
-  return DateTime.utc(
-    y.year,
-    y.month,
-    y.day,
-  ).difference(DateTime.utc(x.year, x.month, x.day)).inDays;
-}
-
 bool fitnessValidName(String name) => isValidName(name);
 void _name(String name) =>
     fitnessRequire(fitnessValidName(name), 'FITNESS_NAME');

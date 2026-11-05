@@ -5,7 +5,6 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/utils/default_category_keys.dart';
 import 'package:sesame_notes/utils/category_template_names.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
-import 'package:sesame_notes/utils/default_category_ids.dart';
 import 'package:sesame_notes/data/services/category_seed_service.dart';
 import 'package:sesame_notes/utils/default_category_seed_catalog.dart';
 
@@ -57,14 +56,6 @@ class SeedService {
       rethrow;
     }
   }
-
-  /// 默认分类的确定性 syncId。key 用**稳定的 seed key**(不是翻译后的名字),
-  /// 这样任何设备、任何语言 seed 出来的同一个默认分类都得到同一个 syncId,
-  /// 云端按 syncId 天然只留一份 —— 从源头杜绝多设备各自 seed 造成的重复。
-  static String deterministicCategorySyncId({
-    required int level,
-    required String key,
-  }) => defaultCategoryId(level: level, key: key);
 
   /// 所有分类模板共用一份树结构，根节点与子节点只表达包含关系。
   static const Map<String, List<String>> categoryTemplates =

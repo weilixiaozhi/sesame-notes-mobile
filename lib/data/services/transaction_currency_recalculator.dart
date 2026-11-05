@@ -5,6 +5,7 @@ import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/models/transaction_split_input.dart';
 import 'package:sesame_notes/data/repositories/contracts/currency_rate_repository.dart';
 import 'package:sesame_notes/data/repositories/contracts/currency_transaction_repository.dart';
+import 'package:sesame_notes/data/repositories/support/exceptions.dart';
 import 'package:sesame_notes/utils/currency/decimal_money.dart';
 import 'package:sesame_notes/utils/currency/rate_math.dart';
 import 'package:sesame_notes/utils/currency/split_money.dart';
@@ -66,7 +67,7 @@ class TransactionCurrencyRecalculator {
           rates: rates,
         );
         if (na == null && requireRate) {
-          throw StateError('缺少 $cc 到 $base 的有效汇率，周期账单未生成，请更新汇率后重试。');
+          throw MissingExchangeRateException(from: cc, to: base);
         }
         na ??= amount;
       }

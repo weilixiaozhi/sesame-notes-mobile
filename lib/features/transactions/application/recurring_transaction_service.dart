@@ -1,53 +1,87 @@
 import 'package:sesame_notes/data/repositories/contracts/accounting_repositories.dart';
 import 'package:sesame_notes/data/models/accounting_records.dart';
+import 'package:sesame_notes/data/repositories/support/exceptions.dart';
 import 'package:sesame_notes/domain/recurring_schedule.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
+import 'package:sesame_notes/shared/application/ports/mutation_executor.dart';
 
-/// 重复交易服务
-///
-/// 注意：此服务主要用于生成待处理的周期交易记录
-/// 数据读取和写入通过注入的交易数据端口完成。
-///
+/// 单次发生提交后的交易和模板快照，下一发生使用最新连续游标。
+typedef _RecurringOccurrenceResult = ({
+  TransactionSnapshot? transaction,
+  RecurringTransactionSnapshot? recurring,
+});
+
+/// 提交事实独立于展示快照回读，数据库读取失败不能抹掉已经完成的发生。
+class _RecurringGenerationProgress {
+  final transactions = <TransactionSnapshot>[];
+  final committedLedgerIds = <String>{};
+  final committedOccurrenceIds = <String>{};
+
+  /// 只在生成事务返回且原作用域仍有效后登记，重复发生身份只统计一次。
+  void recordCommitted(String ledgerId, String occurrenceId) {
+    committedLedgerIds.add(ledgerId);
+    committedOccurrenceIds.add(occurrenceId);
+  }
+}
+
+/// 账号或数据库生命周期已结束，旧扫描不得把余下发生交给新的作用域。
+class RecurringGenerationCancelledException implements Exception {
+  /// 固定提示可用于日志，不包含身份或业务内容。
+  const RecurringGenerationCancelledException();
+
+  /// 说明扫描已安全停止，已提交发生继续保留。
+  @override
+  String toString() => '周期补记所属的数据状态已变化，剩余内容将在下次扫描时重试。';
+}
+
+/// 按模板独立补记周期交易，发生事务与本机写入生命周期保持一致。
 class RecurringTransactionService {
   static const _tag = 'Recurring';
 
   final TransactionRepository repository;
+  final MutationExecutor? mutationExecutor;
+  final void Function()? verifyScope;
 
-  RecurringTransactionService(this.repository);
+  /// 仓储保存规则与发生；应用装配注入本机写屏障及固定身份、数据库校验。
+  RecurringTransactionService(
+    this.repository, {
+    this.mutationExecutor,
+    this.verifyScope,
+  });
 
-  /// 静态方法：生成待处理的重复交易（供启动时和初始化时调用）
-  ///
-  /// [ledgers] 由调用方限定扫描范围；未提供时读取仓库全部账本。
-  ///
-  /// 返回：生成了交易的账本ID集合（用于触发同步）
+  /// 启动扫描不抛出后台异常，停止或失败时仍返回已经完成的账本集合。
   static Future<Set<String>> generatePendingTransactionsStatic({
     required TransactionRepository repository,
     List<LedgerSnapshot>? ledgers,
+    MutationExecutor? mutationExecutor,
+    void Function()? verifyScope,
   }) async {
+    final progress = _RecurringGenerationProgress();
     try {
-      logger.info(_tag, '开始生成待处理的重复交易 (Repository=${repository.runtimeType})');
-
-      final service = RecurringTransactionService(repository);
-      final generatedTransactions = await service.generatePendingTransactions(
-        ledgers: ledgers,
+      await RecurringTransactionService(
+        repository,
+        mutationExecutor: mutationExecutor,
+        verifyScope: verifyScope,
+      )._scan(progress, ledgers: ledgers);
+    } on RecurringGenerationCancelledException {
+      logger.info(_tag, '周期补记所属状态已变化，已提交内容保留，剩余内容稍后重试');
+    } on DataMutationPausedException {
+      logger.info(_tag, '账号转换或恢复期间暂停周期补记，已提交内容保留');
+    } catch (error, stackTrace) {
+      // 基础设施与未知错误终止扫描，不能误认作可跳过的单模板业务错误。
+      logger.error(
+        _tag,
+        '周期扫描未完成，已提交内容保留，请稍后重试',
+        safeErrorSummary(error),
+        stackTrace,
       );
-
-      if (generatedTransactions.isNotEmpty) {
-        final ledgerIds = generatedTransactions.map((t) => t.ledgerId).toSet();
-        logger.info(
-          _tag,
-          '本次共生成 ${generatedTransactions.length} 条重复交易,涉及账本 $ledgerIds',
-        );
-        return ledgerIds;
-      } else {
-        logger.info(_tag, '本次没有需要生成的重复交易');
-        return {};
-      }
-    } catch (e, stackTrace) {
-      // 不抛出异常，避免影响应用启动
-      logger.error(_tag, '生成重复交易失败', e, stackTrace);
-      return {};
     }
+    final ledgerIds = progress.committedLedgerIds;
+    logger.info(
+      _tag,
+      '本轮已完成 ${progress.committedOccurrenceIds.length} 次周期发生，涉及 ${ledgerIds.length} 本账本',
+    );
+    return ledgerIds;
   }
 
   /// 按规则 IANA 时区计算今天，返回 UTC 承载的纯发生日期。
@@ -59,83 +93,107 @@ class RecurringTransactionService {
     recurringToday(recurring.timeZone, now ?? DateTime.now()),
   );
 
-  /// 在指定账本中生成待处理交易；未提供范围时扫描全部，空集合不生成。
+  /// 指定范围内独立处理模板；数据库及未知错误传播给显式调用者。
   Future<List<TransactionSnapshot>> generatePendingTransactions({
     List<LedgerSnapshot>? ledgers,
   }) async {
-    final nowStr = DateTime.now().toString();
-    logger.info(_tag, '开始扫描周期交易 (now=$nowStr)');
+    final progress = _RecurringGenerationProgress();
+    await _scan(progress, ledgers: ledgers);
+    return progress.transactions;
+  }
 
+  /// 使用同一成功集合记录每次完成，后续模板失败不会抹掉已提交的结果。
+  Future<void> _scan(
+    _RecurringGenerationProgress progress, {
+    List<LedgerSnapshot>? ledgers,
+  }) async {
+    verifyScope?.call();
     final candidates = ledgers ?? await repository.getAllLedgers();
-    logger.info(_tag, '获取到 ${candidates.length} 个账本');
-
-    final generatedTransactions = <TransactionSnapshot>[];
-
+    verifyScope?.call();
     for (final ledger in candidates) {
-      // 只加载当前账本的模板，避免每次循环全表扫描。
-      final recurringList = (await repository.getRecurringTransactionsByLedger(
+      verifyScope?.call();
+      final rules = await repository.getRecurringTransactionsByLedger(
         ledger.id,
-      )).where((r) => r.enabled).toList();
-      if (recurringList.isEmpty) continue;
-      logger.info(
-        _tag,
-        '账本 id=${ledger.id} 有 ${recurringList.length} 个启用的周期交易',
       );
-
-      for (final recurring in recurringList) {
-        logger.info(
-          _tag,
-          '处理周期交易 id=${recurring.id} freq=${recurring.frequency} interval=${recurring.interval} start=${recurring.startDate} end=${recurring.endDate} lastGen=${recurring.lastGeneratedDate}',
-        );
-        // 循环生成所有缺失的交易记录
-        var currentRecurring = recurring;
-        var loopGuard = 0;
-        while (true) {
-          // 防御:任何情况下单条周期交易一次扫描不应生成上千笔 —— 拦截死循环
-          if (++loopGuard > 200) {
-            logger.warning(
-              _tag,
-              '周期交易 id=${recurring.id} 单次生成超过 200 笔,强制中止以防死循环',
-            );
-            break;
+      verifyScope?.call();
+      for (final rule in rules.where((row) => row.enabled)) {
+        try {
+          var current = rule;
+          for (var count = 0; count < 200; count++) {
+            verifyScope?.call();
+            final next = _nextDateForGeneration(current);
+            if (next == null) break;
+            final result = await _generateOccurrence(current, next, progress);
+            if (result.transaction != null) {
+              progress.transactions.add(result.transaction!);
+            }
+            final updated = result.recurring;
+            if (updated == null || !updated.enabled) break;
+            current = updated;
+            if (count == 199) {
+              logger.warning(_tag, '单个周期模板本轮补记已达 200 笔，余下发生留待后续扫描');
+            }
           }
-          final nextDate = calculateNextDate(currentRecurring);
-          if (nextDate == null) break;
-
-          logger.info(
-            _tag,
-            '周期交易 id=${currentRecurring.id} 生成一笔: happenedAt=$nextDate type=${currentRecurring.txType}',
-          );
-
-          // 写交易 + 推进锚点在同一事务内完成，防止锚点更新失败导致重复生成。
-          final transactionId = await repository.generateRecurringTransaction(
-            recurring: currentRecurring,
-            happenedAt: nextDate,
-          );
-
-          // 单条反查新交易，避免订阅整个账本交易流。
-          final transaction = await repository.getTransactionById(
-            transactionId,
-          );
-
-          if (transaction != null) {
-            generatedTransactions.add(transaction);
-          }
-
-          // 重新读取当前账本更新后的模板，用于下一次循环。
-          final updatedList = await repository.getRecurringTransactionsByLedger(
-            ledger.id,
-          );
-          final matchedRecurring = updatedList
-              .where((r) => r.id == currentRecurring.id)
-              .toList();
-          if (matchedRecurring.isEmpty) break;
-          final updatedRecurring = matchedRecurring.first;
-          currentRecurring = updatedRecurring;
+        } on RecurringGenerationRejectedException catch (error, stackTrace) {
+          _logRejectedRule(rule.id, error, stackTrace);
+        } on MissingExchangeRateException catch (error, stackTrace) {
+          _logRejectedRule(rule.id, error, stackTrace);
         }
       }
     }
+  }
 
-    return generatedTransactions;
+  /// 仅将纯规则计算抛出的格式异常归类为模板问题，不吞数据库解码异常。
+  DateTime? _nextDateForGeneration(RecurringTransactionSnapshot recurring) {
+    try {
+      return calculateNextDate(recurring);
+    } on FormatException catch (error, stackTrace) {
+      Error.throwWithStackTrace(
+        RecurringGenerationRejectedException(error.message),
+        stackTrace,
+      );
+    }
+  }
+
+  /// 单次发生及其结果读取共用一个本机写屏障，账号转换只等待有限工作。
+  Future<_RecurringOccurrenceResult> _generateOccurrence(
+    RecurringTransactionSnapshot recurring,
+    DateTime happenedAt,
+    _RecurringGenerationProgress progress,
+  ) async {
+    /// 生成与游标推进由仓储事务保证原子性，屏障保护其完整应用生命周期。
+    Future<_RecurringOccurrenceResult> generate() async {
+      verifyScope?.call();
+      final id = await repository.generateRecurringTransaction(
+        recurring: recurring,
+        happenedAt: happenedAt,
+      );
+      // 生成事务已经完成，后续快照回读失败只停止扫描，不撤销提交事实。
+      verifyScope?.call();
+      progress.recordCommitted(recurring.ledgerId, id);
+      final transaction = await repository.getTransactionById(id);
+      final updated = await repository.getRecurringTransactionsByLedger(
+        recurring.ledgerId,
+      );
+      verifyScope?.call();
+      return (
+        transaction: transaction,
+        recurring: updated.where((row) => row.id == recurring.id).firstOrNull,
+      );
+    }
+
+    verifyScope?.call();
+    final executor = mutationExecutor;
+    return executor == null ? generate() : executor.runDataMutation(generate);
+  }
+
+  /// 留下模板定位和完整堆栈，异常正文与金额不进入日志。
+  void _logRejectedRule(String id, Object error, StackTrace stackTrace) {
+    logger.error(
+      _tag,
+      '周期模板暂未生成，请检查规则或更新汇率后重试：$id',
+      safeErrorSummary(error),
+      stackTrace,
+    );
   }
 }

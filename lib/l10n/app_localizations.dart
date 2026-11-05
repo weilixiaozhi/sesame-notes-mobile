@@ -1282,12 +1282,6 @@ abstract class AppLocalizations {
   /// **'Note'**
   String get importFieldNote;
 
-  /// No description provided for @importKeepOriginalName.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep original name'**
-  String get importKeepOriginalName;
-
   /// No description provided for @importNextStep.
   ///
   /// In en, this message translates to:
@@ -1534,12 +1528,6 @@ abstract class AppLocalizations {
   /// **'Enter category name'**
   String get categoryNameHint;
 
-  /// No description provided for @categoryNameDuplicate.
-  ///
-  /// In en, this message translates to:
-  /// **'Category name already exists'**
-  String get categoryNameDuplicate;
-
   /// No description provided for @categoryIconLabel.
   ///
   /// In en, this message translates to:
@@ -1617,12 +1605,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete failed'**
   String get categoryDeleteError;
-
-  /// No description provided for @categorySubCategoryCreated.
-  ///
-  /// In en, this message translates to:
-  /// **'Subcategory added: {name}'**
-  String categorySubCategoryCreated(Object name);
 
   /// No description provided for @categoryParentCategoryTitle.
   ///
@@ -6379,12 +6361,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Template library'**
   String get fitnessTemplateLibrary;
-
-  /// No description provided for @fitnessAddToMyPlan.
-  ///
-  /// In en, this message translates to:
-  /// **'Add to my plans'**
-  String get fitnessAddToMyPlan;
 
   /// No description provided for @fitnessAddToMyTemplate.
   ///
