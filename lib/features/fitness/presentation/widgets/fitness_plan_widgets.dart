@@ -67,12 +67,7 @@ class FitnessPlanLibraryTile extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text(
-                plan.name,
-                style: AppTextTokens.input(
-                  context,
-                ).copyWith(fontWeight: FontWeight.w600),
-              ),
+              child: Text(plan.name, style: AppTextTokens.strongTitle(context)),
             ),
             const SizedBox(width: AppDimens.p8),
             Icon(
@@ -190,7 +185,7 @@ class _FitnessPlanDayListState extends State<FitnessPlanDayList> {
             children: [
               for (var index = from; index < to; index++) ...[
                 if (index > from)
-                  Divider(height: 1, color: AppTokens.divider(context)),
+                  AppTokens.cardDivider(context, indent: 0, verticalGap: 0),
                 _day(context, days[index]),
               ],
             ],

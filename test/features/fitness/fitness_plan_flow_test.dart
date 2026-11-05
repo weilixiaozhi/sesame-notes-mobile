@@ -26,7 +26,10 @@ import 'package:sesame_notes/navigation/route_consts.dart';
 import 'package:sesame_notes/providers/product_analytics_providers.dart';
 import 'package:sesame_notes/shared/application/product_analytics_controller.dart';
 import 'package:sesame_notes/shared/providers/fitness_library_provider.dart';
+import 'package:sesame_notes/shared/widgets/app_content_dialog.dart';
+import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/theme/app_theme.dart';
+import 'package:sesame_notes/theme/dimens.dart';
 
 import '../../helpers/test_isolation.dart';
 
@@ -66,12 +69,14 @@ class _PlanTestHarness {
     this.catalog,
     this.personal, {
     this.savedPlans = const [],
+    this.personalTemplates,
   });
 
   final FitnessLibrary library;
   final List<FitnessExerciseDefinition> catalog;
   final FitnessTemplate personal;
   final List<FitnessPlan> savedPlans;
+  final List<FitnessTemplate>? personalTemplates;
   final actions = _RecordingActions();
   final boundary = GlobalKey();
   final screenshot = Platform.environment['FITNESS_PLAN_SCREENSHOT'] == '1';
@@ -168,7 +173,7 @@ class _PlanTestHarness {
           fitnessLibraryProvider.overrideWith((ref) async => library),
           fitnessCatalogProvider.overrideWith((ref) async => catalog),
           fitnessTemplatesProvider.overrideWith(
-            (ref) => Stream.value([personal]),
+            (ref) => Stream.value(personalTemplates ?? [personal]),
           ),
           fitnessPlansProvider.overrideWith((ref) => Stream.value(savedPlans)),
           fitnessPreferencesProvider.overrideWith(
@@ -235,6 +240,33 @@ Future<void> _tap(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
 }
 
+/// 比较原生按钮的实际点击区域，包装组件的宽度不能替代按钮尺寸。
+void _expectMatchingButtons(
+  WidgetTester tester,
+  Finder firstOwner,
+  Finder secondOwner,
+) {
+  final first = _nativeButton(firstOwner);
+  final second = _nativeButton(secondOwner);
+  expect(first, findsOneWidget);
+  expect(second, findsOneWidget);
+  final firstSize = tester.getSize(first);
+  final secondSize = tester.getSize(second);
+  expect(firstSize.width, closeTo(secondSize.width, 0.01));
+  expect(firstSize.height, closeTo(secondSize.height, 0.01));
+  expect(
+    firstSize.height,
+    greaterThanOrEqualTo(AppDimens.actionButtonMinHeight),
+  );
+}
+
+/// 按钮键可能挂在公共包装或原生按钮上，两种情况都定位同一点击目标。
+Finder _nativeButton(Finder owner) => find.descendant(
+  of: owner,
+  matching: find.byWidgetPredicate((widget) => widget is ButtonStyleButton),
+  matchRoot: true,
+);
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late FitnessLibrary library;
@@ -300,7 +332,7 @@ void main() {
       find.byKey(const ValueKey('fitness-plan-name')),
       '我的训练计划',
     );
-    await _tap(tester, find.byKey(const ValueKey('fitness-plan-cycle-4')));
+    await _tap(tester, find.text('4天'));
     await _tap(tester, find.byKey(const ValueKey('fitness-plan-next')));
     expect(find.byKey(const ValueKey('fitness-plan-step-2')), findsOneWidget);
     await _tap(tester, find.byKey(const ValueKey('fitness-plan-day-0')));
@@ -483,12 +515,164 @@ void main() {
       find.byKey(const ValueKey('fitness-plan-name')),
       '手机计划',
     );
-    await _tap(tester, find.byKey(const ValueKey('fitness-plan-cycle-4')));
+    await _tap(tester, find.text('4天'));
     await _tap(tester, find.byKey(const ValueKey('fitness-plan-next')));
     expect(find.byKey(const ValueKey('fitness-plan-day-3')), findsOneWidget);
     expect(find.byKey(const ValueKey('fitness-plan-previous')), findsOneWidget);
     expect(find.byKey(const ValueKey('fitness-plan-next')), findsOneWidget);
     await harness.snapshot(tester, '14-narrow-schedule-large-text');
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final layout in [(390.0, 1.0), (320.0, 1.3)]) {
+    testWidgets('步骤与退出按钮等宽等高且整个区域可点击 ${layout.$1}/${layout.$2}', (
+      tester,
+    ) async {
+      final harness = _PlanTestHarness(library, catalog, personal);
+      await harness.open(
+        tester,
+        const FitnessPlanEditPage(),
+        width: layout.$1,
+        textScale: layout.$2,
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('fitness-plan-name')),
+        '尺寸验收计划',
+      );
+      await _tap(tester, find.text('4天'));
+      await _tap(tester, find.byKey(const ValueKey('fitness-plan-next')));
+      final previous = find.byKey(const ValueKey('fitness-plan-previous'));
+      final next = find.byKey(const ValueKey('fitness-plan-next'));
+      _expectMatchingButtons(tester, previous, next);
+      final previousRect = tester.getRect(_nativeButton(previous));
+      await tester.tapAt(
+        Offset(previousRect.left + AppDimens.p4, previousRect.center.dy),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('fitness-plan-content-0')),
+        findsOneWidget,
+      );
+      final nextRect = tester.getRect(_nativeButton(next));
+      await tester.tapAt(
+        Offset(nextRect.right - AppDimens.p4, nextRect.center.dy),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('fitness-plan-content-1')),
+        findsOneWidget,
+      );
+      await _tap(tester, find.byKey(const ValueKey('fitness-plan-day-0')));
+      await _tap(
+        tester,
+        find.byKey(const ValueKey('fitness-plan-select-template-$_personalId')),
+      );
+      await _tap(
+        tester,
+        find.byKey(const ValueKey('fitness-plan-rest-remaining')),
+      );
+      await _tap(tester, find.text('确定').last);
+      _expectMatchingButtons(tester, previous, next);
+      expect(
+        find.descendant(
+          of: find.byType(AppEditorFooter),
+          matching: find.textContaining(RegExp('训练|休息|已全部安排')),
+        ),
+        findsNothing,
+      );
+      await harness.snapshot(
+        tester,
+        '15-equal-schedule-buttons-${layout.$1.toInt()}',
+      );
+      await _tap(tester, next);
+      _expectMatchingButtons(tester, previous, next);
+      await harness.snapshot(
+        tester,
+        '16-equal-confirm-buttons-${layout.$1.toInt()}',
+      );
+      await _tap(tester, find.byKey(const ValueKey('fitness-plan-exit')));
+      final dialog = find.byType(AppContentDialog);
+      final continueEditing = find.descendant(
+        of: dialog,
+        matching: find.text('继续编辑'),
+      );
+      final discard = find.descendant(
+        of: dialog,
+        matching: find.text('退出，不保存'),
+      );
+      final continueButton = find.ancestor(
+        of: continueEditing,
+        matching: find.byWidgetPredicate(
+          (widget) => widget is ButtonStyleButton,
+        ),
+      );
+      final discardButton = find.ancestor(
+        of: discard,
+        matching: find.byWidgetPredicate(
+          (widget) => widget is ButtonStyleButton,
+        ),
+      );
+      _expectMatchingButtons(tester, continueButton, discardButton);
+      await harness.snapshot(
+        tester,
+        '17-equal-exit-buttons-${layout.$1.toInt()}',
+      );
+      final continueRect = tester.getRect(continueButton);
+      await tester.tapAt(
+        Offset(continueRect.left + AppDimens.p4, continueRect.center.dy),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(AppContentDialog), findsNothing);
+      expect(
+        find.byKey(const ValueKey('fitness-plan-content-2')),
+        findsOneWidget,
+      );
+      await _tap(tester, find.byKey(const ValueKey('fitness-plan-exit')));
+      final discardRect = tester.getRect(discardButton);
+      await tester.tapAt(
+        Offset(discardRect.right - AppDimens.p4, discardRect.center.dy),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('打开页面'), findsOneWidget);
+      expect(harness.actions.submitted, isNull);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('没有个人模板只显示空态，仍可从相邻页签选择官方模板', (tester) async {
+    final harness = _PlanTestHarness(
+      library,
+      catalog,
+      personal,
+      personalTemplates: const [],
+    );
+    await harness.open(tester, const FitnessPlanEditPage());
+    await tester.enterText(
+      find.byKey(const ValueKey('fitness-plan-name')),
+      '空模板验收',
+    );
+    await _tap(tester, find.text('4天'));
+    await _tap(tester, find.byKey(const ValueKey('fitness-plan-next')));
+    await _tap(tester, find.byKey(const ValueKey('fitness-plan-day-0')));
+    expect(find.byType(AppEmpty), findsOneWidget);
+    expect(find.text('去模板库选择'), findsNothing);
+    expect(find.text('模板库'), findsOneWidget);
+    await harness.snapshot(tester, '18-empty-personal-templates');
+    await _tap(tester, find.text('模板库'));
+    final official = library.templates.first;
+    expect(
+      find.byKey(ValueKey('fitness-plan-select-template-${official.id}')),
+      findsOneWidget,
+    );
+    await _tap(
+      tester,
+      find.byKey(ValueKey('fitness-plan-select-template-${official.id}')),
+    );
+    expect(
+      find.text(official.name.resolve(const Locale('zh'))),
+      findsOneWidget,
+    );
+    expect(find.byType(AppSheet), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -499,7 +683,7 @@ void main() {
       find.byKey(const ValueKey('fitness-plan-name')),
       '十四天计划',
     );
-    await _tap(tester, find.byKey(const ValueKey('fitness-plan-cycle-14')));
+    await _tap(tester, find.text('14天'));
     await _tap(tester, find.byKey(const ValueKey('fitness-plan-next')));
     await _tap(tester, find.byKey(const ValueKey('fitness-plan-day-0')));
     await _tap(

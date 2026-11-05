@@ -10196,12 +10196,6 @@ abstract class AppLocalizations {
   /// **'Days still to schedule: {count}'**
   String fitnessPlanUnassigned(int count);
 
-  /// No description provided for @fitnessPlanAllAssigned.
-  ///
-  /// In en, this message translates to:
-  /// **'All days scheduled'**
-  String get fitnessPlanAllAssigned;
-
   /// No description provided for @fitnessPlanArrangeDay.
   ///
   /// In en, this message translates to:
@@ -10333,12 +10327,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start date locked'**
   String get fitnessPlanStartLocked;
-
-  /// No description provided for @fitnessPlanChooseLibrary.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose from the template library'**
-  String get fitnessPlanChooseLibrary;
 
   /// No description provided for @fitnessPlanUnarranged.
   ///

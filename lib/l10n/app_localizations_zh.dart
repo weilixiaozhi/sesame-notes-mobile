@@ -5436,9 +5436,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get fitnessPlanAllAssigned => '已全部安排';
-
-  @override
   String fitnessPlanArrangeDay(int day) {
     return '安排第 $day 天';
   }
@@ -5517,9 +5514,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fitnessPlanStartLocked => '开始日期已锁定';
-
-  @override
-  String get fitnessPlanChooseLibrary => '去模板库选择';
 
   @override
   String get fitnessPlanUnarranged => '待安排';
@@ -10970,9 +10964,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String get fitnessPlanAllAssigned => '已全部安排';
-
-  @override
   String fitnessPlanArrangeDay(int day) {
     return '安排第 $day 天';
   }
@@ -11051,9 +11042,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get fitnessPlanStartLocked => '開始日期已鎖定';
-
-  @override
-  String get fitnessPlanChooseLibrary => '去範本庫選擇';
 
   @override
   String get fitnessPlanUnarranged => '待安排';

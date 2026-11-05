@@ -120,6 +120,7 @@ class _FitnessPlanEditPageState extends ConsumerState<FitnessPlanEditPage> {
       final l = AppLocalizations.of(context);
       final exit = await AppDialog.confirm(
         context,
+        balancedActions: true,
         title: _editing ? l.fitnessPlanExitEditTitle : l.fitnessPlanExitTitle,
         message: l.fitnessPlanExitMessage,
         cancelLabel: l.fitnessPlanContinueEditing,
@@ -202,6 +203,7 @@ class _FitnessPlanEditPageState extends ConsumerState<FitnessPlanEditPage> {
         final l = AppLocalizations.of(context);
         final confirmed = await AppDialog.confirm(
           context,
+          balancedActions: true,
           title: l.fitnessPlanShrinkTitle(count),
           message: l.fitnessPlanShrinkMessage(
             count + 1,
@@ -262,6 +264,7 @@ class _FitnessPlanEditPageState extends ConsumerState<FitnessPlanEditPage> {
       final l = AppLocalizations.of(context);
       if (await AppDialog.confirm(
                 context,
+                balancedActions: true,
                 title: l.fitnessPlanRestConfirmTitle,
                 message: l.fitnessPlanRestConfirmMessage(count),
               ) !=
@@ -510,38 +513,26 @@ class _FitnessPlanEditPageState extends ConsumerState<FitnessPlanEditPage> {
       ),
       Text(l.fitnessPlanCycleLabel, style: AppTextTokens.strongTitle(context)),
       const SizedBox(height: AppDimens.p8),
-      Row(
-        children: [
-          for (final count in [4, 7, 14]) ...[
-            Expanded(
-              child: OutlinedButton(
-                key: ValueKey('fitness-plan-cycle-$count'),
-                onPressed: () => _resize(count),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: AppDimens.p8),
-                  backgroundColor: _draft.cycleDays == count
-                      ? AppTokens.surfaceSelected(context)
-                      : null,
-                  foregroundColor: _draft.cycleDays == count
-                      ? AppTokens.primary(context)
-                      : null,
-                ),
-                child: Text(l.dayDaysValue(count)),
-              ),
-            ),
-            const SizedBox(width: AppDimens.p8),
-          ],
-          Expanded(
-            child: OutlinedButton(
-              key: const ValueKey('fitness-plan-cycle-custom'),
-              onPressed: _customCycle,
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: AppDimens.p8),
-              ),
-              child: Text(l.fitnessCustom),
-            ),
-          ),
+      CapsuleSwitcher<int>(
+        selectedValue: [4, 7, 14].contains(_draft.cycleDays)
+            ? _draft.cycleDays
+            : 0,
+        options: [
+          for (final count in [4, 7, 14])
+            CapsuleOption(value: count, label: l.dayDaysValue(count)),
+          CapsuleOption(value: 0, label: l.fitnessCustom),
         ],
+        height: AppDimens.actionButtonMinHeight,
+        backgroundColor: AppTokens.surfaceSecondary(context),
+        selectedBackgroundColor: AppTokens.surfaceSelected(context),
+        selectedTextColor: AppTokens.primary(context),
+        onChanged: (count) {
+          if (count == 0) {
+            _customCycle();
+          } else {
+            _resize(count);
+          }
+        },
       ),
       const SizedBox(height: AppDimens.p8),
       Text(
@@ -663,23 +654,15 @@ class _FitnessPlanEditPageState extends ConsumerState<FitnessPlanEditPage> {
               },
               child: Column(
                 children: [
-                  RadioListTile<bool>(
+                  AppRadioTile<bool>.grouped(
                     key: const ValueKey('fitness-plan-enabled'),
                     value: true,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      l.fitnessPlanEnableOnDate,
-                      style: AppTextTokens.body(context),
-                    ),
+                    title: l.fitnessPlanEnableOnDate,
                   ),
-                  RadioListTile<bool>(
+                  AppRadioTile<bool>.grouped(
                     key: const ValueKey('fitness-plan-disabled'),
                     value: false,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      l.fitnessPlanSaveDisabled,
-                      style: AppTextTokens.body(context),
-                    ),
+                    title: l.fitnessPlanSaveDisabled,
                   ),
                 ],
               ),
@@ -743,10 +726,6 @@ class _FitnessPlanEditPageState extends ConsumerState<FitnessPlanEditPage> {
     if (_created != null) {
       return AppEditorFooter(label: l.fitnessPlanDone, onPressed: _finish);
     }
-    final training = _draft.days
-        .where((day) => _filled.contains(day.dayIndex) && day.slot != null)
-        .length;
-    final rest = _filled.length - training;
     final label = _step == 0
         ? l.fitnessPlanNextSchedule
         : _step == 1
@@ -756,62 +735,14 @@ class _FitnessPlanEditPageState extends ConsumerState<FitnessPlanEditPage> {
         : l.fitnessPlanCreateEnabled;
     return Material(
       color: AppTokens.surface(context),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimens.p16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (_step > 0) ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '${l.fitnessPlanTrainingDays(training)} · ${l.fitnessPlanRestDays(rest)}',
-                        style: AppTextTokens.caption(context),
-                      ),
-                    ),
-                    Flexible(
-                      child: Text(
-                        _filled.length == _draft.cycleDays
-                            ? l.fitnessPlanAllAssigned
-                            : l.fitnessPlanUnassigned(
-                                _draft.cycleDays - _filled.length,
-                              ),
-                        style: AppTextTokens.caption(context),
-                        textAlign: TextAlign.end,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppDimens.p8),
-              ],
-              Row(
-                children: [
-                  if (_step > 0) ...[
-                    Expanded(
-                      child: OutlinedButton(
-                        key: const ValueKey('fitness-plan-previous'),
-                        onPressed: _busy ? null : _previous,
-                        child: Text(l.fitnessPlanPreviousStep),
-                      ),
-                    ),
-                    const SizedBox(width: AppDimens.p8),
-                  ],
-                  Expanded(
-                    child: AppPrimaryButton(
-                      key: const ValueKey('fitness-plan-next'),
-                      label: label,
-                      busy: _busy,
-                      onPressed: available ? _next : null,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+      child: AppEditorFooter(
+        label: label,
+        onPressed: available ? _next : null,
+        busy: _busy,
+        secondaryLabel: _step > 0 ? l.fitnessPlanPreviousStep : null,
+        onSecondaryPressed: available ? _previous : null,
+        primaryButtonKey: const ValueKey('fitness-plan-next'),
+        secondaryButtonKey: const ValueKey('fitness-plan-previous'),
       ),
     );
   }

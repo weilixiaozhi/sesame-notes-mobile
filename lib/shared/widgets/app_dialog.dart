@@ -125,12 +125,14 @@ class AppDialog {
     required String message,
     String? cancelLabel,
     String? okLabel,
+    bool balancedActions = false,
   }) {
     final l10n = AppLocalizations.of(context);
     return _show<bool>(
       context,
       title: title,
       content: Text(message),
+      balancedActions: balancedActions,
       actions: (dialogContext) => [
         (
           label: cancelLabel ?? l10n.commonCancel,
@@ -214,12 +216,14 @@ class AppDialog {
     required String title,
     required Widget content,
     required List<AppDialogAction> Function(BuildContext) actions,
+    bool balancedActions = false,
   }) => showDialog<T>(
     context: context,
     builder: (dialogContext) => _buildDialog(
       title: title,
       content: content,
       actions: actions(dialogContext),
+      balancedActions: balancedActions,
     ),
   );
 
@@ -229,20 +233,36 @@ class AppDialog {
     required Widget content,
     required List<AppDialogAction> actions,
     bool confirming = false,
+    bool balancedActions = false,
   }) => AppContentDialog(
     title: title,
     content: content,
     actions: [
-      for (final action in actions)
-        if (action.primary)
-          AppPrimaryButton(
-            label: action.label,
-            onPressed: action.onTap,
-            busy: confirming,
-            fullWidth: false,
-          )
-        else
-          OutlinedButton(onPressed: action.onTap, child: Text(action.label)),
+      if (balancedActions)
+        AppPairedActions(
+          primaryLabel: actions.singleWhere((action) => action.primary).label,
+          onPrimaryPressed: actions
+              .singleWhere((action) => action.primary)
+              .onTap,
+          secondaryLabel: actions
+              .singleWhere((action) => !action.primary)
+              .label,
+          onSecondaryPressed: actions
+              .singleWhere((action) => !action.primary)
+              .onTap,
+          busy: confirming,
+        )
+      else
+        for (final action in actions)
+          if (action.primary)
+            AppPrimaryButton(
+              label: action.label,
+              onPressed: action.onTap,
+              busy: confirming,
+              fullWidth: false,
+            )
+          else
+            OutlinedButton(onPressed: action.onTap, child: Text(action.label)),
     ],
   );
 }

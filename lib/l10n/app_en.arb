@@ -2600,7 +2600,6 @@
       }
     }
   },
-  "fitnessPlanAllAssigned": "All days scheduled",
   "fitnessPlanArrangeDay": "Schedule day {day}",
   "@fitnessPlanArrangeDay": {
     "placeholders": {
@@ -2681,7 +2680,6 @@
   "fitnessPlanDone": "Done, view My plans",
   "fitnessPlanPendingChange": "The cycle schedule will take effect next cycle. Existing scheduled workouts stay as they are.",
   "fitnessPlanStartLocked": "Start date locked",
-  "fitnessPlanChooseLibrary": "Choose from the template library",
   "fitnessPlanUnarranged": "Unscheduled",
   "fitnessPlanSelectTemplate": "Choose",
   "fitnessPlanCreatedTitle": "Creation complete",

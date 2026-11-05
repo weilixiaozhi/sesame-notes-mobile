@@ -6,9 +6,9 @@ import '../../../../data/models/fitness.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/providers/fitness_library_provider.dart';
 import '../../../../shared/widgets/widgets.dart';
+import '../../../../theme/colors.dart';
 import '../../../../theme/dimens.dart';
 import '../../../../theme/icons/app_icons.dart';
-import '../../../../theme/typography.dart';
 import '../../application/fitness_providers.dart';
 import 'fitness_plan_widgets.dart';
 
@@ -79,25 +79,13 @@ class _FitnessPlanDaySheetState extends ConsumerState<FitnessPlanDaySheet> {
         context: context,
         child: AppSheet(
           title: template.name,
-          footer: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AppPrimaryButton(
-                label: l.fitnessPlanArrangeDay(widget.dayIndex + 1),
-                onPressed: () => Navigator.of(context).pop(
-                  FitnessPlanDaySelection.template(
-                    template,
-                    official: official,
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppDimens.p8),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l.commonBack),
-              ),
-            ],
+          footer: AppPairedActions(
+            primaryLabel: l.fitnessPlanArrangeDay(widget.dayIndex + 1),
+            onPrimaryPressed: () => Navigator.of(context).pop(
+              FitnessPlanDaySelection.template(template, official: official),
+            ),
+            secondaryLabel: l.commonBack,
+            onSecondaryPressed: () => Navigator.of(context).pop(),
           ),
           child: SingleChildScrollView(
             child: FitnessPlanExercises(exercises: template.exercises),
@@ -120,38 +108,21 @@ class _FitnessPlanDaySheetState extends ConsumerState<FitnessPlanDaySheet> {
     final l = AppLocalizations.of(context);
     final selected = widget.currentSlot?.sourceTemplateId == template.id;
     final count = template.exercises.fold<int>(0, (n, e) => n + e.sets.length);
-    return Row(
-      children: [
-        Expanded(
-          child: InkWell(
-            onTap: () => _preview(template, official),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppDimens.p12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(template.name, style: AppTextTokens.body(context)),
-                  const SizedBox(height: AppDimens.p4),
-                  Text(
-                    l.fitnessPlanDaySummary(template.exercises.length, count),
-                    style: AppTextTokens.caption(context),
-                  ),
-                ],
-              ),
-            ),
-          ),
+    return AppListTile(
+      title: template.name,
+      subtitle: l.fitnessPlanDaySummary(template.exercises.length, count),
+      titleMaxLines: null,
+      subtitleMaxLines: null,
+      onTap: () => _preview(template, official),
+      trailing: TextButton(
+        key: ValueKey('fitness-plan-select-template-${template.id}'),
+        onPressed: () => _choose(
+          FitnessPlanDaySelection.template(template, official: official),
         ),
-        const SizedBox(width: AppDimens.p8),
-        TextButton(
-          key: ValueKey('fitness-plan-select-template-${template.id}'),
-          onPressed: () => _choose(
-            FitnessPlanDaySelection.template(template, official: official),
-          ),
-          child: selected
-              ? const Icon(AppIcons.check)
-              : Text(l.fitnessPlanSelectTemplate),
-        ),
-      ],
+        child: selected
+            ? const Icon(AppIcons.check)
+            : Text(l.fitnessPlanSelectTemplate),
+      ),
     );
   }
 
@@ -170,7 +141,8 @@ class _FitnessPlanDaySheetState extends ConsumerState<FitnessPlanDaySheet> {
             data: (library) => ListView.separated(
               shrinkWrap: true,
               itemCount: library.templates.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
+              separatorBuilder: (context, _) =>
+                  AppTokens.cardDivider(context, indent: 0, verticalGap: 0),
               itemBuilder: (_, index) {
                 final t = library.templates[index];
                 return _templateRow(
@@ -193,20 +165,12 @@ class _FitnessPlanDaySheetState extends ConsumerState<FitnessPlanDaySheet> {
             onRetry: () => ref.invalidate(fitnessTemplatesProvider),
           ),
           data: (templates) => templates.isEmpty
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AppEmpty(text: l.fitnessNoTemplates),
-                    TextButton(
-                      onPressed: () => setState(() => _official = true),
-                      child: Text(l.fitnessPlanChooseLibrary),
-                    ),
-                  ],
-                )
+              ? AppEmpty(text: l.fitnessNoTemplates)
               : ListView.separated(
                   shrinkWrap: true,
                   itemCount: templates.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
+                  separatorBuilder: (context, _) =>
+                      AppTokens.cardDivider(context, indent: 0, verticalGap: 0),
                   itemBuilder: (_, index) =>
                       _templateRow(templates[index], false),
                 ),
@@ -232,21 +196,24 @@ class _FitnessPlanDaySheetState extends ConsumerState<FitnessPlanDaySheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          OutlinedButton.icon(
+          AppSecondaryButton(
             key: const ValueKey('fitness-plan-select-rest'),
             onPressed: () => _choose(const FitnessPlanDaySelection.rest()),
-            icon: const Icon(AppIcons.darkMode),
-            label: Text(l.fitnessPlanSetRest),
+            icon: AppIcons.darkMode,
+            label: l.fitnessPlanSetRest,
           ),
           const SizedBox(height: AppDimens.p12),
-          SegmentedButton<bool>(
-            segments: [
-              ButtonSegment(value: false, label: Text(l.fitnessMyTemplates)),
-              ButtonSegment(value: true, label: Text(l.fitnessTemplateLibrary)),
+          CapsuleSwitcher<bool>(
+            options: [
+              CapsuleOption(value: false, label: l.fitnessMyTemplates),
+              CapsuleOption(value: true, label: l.fitnessTemplateLibrary),
             ],
-            selected: {_official},
-            onSelectionChanged: (value) =>
-                setState(() => _official = value.first),
+            selectedValue: _official,
+            height: AppDimens.actionButtonMinHeight,
+            backgroundColor: AppTokens.surfaceSecondary(context),
+            selectedBackgroundColor: AppTokens.surfaceSelected(context),
+            selectedTextColor: AppTokens.primary(context),
+            onChanged: (value) => setState(() => _official = value),
           ),
           const SizedBox(height: AppDimens.p12),
           Flexible(child: _content()),

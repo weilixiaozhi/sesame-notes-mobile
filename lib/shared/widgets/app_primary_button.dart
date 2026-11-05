@@ -43,6 +43,95 @@ class AppPrimaryButton extends StatelessWidget {
   }
 }
 
+/// 次操作沿用描边按钮主题，与主操作共享文字和最小点击高度。
+class AppSecondaryButton extends StatelessWidget {
+  /// 图标与文案共用标准间距，调用方只决定动作和是否全宽。
+  const AppSecondaryButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.fullWidth = true,
+    this.icon,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final bool fullWidth;
+  final IconData? icon;
+
+  /// 文字可以自然换行，尺寸和文字规格来自已有公共规范。
+  @override
+  Widget build(BuildContext context) {
+    final button = OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(0, AppDimens.actionButtonMinHeight),
+        textStyle: Theme.of(context).textTheme.labelLarge,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: AppDimens.icon20),
+            const SizedBox(width: AppDimens.p8),
+          ],
+          Flexible(child: Text(label, textAlign: TextAlign.center)),
+        ],
+      ),
+    );
+    return fullWidth ? SizedBox(width: double.infinity, child: button) : button;
+  }
+}
+
+/// 主次操作共用等宽等高布局，较高的文案决定两边的实际点击高度。
+class AppPairedActions extends StatelessWidget {
+  /// 业务页面只提供文案、回调和忙碌状态，不自行组合按钮规格。
+  const AppPairedActions({
+    super.key,
+    required this.primaryLabel,
+    required this.onPrimaryPressed,
+    required this.secondaryLabel,
+    required this.onSecondaryPressed,
+    this.primaryButtonKey,
+    this.secondaryButtonKey,
+    this.busy = false,
+  });
+
+  final String primaryLabel;
+  final VoidCallback? onPrimaryPressed;
+  final String secondaryLabel;
+  final VoidCallback? onSecondaryPressed;
+  final Key? primaryButtonKey;
+  final Key? secondaryButtonKey;
+  final bool busy;
+
+  /// 横向均分可用宽度，文案放大或换行时两种原生按钮一起增高。
+  @override
+  Widget build(BuildContext context) => IntrinsicHeight(
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: AppSecondaryButton(
+            key: secondaryButtonKey,
+            label: secondaryLabel,
+            onPressed: busy ? null : onSecondaryPressed,
+          ),
+        ),
+        const SizedBox(width: AppDimens.p8),
+        Expanded(
+          child: AppPrimaryButton(
+            key: primaryButtonKey,
+            label: primaryLabel,
+            onPressed: onPrimaryPressed,
+            busy: busy,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 /// 页面底部操作区统一留白与安全区，按钮状态由表单提供。
 class AppEditorFooter extends StatelessWidget {
   /// 页面只传入动作和状态，底部系统区域由操作区处理。
@@ -51,11 +140,19 @@ class AppEditorFooter extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.busy = false,
+    this.secondaryLabel,
+    this.onSecondaryPressed,
+    this.primaryButtonKey,
+    this.secondaryButtonKey,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final bool busy;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondaryPressed;
+  final Key? primaryButtonKey;
+  final Key? secondaryButtonKey;
 
   /// 外层已处理安全区时 SafeArea 自动消除重复底部留白。
   @override
@@ -63,7 +160,22 @@ class AppEditorFooter extends StatelessWidget {
     top: false,
     child: Padding(
       padding: const EdgeInsets.all(AppDimens.p16),
-      child: AppPrimaryButton(label: label, onPressed: onPressed, busy: busy),
+      child: secondaryLabel == null
+          ? AppPrimaryButton(
+              key: primaryButtonKey,
+              label: label,
+              onPressed: onPressed,
+              busy: busy,
+            )
+          : AppPairedActions(
+              primaryLabel: label,
+              onPrimaryPressed: onPressed,
+              secondaryLabel: secondaryLabel!,
+              onSecondaryPressed: onSecondaryPressed,
+              primaryButtonKey: primaryButtonKey,
+              secondaryButtonKey: secondaryButtonKey,
+              busy: busy,
+            ),
     ),
   );
 }

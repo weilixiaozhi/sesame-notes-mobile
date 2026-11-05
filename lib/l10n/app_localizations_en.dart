@@ -5596,9 +5596,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get fitnessPlanAllAssigned => 'All days scheduled';
-
-  @override
   String fitnessPlanArrangeDay(int day) {
     return 'Schedule day $day';
   }
@@ -5679,9 +5676,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fitnessPlanStartLocked => 'Start date locked';
-
-  @override
-  String get fitnessPlanChooseLibrary => 'Choose from the template library';
 
   @override
   String get fitnessPlanUnarranged => 'Unscheduled';

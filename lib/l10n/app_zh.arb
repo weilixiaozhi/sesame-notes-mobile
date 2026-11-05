@@ -2500,7 +2500,6 @@
       }
     }
   },
-  "fitnessPlanAllAssigned": "已全部安排",
   "fitnessPlanArrangeDay": "安排第 {day} 天",
   "@fitnessPlanArrangeDay": {
     "placeholders": {
@@ -2581,7 +2580,6 @@
   "fitnessPlanDone": "完成，查看我的计划",
   "fitnessPlanPendingChange": "周期编排将在下一周期生效，已生成的训练保持原样。",
   "fitnessPlanStartLocked": "开始日期已锁定",
-  "fitnessPlanChooseLibrary": "去模板库选择",
   "fitnessPlanUnarranged": "待安排",
   "fitnessPlanSelectTemplate": "选择",
   "fitnessPlanCreatedTitle": "创建完成",
