@@ -137,7 +137,7 @@ Future<void> _openPlan(
       target: ref.read(fitnessActionsProvider).target,
     );
     await Navigator.of(context).push<void>(
-      MaterialPageRoute(
+      appPageRoute<void>(
         builder: (_) => FitnessOfficialPlanDetailPage(importDraft: draft),
       ),
     );

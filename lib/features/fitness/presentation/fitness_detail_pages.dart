@@ -86,7 +86,7 @@ class FitnessPlanDetailPage extends ConsumerWidget {
                   throw StateError('FITNESS_TARGET_CHANGED');
                 }
                 await Navigator.of(context).push<bool>(
-                  MaterialPageRoute(
+                  appPageRoute<bool>(
                     builder: (_) => editorBuilder(plan, target),
                   ),
                 );
