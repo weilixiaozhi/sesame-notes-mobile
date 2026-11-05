@@ -614,6 +614,7 @@ class AdminGroupsApi {
   ///
   /// Parameters:
   /// * [postAdminGroupsRequest]
+  /// * [idempotencyKey]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -625,6 +626,7 @@ class AdminGroupsApi {
   /// Throws [DioException] if API call or serialization fails
   Future<Response<GetAdminGroups200ResponseItemsInner>> postAdminGroups({
     required PostAdminGroupsRequest postAdminGroupsRequest,
+    String? idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -636,6 +638,7 @@ class AdminGroupsApi {
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
+        if (idempotencyKey != null) r'idempotency-key': idempotencyKey,
         ...?headers,
       },
       extra: <String, dynamic>{

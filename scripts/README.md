@@ -63,7 +63,7 @@ SVG、中间 PNG、平台图标须一起审阅并提交。检查 Android 圆形�
 
 ## OpenAPI 客户端
 
-[生成器](openapi/generate_api_client.ps1)读取 `api/openapi/sesame-notes-api-v1.0.0.json`，规范化后通过固定的 OpenAPI Generator 7.24.0 生成 Dart SDK 及 `.g.dart`，不生成 SDK README 或 API/model 文档。字段以本仓冻结契约为准。需要 Node.js、Docker、Dart；检查模式另需 Git。
+[生成器](openapi/generate_api_client.ps1)读取 `api/openapi/sesame-notes-api-v1.0.0.json`，规范化后通过固定的 OpenAPI Generator 7.24.0 和 Dart 3.13.2 stable 生成 Dart SDK 及 `.g.dart`，不生成 SDK README 或 API/model 文档。字段以本仓冻结契约为准。需要 Node.js、Docker及指定 Dart；检查模式另需 Git。缺少所需工具时直接失败，不自动安装。
 
 Windows 必须使用 PowerShell 5.1，Linux/macOS 将 `powershell.exe` 换成 `pwsh`：
 
@@ -73,9 +73,17 @@ powershell.exe -NoProfile -File scripts/openapi/generate_api_client.ps1 -Check
 powershell.exe -NoProfile -File scripts/openapi/generate_api_client.ps1
 ```
 
-`-Preview` 保留预览；`-Check` 比较生成结果且不替换正式 SDK，两者互斥；无开关时生成及编译成功才替换 `packages/sesame_api_client`。已有生成器镜像与 Dart 缓存时可追加 `-Offline`，禁止拉取镜像和 Pub 联网解析；依赖缺失直接失败，保留正式 SDK。
+`-Preview` 保留预览；`-Check` 比较生成结果且不替换正式 SDK，两者互斥；无开关时生成及编译成功才替换 `packages/sesame_api_client`。已有生成器镜像与 Dart 缓存时可追加 `-Offline`，禁止拉取镜像、生成容器联网和 Pub 联网解析；依赖缺失直接失败，保留正式 SDK。
 
-每轮独占 `Temp/openapi-generation/{input,preview,check}/<runId>`，只清理自身目录。比较范围是 `.gitignore`、`.openapi-generator`、`.openapi-generator-ignore`、`analysis_options.yaml`、`lib`、`pubspec.yaml`，要求两侧均无 README/doc；忽略缓存和 `pubspec.lock`。契约变更须先审阅定义，再同步 Artifact 与哈希，不能仅改哈希让检查通过；相关验证见[检查与验收](#检查与验收)。
+每轮独占 `Temp/openapi-generation/{input,preview,check}/<runId>`，只清理自身目录。空模板的 `test` 依赖在本轮目录内确定性移除，随后复制版本化的 [完整生成依赖锁](openapi/generator.pubspec.lock)，以 `dart pub get --enforce-lockfile` 解析；`-Offline` 同时要求 Pub 仅用本机缓存。解析与生成结束均校验锁的 SHA-256，工具版本、锁或缓存不满足时保留正式 SDK，不回落到最新可用依赖。Dart 版本也固定以避免格式化差异。
+
+比较范围是 `.gitignore`、`.openapi-generator`、`.openapi-generator-ignore`、`analysis_options.yaml`、`lib`、`pubspec.yaml`，要求两侧均无 README/doc；缓存不参与比较，`pubspec.lock` 由上述版本化输入单独校验。升级生成工具时，应一并审阅 Dart 版本、生成镜像和完整锁，再在两个独立 Temp 工作区离线重生成比较；不能靠放宽锁校验消除漂移。契约变更须先审阅定义，再同步 Artifact 与哈希，不能仅改哈希让检查通过；相关验证见[检查与验收](#检查与验收)。
+
+只验证依赖准备、版本保护和锁漂移拒绝，不调用 Docker/Pub 或改写 SDK：
+
+```powershell
+node --test scripts/openapi/generator_dependencies.test.mjs
+```
 
 ### 本地更新接口契约
 

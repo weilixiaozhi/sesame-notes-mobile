@@ -34,6 +34,7 @@ class AdminBannersApi {
   ///
   /// Parameters:
   /// * [createAdminBannerRequest]
+  /// * [idempotencyKey]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -45,6 +46,7 @@ class AdminBannersApi {
   /// Throws [DioException] if API call or serialization fails
   Future<Response<ListAdminBanners200ResponseItemsInner>> createAdminBanner({
     required CreateAdminBannerRequest createAdminBannerRequest,
+    String? idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -56,6 +58,7 @@ class AdminBannersApi {
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
+        if (idempotencyKey != null) r'idempotency-key': idempotencyKey,
         ...?headers,
       },
       extra: <String, dynamic>{

@@ -45,6 +45,7 @@ class AdminFitnessApi {
   /// Parameters:
   /// * [kind]
   /// * [createOfficialFitnessTaxonomyRequest]
+  /// * [idempotencyKey]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -59,6 +60,7 @@ class AdminFitnessApi {
     required String kind,
     required CreateOfficialFitnessTaxonomyRequest
         createOfficialFitnessTaxonomyRequest,
+    String? idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -73,6 +75,7 @@ class AdminFitnessApi {
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
+        if (idempotencyKey != null) r'idempotency-key': idempotencyKey,
         ...?headers,
       },
       extra: <String, dynamic>{
@@ -1134,6 +1137,7 @@ class AdminFitnessApi {
   ///
   /// Parameters:
   /// * [postAdminFitnessExercisesRequest]
+  /// * [idempotencyKey]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1146,6 +1150,7 @@ class AdminFitnessApi {
   Future<Response<ListOfficialExercises200ResponseItemsInner>>
       postAdminFitnessExercises({
     required PostAdminFitnessExercisesRequest postAdminFitnessExercisesRequest,
+    String? idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1157,6 +1162,7 @@ class AdminFitnessApi {
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
+        if (idempotencyKey != null) r'idempotency-key': idempotencyKey,
         ...?headers,
       },
       extra: <String, dynamic>{
@@ -1239,6 +1245,7 @@ class AdminFitnessApi {
   ///
   /// Parameters:
   /// * [postAdminFitnessPlansRequest]
+  /// * [idempotencyKey]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1251,6 +1258,7 @@ class AdminFitnessApi {
   Future<Response<ListOfficialPlans200ResponseItemsInner>>
       postAdminFitnessPlans({
     required PostAdminFitnessPlansRequest postAdminFitnessPlansRequest,
+    String? idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1262,6 +1270,7 @@ class AdminFitnessApi {
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
+        if (idempotencyKey != null) r'idempotency-key': idempotencyKey,
         ...?headers,
       },
       extra: <String, dynamic>{
@@ -1344,6 +1353,7 @@ class AdminFitnessApi {
   ///
   /// Parameters:
   /// * [postAdminFitnessTemplatesRequest]
+  /// * [idempotencyKey]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1356,6 +1366,7 @@ class AdminFitnessApi {
   Future<Response<ListOfficialTemplates200ResponseItemsInner>>
       postAdminFitnessTemplates({
     required PostAdminFitnessTemplatesRequest postAdminFitnessTemplatesRequest,
+    String? idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1367,6 +1378,7 @@ class AdminFitnessApi {
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
+        if (idempotencyKey != null) r'idempotency-key': idempotencyKey,
         ...?headers,
       },
       extra: <String, dynamic>{

@@ -126,6 +126,12 @@ $SpecRel = 'api/openapi/sesame-notes-api-v1.0.0.json'
 
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 Assert-OpenApiNoLinks -Path $Root
+. (Join-Path $PSScriptRoot 'generator_dependencies.ps1')
+$ExpectedDartVersion = '3.13.2'
+$DartVersionOutput = (& dart --version 2>&1 | Out-String)
+if ($LASTEXITCODE -ne 0) { throw 'Dart 版本读取失败。' }
+Assert-OpenApiGeneratorDartVersion -Output $DartVersionOutput -ExpectedVersion $ExpectedDartVersion
+$GeneratorLock = Join-Path $PSScriptRoot 'generator.pubspec.lock'
 $Spec = Join-Path $Root $SpecRel
 if (-not (Test-Path $Spec)) { throw 'OpenAPI 文件不存在: ' + $Spec }
 $ContractVersion = (Get-Content -LiteralPath $Spec -Raw | ConvertFrom-Json).info.version
@@ -174,8 +180,8 @@ try {
   # 非 Windows 让容器以当前用户身份运行（Windows 的 Docker Desktop 已做属主映射）。
   $UserArgs = @()
   if ($Offline) {
-    # 离线验证只使用已存在的生成器镜像，缺失时直接失败。
-    $UserArgs += '--pull=never'
+    # 离线验证只使用已存在的镜像，容器也不能访问远端引用或下载生成依赖。
+    $UserArgs += @('--pull=never', '--network=none')
   }
   if (-not $RunningOnWindows) {
     $UserArgs += @('--user', ('{0}:{1}' -f (& id -u), (& id -g)), '--env', 'HOME=/tmp')
@@ -208,20 +214,23 @@ try {
   }
 
   # built_value 的 .g.dart 与格式化结果均参与生成比较；失败也恢复调用方目录。
+  $DependencyLockHash = Initialize-OpenApiGeneratorDependencies -Root $Root -Directory $OutDir -LockPath $GeneratorLock
   Push-Location $OutDir
   try {
-    # Pub 原生移除空模板测试的依赖，并解析生成客户端所需依赖。
-    Write-Host '==> dart pub remove test'
-    $PubArguments = @('pub', 'remove', 'test')
+    # 固定完整解析结果；锁和缓存不满足时失败，不升级任何生成工具依赖。
+    Write-Host '==> dart pub get --enforce-lockfile'
+    $PubArguments = @('pub', 'get', '--enforce-lockfile')
     if ($Offline) { $PubArguments += '--offline' }
     dart @PubArguments | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw 'dart pub remove test 失败' }
+    if ($LASTEXITCODE -ne 0) { throw '固定生成依赖解析失败，请核对版本化依赖锁和本机缓存。' }
+    Assert-OpenApiGeneratorLock -Directory $OutDir -ExpectedHash $DependencyLockHash
     Write-Host '==> dart run build_runner build'
     dart run build_runner build | Out-Null
     if ($LASTEXITCODE -ne 0) { throw 'build_runner 失败' }
     Write-Host '==> dart format lib'
     dart format lib | Out-Null
     if ($LASTEXITCODE -ne 0) { throw 'dart format 失败' }
+    Assert-OpenApiGeneratorLock -Directory $OutDir -ExpectedHash $DependencyLockHash
   } finally {
     Pop-Location
   }
@@ -233,7 +242,7 @@ try {
     }
   }
   if ($Check) {
-    # 仅比较生成器负责的文件，排除 pub/build_runner 产生的 .dart_tool、build、pubspec.lock。
+    # 仅比较生成器负责的文件；依赖锁已与版本化工具锁单独校验。
     # --ignore-cr-at-eol 消除 Windows 检出 CRLF 与容器生成 LF 的行尾噪声。
     $GeneratedEntries = @(
       '.gitignore',
@@ -276,8 +285,21 @@ try {
   }
   $GenerationCompleted = $true
 } catch {
-  Write-Error ('OpenAPI 客户端生成失败：' + $_.Exception.Message) -ErrorAction Continue
-  throw
+  $GenerationFailure = $_
+  try {
+    $LogDirectory = Join-Path $Root 'Temp/openapi-generation/errors'
+    Assert-OpenApiNoLinks -Path $LogDirectory
+    $null = New-Item -ItemType Directory -Path $LogDirectory -Force
+    $LogFile = Join-Path $LogDirectory ($RunId + '.log')
+    if (Test-Path -LiteralPath $LogFile) { throw '本轮错误日志已存在，拒绝覆盖。' }
+    $Details = $GenerationFailure.Exception.ToString() + "`n" +
+      $GenerationFailure.InvocationInfo.PositionMessage + "`n" + $GenerationFailure.ScriptStackTrace
+    [IO.File]::WriteAllText($LogFile, $Details, [Text.UTF8Encoding]::new($false))
+    Write-Error ('OpenAPI 客户端生成失败：' + $GenerationFailure.Exception.Message + '；详细日志：' + $LogFile) -ErrorAction Continue
+  } catch {
+    Write-Error ('OpenAPI 客户端生成失败：' + $GenerationFailure.Exception.Message + '；错误日志无法保存：' + $_.Exception.Message) -ErrorAction Continue
+  }
+  throw $GenerationFailure
 } finally {
   # Only this invocation's new workspaces are eligible for cleanup.
   if ($OwnedOutput -and (-not $Preview -or -not $GenerationCompleted) -and
