@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:sesame_cloud_backup/sesame_cloud_backup.dart';
+import 'package:sesame_cloud_backup_supabase/sesame_cloud_backup_supabase.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import 'package:sesame_cloud_backup_supabase/src/supabase_storage_service.dart';
@@ -9,6 +10,14 @@ import 'package:sesame_cloud_backup_supabase/src/supabase_storage_service.dart';
 void main() {
   test('上传拒绝后可重试，文件完整传输及幂等删除只访问用户目录', () async {
     try {
+      registerSupabaseBackend();
+      addTearDown(() => CloudProviderRegistry.unregister('supabase'));
+      expect(
+          CloudProviderRegistry.backendOf('supabase')!
+              .fields
+              .where((field) => field.isSecret)
+              .map((field) => field.key),
+          ['anonKey', 'password']);
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       addTearDown(() => server.close(force: true));
       final requested = <String>[];

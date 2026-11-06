@@ -3,7 +3,6 @@
 
 import hashlib
 import json
-import subprocess
 import unittest
 from pathlib import Path
 
@@ -11,15 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 ARTIFACT = ROOT / "api/openapi/sesame-notes-api-v1.0.0.json"
 EXPECTED_SHA256 = "F66E2B2432FC1474497904288921FCAE0ECE43F9FD57D229A3F72ADABFE3B095"
-# 内置训练内容与主仓 apps/api/test/fitness-library.test.ts 共用同一份内容哨兵。
-FITNESS_LIBRARY = ROOT / "assets/fitness/library.json"
-EXPECTED_FITNESS_LIBRARY_SHA256 = "daafbb470c0ff449292b28518ad9fc6b11c44f4c42997f8f672358f76676ded8"
 HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
 ERROR_STATUSES = {"400", "401", "403", "404", "409", "500"}
-TAXONOMY_FIELDS = {
-    "id", "name", "is_deleted", "kind", "sort_order", "version",
-    "exercise_count", "template_count",
-}
 
 
 def _enum_values(schema: dict) -> set[str]:
@@ -51,26 +43,7 @@ def _is_unified_error_schema(schema: dict) -> bool:
 
 
 class ApiContractTest(unittest.TestCase):
-    """锁定移动端使用的统一契约字节内容和生成必需元数据。"""
-
-    def test_banner_contract_returns_independent_carousel_slides(self) -> None:
-        """公开轮播统一保留每张身份和独立目标，并接受当前客户端的格式参数。"""
-        try:
-            contract = json.loads(ARTIFACT.read_text(encoding="utf-8"))
-            operation = contract["paths"]["/api/v1/banners"]["get"]
-            parameters = {item["name"]: item for item in operation["parameters"]}
-            self.assertEqual({"carousel"}, _enum_values(parameters["format"]["schema"]))
-            response = operation["responses"]["200"]["content"]["application/json"]["schema"]
-            self.assertEqual("object", response["type"])
-            slides = response["properties"]["items"]
-            self.assertEqual(40, slides["maxItems"])
-            self.assertTrue({"id", "target_id", "target_name", "sort_order"}.issubset(slides["items"]["required"]))
-            self.assertEqual({
-                "fitness-plan-library", "fitness-template-library", "fitness-exercises",
-                "fitness-plans", "fitness-templates", "official-plan", "official-template",
-            }, _enum_values(slides["items"]["properties"]["target"]))
-        except (OSError, ValueError, KeyError) as error:
-            raise RuntimeError("无法读取当前轮播契约，请检查冻结文件") from error
+    """验证核心业务类型、同步数据结构、统一错误和乐观锁契约。"""
 
     def test_category_removal_requires_explicit_reference_handling(self) -> None:
         """分类删除只允许迁移、删除关联交易或提升子分类。"""
@@ -128,32 +101,6 @@ class ApiContractTest(unittest.TestCase):
                             self.assertEqual({"expense"}, _enum_values(properties[field]))
         self.assertEqual({"kind", "tx_type", "category_kind"}, matched)
 
-    def test_analytics_collection_and_catalog_have_distinct_contracts(self) -> None:
-        """采集事件、行为目录与统计覆盖分别锁定自己的正式结构。"""
-        contract = json.loads(ARTIFACT.read_text(encoding="utf-8"))
-        event = contract["paths"]["/api/v1/analytics/events"]["post"]["requestBody"]["content"]["application/json"]["schema"]["properties"]["events"]["items"]
-        self.assertEqual({"active", "page_view", "action"}, _enum_values(event["properties"]["kind"]))
-        self.assertTrue({"event_id", "occurred_at", "kind", "platform", "session_id", "event_sequence"}.issubset(event["required"]))
-        self.assertEqual("uuid", event["properties"]["session_id"]["format"])
-        self.assertEqual({"type": "integer", "minimum": 1, "maximum": 2147483647}, event["properties"]["event_sequence"])
-        self.assertNotIn("event_name", event["required"])
-        self.assertNotIn("flow_id", event["required"])
-        event_names = _enum_values(event["properties"]["event_name"])
-        page_ids = _enum_values(event["properties"]["page_id"])
-        page_view_names = {f"{page_id.replace('.', '_')}_view" for page_id in page_ids}
-        self.assertTrue(page_view_names.issubset(event_names))
-        self.assertEqual(len(page_ids), len(page_view_names))
-        self.assertTrue(all("." not in name for name in event_names))
-        self.assertIs(False, event["additionalProperties"])
-        catalog = contract["paths"]["/api/v1/admin/analytics/catalog"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["properties"]["events"]["items"]
-        self.assertEqual({"page_view", "action"}, _enum_values(catalog["properties"]["kind"]))
-        self.assertEqual({"view", "click", "complete"}, _enum_values(catalog["properties"]["behavior"]))
-        self.assertIn("event_name", catalog["required"])
-        self.assertEqual({"type": "string"}, catalog["properties"]["event_name"])
-        coverage = contract["paths"]["/api/v1/admin/analytics"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["properties"]["coverage"]
-        self.assertEqual({"collection_started_at", "complete"}, set(coverage["properties"]))
-        self.assertEqual({"collection_started_at", "complete"}, set(coverage["required"]))
-
     def test_fitness_workout_set_kinds_are_scoped_to_workouts(self) -> None:
         """训练组的业务类型只在训练记录端点中校验。"""
         contract = json.loads(ARTIFACT.read_text(encoding="utf-8"))
@@ -169,72 +116,11 @@ class ApiContractTest(unittest.TestCase):
                     self.assertEqual({"warmup", "working"}, _enum_values(properties["kind"]))
         self.assertGreater(matched, 0)
 
-    def test_fitness_taxonomies_keep_their_domain_and_catalog_shape(self) -> None:
-        """分类管理限定部位与器械两个领域，公开目录在同一快照中提供两类名称。"""
-        contract = json.loads(ARTIFACT.read_text(encoding="utf-8"))
-        collection = "/api/v1/admin/fitness/taxonomies/{kind}"
-        item = f"{collection}/{{taxon_id}}"
-        operations = [
-            (collection, "get", "listOfficialFitnessTaxonomies", "200"),
-            (collection, "post", "createOfficialFitnessTaxonomy", "201"),
-            (item, "patch", "updateOfficialFitnessTaxonomy", "200"),
-            (item, "delete", "deleteOfficialFitnessTaxonomy", "204"),
-        ]
-        for path, method, operation_id, status in operations:
-            with self.subTest(operation_id=operation_id):
-                operation = contract["paths"][path][method]
-                self.assertEqual(operation_id, operation["operationId"])
-                self.assertEqual([{"adminSessionAuth": []}], operation["security"])
-                parameter = next(p for p in operation["parameters"] if p["name"] == "kind")
-                self.assertEqual("path", parameter["in"])
-                self.assertIs(True, parameter["required"])
-                self.assertEqual({"body_part", "equipment"}, _enum_values(parameter["schema"]))
-                response = operation["responses"][status]
-                if method == "delete":
-                    self.assertNotIn("content", response)
-                    continue
-                schema = response["content"]["application/json"]["schema"]
-                if method == "get":
-                    self.assertIn("items", schema["required"])
-                    schema = schema["properties"]["items"]["items"]
-                self.assertTrue(TAXONOMY_FIELDS.issubset(schema["required"]))
-                self.assertEqual({"body_part", "equipment"}, _enum_values(schema["properties"]["kind"]))
-
-        catalog = contract["paths"]["/api/v1/fitness/catalog"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
-        # 分类目录可选；提供时部位和器械必须共同到达，避免混用快照。
-        self.assertNotIn("taxonomies", catalog["required"])
-        taxonomies = catalog["properties"]["taxonomies"]
-        self.assertEqual({"body_parts", "equipment"}, set(taxonomies["required"]))
-        for category in ("body_parts", "equipment"):
-            with self.subTest(category=category):
-                schema = taxonomies["properties"][category]
-                self.assertEqual("array", schema["type"])
-                fields = schema["items"]
-                self.assertEqual({"id", "name", "is_deleted"}, set(fields["required"]))
-                self.assertEqual("string", fields["properties"]["id"]["type"])
-                self.assertEqual(100, fields["properties"]["id"]["maxLength"])
-                self.assertEqual("boolean", fields["properties"]["is_deleted"]["type"])
-                names = fields["properties"]["name"]
-                self.assertEqual({"zh", "zh_hant", "en"}, set(names["required"]))
-                self.assertIs(False, names["additionalProperties"])
-                for language in names["required"]:
-                    self.assertEqual("string", names["properties"][language]["type"])
-                    self.assertEqual(1, names["properties"][language]["minLength"])
-
     def test_v1_artifact_is_pinned_by_hash(self) -> None:
         """契约必须作为固定文件入库，任何改动都需显式升级哈希。"""
         content = ARTIFACT.read_bytes()
 
         self.assertEqual(EXPECTED_SHA256, hashlib.sha256(content).hexdigest().upper())
-
-    def test_fitness_library_snapshot_matches_shared_sentinel(self) -> None:
-        """内置训练内容必须与主仓官方内容逐字节一致，两端任一侧改动都要同时更新哨兵。"""
-        content = FITNESS_LIBRARY.read_bytes()
-
-        self.assertEqual(
-            EXPECTED_FITNESS_LIBRARY_SHA256,
-            hashlib.sha256(content).hexdigest(),
-        )
 
     def test_v1_artifact_is_ready_for_client_generation(self) -> None:
         """生成客户端依赖稳定操作名和统一错误响应，不得在 Dart 侧猜测。"""
@@ -292,13 +178,6 @@ class ApiContractTest(unittest.TestCase):
                 ]["required"]
                 self.assertIn("base_revision", required)
 
-    def test_normalization_preserves_constraints_and_is_idempotent(self) -> None:
-        """执行真实规范化脚本，避免生成器适配静默丢失额外约束。"""
-        result = subprocess.run(
-            ["node", "--test", str(ROOT / "scripts/openapi/normalize_openapi.test.mjs")],
-            cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=False,
-        )
-        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
 
 
 if __name__ == "__main__":

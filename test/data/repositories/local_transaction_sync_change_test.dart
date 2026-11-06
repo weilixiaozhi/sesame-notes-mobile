@@ -99,6 +99,7 @@ void _registerPushFallback() {
   );
 }
 
+/// 交易正文与待上传意图按账号和事务边界一致写入。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(_registerPushFallback);
@@ -109,7 +110,7 @@ void main() {
   late String localLedgerId;
 
   setUp(() {
-    // 重置 prefs mock / 通知单例 / 平台 TestValue，防止跨用例残留（logger 依赖 prefs）。
+    // 重置 prefs mock / 通知单例，防止跨用例残留（logger 依赖 prefs）。
     resetGlobalTestState();
   });
 

@@ -3,8 +3,11 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/data/mappers/transaction_display_mapper.dart';
+import 'package:sesame_notes/data/repositories/local/local_category_repository.dart';
 import 'package:sesame_notes/data/repositories/local/local_statistics_repository.dart';
 import 'package:sesame_notes/data/repositories/local/local_transaction_repository.dart';
+import 'package:sesame_notes/features/transactions/domain/category_detail_summary.dart';
 
 /// 验证范围汇总的金额精度、半开日期边界和成员数据隔离。
 void main() {
@@ -36,6 +39,9 @@ void main() {
     String ledger = 'ledger',
     String member = 'member',
     bool deleted = false,
+    String? category,
+    String currency = 'CNY',
+    String? nativeAmount,
   }) async {
     try {
       await db
@@ -46,8 +52,9 @@ void main() {
               ledgerId: ledger,
               txType: 'expense',
               amount: amount,
-              nativeAmount: amount,
-              currencyCode: 'CNY',
+              nativeAmount: nativeAmount ?? amount,
+              currencyCode: currency,
+              categoryId: d.Value(category),
               happenedAt: date,
               createdAt: DateTime.utc(2026),
               updatedAt: DateTime.utc(2026),
@@ -114,6 +121,97 @@ void main() {
       );
     } catch (error, stackTrace) {
       logger.error('StatisticsRangeTest', '成员账单数据隔离验证失败', error, stackTrace);
+      rethrow;
+    }
+  });
+
+  test('分类详情与区间统计均按本位币汇总完整金额', () async {
+    try {
+      final categories = LocalCategoryRepository(db);
+      final category = await categories.createCategory(
+        name: '餐饮',
+        kind: 'expense',
+      );
+      final day = DateTime(2026, 10, 1);
+      await add(
+        'foreign',
+        day,
+        '10.00',
+        category: category,
+        currency: 'USD',
+        nativeAmount: '72.00',
+      );
+      await add('local-a', day, '5.00', category: category);
+      await add('local-b', day, '3.00', category: category);
+
+      final rows = await categories
+          .watchTransactionsByCategory(category, ledgerId: 'ledger')
+          .first;
+      final summary = summarizeCategoryDetail(
+        rows.map((row) => row.toDisplay()).toList(growable: false),
+      );
+      expect(summary.totalCount, 3);
+      expect(summary.totalAmount, 80.0);
+      expect(summary.averageAmount, 80 / 3);
+      final totals = await LocalStatisticsRepository(db).totalsForRange(
+        ledgerId: 'ledger',
+        type: 'expense',
+        start: DateTime(2026, 10, 1),
+        end: DateTime(2026, 11, 1),
+      );
+      expect(totals.categories.single.id, category);
+      expect(totals.categories.single.total, 80.0);
+    } catch (error, stackTrace) {
+      logger.error('StatisticsScopeTest', '分类本位币金额汇总验证失败', error, stackTrace);
+      rethrow;
+    }
+  });
+
+  test('同一分类在不同本位币账本中的金额保持隔离', () async {
+    try {
+      await (db.update(db.ledgers)..where((row) => row.id.equals('other')))
+          .write(const LedgersCompanion(currency: d.Value('USD')));
+      final categories = LocalCategoryRepository(db);
+      final category = await categories.createCategory(
+        name: '共用分类',
+        kind: 'expense',
+      );
+      final day = DateTime(2026, 10, 1);
+      await add('cny-a', day, '50.00', category: category);
+      await add('cny-b', day, '30.00', category: category);
+      await add(
+        'usd',
+        day,
+        '25.00',
+        ledger: 'other',
+        category: category,
+        currency: 'USD',
+      );
+
+      final cny = await categories
+          .watchTransactionsByCategory(category, ledgerId: 'ledger')
+          .first;
+      final usd = await categories
+          .watchTransactionsByCategory(category, ledgerId: 'other')
+          .first;
+      final cnySummary = summarizeCategoryDetail(
+        cny.map((row) => row.toDisplay()).toList(growable: false),
+      );
+      expect(cnySummary, (
+        totalCount: 2,
+        totalAmount: 80.0,
+        averageAmount: 40.0,
+      ));
+      expect(cny.every((row) => row.ledgerId == 'ledger'), isTrue);
+      expect(usd.single.ledgerId, 'other');
+      expect(
+        summarizeCategoryDetail(
+          usd.map((row) => row.toDisplay()).toList(growable: false),
+        ),
+        (totalCount: 1, totalAmount: 25.0, averageAmount: 25.0),
+      );
+    } catch (error, stackTrace) {
+      logger.error('StatisticsScopeTest', '分类跨账本金额隔离验证失败', error, stackTrace);
       rethrow;
     }
   });

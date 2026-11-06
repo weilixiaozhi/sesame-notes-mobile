@@ -132,7 +132,7 @@ class _TestChangeRecorder extends ChangeRecorder {
 /// 多币种导入保留历史折算快照，缺少快照时才使用对应汇率。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  // 每个用例前重置全局状态（prefs mock / 平台 TestValue / 通知单例），
+  // 每个用例前重置全局状态（prefs mock / 通知单例），
   // 防止跨用例残留导致的顺序依赖。详见 test/helpers/test_isolation.dart。
   setUp(() => resetGlobalTestState());
 

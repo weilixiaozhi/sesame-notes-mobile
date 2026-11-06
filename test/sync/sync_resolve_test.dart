@@ -18,6 +18,8 @@ import 'package:sesame_notes/data/db.dart'
     hide Transaction, Category, RecurringTransaction, ExchangeRateOverride;
 import 'package:sesame_notes/data/repositories/local/local_ledger_repository.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
+import 'package:sesame_notes/data/repositories/support/category_scope.dart';
+import 'package:sesame_notes/data/models/sync_operation_failure.dart';
 import '../helpers/test_isolation.dart';
 
 class _MockSyncApi extends Mock implements SyncApi {}
@@ -64,6 +66,7 @@ void _registerPushFallback() {
   );
 }
 
+/// 冲突决策与云端删除必须先保护本机内容，再原子更新当前账号的同步分支。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(_registerPushFallback);
@@ -279,6 +282,146 @@ void main() {
     expect(tx.serverRevision, 3);
     final conflicts = await db.select(db.syncConflicts).get();
     expect(conflicts.single.status, 'RESOLVED_REMOTE');
+  });
+
+  test('云端删本按权威Owner保护正文和分类，不借私有同UUID缓存猜测归属', () async {
+    try {
+      final seeded = await seedCloudTx();
+      const category = '30000000-0000-4000-8000-000000000001';
+      final stamp = DateTime.fromMillisecondsSinceEpoch(
+        DateTime.now().millisecondsSinceEpoch + 1000,
+        isUtc: true,
+      );
+      for (final (scope, name) in [
+        ('account-a', '本人私有分类'),
+        ('owner-b', '其他账号私有分类'),
+      ]) {
+        await db
+            .into(db.categories)
+            .insert(
+              CategoriesCompanion.insert(
+                id: category,
+                name: name,
+                kind: 'expense',
+                level: 1,
+                scopeAccountId: d.Value(scope),
+                updatedAt: stamp,
+              ),
+            );
+      }
+      await db
+          .into(db.sharedLedgerCategories)
+          .insert(
+            SharedLedgerCategoriesCompanion.insert(
+              ledgerId: seeded.ledgerId,
+              categoryId: category,
+              name: '共享Owner分类',
+              kind: 'expense',
+              updatedAt: stamp,
+            ),
+          );
+      await (db.update(
+        db.ledgers,
+      )..where((row) => row.id.equals(seeded.ledgerId))).write(
+        const LedgersCompanion(
+          ownerAccountId: d.Value(null),
+          role: d.Value('owner'),
+        ),
+      );
+      await (db.update(
+        db.transactions,
+      )..where((row) => row.id.equals(seeded.txId))).write(
+        const TransactionsCompanion(
+          categoryId: d.Value(category),
+          note: d.Value('未上传正文'),
+        ),
+      );
+      final privateBefore = await db.select(db.categories).get();
+      final ledgerBefore = await db.select(db.ledgers).get();
+      final transactionsBefore = await db.select(db.transactions).get();
+      final queueBefore = await db.select(db.syncChanges).get();
+      final deletion = <String, Object?>{
+        'change_id': '101',
+        'entity_type': 'ledger',
+        'entity_id': seeded.ledgerId,
+        'ledger_id': seeded.ledgerId,
+        'action': 'delete',
+        'mutation_id': 'remote-delete',
+        'updated_at': stamp.toIso8601String(),
+        'device_id': 'remote',
+        'payload': {
+          'owner_id': 'owner-b',
+          'deleted_at': stamp.toIso8601String(),
+        },
+      };
+      // 删除来源不明确时必须失败关闭，不能依旧role或同UUID私有目录猜测Owner。
+      final missingOwner = standardSerializers.deserializeWith(
+        GetSyncPull200ResponseChangesInner.serializer,
+        {
+          ...deletion,
+          'payload': {'deleted_at': stamp.toIso8601String()},
+        },
+      )!;
+      await expectLater(
+        service.runtime.inAccountTransaction(
+          'account-a',
+          () => service.projectionHandler.applyChange(missingOwner),
+        ),
+        throwsA(
+          isA<SyncOperationFailure>().having(
+            (error) => error.code,
+            '安全归属原因',
+            'CLOUD_OWNERSHIP_MISSING',
+          ),
+        ),
+      );
+      expect(await db.select(db.ledgers).get(), ledgerBefore);
+      expect(await db.select(db.categories).get(), privateBefore);
+      expect(await db.select(db.transactions).get(), transactionsBefore);
+      expect(await db.select(db.syncChanges).get(), queueBefore);
+      final tombstone = standardSerializers.deserializeWith(
+        GetSyncPull200ResponseChangesInner.serializer,
+        deletion,
+      )!;
+      await service.runtime.inAccountTransaction(
+        'account-a',
+        () => service.projectionHandler.applyChange(tombstone),
+      );
+      final source = await (db.select(
+        db.ledgers,
+      )..where((row) => row.id.equals(seeded.ledgerId))).getSingle();
+      expect(
+        (source.ownerAccountId, source.role, source.deletedAt?.toUtc()),
+        ('owner-b', 'editor', stamp),
+      );
+      final fork =
+          await (db.select(db.ledgers)..where(
+                (row) =>
+                    row.originLedgerId.equals(seeded.ledgerId) &
+                    row.originType.equals('DR_PROTECT'),
+              ))
+              .getSingle();
+      final preserved = await (db.select(
+        db.transactions,
+      )..where((row) => row.ledgerId.equals(fork.id))).getSingle();
+      expect((preserved.note, preserved.categoryId), ('未上传正文', category));
+      final localCategory = await (db.select(
+        db.categories,
+      )..where((row) => categoryScopePredicate(row, null))).getSingle();
+      expect(
+        (localCategory.id, localCategory.name, localCategory.cloudRegistered),
+        (category, '共享Owner分类', false),
+      );
+      expect(
+        await (db.select(
+          db.categories,
+        )..where((row) => row.scopeAccountId.isNotValue(''))).get(),
+        privateBefore,
+      );
+    } catch (error, stackTrace) {
+      printOnFailure('云端删本归属与保护副本验证失败：$error\n$stackTrace');
+      rethrow;
+    }
   });
 
   test('full 收到 412：先保护本地状态为 Local Safety Fork，再标记 STALE_BINDING', () async {

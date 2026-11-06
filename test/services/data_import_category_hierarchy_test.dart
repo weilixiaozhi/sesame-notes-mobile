@@ -8,6 +8,7 @@ import 'package:sesame_notes/data/models.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/features/settings/infrastructure/data_import_service.dart';
 
+/// 导入必须保留完整分类路径和当前作者，失败批次不能留下部分分类。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => resetGlobalTestState());
@@ -29,41 +30,69 @@ void main() {
   tearDown(() async => db.close());
 
   test('导入仍规范化名称，但不同来源路径不自动合并身份', () async {
-    final legacy = '旧' * 150;
-    final restored = await service.importCategories(
-      repo,
-      [ImportCategory(name: legacy, kind: 'expense')],
-      recordChanges: false,
-      categoryQueries: repo.categoryStore,
-    );
-    expect(restored.failed, 1);
-    expect(await repo.categoryStore.getAllCategories(), isEmpty);
-    final rejected = await service.importCategories(repo, [
-      ImportCategory(name: legacy, kind: 'expense'),
-    ], categoryQueries: repo.categoryStore);
-    expect(rejected.failed, 1);
-    final normal = await service.importCategories(repo, const [
-      ImportCategory(name: ' 父分类 ', kind: 'expense'),
-      ImportCategory(name: '父分类', kind: 'expense'),
-      ImportCategory(
-        name: ' 子分类 ',
-        kind: 'expense',
-        level: 2,
-        parentName: '父分类',
-      ),
-      ImportCategory(
-        name: '子分类',
-        kind: 'expense',
-        level: 2,
-        parentName: ' 父分类 ',
-      ),
-    ], categoryQueries: repo.categoryStore);
-    expect(normal.failed, 0);
-    expect(await repo.categoryStore.getAllCategories(), hasLength(4));
-    expect(
-      normal.cache[(kind: 'expense', parentName: null, name: ' 父分类 ')],
-      isNot(normal.cache[(kind: 'expense', parentName: null, name: '父分类')]),
-    );
+    try {
+      final legacy = '旧' * 150;
+      final restored = await service.importCategories(
+        repo,
+        [ImportCategory(name: legacy, kind: 'expense')],
+        recordChanges: false,
+        categoryQueries: repo.categoryStore,
+      );
+      expect(restored.failed, 1);
+      expect(await repo.categoryStore.getAllCategories(), isEmpty);
+      final rejected = await service.importCategories(repo, [
+        ImportCategory(name: legacy, kind: 'expense'),
+      ], categoryQueries: repo.categoryStore);
+      expect(rejected.failed, 1);
+      // 一个可创建草稿和一个无效父级构成同一批次，整批失败不能遗留半份目录。
+      final failedBatch = await service.importCategories(
+        repo,
+        const [
+          ImportCategory(
+            id: '00000000-0000-4000-8000-000000000401',
+            name: '有效草稿',
+            kind: 'expense',
+          ),
+          ImportCategory(
+            id: '00000000-0000-4000-8000-000000000402',
+            name: '无效子项',
+            kind: 'expense',
+            level: 2,
+            parentName: '缺失父级',
+            parentId: '00000000-0000-4000-8000-000000000499',
+          ),
+        ],
+        categoryQueries: repo.categoryStore,
+        ledgerId: 'ledger-1',
+      );
+      expect((failedBatch.failed, failedBatch.cache.isEmpty), (2, true));
+      expect(await db.select(db.categories).get(), isEmpty);
+      final normal = await service.importCategories(repo, const [
+        ImportCategory(name: ' 父分类 ', kind: 'expense'),
+        ImportCategory(name: '父分类', kind: 'expense'),
+        ImportCategory(
+          name: ' 子分类 ',
+          kind: 'expense',
+          level: 2,
+          parentName: '父分类',
+        ),
+        ImportCategory(
+          name: '子分类',
+          kind: 'expense',
+          level: 2,
+          parentName: ' 父分类 ',
+        ),
+      ], categoryQueries: repo.categoryStore);
+      expect(normal.failed, 0);
+      expect(await repo.categoryStore.getAllCategories(), hasLength(4));
+      expect(
+        normal.cache[(kind: 'expense', parentName: null, name: ' 父分类 ')],
+        isNot(normal.cache[(kind: 'expense', parentName: null, name: '父分类')]),
+      );
+    } catch (error, stackTrace) {
+      printOnFailure('分类导入批次与独立身份验证失败：$error\n$stackTrace');
+      rethrow;
+    }
   });
 
   test('分类路径未命中时交易失败，不兜底创建同名一级分类', () async {
@@ -84,47 +113,62 @@ void main() {
   });
 
   test('餐饮 > 早餐按完整路径落到二级分类，不生成一级早餐', () async {
-    final result = await service.importData(
-      repo,
-      'ledger-1',
-      ImportData(
-        categories: const [
-          ImportCategory(name: '餐饮', kind: 'expense'),
-          ImportCategory(
-            name: '早餐',
-            kind: 'expense',
-            level: 2,
-            parentName: '餐饮',
-          ),
-        ],
-        transactions: [
-          ImportTransaction(
-            type: 'expense',
-            amount: Decimal.parse('18'),
-            categoryName: '早餐',
-            categoryParentName: '餐饮',
-            categoryKind: 'expense',
-            happenedAt: DateTime(2026, 8, 2),
-          ),
-        ],
-      ),
-      categoryQueries: repo.categoryStore,
-    );
+    try {
+      final result = await service.importData(
+        repo,
+        'ledger-1',
+        ImportData(
+          categories: const [
+            ImportCategory(name: '餐饮', kind: 'expense'),
+            ImportCategory(
+              name: '早餐',
+              kind: 'expense',
+              level: 2,
+              parentName: '餐饮',
+            ),
+          ],
+          transactions: [
+            ImportTransaction(
+              type: 'expense',
+              amount: Decimal.parse('18'),
+              categoryName: '早餐',
+              categoryParentName: '餐饮',
+              categoryKind: 'expense',
+              happenedAt: DateTime(2026, 8, 2),
+            ),
+          ],
+        ),
+        categoryQueries: repo.categoryStore,
+        authorMemberId: 'importing-member',
+      );
 
-    expect(result.inserted, 1);
-    expect(result.failed, 0);
-    final categories = await db.select(db.categories).get();
-    final parent = categories.singleWhere((c) => c.name == '餐饮');
-    final breakfast = categories.singleWhere((c) => c.name == '早餐');
-    expect(breakfast.parentId, parent.id);
-    expect(
-      categories.where((c) => c.name == '早餐' && c.parentId == null),
-      isEmpty,
-    );
-    expect(
-      (await db.select(db.transactions).get()).single.categoryId,
-      breakfast.id,
-    );
+      expect(result.inserted, 1);
+      expect(result.failed, 0);
+      final categories = await db.select(db.categories).get();
+      final parent = categories.singleWhere((c) => c.name == '餐饮');
+      final breakfast = categories.singleWhere((c) => c.name == '早餐');
+      expect(breakfast.parentId, parent.id);
+      expect(
+        categories.where((c) => c.name == '早餐' && c.parentId == null),
+        isEmpty,
+      );
+      expect(
+        (await db.select(db.transactions).get()).single.categoryId,
+        breakfast.id,
+      );
+      final imported = await db.select(db.transactions).getSingle();
+      expect(
+        (
+          imported.payerMemberId,
+          imported.createdByMemberId,
+          imported.lastEditedByMemberId,
+        ),
+        ('importing-member', 'importing-member', 'importing-member'),
+      );
+    } catch (error, stackTrace) {
+      printOnFailure('导入分类路径与作者归属验证失败：$error\n$stackTrace');
+      rethrow;
+    }
   });
 
   test('跨父同名及分隔符分类按各自完整路径解析', () async {

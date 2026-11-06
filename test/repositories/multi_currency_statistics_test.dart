@@ -6,10 +6,11 @@ import '../helpers/test_isolation.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 
+/// 多币种统计按本位币快照汇总，保持金额精度和账本隔离。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const accountId = 'multi-currency-statistics-account';
-  // 每个用例前重置全局状态（prefs mock / 平台 TestValue / 通知单例），
+  // 每个用例前重置全局状态（prefs mock / 通知单例），
   // 防止跨用例残留导致的顺序依赖。详见 test/helpers/test_isolation.dart。
   setUp(() => resetGlobalTestState());
 

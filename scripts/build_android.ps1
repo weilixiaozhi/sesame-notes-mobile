@@ -5,8 +5,6 @@
 配置文件绝对路径或相对仓库根目录路径；默认读取存在的 config/<环境>.local.json，无文件时使用本地功能配置。
 .PARAMETER ValidateOnly
 只检查配置，不调用 Flutter 或构建安装包。
-.PARAMETER ConfigOnly
-校验配置并让 Flutter 准备 Android 构建文件和 Gradle wrapper，不编译或复制安装包。
 #>
 [CmdletBinding()]
 param(
@@ -18,16 +16,12 @@ param(
     [switch]$ProfileProbe,
     [string]$ConfigPath = '',
     [switch]$ValidateOnly,
-    [switch]$ConfigOnly,
     [string[]]$DartDefine = @()
 )
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 try {
-    if ($ValidateOnly -and $ConfigOnly) {
-        throw 'ValidateOnly 与 ConfigOnly 不能同时使用，请选择配置校验或构建文件准备。'
-    }
     if ($Environment -ne 'test' -and $ProfileProbe) {
         throw 'ProfileProbe is only valid for test.'
     }
@@ -130,7 +124,6 @@ try {
         'build', 'apk', "--$mode", '--flavor', $flavor,
         '--target-platform', $TargetPlatform, '--no-pub'
     )
-    if ($ConfigOnly) { $buildArguments += '--config-only' }
     # 本地构建只注入真实环境，服务地址为空时不生成占位地址或临时配置。
     if ($hasConfigFile) {
         $buildArguments += "--dart-define-from-file=$resolvedConfigPath"
@@ -165,11 +158,6 @@ try {
         & $flutterCommand @buildArguments
         if ($LASTEXITCODE -ne 0) {
             throw "Android $Environment build failed with exit code $LASTEXITCODE."
-        }
-        if ($ConfigOnly) {
-            # Flutter 已生成 local.properties 和 Gradle wrapper，原生测试可直接调用 Gradle。
-            Write-Host "Android $Environment 构建文件准备完成。"
-            return
         }
         $nativeApk = Join-Path $repoRoot "build/app/outputs/flutter-apk/app-$($flavor.ToLowerInvariant())-$mode.apk"
         if (-not (Test-Path -LiteralPath $nativeApk -PathType Leaf)) {

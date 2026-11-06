@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_cloud_backup/sesame_cloud_backup.dart';
+import 'package:sesame_cloud_backup_s3/sesame_cloud_backup_s3.dart';
 import 'package:sesame_cloud_backup_s3/src/s3_client.dart';
 import 'package:sesame_cloud_backup_s3/src/s3_storage_service.dart';
 
@@ -88,6 +89,19 @@ void main() {
   });
 
   test('特殊路径真实签名传输保留编码、摘要、元数据、列表与幂等删除', () async {
+    registerS3Backend();
+    addTearDown(() => CloudProviderRegistry.unregister('s3'));
+    final backend = CloudProviderRegistry.backendOf('s3')!;
+    expect(
+        backend.fields
+            .where((field) => field.isSecret)
+            .map((field) => field.key),
+        ['accessKey', 'secretKey']);
+    expect(
+        backend.fields
+            .singleWhere((field) => field.key == 'useSSL')
+            .defaultValue,
+        isTrue);
     const specialKey = "ledgers/中文账本/a+b c%d!'()*.snbak";
     const encodedPath =
         '/bucket/ledgers/%E4%B8%AD%E6%96%87%E8%B4%A6%E6%9C%AC/a%2Bb%20c%25d%21%27%28%29%2A.snbak';

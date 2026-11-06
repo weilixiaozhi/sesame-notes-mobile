@@ -244,6 +244,48 @@ void main() {
     await service.pull();
   }
 
+  test('个人归档、恢复和重启后的旧事件重放不改变已接受的新状态', () async {
+    try {
+      final archivedAt = DateTime.utc(2026, 10, 22, 1, 2, 3);
+      final archived = {
+        ...event('ledger', '原账本', _deviceC, 1, time: archivedAt),
+        'ledger_id': null,
+        'entity_type': 'ledger_archive',
+        'payload': {
+          'ledger_id': _ledger,
+          'archived_at': archivedAt.toIso8601String(),
+        },
+      };
+      await pull([archived, event('ledger', '共享元数据更新', _deviceB, 2)], 2);
+      var stored = await db.select(db.ledgers).getSingle();
+      expect(
+        (stored.archivedAt?.toUtc(), stored.name),
+        (archivedAt, '共享元数据更新'),
+      );
+      final restoredAt = archivedAt.add(const Duration(seconds: 1));
+      final restored = {
+        ...archived,
+        'change_id': '3',
+        'mutation_id': 'restore-archive',
+        'updated_at': restoredAt.toIso8601String(),
+        'payload': {'ledger_id': _ledger, 'archived_at': null},
+      };
+      await pull([
+        restored,
+        {...archived, 'change_id': '4'},
+      ], 4);
+      stored = await db.select(db.ledgers).getSingle();
+      expect(stored.archivedAt, isNull);
+      expect(stored.archiveUpdatedAt?.toUtc(), restoredAt);
+      service = buildService();
+      await pull([archived], 4);
+      expect((await db.select(db.ledgers).getSingle()).archivedAt, isNull);
+    } catch (error, stackTrace) {
+      printOnFailure('个人归档恢复与重放保护验证失败：$error\n$stackTrace');
+      rethrow;
+    }
+  });
+
   for (final type in _types) {
     test('$type A<C<B 同毫秒三设备更新必须采用服务端接受的 C，重启重放不回退', () async {
       final a = event(type, '1', _deviceA, 1);

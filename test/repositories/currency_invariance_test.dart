@@ -5,9 +5,10 @@ import '../helpers/test_isolation.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 
+/// 验证账本币种变更后的金额快照和统计口径。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  // 每个用例前重置全局状态（prefs mock / 平台 TestValue / 通知单例），
+  // 每个用例前重置全局状态（prefs mock / 通知单例），
   // 防止跨用例残留导致的顺序依赖。详见 test/helpers/test_isolation.dart。
   setUp(() => resetGlobalTestState());
 

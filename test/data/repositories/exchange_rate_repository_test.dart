@@ -108,9 +108,10 @@ class _TestChangeRecorder extends ChangeRecorder {
 /// 模拟登录态云账号 userId（v4 UUID，与跨端 golden 测试同 ownerId）。
 const testAccountId = '018f7f95-4b8a-4f5e-8d0c-2ebf4682c761';
 
+/// 汇率报价和手动覆盖按业务身份隔离，保持金额换算精度。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  // 每个用例前重置全局状态（prefs mock / 平台 TestValue / 通知单例），
+  // 每个用例前重置全局状态（prefs mock / 通知单例），
   // 防止跨用例残留导致的顺序依赖。
   setUp(() => resetGlobalTestState());
 

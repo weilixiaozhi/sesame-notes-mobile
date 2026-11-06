@@ -9,9 +9,10 @@ import 'package:sesame_notes/data/models.dart';
 import 'package:sesame_notes/data/repositories/local/local_repository.dart';
 import 'package:sesame_notes/features/settings/infrastructure/data_import_service.dart';
 
+/// 导入校验金额、币种和身份，阻止无效记录进入账本。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  // 每个用例前重置全局状态（prefs mock / 平台 TestValue / 通知单例），
+  // 每个用例前重置全局状态（prefs mock / 通知单例），
   // 防止跨用例残留导致顺序依赖。详见 test/helpers/test_isolation.dart。
   setUp(() => resetGlobalTestState());
 

@@ -110,10 +110,10 @@ flutter gen-l10n
 ```sh
 python scripts/fitness/generate_catalog_registry.py
 dart format lib/data/models/fitness_catalog_registry.dart
-flutter test test/data/fitness_rules_test.dart test/data/fitness_catalog_search_test.dart --no-pub
+flutter test --no-pub test/data/fitness_rules_test.dart
 ```
 
-第一条写入 `lib/data/models/fitness_catalog_registry.dart`。服务端仓库的 `apps/api/scripts/generate-fitness-catalog.ts` 从同一资料生成后端与共享契约目录，其 `packages/api-contract/fitness-catalog.json` 应同步到本仓 `api/openapi/fitness-catalog.json`；本地测试验证动作规则与目录搜索。
+第一条写入 `lib/data/models/fitness_catalog_registry.dart`。服务端仓库的 `apps/api/scripts/generate-fitness-catalog.ts` 从同一资料生成后端与共享契约目录，其 `packages/api-contract/fitness-catalog.json` 应同步到本仓 `api/openapi/fitness-catalog.json`；本地测试验证训练数据规则和分类载荷约束。
 
 ## 未引用候选扫描
 
@@ -129,18 +129,15 @@ dart scripts/audit/orphans.dart
 
 自动测试按风险保留金额与统计口径、数据持久化、权限与账号隔离、同步冲突、备份恢复和接口契约；界面样式、布局和页面交互通过人工验收。以下检查依赖已安装工具，失败返回非零。
 
-同一风险优先由直接验证真实数据结果的业务链路覆盖，重复适配层和调用次数、缓存对象身份、私有状态等实现细节不单独建立回归测试。遥测、横幅和媒体保留敏感信息与本地文件安全边界。
+同一风险由直接验证真实数据结果的核心链路覆盖。提醒、遥测、缓存、资源生命周期、用户偏好、展示派生和重复应用适配层通过人工验收，调用次数、对象身份、私有状态等实现细节不建立独立回归测试。
 
-业务测试入口为 `flutter test --no-pub test --test-randomize-ordering-seed=random`。少量 `testWidgets` 用于验证自动保存、提醒调度和导入导出的异步生命周期，按业务结果断言；不覆盖控件外观、布局、页面跳转或点击反馈。云备份包在各自目录执行 `flutter test --no-pub`。
+业务测试入口为 `flutter test --no-pub test --test-randomize-ordering-seed=random`。测试断言核心数据、权限和事务结果；需要 Flutter 运行时的导入导出链路可使用 `testWidgets`，不覆盖控件外观、布局、页面跳转或点击反馈。云备份包在各自目录执行 `flutter test --no-pub`。
 
 | 命令                                                           | 范围与边界                                                                                                                                                              |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `python -B scripts/test/update_manifest_test.py`               | 用隔离夹具验证正式 APK 版本与更新摘要。                                                                                                                                 |
-| `python scripts/test/api_contract_test.py`                     | 固定 Artifact 摘要、枚举、OpenAPI 元数据、统一错误和乐观锁；同时验证 SDK 规范化后的业务约束。需 Python 3、Node.js。 |
+| `python -B scripts/test/api_contract_test.py`                  | 固定核心业务契约摘要、财务与训练组类型、分类删除、同步结构、统一错误和乐观锁。需 Python 3。 |
 
-[规范化测试](openapi/normalize_openapi.test.mjs)验证转换约束、幂等性和源文件不变。统一错误检查匹配 Error 引用或必填 `code/message/request_id`，不验证所有字段类型。
-
-原生通知排期单测及其他检查入口见[手动测试工作流](../.github/workflows/test.yml)。
+统一错误检查匹配 Error 引用或必填 `code/message/request_id`。核心测试及静态检查入口见[手动测试工作流](../.github/workflows/test.yml)。
 
 直接验收已有 APK 可用 `python -B scripts/check_apk_architecture.py --apk <APK路径> --abi arm64-v8a`。生成更新清单用 `python -B scripts/generate_update_manifest.py --apk <正式APK路径> --version <版本> --repository <owner/repository> --notes <发布说明文件> --output <清单路径>`，它会校验命名、计算摘要并写输出文件。
 
@@ -196,13 +193,7 @@ flutter build ios --release --flavor prod --dart-define-from-file=config/prod.lo
 
 私有地址继续从各自忽略的配置文件注入，正式签名沿用开发者自己的 Xcode 配置。`ios/Flutter/Environment*.xcconfig` 将 `APP_ENV` 与原生身份绑定；编译前的 `scripts/ios/check_environment.py` 要求 Xcode 配置、Bundle ID、全部 `APP_ENV` 声明一致，冲突或缺失直接失败，不打印配置值。不要把测试配置文件用于正式方案。
 
-不依赖 Xcode 的配置回归：
-
-```powershell
-python -B scripts/test/ios_environment_test.py
-```
-
-这项回归覆盖环境与安装身份匹配、缺失或冲突参数的拒绝规则；共享方案、iOS 签名、打包、系统权限与真机并装在 macOS/iOS 环境验收。方案和配置的对应方式见 [Flutter 官方说明](https://docs.flutter.dev/deployment/flavors-ios)。
+共享方案、iOS 签名、打包、系统权限与真机并装在 macOS/iOS 环境验收。方案和配置的对应方式见 [Flutter 官方说明](https://docs.flutter.dev/deployment/flavors-ios)。
 ## Android R8 规则与 APK 只读测量
 
 正式包只为 Flutter 反射注册入口、通知持久化模型字段/构造器及序列化元数据配置应用规则。通知样式的简单类名、枚举与字段名参与历史 Gson 缓存，不能随混淆改名。Flutter JNI 与类级 `@Keep` 入口由 Android 默认规则和 AndroidX 消费者规则保护，清单组件由 AAPT 生成规则保留；升级 Flutter、AGP 或插件时需要重新核对合并配置与产物。

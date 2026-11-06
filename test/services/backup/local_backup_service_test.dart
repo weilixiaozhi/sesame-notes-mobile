@@ -484,145 +484,173 @@ void main() {
   });
 
   group('账号域过滤', () {
-    test('备份快照只含本地域与当前账号域：其他账号的云账本/分类/汇率/mutation 不入 .snbak', () async {
-      // 本地域账本（保留）
-      await db
-          .into(db.ledgers)
-          .insert(
-            LedgersCompanion.insert(
-              id: 'local-1',
-              name: '本地账本',
-              storageMode: const d.Value('local'),
-              updatedAt: DateTime.utc(2026, 8, 1),
-            ),
-          );
-      // 当前账号域账本（保留）
-      await db
-          .into(db.ledgers)
-          .insert(
-            LedgersCompanion.insert(
-              id: 'cloud-mine',
-              name: '我的云账本',
-              storageMode: const d.Value('cloud'),
-              syncId: const d.Value('sync-mine'),
-              scopeAccountId: const d.Value('user-mine'),
-              ownerAccountId: const d.Value('user-mine'),
-              updatedAt: DateTime.utc(2026, 8, 1),
-            ),
-          );
-      // 其他账号域账本（必须被过滤）
-      await db
-          .into(db.ledgers)
-          .insert(
-            LedgersCompanion.insert(
-              id: 'cloud-other',
-              name: '别人的云账本',
-              storageMode: const d.Value('cloud'),
-              syncId: const d.Value('sync-other'),
-              scopeAccountId: const d.Value('user-other'),
-              ownerAccountId: const d.Value('user-other'),
-              updatedAt: DateTime.utc(2026, 8, 1),
-            ),
-          );
-      // 账号域分类与汇率覆盖
-      await db
-          .into(db.categories)
-          .insert(
-            CategoriesCompanion.insert(
-              id: 'cat-mine',
-              name: '我的分类',
-              kind: 'expense',
-              level: 1,
-              scopeAccountId: const d.Value('user-mine'),
-              updatedAt: DateTime.utc(2026, 8, 1),
-            ),
-          );
-      await db
-          .into(db.categories)
-          .insert(
-            CategoriesCompanion.insert(
-              id: 'cat-other',
-              name: '别人分类',
-              kind: 'expense',
-              level: 1,
-              scopeAccountId: const d.Value('user-other'),
-              updatedAt: DateTime.utc(2026, 8, 1),
-            ),
-          );
-      await db
-          .into(db.exchangeRateOverrides)
-          .insert(
-            ExchangeRateOverridesCompanion.insert(
-              id: 'rate-other',
-              baseCurrency: 'CNY',
-              quoteCurrency: 'USD',
-              rate: '7.5',
-              scopeAccountId: const d.Value('user-other'),
-              updatedAt: DateTime.utc(2026, 8, 1),
-            ),
-          );
-      // 其他账号的 mutation
-      await db
-          .into(db.syncChanges)
-          .insert(
-            SyncChangesCompanion.insert(
-              entityType: 'ledger',
-              entityId: 'cloud-other',
-              ledgerId: const d.Value('cloud-other'),
-              action: 'upsert',
-              payload: '{}',
-              updatedAt: DateTime.utc(2026, 8, 1),
-              mutationId: const Uuid().v4(),
-              accountId: const d.Value('user-other'),
-            ),
-          );
-
-      final backup = await service.createBackup(
-        db: db,
-        currentAccountId: 'user-mine',
-      );
-      final (_, sqliteBytes) = await openBackup(backup);
-      final snapshotDb = sqlite3.openInMemory();
-      snapshotDb.execute('PRAGMA foreign_keys = ON');
+    test('备份只保留本地域及当前账号，同UUID分类和交易引用保持完整且原库不变', () async {
       try {
-        snapshotDb.execute('PRAGMA journal_mode = MEMORY');
-        // 以字节落临时库后重新打开，验证快照内容
-        snapshotDb.close();
-        final file = File(p.join(tmp.path, 'snapshot.sqlite'));
-        await file.writeAsBytes(sqliteBytes);
-        final check = sqlite3.open(file.path);
-        try {
-          final ledgers = check
-              .select('SELECT id FROM ledgers')
-              .map((r) => r['id'] as String)
-              .toList();
-          expect(ledgers, containsAll(['local-1', 'cloud-mine']));
-          expect(
-            ledgers,
-            isNot(contains('cloud-other')),
-            reason: '其他账号云账本不得进入备份',
-          );
-          final cats = check
-              .select('SELECT id FROM categories')
-              .map((r) => r['id'] as String)
-              .toList();
-          expect(cats, contains('cat-mine'));
-          expect(cats, isNot(contains('cat-other')));
-          final rates = check
-              .select('SELECT id FROM exchange_rate_overrides')
-              .map((r) => r['id'] as String)
-              .toList();
-          expect(rates, isNot(contains('rate-other')));
-          final changes = check
-              .select('SELECT account_id FROM sync_changes')
-              .map((r) => r['account_id'] as String?)
-              .toList();
-          expect(changes.whereType<String>(), isNot(contains('user-other')));
-        } finally {
-          check.close();
+        const categoryId = '20000000-0000-4000-8000-000000000001';
+        final stamp = DateTime.utc(2026, 8, 1);
+        for (final (id, account, name) in [
+          ('local-1', null, '本地分类'),
+          ('cloud-mine', 'user-mine', '本人分类'),
+          ('cloud-other', 'user-other', '其他账号分类'),
+        ]) {
+          await db
+              .into(db.ledgers)
+              .insert(
+                LedgersCompanion.insert(
+                  id: id,
+                  name: name,
+                  storageMode: d.Value(account == null ? 'local' : 'cloud'),
+                  scopeAccountId: d.Value(account),
+                  ownerAccountId: d.Value(account),
+                  updatedAt: stamp,
+                ),
+              );
+          await db
+              .into(db.categories)
+              .insert(
+                CategoriesCompanion.insert(
+                  id: categoryId,
+                  name: name,
+                  kind: 'expense',
+                  level: 1,
+                  scopeAccountId: d.Value(account),
+                  updatedAt: stamp,
+                ),
+              );
+          await db
+              .into(db.transactions)
+              .insert(
+                TransactionsCompanion.insert(
+                  id: 'tx-$id',
+                  ledgerId: id,
+                  txType: 'expense',
+                  amount: '10',
+                  nativeAmount: '10',
+                  currencyCode: 'CNY',
+                  categoryId: const d.Value(categoryId),
+                  happenedAt: stamp,
+                  createdAt: stamp,
+                  updatedAt: stamp,
+                ),
+              );
         }
-      } finally {
-        snapshotDb.close();
+        await db
+            .into(db.exchangeRateOverrides)
+            .insert(
+              ExchangeRateOverridesCompanion.insert(
+                id: 'rate-other',
+                baseCurrency: 'CNY',
+                quoteCurrency: 'USD',
+                rate: '7.5',
+                scopeAccountId: const d.Value('user-other'),
+                updatedAt: stamp,
+              ),
+            );
+        await db
+            .into(db.syncChanges)
+            .insert(
+              SyncChangesCompanion.insert(
+                entityType: 'ledger',
+                entityId: 'cloud-other',
+                ledgerId: const d.Value('cloud-other'),
+                action: 'upsert',
+                payload: '{}',
+                updatedAt: stamp,
+                mutationId: const Uuid().v4(),
+                accountId: const d.Value('user-other'),
+              ),
+            );
+        for (final (ledger, name) in [
+          ('cloud-mine', '本人账本镜像'),
+          ('cloud-other', '其他账号镜像'),
+        ]) {
+          await db
+              .into(db.sharedLedgerCategories)
+              .insert(
+                SharedLedgerCategoriesCompanion.insert(
+                  ledgerId: ledger,
+                  categoryId: categoryId,
+                  name: name,
+                  kind: 'expense',
+                  updatedAt: stamp,
+                ),
+              );
+        }
+        await db.customStatement('PRAGMA wal_checkpoint(TRUNCATE)');
+        final originalBytes = await dbFile.readAsBytes();
+        final originalCategories = await db.select(db.categories).get();
+        final originalMirrors = await db
+            .select(db.sharedLedgerCategories)
+            .get();
+        final backup = await service.createBackup(
+          db: db,
+          currentAccountId: 'user-mine',
+        );
+        final (_, bytes) = await openBackup(backup);
+        final file = await File(
+          p.join(tmp.path, 'snapshot.sqlite'),
+        ).writeAsBytes(bytes);
+        final snapshot = sqlite3.open(file.path, mode: OpenMode.readOnly);
+        try {
+          expect(
+            snapshot
+                .select('SELECT id FROM ledgers')
+                .map((row) => row['id'])
+                .toSet(),
+            {'local-1', 'cloud-mine'},
+          );
+          final categories = snapshot.select(
+            'SELECT id,name,scope_account_id FROM categories ORDER BY scope_account_id',
+          );
+          expect(categories.map((row) => row['scope_account_id']), [
+            '',
+            'user-mine',
+          ]);
+          expect(categories.map((row) => row['name']), ['本地分类', '本人分类']);
+          expect(categories.every((row) => row['id'] == categoryId), isTrue);
+          final transactions = snapshot.select(
+            'SELECT category_id FROM transactions',
+          );
+          expect(transactions, hasLength(2));
+          expect(
+            transactions.every((row) => row['category_id'] == categoryId),
+            isTrue,
+          );
+          expect(
+            snapshot
+                .select('SELECT ledger_id,name FROM shared_ledger_categories')
+                .map((row) => (row['ledger_id'], row['name'])),
+            [('cloud-mine', '本人账本镜像')],
+          );
+          expect(
+            snapshot.select(
+              'SELECT id FROM exchange_rate_overrides WHERE scope_account_id=?',
+              ['user-other'],
+            ),
+            isEmpty,
+          );
+          expect(
+            snapshot.select('SELECT id FROM sync_changes WHERE account_id=?', [
+              'user-other',
+            ]),
+            isEmpty,
+          );
+          expect(
+            snapshot.select('PRAGMA integrity_check').single.values.single,
+            'ok',
+          );
+        } finally {
+          snapshot.close();
+        }
+        expect(await dbFile.readAsBytes(), originalBytes);
+        expect(await db.select(db.categories).get(), originalCategories);
+        expect(
+          await db.select(db.sharedLedgerCategories).get(),
+          originalMirrors,
+        );
+      } catch (error, stackTrace) {
+        printOnFailure('同UUID分类备份账号隔离验证失败：$error\n$stackTrace');
+        rethrow;
       }
     });
   });

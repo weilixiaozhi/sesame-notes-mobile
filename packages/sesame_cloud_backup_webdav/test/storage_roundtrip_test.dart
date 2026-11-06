@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:sesame_cloud_backup/sesame_cloud_backup.dart';
+import 'package:sesame_cloud_backup_webdav/sesame_cloud_backup_webdav.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:webdav_client/webdav_client.dart' as webdav;
 import 'package:sesame_cloud_backup_webdav/src/webdav_storage_service.dart';
@@ -8,6 +9,14 @@ import 'package:sesame_cloud_backup_webdav/src/webdav_storage_service.dart';
 void main() {
   test('文件拒绝不改动对象，重试后列举、下载和幂等删除保留同一路径身份', () async {
     try {
+      registerWebDavBackend();
+      addTearDown(() => CloudProviderRegistry.unregister('webdav'));
+      expect(
+          CloudProviderRegistry.backendOf('webdav')!
+              .fields
+              .where((field) => field.isSecret)
+              .map((field) => field.key),
+          ['password']);
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       final objects = <String, String>{
         '/prefix/backups/notes.json': 'unrelated-content',

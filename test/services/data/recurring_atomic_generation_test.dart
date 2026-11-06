@@ -7,6 +7,7 @@ import 'package:sesame_notes/domain/recurring_schedule.dart';
 import 'package:sesame_notes/features/transactions/application/recurring_transaction_service.dart';
 import '../../helpers/test_isolation.dart';
 
+/// 周期发生、交易和补记游标原子提交，失败不能误报生成成功。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late SesameDatabase db;
@@ -166,19 +167,55 @@ void main() {
     expect(await service.generatePendingTransactions(), hasLength(3));
     expect(await service.generatePendingTransactions(), isEmpty);
   });
-  test('外币缺汇率保留原规则与游标，不静默按1比1入账', () async {
-    final rule = await add();
-    await repo.updateLedger(id: ledgerId, currency: 'USD');
-    await expectLater(
-      repo.generateRecurringTransaction(recurring: rule, happenedAt: day),
-      throwsStateError,
-    );
-    expect(await db.select(db.transactions).get(), isEmpty);
-    expect(
-      (await db.select(db.recurringTransactions).get())
-          .single
-          .lastGeneratedDate,
-      isNull,
-    );
+  test('缺汇率规则不落账或前推游标，独立有效规则真实完成且重复扫描不增账', () async {
+    try {
+      final rule = await add();
+      await repo.updateLedger(id: ledgerId, currency: 'USD');
+      await expectLater(
+        repo.generateRecurringTransaction(recurring: rule, happenedAt: day),
+        throwsStateError,
+      );
+      expect(await db.select(db.transactions).get(), isEmpty);
+      expect(
+        (await db.select(db.recurringTransactions).get())
+            .single
+            .lastGeneratedDate,
+        isNull,
+      );
+      final validId = await repo.addRecurringTransaction(
+        ledgerId: ledgerId,
+        type: 'expense',
+        amount: '3',
+        frequency: 'daily',
+        interval: 1,
+        startDate: day,
+        endDate: day,
+        timeZone: 'UTC',
+      );
+      final changed =
+          await RecurringTransactionService.generatePendingTransactionsStatic(
+            repository: repo,
+          );
+      expect(changed, {ledgerId});
+      final generated = await db.select(db.transactions).getSingle();
+      expect(
+        (generated.recurringId, generated.amount, generated.currencyCode),
+        (validId, '3', 'USD'),
+      );
+      final failed = await (db.select(
+        db.recurringTransactions,
+      )..where((row) => row.id.equals(rule.id))).getSingle();
+      expect(failed.lastGeneratedDate, isNull);
+      expect(
+        await RecurringTransactionService.generatePendingTransactionsStatic(
+          repository: repo,
+        ),
+        isEmpty,
+      );
+      expect(await db.select(db.transactions).get(), hasLength(1));
+    } catch (error, stackTrace) {
+      printOnFailure('周期缺汇率隔离与幂等落账验证失败：$error\n$stackTrace');
+      rethrow;
+    }
   });
 }

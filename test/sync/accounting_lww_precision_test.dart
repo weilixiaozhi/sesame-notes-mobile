@@ -217,7 +217,15 @@ void main() {
     for (final action in ['upsert', 'delete']) {
       test('$entity $action 首次冻结保留队列毫秒并规范化微秒', () async {
         final precise = DateTime.utc(2026, 9, 1, 2, 3, 4, 789, 654);
-        await enqueue(entity, precise, action: action);
+        final payload =
+            jsonDecode(localPayload(entity, precise)) as Map<String, dynamic>;
+        payload['updated_at'] = '2000-01-01T00:00:00.000Z';
+        await enqueue(
+          entity,
+          precise,
+          action: action,
+          payload: jsonEncode(payload),
+        );
         final stored = await db.select(db.syncChanges).getSingle();
         expect(stored.updatedAt.isUtc, isTrue);
         expect(stored.updatedAt.millisecond, 789);
@@ -313,18 +321,67 @@ void main() {
     });
   }
 
-  test('账本100次真实人工编辑在生成请求中保持严格毫秒顺序', () async {
-    final started = DateTime.now().toUtc();
-    for (var index = 0; index < 100; index++) {
-      await repo.updateLedger(id: _ledgerId, name: '账本改名$index');
+  test('真实账本、成员和分类编辑持久化后保持毫秒版本及请求时间', () async {
+    try {
+      final started = DateTime.now().toUtc();
+      for (var index = 0; index < 100; index++) {
+        await repo.updateLedger(id: _ledgerId, name: '账本改名$index');
+      }
+      await fixture.service.push();
+      final changes = fixture.requests
+          .where((row) => row['entity_type'] == 'ledger')
+          .toList();
+      expect(changes, hasLength(100));
+      expectIncreasingTimes(changes, started);
+      expect((changes.last['payload'] as Map)['name'], '账本改名99');
+      final member = await repo.createPlaceholderMember(
+        ledgerId: _ledgerId,
+        name: '原成员',
+      );
+      await repo.renameMember(id: member, name: '成员第一次');
+      await repo.renameMember(id: member, name: '成员第二次');
+      await fixture.service.push();
+      final memberChanges = fixture.requests
+          .where((row) => row['entity_id'] == member)
+          .toList();
+      expect(memberChanges, hasLength(3));
+      expectIncreasingTimes(memberChanges, started);
+      expect((memberChanges.last['payload'] as Map)['display_name'], '成员第二次');
+      // 分类使用已观察的毫秒基线，实际编辑必须晚于该基线而不是重新取墙上时钟。
+      final category = await repo.createCategory(name: '原分类', kind: 'expense');
+      final observed = DateTime.fromMillisecondsSinceEpoch(
+        DateTime.now().millisecondsSinceEpoch + 1000,
+        isUtc: true,
+      );
+      await (db.update(db.categories)..where((row) => row.id.equals(category)))
+          .write(CategoriesCompanion(updatedAt: d.Value(observed)));
+      await repo.updateCategory(category, name: '实际分类编辑');
+      final storedCategory = await (db.select(
+        db.categories,
+      )..where((row) => row.id.equals(category))).getSingle();
+      final queued =
+          (await (db.select(db.syncChanges)
+                    ..where((row) => row.entityId.equals(category))
+                    ..orderBy([(row) => d.OrderingTerm.desc(row.id)])
+                    ..limit(1))
+                  .get())
+              .single;
+      final frozen = (await fixture.service.pushCoordinator.freezePending(
+        queued,
+        _account,
+      ))!;
+      expect(storedCategory.updatedAt.isAfter(observed), isTrue);
+      expect(queued.updatedAt, storedCategory.updatedAt);
+      expect(
+        DateTime.parse(
+          (jsonDecode(frozen.frozenRequest!) as Map)['updated_at'] as String,
+        ),
+        storedCategory.updatedAt,
+      );
+    } catch (error, stackTrace) {
+      printOnFailure('真实编辑持久化与请求毫秒精度验证失败：$error\n$stackTrace');
+      rethrow;
     }
-    await fixture.service.push();
-    final changes = fixture.requests
-        .where((row) => row['entity_type'] == 'ledger')
-        .toList();
-    expect(changes, hasLength(100));
-    expectIncreasingTimes(changes, started);
-    expect((changes.last['payload'] as Map)['name'], '账本改名99');
   });
 
   for (final entity in _entities) {

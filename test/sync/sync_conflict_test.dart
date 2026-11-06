@@ -766,43 +766,83 @@ void main() {
     });
   }
 
-  test('push accepted：pushedAt 标记 + server_revision 落库', () async {
-    final txId = await seedCloudTx(serverRevision: 1);
-    final pending = await (db.select(
-      db.syncChanges,
-    )..where((c) => c.pushedAt.isNull())).get();
-    when(
-      () => mockApi.postSyncPush(
-        postSyncPushRequest: any(named: 'postSyncPushRequest'),
-      ),
-    ).thenAnswer(
-      (invocation) async => Response(
-        requestOptions: RequestOptions(path: '/sync/push'),
-        data: acknowledgeSyncRequest(
-          invocation.namedArguments[#postSyncPushRequest]
-              as PostSyncPushRequest,
-          overrides: [
-            _outcome(
-              pending.single.mutationId,
-              PostSyncPush200ResponseOutcomesInnerStatusEnum.accepted,
-              revision: 2,
-            ),
-          ],
+  test('已拒收前缀只允许未知冻结队首确认，后继意图保持FIFO等待', () async {
+    try {
+      final txId = await seedCloudTx(serverRevision: 1);
+      // 已被服务端拒收的前缀持有真实冻结原文，确认其他命令不能改写其基线。
+      final prefix = await service.pushCoordinator.freezePending(
+        await db.select(db.syncChanges).getSingle(),
+        'account',
+      );
+      expect(prefix, isNotNull);
+      final rejectedId = prefix!.id;
+      await repo.updateTransaction(id: txId, type: 'expense', amount: '20');
+      await (db.update(
+        db.syncChanges,
+      )..where((row) => row.id.equals(rejectedId))).write(
+        const SyncChangesCompanion(
+          rejectionReason: d.Value('金额需要修正'),
+          rejectionCode: d.Value('INVALID_AMOUNT'),
         ),
-        statusCode: 200,
-      ),
-    );
-
-    await service.push();
-
-    final after = await (db.select(
-      db.syncChanges,
-    )..where((c) => c.pushedAt.isNull())).get();
-    expect(after, isEmpty);
-    final tx = await (db.select(
-      db.transactions,
-    )..where((t) => t.id.equals(txId))).getSingle();
-    expect(tx.serverRevision, 2);
+      );
+      final rejected = await (db.select(
+        db.syncChanges,
+      )..where((row) => row.id.equals(rejectedId))).getSingle();
+      final unknown = (await (db.select(
+        db.syncChanges,
+      )..where((row) => row.id.isBiggerThanValue(rejectedId))).get()).single;
+      final frozen = (await service.pushCoordinator.freezePending(
+        unknown,
+        'account',
+      ))!;
+      await repo.updateTransaction(id: txId, type: 'expense', amount: '30');
+      final successor = (await (db.select(
+        db.syncChanges,
+      )..where((row) => row.id.isBiggerThanValue(frozen.id))).get()).single;
+      final sent = <String>[];
+      when(
+        () => mockApi.postSyncPush(
+          postSyncPushRequest: any(named: 'postSyncPushRequest'),
+        ),
+      ).thenAnswer((call) async {
+        final request =
+            call.namedArguments[#postSyncPushRequest] as PostSyncPushRequest;
+        sent.addAll(syncRequestChanges(request).map(jsonEncode));
+        return Response(
+          requestOptions: RequestOptions(path: '/sync/push'),
+          statusCode: 200,
+          data: acknowledgeSyncRequest(request),
+        );
+      });
+      await service.push();
+      expect(sent, [frozen.frozenRequest]);
+      final rows = await db.select(db.syncChanges).get();
+      expect(rows.singleWhere((row) => row.id == rejectedId), rejected);
+      expect(
+        rows.singleWhere((row) => row.id == frozen.id).pushedAt,
+        isNotNull,
+      );
+      final waiting = rows.singleWhere((row) => row.id == successor.id);
+      expect(
+        (
+          waiting.mutationId,
+          waiting.payload,
+          waiting.pushedAt,
+          waiting.frozenRequest,
+        ),
+        (successor.mutationId, successor.payload, null, null),
+      );
+      expect(waiting.baseRevision, frozen.baseRevision! + 1);
+      expect(
+        (await repo.getTransactionById(txId))!.serverRevision,
+        frozen.baseRevision! + 1,
+      );
+      await service.push();
+      expect(sent, [frozen.frozenRequest], reason: '已拒收分支尚未处理时不能自动发送后继意图');
+    } catch (error, stackTrace) {
+      printOnFailure('拒收前缀冻结确认与FIFO验证失败：$error\n$stackTrace');
+      rethrow;
+    }
   });
 
   test('pull 遇到远端修订超前于 pending 基线 -> 冲突，本地不被覆盖', () async {

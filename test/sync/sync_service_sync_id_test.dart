@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/json_object.dart';
@@ -11,6 +12,7 @@ import 'package:one_of/any_of.dart';
 import 'package:sesame_api_client/sesame_api_client.dart';
 
 import 'package:sesame_notes/sync/sync_service.dart';
+import 'package:sesame_notes/infrastructure/api/api_serializers.dart';
 import 'package:sesame_notes/sync/models/ledger_sync_state.dart';
 import 'package:sesame_notes/data/db.dart'
     hide
@@ -22,6 +24,43 @@ import 'package:sesame_notes/data/db.dart'
 import '../helpers/test_isolation.dart';
 
 class _MockSyncApi extends Mock implements SyncApi {}
+
+/// 首次绑定直接经过正式 SDK 解码，保留服务端数值枚举的真实 JSON 形状。
+class _FullWireAdapter implements HttpClientAdapter {
+  /// 同一完整快照供实际网络出口读取，不替换生成模型或业务投影。
+  _FullWireAdapter(this.body);
+  final Map<String, Object?> body;
+  final requests = <RequestOptions>[];
+
+  /// 只接受完整快照请求，意外网络操作必须令测试失败。
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    try {
+      if (!options.path.endsWith('/sync/full')) {
+        throw StateError('首次绑定出现非预期请求：${options.path}');
+      }
+      requests.add(options);
+      return ResponseBody.fromString(
+        jsonEncode(body),
+        200,
+        headers: {
+          Headers.contentTypeHeader: [Headers.jsonContentType],
+        },
+      );
+    } catch (error, stackTrace) {
+      printOnFailure('首次绑定网络夹具失败：$error\n$stackTrace');
+      rethrow;
+    }
+  }
+
+  /// 内存传输不持有系统网络资源。
+  @override
+  void close({bool force = false}) {}
+}
 
 /// mocktail 需要为不可空参数注册 fallback 值（仅占位，不会被交互）。
 void _registerPushFallback() {
@@ -122,6 +161,7 @@ String _txPayload() => jsonEncode({
   'last_edited_at': null,
 });
 
+/// 首次绑定和完整快照保持同步身份、SDK类型与本机数据一致。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -335,61 +375,115 @@ void main() {
     ).called(1);
   });
 
-  test('full：首次绑定保存服务端身份、账号域及月底账期，不登记本地变更', () async {
-    final fullResp = GetSyncFull200Response(
-      (b) => b
-        ..ledger = GetSyncFull200ResponseLedger(
-          (b) => b
-            ..ownerId = 'user-1'
-            ..id = 'led-new'
-            ..syncId = 'S-FIRST'
-            ..name = '新云端账本'
-            ..currency = 'CNY'
-            ..monthStartDay = 31
-            ..aaEnabled = false
-            ..updatedAt = DateTime.now().toUtc(),
-        ).toBuilder()
-        ..transactions = BuiltList<Transaction>().toBuilder()
-        ..categories = BuiltList<Category>().toBuilder()
-        ..recurringTransactions = BuiltList<RecurringTransaction>().toBuilder()
-        ..members = BuiltList<Member>().toBuilder()
-        ..exchangeRateOverrides = BuiltList<ExchangeRateOverride>().toBuilder()
-        ..serverCursor = '5',
-    );
-    when(
-      () => mockApi.getSyncFull(
-        includeRecurringState: any(named: 'includeRecurringState'),
-        ledgerId: any(named: 'ledgerId'),
-        syncId: any(named: 'syncId'),
-      ),
-    ).thenAnswer(
-      (_) async => Response(
-        requestOptions: RequestOptions(path: '/sync/full'),
-        data: fullResp,
-        statusCode: 200,
-      ),
-    );
-
-    await service.full(ledgerId: 'led-new');
-
-    // 首次绑定：请求不带 sync_id，返回的快照 sync_id 落库
-    final captured = verify(
-      () => mockApi.getSyncFull(
-        includeRecurringState: any(named: 'includeRecurringState'),
-        ledgerId: any(named: 'ledgerId'),
-        syncId: captureAny(named: 'syncId'),
-      ),
-    ).captured;
-    expect(captured.single, isNull);
-    final rows = await (db.select(
-      db.ledgers,
-    )..where((l) => l.id.equals('led-new'))).get();
-    expect(rows.single.syncId, 'S-FIRST');
-    expect(rows.single.storageMode, 'cloud');
-    expect(rows.single.scopeAccountId, 'user-1');
-    expect(rows.single.ownerAccountId, 'user-1');
-    expect(rows.single.monthStartDay, 31);
-    expect(await db.select(db.syncChanges).get(), isEmpty);
+  test('首次绑定经真实SDK落库数值枚举、金额和账号身份，不登记反向变更', () async {
+    try {
+      const stamp = '2026-09-05T10:00:00.789Z';
+      const categoryId = '30000000-0000-4000-8000-000000000001';
+      const childCategoryId = '30000000-0000-4000-8000-000000000002';
+      final adapter = _FullWireAdapter({
+        'ledger': {
+          'owner_id': 'user-1',
+          'id': 'led-new',
+          'sync_id': 'S-FIRST',
+          'name': '新云端账本',
+          'currency': 'CNY',
+          'month_start_day': 31,
+          'aa_enabled': false,
+          'updated_at': stamp,
+        },
+        'categories': [
+          {
+            'id': categoryId,
+            'owner_id': 'user-1',
+            'name': '餐饮',
+            'kind': 'expense',
+            'level': 1,
+            'sort_order': 0,
+            'parent_id': null,
+            'icon': null,
+            'version_token': 'a' * 64,
+            'updated_at': stamp,
+          },
+          {
+            'id': childCategoryId,
+            'owner_id': 'user-1',
+            'name': '早餐',
+            'kind': 'expense',
+            'level': 2,
+            'sort_order': 0,
+            'parent_id': categoryId,
+            'icon': null,
+            'version_token': 'b' * 64,
+            'updated_at': stamp,
+          },
+        ],
+        'transactions': [
+          {
+            'id': '40000000-0000-4000-8000-000000000001',
+            'ledger_id': 'led-new',
+            'tx_type': 'expense',
+            'amount': '10.1234567891',
+            'native_amount': '10.1234567891',
+            'currency_code': 'CNY',
+            'happened_at': stamp,
+            'category_id': childCategoryId,
+            'note': null,
+            'recurring_id': null,
+            'aa_mode': '1',
+            'splits': <Object>[],
+            'revision': 1,
+            'updated_at': stamp,
+            'created_at': stamp,
+          },
+        ],
+        'members': <Object>[],
+        'recurring_transactions': <Object>[],
+        'exchange_rate_overrides': <Object>[],
+        'server_cursor': '5',
+      });
+      final client = SesameApiClient(
+        basePathOverride: 'https://sync.test',
+        serializers: apiSerializers,
+      );
+      client.dio.httpClientAdapter = adapter;
+      addTearDown(() => client.dio.close(force: true));
+      await SyncService(
+        client: client,
+        db: db,
+        deviceId: 'dev-1',
+        currentAccountIdGetter: () => 'user-1',
+      ).full(ledgerId: 'led-new');
+      expect(adapter.requests.single.queryParameters['sync_id'], isNull);
+      final rows = await (db.select(
+        db.ledgers,
+      )..where((l) => l.id.equals('led-new'))).get();
+      expect(rows.single.syncId, 'S-FIRST');
+      expect(rows.single.storageMode, 'cloud');
+      expect(rows.single.scopeAccountId, 'user-1');
+      expect(rows.single.ownerAccountId, 'user-1');
+      expect(rows.single.monthStartDay, 31);
+      final transaction = await db.select(db.transactions).getSingle();
+      expect(
+        (transaction.aaMode, transaction.amount, transaction.nativeAmount),
+        (1, '10.1234567891', '10.1234567891'),
+      );
+      final category = await (db.select(
+        db.categories,
+      )..where((row) => row.id.equals(childCategoryId))).getSingle();
+      expect(
+        (category.level, category.parentId, transaction.categoryId),
+        (2, categoryId, childCategoryId),
+      );
+      expect(
+        (rows.single.updatedAt.toUtc(), category.updatedAt.toUtc()),
+        (DateTime.parse(stamp), DateTime.parse(stamp)),
+      );
+      expect(transaction.serverRevision, 1);
+      expect(await db.select(db.syncChanges).get(), isEmpty);
+    } catch (error, stackTrace) {
+      printOnFailure('首次绑定协议与身份验证失败：$error\n$stackTrace');
+      rethrow;
+    }
   });
 
   test('full：快照中的各类实体必须在当前账号域复活 tombstone', () async {
