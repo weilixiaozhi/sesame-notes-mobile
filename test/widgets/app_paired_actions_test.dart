@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/theme/app_theme.dart';
 import 'package:sesame_notes/theme/dimens.dart';
+import 'package:sesame_notes/theme/icons/app_icons.dart';
 
 import '../helpers/test_isolation.dart';
 
@@ -24,6 +25,7 @@ Future<void> _open(
   required VoidCallback onPrimary,
   required VoidCallback onSecondary,
   bool busy = false,
+  bool withIcons = false,
 }) async {
   tester.view.physicalSize = Size(width, 844);
   tester.view.devicePixelRatio = 1;
@@ -50,6 +52,8 @@ Future<void> _open(
               onSecondaryPressed: onSecondary,
               primaryButtonKey: _primaryKey,
               secondaryButtonKey: _secondaryKey,
+              primaryIcon: withIcons ? AppIcons.share : null,
+              secondaryIcon: withIcons ? AppIcons.copy : null,
               busy: busy,
             ),
           ),
@@ -65,14 +69,22 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(resetGlobalTestState);
 
-  for (final layout in [(390.0, 1.0), (320.0, 1.3)]) {
-    testWidgets('主次操作尺寸一致且内边缘可以点击 ${layout.$1}/${layout.$2}', (tester) async {
+  for (final layout in [
+    (390.0, 1.0, false),
+    (320.0, 1.3, false),
+    (390.0, 1.0, true),
+    (320.0, 1.3, true),
+  ]) {
+    testWidgets('主次操作尺寸一致且内边缘可以点击 ${layout.$1}/${layout.$2}/图标${layout.$3}', (
+      tester,
+    ) async {
       var primaryPressed = 0;
       var secondaryPressed = 0;
       await _open(
         tester,
         width: layout.$1,
         scale: layout.$2,
+        withIcons: layout.$3,
         onPrimary: () => primaryPressed++,
         onSecondary: () => secondaryPressed++,
       );
@@ -80,6 +92,14 @@ void main() {
       final secondary = _button(_secondaryKey);
       expect(primary, findsOneWidget);
       expect(secondary, findsOneWidget);
+      expect(
+        find.byIcon(AppIcons.share),
+        layout.$3 ? findsOneWidget : findsNothing,
+      );
+      expect(
+        find.byIcon(AppIcons.copy),
+        layout.$3 ? findsOneWidget : findsNothing,
+      );
       final first = tester.getRect(primary);
       final second = tester.getRect(secondary);
       expect(first.width, closeTo(second.width, 0.01));
@@ -100,23 +120,34 @@ void main() {
     });
   }
 
-  testWidgets('忙碌状态同时禁用两个操作，防止重复提交和提前返回', (tester) async {
-    var calls = 0;
-    await _open(
-      tester,
-      width: 320,
-      scale: 1.3,
-      busy: true,
-      onPrimary: () => calls++,
-      onSecondary: () => calls++,
-    );
-    final primary = _button(_primaryKey);
-    final secondary = _button(_secondaryKey);
-    expect(tester.widget<ButtonStyleButton>(primary).onPressed, isNull);
-    expect(tester.widget<ButtonStyleButton>(secondary).onPressed, isNull);
-    await tester.tap(primary);
-    await tester.tap(secondary);
-    expect(calls, 0);
-    expect(tester.takeException(), isNull);
-  });
+  for (final withIcons in [false, true]) {
+    testWidgets('忙碌状态禁用两个操作并保留文案，图标$withIcons', (tester) async {
+      var calls = 0;
+      await _open(
+        tester,
+        width: 320,
+        scale: 1.3,
+        busy: true,
+        withIcons: withIcons,
+        onPrimary: () => calls++,
+        onSecondary: () => calls++,
+      );
+      final primary = _button(_primaryKey);
+      final secondary = _button(_secondaryKey);
+      expect(tester.widget<ButtonStyleButton>(primary).onPressed, isNull);
+      expect(tester.widget<ButtonStyleButton>(secondary).onPressed, isNull);
+      expect(find.text('下一步：确认创建'), findsOneWidget);
+      expect(find.text('上一步'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byIcon(AppIcons.share), findsNothing);
+      expect(
+        find.byIcon(AppIcons.copy),
+        withIcons ? findsOneWidget : findsNothing,
+      );
+      await tester.tap(primary);
+      await tester.tap(secondary);
+      expect(calls, 0);
+      expect(tester.takeException(), isNull);
+    });
+  }
 }

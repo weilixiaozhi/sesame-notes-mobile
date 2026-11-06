@@ -11,7 +11,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/navigation/route_consts.dart';
-import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
 import 'widgets/fitness_widgets.dart';
@@ -76,25 +75,13 @@ Future<void> openFitnessActions(BuildContext context, WidgetRef ref) async {
     }
   }
   if (!context.mounted) return;
-  final action = await showAppSheet<String>(
-    context: context,
-    child: AppSheet(
-      title: l.commonAdd,
-      child: SingleChildScrollView(
-        child: AppActionGrid<String>(
-          actions: [
-            (value: 'blank', icon: AppIcons.fitness, label: l.calendarTraining),
-            (
-              value: 'template',
-              icon: AppIcons.folder,
-              label: l.calendarTemplate,
-            ),
-            (value: 'plan', icon: AppIcons.calendar, label: l.calendarPlan),
-          ],
-          onSelected: (value) => Navigator.pop(context, value),
-        ),
-      ),
-    ),
+  final action = await showCreateActionSheet<String>(
+    context,
+    actions: [
+      (value: 'blank', icon: AppIcons.fitness, label: l.calendarTraining),
+      (value: 'template', icon: AppIcons.folder, label: l.calendarTemplate),
+      (value: 'plan', icon: AppIcons.calendar, label: l.calendarPlan),
+    ],
   );
   if (!context.mounted) return;
   switch (action) {

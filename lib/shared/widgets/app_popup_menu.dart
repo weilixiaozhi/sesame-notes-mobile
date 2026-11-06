@@ -139,7 +139,7 @@ class AppPopupMenu extends StatelessWidget {
         return entries;
       },
       child: SizedBox.square(
-        dimension: AppDimens.menuIconBoxSize,
+        dimension: AppDimens.headerActionSize,
         child: Icon(
           AppIcons.moreVertical,
           size: AppDimens.icon20,

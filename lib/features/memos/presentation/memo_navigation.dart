@@ -24,20 +24,12 @@ Future<String?> createMemoBook(BuildContext context) =>
 /// 底部 + 号：账号密码与空白笔记共用一个入口，弹窗规格与健身业务域一致。
 Future<void> openMemoCreateSheet(BuildContext context, WidgetRef ref) async {
   final l = AppLocalizations.of(context);
-  final action = await showAppSheet<String>(
-    context: context,
-    child: AppSheet(
-      title: l.commonAdd,
-      child: SingleChildScrollView(
-        child: AppActionGrid<String>(
-          actions: [
-            (value: 'note', icon: AppIcons.edit, label: l.calendarNote),
-            (value: 'card', icon: AppIcons.lock, label: l.calendarCredential),
-          ],
-          onSelected: (value) => Navigator.pop(context, value),
-        ),
-      ),
-    ),
+  final action = await showCreateActionSheet<String>(
+    context,
+    actions: [
+      (value: 'note', icon: AppIcons.edit, label: l.calendarNote),
+      (value: 'card', icon: AppIcons.lock, label: l.calendarCredential),
+    ],
   );
   if (!context.mounted) return;
   switch (action) {

@@ -212,21 +212,16 @@ class AppSheet extends StatelessWidget {
 /// 弹出统一样式的 Bottom Sheet；[child] 通常为 [AppSheet]。
 /// [heightFactor] 限制最大屏占比，返回子组件 pop 的结果。
 /// [entryShape] 显式选择编辑圆角；未指定时全高弹层使用编辑圆角。
-/// [minimumTopGap] 为弹层保留最小顶部间隔，旋转时按实时屏幕高度重算。
 /// [borderRadius] 为有固定几何布局的编辑器提供独立圆角。
 Future<T?> showAppSheet<T>({
   required BuildContext context,
   required Widget child,
-  bool isScrollControlled = true,
-  bool useSafeArea = true,
   double heightFactor = kAppSheetHeightFactor,
   bool? entryShape,
   BorderRadius? borderRadius,
-  double minimumTopGap = 0,
   bool useRootNavigator = false,
   Color? barrierColor,
   Color? backgroundColor,
-  double? elevation,
   bool avoidKeyboard = true,
 }) {
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
@@ -234,15 +229,11 @@ Future<T?> showAppSheet<T>({
     _appSheetRoute<T>(
       context: context,
       child: child,
-      isScrollControlled: isScrollControlled,
-      useSafeArea: useSafeArea,
       heightFactor: heightFactor,
       entryShape: entryShape,
       borderRadius: borderRadius,
-      minimumTopGap: minimumTopGap,
       barrierColor: barrierColor,
       backgroundColor: backgroundColor,
-      elevation: elevation,
       avoidKeyboard: avoidKeyboard,
       capturedThemes: InheritedTheme.capture(
         from: context,
@@ -284,15 +275,11 @@ ModalBottomSheetRoute<T> _appSheetRoute<T>({
   required Widget child,
   RouteSettings? settings,
   CapturedThemes? capturedThemes,
-  bool isScrollControlled = true,
-  bool useSafeArea = true,
   double heightFactor = kAppSheetHeightFactor,
   bool? entryShape,
   BorderRadius? borderRadius,
-  double minimumTopGap = 0,
   Color? barrierColor,
   Color? backgroundColor,
-  double? elevation,
   bool avoidKeyboard = true,
 }) {
   final localizations = MaterialLocalizations.of(context);
@@ -307,13 +294,8 @@ ModalBottomSheetRoute<T> _appSheetRoute<T>({
     barrierOnTapHint: localizations.scrimOnTapHint(
       localizations.bottomSheetLabel,
     ),
-    isScrollControlled: isScrollControlled,
-    useSafeArea: useSafeArea,
     backgroundOverride: backgroundColor,
     barrierOverride: barrierColor,
-    elevation: elevation,
-    // 主题阴影绘制在内容裁剪之外；显式层级继续使用原生 Material 阴影。
-    clipBehavior: elevation == null ? Clip.none : Clip.antiAlias,
     enableDrag: true,
     // 用自定义 SheetGrabHandle,关闭 Material 自带拖拽条
     showDragHandle: false,
@@ -325,7 +307,7 @@ ModalBottomSheetRoute<T> _appSheetRoute<T>({
       final keyboard = avoidKeyboard ? media.viewInsets.bottom : 0.0;
       final panelHeight = math.min(
         media.size.height * heightFactor,
-        media.size.height - minimumTopGap,
+        media.size.height,
       );
       final maxHeight = (panelHeight - keyboard)
           .clamp(0.0, media.size.height)
@@ -344,7 +326,6 @@ ModalBottomSheetRoute<T> _appSheetRoute<T>({
               )
             : content,
       );
-      if (elevation != null) return padded;
       final radius =
           borderRadius ??
           BorderRadius.vertical(
@@ -380,14 +361,15 @@ class _AppSheetRoute<T> extends ModalBottomSheetRoute<T> {
     super.capturedThemes,
     super.barrierLabel,
     super.barrierOnTapHint,
-    required super.isScrollControlled,
-    super.useSafeArea,
-    super.elevation,
-    super.clipBehavior,
     super.enableDrag,
     super.showDragHandle,
     super.sheetAnimationStyle,
-  });
+  }) : super(
+         // 弹层始终使用完整高度约束和安全区，阴影由内容外层绘制。
+         isScrollControlled: true,
+         useSafeArea: true,
+         clipBehavior: Clip.none,
+       );
 
   final BuildContext originContext;
   final bool entryShape;

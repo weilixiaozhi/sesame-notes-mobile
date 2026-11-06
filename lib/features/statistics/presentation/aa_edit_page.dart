@@ -24,6 +24,7 @@ import 'package:sesame_notes/shared/widgets/aa_participant_avatar.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/features/transactions/presentation/widgets/transaction/aa_payer_picker_sheet.dart';
 import 'package:sesame_notes/shared/widgets/detail_list_item.dart';
+import 'package:sesame_notes/shared/widgets/app_detail.dart';
 
 /// AA 分摊编辑页(纯选择器,不写库)。
 ///
@@ -863,41 +864,28 @@ class _AaEditPageState extends ConsumerState<AaEditPage> {
     return index < 0 ? 0 : toDouble(splits[index]);
   }
 
-  /// 主体卡信息行(只读):左标签 + 右值。
+  /// 主体卡复用公共信息行，数值保持输入字段的字形和右侧对齐。
   Widget _infoRow(
     BuildContext context,
     String label,
     String value, {
     Widget? valueWidget,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppDimens.p8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: AppTextTokens.body(
-              context,
-            ).copyWith(color: AppTokens.textSecondary(context)),
-          ),
-          Flexible(
-            // 右缩 10px:与分摊配置卡金额文本右边界(输入框 contentPadding
-            // 右侧 10px)对齐,使全页右侧内容落在同一条直线上
-            child: Padding(
-              padding: const EdgeInsets.only(right: AppDimens.p8),
-              child:
-                  valueWidget ??
-                  Text(
-                    value,
-                    style: AppTextTokens.input(context),
-                    textAlign: TextAlign.right,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+    return AppDetailInfoRow(
+      label: label,
+      value: value,
+      valueWidget: Padding(
+        // 与分摊配置卡的金额输入内容保持相同的右侧留白。
+        padding: const EdgeInsets.only(right: AppDimens.p8),
+        child:
+            valueWidget ??
+            Text(
+              value,
+              style: AppTextTokens.input(context),
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
-        ],
       ),
     );
   }

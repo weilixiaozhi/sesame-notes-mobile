@@ -11,6 +11,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/presentation/minimum_refresh_duration.dart';
 import '../../../shared/providers/sync_providers.dart';
 import '../../../shared/widgets/app_empty.dart';
+import '../../../shared/widgets/app_search_field.dart';
 import '../../../shared/widgets/primary_header.dart';
 import '../../../shared/widgets/toast.dart';
 import '../../../theme/colors.dart';
@@ -80,28 +81,16 @@ class _MemoCredentialsPageState extends ConsumerState<MemoCredentialsPage> {
 
   /// 顶部常驻搜索框：与币种管理页同一版式，输入即改查询条件。
   Widget _buildSearchField(AppLocalizations l) {
-    final hasQuery = _searchController.text.isNotEmpty;
     return Padding(
       padding: const EdgeInsets.only(top: AppDimens.p8, bottom: AppDimens.p8),
       child: Row(
         children: [
           Expanded(
-            child: TextField(
+            child: AppSearchField(
               controller: _searchController,
               enabled: !_reordering,
-              decoration: InputDecoration(
-                prefixIcon: const Icon(AppIcons.search),
-                hintText: l.memoSearchHint,
-                suffixIcon: hasQuery
-                    ? IconButton(
-                        icon: const Icon(
-                          AppIcons.close,
-                          size: AppDimens.icon20,
-                        ),
-                        onPressed: _clearSearch,
-                      )
-                    : null,
-              ),
+              hintText: l.memoSearchHint,
+              onClear: _clearSearch,
               onChanged: _onSearchChanged,
             ),
           ),

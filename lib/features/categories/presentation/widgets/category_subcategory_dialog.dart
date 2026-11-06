@@ -195,26 +195,21 @@ class _SubcategoryDialogState extends ConsumerState<CategorySubcategoryDialog>
               onConfirm: _executeReviewedDelete,
             )
           : AppSheet(
-              footer: SizedBox(
-                width: double.infinity,
-                height: AppDimens.actionButtonMinHeight,
-                child: isDeleteMode
-                    ? AppPrimaryButton(
-                        fullWidth: false,
-                        label: l10n.commonNext,
-                        onPressed:
-                            selectedCategoryIds.isEmpty ||
-                                _isLoading ||
-                                _loadFailed
-                            ? null
-                            : _confirmDelete,
-                      )
-                    : FilledButton.icon(
-                        onPressed: widget.onAddSubCategory,
-                        icon: const Icon(AppIcons.add, size: AppDimens.icon20),
-                        label: Text(l10n.subcategoryAdd),
-                      ),
-              ),
+              footer: isDeleteMode
+                  ? AppPrimaryButton(
+                      label: l10n.commonNext,
+                      onPressed:
+                          selectedCategoryIds.isEmpty ||
+                              _isLoading ||
+                              _loadFailed
+                          ? null
+                          : _confirmDelete,
+                    )
+                  : AppPrimaryButton(
+                      onPressed: widget.onAddSubCategory,
+                      icon: AppIcons.add,
+                      label: l10n.subcategoryAdd,
+                    ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,

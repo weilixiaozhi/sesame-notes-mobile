@@ -61,7 +61,7 @@ class PrimaryHeader extends StatelessWidget {
       maxLines: 1,
     )..layout();
     final height = math.max(
-      30.0,
+      AppDimens.headerActionSize,
       painter.height + _headerTextActionPadding.vertical,
     );
     painter.dispose();
@@ -218,6 +218,7 @@ class HeaderIconAction extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool spinning;
 
+  /// 页面只提供操作图标和状态，按钮热区与标题行使用统一尺寸。
   const HeaderIconAction({
     super.key,
     required this.icon,
@@ -226,6 +227,7 @@ class HeaderIconAction extends StatelessWidget {
     this.spinning = false,
   });
 
+  /// 图标与加载指示器共享头部热区，忙碌时阻止重复触发。
   @override
   Widget build(BuildContext context) {
     return IconButton(
@@ -233,15 +235,20 @@ class HeaderIconAction extends StatelessWidget {
           ? const SizedBox(
               width: AppDimens.icon20,
               height: AppDimens.icon20,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(
+                strokeWidth: AppDimens.progressStrokeWidth,
+              ),
             )
           : Icon(icon, size: AppDimens.icon20),
       tooltip: tooltip,
       onPressed: spinning ? null : onPressed,
       // 热区统一 30x30（图标 20 + 四周 0）：与首行最小高度 30 一致，
       // 含功能键的页面首行行高与纯文字页保持同一高度。
-      padding: const EdgeInsets.all(0),
-      constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(
+        minWidth: AppDimens.headerActionSize,
+        minHeight: AppDimens.headerActionSize,
+      ),
       style: IconButton.styleFrom(
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),

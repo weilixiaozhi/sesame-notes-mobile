@@ -11,6 +11,7 @@ import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/utils/currency/currencies.dart';
 import 'package:sesame_notes/shared/presentation/currency_names.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
+import 'package:sesame_notes/shared/widgets/app_search_field.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
 /// 管理展示币种页。
@@ -48,6 +49,7 @@ class _CurrencyManagePageState extends ConsumerState<CurrencyManagePage> {
     super.dispose();
   }
 
+  /// 共用搜索输入维护关键词，按当前账本的币种可见集合展示选择列表。
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -100,24 +102,13 @@ class _CurrencyManagePageState extends ConsumerState<CurrencyManagePage> {
                 ),
                 const SizedBox(height: AppDimens.p4),
                 // 搜索框:复用 ledgersSearchCurrency 文案与各 picker 交互
-                TextField(
+                AppSearchField(
                   controller: _searchController,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(AppIcons.search),
-                    hintText: l10n.ledgersSearchCurrency,
-                    suffixIcon: _query.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(
-                              AppIcons.close,
-                              size: AppDimens.icon20,
-                            ),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() => _query = '');
-                            },
-                          )
-                        : null,
-                  ),
+                  hintText: l10n.ledgersSearchCurrency,
+                  onClear: () {
+                    _searchController.clear();
+                    setState(() => _query = '');
+                  },
                   onChanged: (v) => setState(() => _query = v),
                 ),
                 const SizedBox(height: AppDimens.p8),

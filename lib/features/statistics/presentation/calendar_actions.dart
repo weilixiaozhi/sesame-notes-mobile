@@ -32,35 +32,15 @@ Future<void> openCalendarActions(
           pageId: 'calendar',
           action: ProductAction.calendarCreateClick,
         );
-    final action = await showAppSheet<String>(
-      context: context,
-      child: AppSheet(
-        title: l.commonAdd,
-        child: SingleChildScrollView(
-          child: AppActionGrid<String>(
-            actions: [
-              (value: 'transaction', icon: AppIcons.money, label: l.tabHome),
-              (
-                value: 'day',
-                icon: AppIcons.calendar,
-                label: l.calendarAnniversary,
-              ),
-              (value: 'memo', icon: AppIcons.edit, label: l.calendarNote),
-              (
-                value: 'credential',
-                icon: AppIcons.lock,
-                label: l.calendarCredential,
-              ),
-              (
-                value: 'fitness',
-                icon: AppIcons.fitness,
-                label: l.calendarTraining,
-              ),
-            ],
-            onSelected: (value) => Navigator.pop(context, value),
-          ),
-        ),
-      ),
+    final action = await showCreateActionSheet<String>(
+      context,
+      actions: [
+        (value: 'transaction', icon: AppIcons.money, label: l.tabHome),
+        (value: 'day', icon: AppIcons.calendar, label: l.calendarAnniversary),
+        (value: 'memo', icon: AppIcons.edit, label: l.calendarNote),
+        (value: 'credential', icon: AppIcons.lock, label: l.calendarCredential),
+        (value: 'fitness', icon: AppIcons.fitness, label: l.calendarTraining),
+      ],
     );
     if (!context.mounted || action == null) return;
     switch (action) {

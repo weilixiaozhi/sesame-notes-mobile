@@ -7,6 +7,7 @@ import 'package:sesame_notes/features/ledgers/application/ledger_actions.dart';
 import 'package:sesame_notes/infrastructure/api/api_error_mapper.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/widgets/app_sheet.dart';
+import 'package:sesame_notes/shared/widgets/app_primary_button.dart';
 import 'package:sesame_notes/shared/widgets/toast.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
@@ -229,18 +230,11 @@ class LedgerInviteSheet extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppDimens.p20),
-        FilledButton.icon(
-          onPressed: controller.isBusy ? null : () => _generate(context, l10n),
-          icon: const Icon(AppIcons.qrCode),
-          label: controller.isBusy
-              ? const SizedBox(
-                  width: AppDimens.icon18,
-                  height: AppDimens.icon18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: AppDimens.progressStrokeWidth,
-                  ),
-                )
-              : Text(l10n.sharedInviteGenerate),
+        AppPrimaryButton(
+          onPressed: () => _generate(context, l10n),
+          icon: AppIcons.qrCode,
+          label: l10n.sharedInviteGenerate,
+          busy: controller.isBusy,
         ),
         if (controller.error != null) ...[
           const SizedBox(height: AppDimens.p12),
@@ -302,24 +296,13 @@ class LedgerInviteSheet extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppDimens.p20),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                icon: const Icon(AppIcons.copy),
-                label: Text(l10n.sharedInviteCopyCode),
-                onPressed: () => _copyInviteCode(context, invite, l10n),
-              ),
-            ),
-            const SizedBox(width: AppDimens.p12),
-            Expanded(
-              child: FilledButton.icon(
-                icon: const Icon(AppIcons.share),
-                label: Text(l10n.sharedInviteShareCode),
-                onPressed: () => _share(context, invite, l10n),
-              ),
-            ),
-          ],
+        AppPairedActions(
+          primaryIcon: AppIcons.share,
+          primaryLabel: l10n.sharedInviteShareCode,
+          onPrimaryPressed: () => _share(context, invite, l10n),
+          secondaryIcon: AppIcons.copy,
+          secondaryLabel: l10n.sharedInviteCopyCode,
+          onSecondaryPressed: () => _copyInviteCode(context, invite, l10n),
         ),
         const SizedBox(height: AppDimens.p20),
         Text(

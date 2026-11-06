@@ -12,6 +12,7 @@ class AppPrimaryButton extends StatelessWidget {
     this.busy = false,
     this.fullWidth = true,
     this.destructive = false,
+    this.icon,
   });
 
   final String label;
@@ -22,7 +23,10 @@ class AppPrimaryButton extends StatelessWidget {
   /// 删除等破坏性操作使用主题错误底色，其余规格沿用主按钮主题。
   final bool destructive;
 
-  /// 进度指示器占用固定位置，长文案允许换行，加载时保持按钮名称可读。
+  /// 空闲时展示操作图标，忙碌时相同位置用于进度提示。
+  final IconData? icon;
+
+  /// 图标和进度占用同一位置，长文案允许换行，加载时保持按钮名称可读。
   @override
   Widget build(BuildContext context) {
     final button = FilledButton(
@@ -33,16 +37,17 @@ class AppPrimaryButton extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (busy) ...[
+          if (busy)
             SizedBox.square(
               dimension: AppDimens.icon20,
               child: CircularProgressIndicator(
                 strokeWidth: AppDimens.progressStrokeWidth,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-            ),
-            const SizedBox(width: AppDimens.p8),
-          ],
+            )
+          else if (icon != null)
+            Icon(icon, size: AppDimens.icon20),
+          if (busy || icon != null) const SizedBox(width: AppDimens.p8),
           Flexible(child: Text(label, textAlign: TextAlign.center)),
         ],
       ),
@@ -93,7 +98,7 @@ class AppSecondaryButton extends StatelessWidget {
 
 /// 主次操作共用等宽等高布局，较高的文案决定两边的实际点击高度。
 class AppPairedActions extends StatelessWidget {
-  /// 业务页面只提供文案、回调和忙碌状态，不自行组合按钮规格。
+  /// 业务页面提供文案、图标、回调和忙碌状态，按钮规格统一维护。
   const AppPairedActions({
     super.key,
     required this.primaryLabel,
@@ -102,6 +107,8 @@ class AppPairedActions extends StatelessWidget {
     required this.onSecondaryPressed,
     this.primaryButtonKey,
     this.secondaryButtonKey,
+    this.primaryIcon,
+    this.secondaryIcon,
     this.busy = false,
   });
 
@@ -111,6 +118,8 @@ class AppPairedActions extends StatelessWidget {
   final VoidCallback? onSecondaryPressed;
   final Key? primaryButtonKey;
   final Key? secondaryButtonKey;
+  final IconData? primaryIcon;
+  final IconData? secondaryIcon;
   final bool busy;
 
   /// 横向均分可用宽度，文案放大或换行时两种原生按钮一起增高。
@@ -123,6 +132,7 @@ class AppPairedActions extends StatelessWidget {
           child: AppSecondaryButton(
             key: secondaryButtonKey,
             label: secondaryLabel,
+            icon: secondaryIcon,
             onPressed: busy ? null : onSecondaryPressed,
           ),
         ),
@@ -131,6 +141,7 @@ class AppPairedActions extends StatelessWidget {
           child: AppPrimaryButton(
             key: primaryButtonKey,
             label: primaryLabel,
+            icon: primaryIcon,
             onPressed: onPrimaryPressed,
             busy: busy,
           ),

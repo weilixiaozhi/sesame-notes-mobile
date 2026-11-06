@@ -59,7 +59,9 @@ class AppDimens {
   // 共享标题、菜单、明细与骨架的固定布局尺度。
   static const double sectionAccentWidth = 3;
   static const double sectionAccentHeight = 15;
-  static const double menuIconBoxSize = 30;
+
+  /// 页头图标操作和菜单入口共用的点击区域边长。
+  static const double headerActionSize = 30;
   static const double detailTrailingWidth = 116;
   static const double selectionBadgeSize = 26;
   static const double selectionBadgeGap = 2;
