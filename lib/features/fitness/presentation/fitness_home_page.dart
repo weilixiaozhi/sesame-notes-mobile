@@ -42,6 +42,14 @@ class _FitnessHomePageState extends ConsumerState<FitnessHomePage> {
     ref.watch(fitnessWorkoutsInRangeProvider(_pageRange(1)));
     final workouts = ref.watch(fitnessWorkoutsInRangeProvider(range));
     final calendarPlans = ref.watch(fitnessCalendarPlansProvider);
+    final calendarRests = calendarPlans.whenData((plans) {
+      try {
+        return fitnessCalendarRestDays(plans);
+      } catch (error, stackTrace) {
+        logger.error('FitnessHome', '生成训练休息日失败', error, stackTrace);
+        rethrow;
+      }
+    });
     final now = ref.watch(localTodayProvider);
     return Scaffold(
       body: Column(
@@ -68,7 +76,7 @@ class _FitnessHomePageState extends ConsumerState<FitnessHomePage> {
                         margin: EdgeInsets.zero,
                         child: _week(
                           workouts.value ?? [],
-                          calendarPlans.value ?? [],
+                          calendarRests.value ?? [],
                           now,
                         ),
                       ),
@@ -102,10 +110,10 @@ class _FitnessHomePageState extends ConsumerState<FitnessHomePage> {
                         fitnessDate(_selected),
                         now: now,
                       ),
-                      fitnessCalendarRestDays(calendarPlans.value ?? [])
+                      (calendarRests.value ?? [])
                           .where((day) => day.date == fitnessDate(_selected))
                           .toList(),
-                      calendarPlans,
+                      calendarRests,
                     ),
                   ),
                   SliverToBoxAdapter(
@@ -182,12 +190,12 @@ class _FitnessHomePageState extends ConsumerState<FitnessHomePage> {
   Widget _training(
     List<FitnessWorkout> workouts,
     List<FitnessRestDay> rests,
-    AsyncValue<List<FitnessPlan>> calendarPlans,
+    AsyncValue<List<FitnessRestDay>> calendarRests,
   ) {
     final l = AppLocalizations.of(context);
-    if (workouts.isEmpty && !calendarPlans.hasValue) {
+    if (workouts.isEmpty && !calendarRests.hasValue) {
       return SliverToBoxAdapter(
-        child: calendarPlans.hasError
+        child: calendarRests.hasError
             ? AppLoadError(
                 message: l.fitnessLoadFailed,
                 onRetry: () => ref.invalidate(fitnessCalendarPlansProvider),
@@ -227,7 +235,7 @@ class _FitnessHomePageState extends ConsumerState<FitnessHomePage> {
   /// 训练与休息标签按可见日期投影，周月导航由共享组件承载。
   Widget _week(
     List<FitnessWorkout> all,
-    List<FitnessPlan> plans,
+    List<FitnessRestDay> restDays,
     DateTime now,
   ) {
     final l = AppLocalizations.of(context);
@@ -236,31 +244,50 @@ class _FitnessHomePageState extends ConsumerState<FitnessHomePage> {
       _selected.month,
       _selected.day - _selected.weekday + 1,
     );
-    final rests = fitnessCalendarRestDays(plans).map((r) => r.date).toSet();
-    final labels = <String, List<String>>{};
+    final rests = restDays.map((rest) => rest.date).toSet();
     final labelStart = _expanded
         ? DateTime(_selected.year, _selected.month, 1 - 7)
         : start;
     final labelEnd = _expanded
         ? DateTime(_selected.year, _selected.month + 1, 1 + 7)
         : DateTime(start.year, start.month, start.day + 7);
-    for (
-      var date = labelStart;
-      date.isBefore(labelEnd);
-      date = DateTime(date.year, date.month, date.day + 1)
-    ) {
-      final key = fitnessDate(date);
-      labels[key] = [
-        ...{
-          for (final w in fitnessWorkoutsOnDate(all, key, now: now))
-            switch (w.status) {
-              'completed' || 'in_progress' => fitnessWorkoutStatus(l, w),
-              _ => l.fitnessCalendarPlanned,
-            },
-        },
-        if (rests.contains(key)) l.fitnessCalendarRest,
-      ];
+    final Map<String, List<FitnessCalendarWorkoutStatus>> statuses;
+    try {
+      statuses = fitnessCalendarWorkoutStatuses(
+        all,
+        start: labelStart,
+        until: labelEnd,
+        now: now,
+      );
+    } catch (error, stackTrace) {
+      logger.error('FitnessHome', '生成训练日历失败', error, stackTrace);
+      return AppLoadError(
+        message: l.fitnessLoadFailed,
+        onRetry: () => ref.invalidate(fitnessWorkoutsInRangeProvider),
+      );
     }
+    final labels = <String, List<String>>{
+      for (
+        var date = labelStart;
+        date.isBefore(labelEnd);
+        date = DateTime(date.year, date.month, date.day + 1)
+      )
+        fitnessDate(date): [
+          ...{
+            for (final status
+                in statuses[fitnessDate(date)] ??
+                    const <FitnessCalendarWorkoutStatus>[])
+              status.paused
+                  ? l.fitnessPaused
+                  : switch (status.status) {
+                      'completed' ||
+                      'in_progress' => fitnessStatus(l, status.status),
+                      _ => l.fitnessCalendarPlanned,
+                    },
+          },
+          if (rests.contains(fitnessDate(date))) l.fitnessCalendarRest,
+        ],
+    };
     final maxLabels = labels.values.fold(
       0,
       (n, values) => values.length > n ? values.length : n,

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:sesame_notes/shared/widgets/app_content_dialog.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +28,10 @@ class _AppUpdateDialogState extends State<AppUpdateDialog>
   void initState() {
     super.initState();
     _controller = AppUpdateController(service: widget.serviceFactory?.call());
+    _controller.setForeground(
+      WidgetsBinding.instance.lifecycleState == null ||
+          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed,
+    );
     WidgetsBinding.instance.addObserver(this);
     _controller.check();
   }
@@ -44,9 +47,7 @@ class _AppUpdateDialogState extends State<AppUpdateDialog>
   /// 返回应用时立即刷新下载状态。
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      unawaited(_controller.refreshDownload());
-    }
+    _controller.setForeground(state == AppLifecycleState.resumed);
   }
 
   /// 使用现有对话框和间距 token 展示更新状态及用户操作。

@@ -207,6 +207,87 @@ List<FitnessWorkout> fitnessWorkoutsOnDate(
   return result;
 }
 
+/// 日期标签区分暂停与正在计时，但仍保留训练的业务状态排序。
+typedef FitnessCalendarWorkoutStatus = ({String status, bool paused});
+
+/// 一次遍历训练，将安排日、首次开始日及运行区间投影为可见日期的去重状态。
+/// 区间为 [start, until)，仅展开当前日历范围内的自然日，暂停间隙不计入。
+Map<String, List<FitnessCalendarWorkoutStatus>> fitnessCalendarWorkoutStatuses(
+  List<FitnessWorkout> workouts, {
+  required DateTime start,
+  required DateTime until,
+  required DateTime now,
+}) {
+  final first = DateTime.utc(start.year, start.month, start.day);
+  final exclusive = DateTime.utc(until.year, until.month, until.day);
+  fitnessRequire(first.isBefore(exclusive), 'FITNESS_DATE_RANGE');
+  final last = exclusive.subtract(const Duration(days: 1));
+  final firstKey = fitnessDate(first), untilKey = fitnessDate(exclusive);
+  final statuses = <String, Map<FitnessCalendarWorkoutStatus, String>>{};
+
+  /// 单点日期只在可见范围内加入，同日多个训练和多个区间共用一个状态标签。
+  void include(String date, FitnessCalendarWorkoutStatus status, String id) {
+    if (date.compareTo(firstKey) >= 0 && date.compareTo(untilKey) < 0) {
+      final daily = statuses.putIfAbsent(date, () => {});
+      final existing = daily[status];
+      // 同一状态取标识最小的代表，保持按日明细排序后首次出现的标签顺序。
+      if (existing == null || id.compareTo(existing) < 0) daily[status] = id;
+    }
+  }
+
+  /// 时间戳先转当地日期，再使用 UTC 作为自然日坐标，避免夏令时步长偏移。
+  DateTime localDay(DateTime timestamp) {
+    final local = timestamp.toLocal();
+    return DateTime.utc(local.year, local.month, local.day);
+  }
+
+  for (final workout in workouts) {
+    final status = (
+      status: workout.status,
+      paused:
+          workout.status == 'in_progress' &&
+          workout.runSegments.isNotEmpty &&
+          workout.runSegments.last.endedAt != null,
+    );
+    include(workout.scheduledDate, status, workout.id);
+    if (workout.runSegments.isNotEmpty) {
+      include(
+        fitnessDate(localDay(workout.runSegments.first.startedAt)),
+        status,
+        workout.id,
+      );
+    }
+    for (final segment in workout.runSegments) {
+      final started = localDay(segment.startedAt);
+      final ended = localDay(segment.endedAt ?? now);
+      final from = started.isBefore(first) ? first : started;
+      final to = ended.isAfter(last) ? last : ended;
+      // 先裁剪运行区间，跨多年的训练也只遍历当前页面可见的日期。
+      for (
+        var day = from;
+        !day.isAfter(to);
+        day = day.add(const Duration(days: 1))
+      ) {
+        include(fitnessDate(day), status, workout.id);
+      }
+    }
+  }
+  const rank = {'in_progress': 0, 'completed': 1, 'scheduled': 2};
+  final result = <String, List<FitnessCalendarWorkoutStatus>>{};
+  for (final day in statuses.entries) {
+    // 每天最多比较运行、暂停、完成、计划四种标签，无需排序当天所有训练。
+    final ordered = day.value.entries.toList()
+      ..sort((left, right) {
+        final status = rank[left.key.status]!.compareTo(
+          rank[right.key.status]!,
+        );
+        return status != 0 ? status : left.value.compareTo(right.value);
+      });
+    result[day.key] = [for (final entry in ordered) entry.key];
+  }
+  return result;
+}
+
 /// 动作历史：只保留该动作有勾选组的训练，进行中的训练同样计入；
 /// 到期的最后一次休息按持久化计时状态合成真实时长，最后按训练归属日倒序。
 List<FitnessWorkout> fitnessExerciseHistory(

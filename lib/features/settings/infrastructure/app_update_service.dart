@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sesame_notes/core/environment/app_environment.dart';
@@ -135,6 +136,9 @@ class AppUpdateService {
           );
   static const manifestUrl = AppEnvironment.updateManifestUrl;
   static const _channel = MethodChannel('com.sesame_notes.update');
+
+  /// 不同更新窗口共用同一系统任务，任务变更唤醒根部监听而不依赖空闲轮询。
+  static final downloadChanges = ValueNotifier<int>(0);
   final Dio _dio;
   final String source;
   String? installedVersion;
@@ -180,13 +184,16 @@ class AppUpdateService {
   }
 
   /// 系统任务编号由原生层持久保存，重复点击复用同一包的现有任务。
-  Future<UpdateDownload> startDownload(AppUpdate update) async =>
-      UpdateDownload.fromJson(
-        (await _channel.invokeMapMethod<String, dynamic>(
-          'enqueueDownload',
-          update.toJson(),
-        ))!,
-      );
+  Future<UpdateDownload> startDownload(AppUpdate update) async {
+    final task = UpdateDownload.fromJson(
+      (await _channel.invokeMapMethod<String, dynamic>(
+        'enqueueDownload',
+        update.toJson(),
+      ))!,
+    );
+    downloadChanges.value++;
+    return task;
+  }
 
   /// 读取系统进度；ready 表示原生层已经校验完整安装包。
   Future<UpdateDownload?> currentDownload() async {
@@ -197,8 +204,10 @@ class AppUpdateService {
   }
 
   /// 用户明确取消时才撤销后台任务。
-  Future<void> cancelDownload() =>
-      _channel.invokeMethod<void>('cancelDownload');
+  Future<void> cancelDownload() async {
+    await _channel.invokeMethod<void>('cancelDownload');
+    downloadChanges.value++;
+  }
 
   /// 前台监听器以系统任务编号领取一次安装意图。
   Future<bool> consumeInstall(UpdateDownload task) async =>

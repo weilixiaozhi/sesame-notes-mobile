@@ -195,6 +195,7 @@ class MemoDocumentActions {
                       job.countLabel,
                     )
                   : MemoDocument.fromEntry(job.book, job.entry),
+              isCancelled: () => job.cancelled,
             )
           : await compute(_renderMemo, (
               job.book,

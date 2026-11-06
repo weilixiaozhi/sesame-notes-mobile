@@ -251,6 +251,38 @@ void main() {
     await expectLater(actions.validate(job), throwsStateError);
   });
 
+  testWidgets('PNG生成过程中取消任务会停止交付且不创建临时目录', (tester) async {
+    await tester.runAsync(() async {
+      final job = await actions.captureCredentials(
+        bookId,
+        {firstId},
+        MemoDocumentFormat.png,
+        countLabel: '1',
+      );
+      final previous = ui.Image.onCreate;
+      ui.Image.onCreate = (image) {
+        previous?.call(image);
+        job.cancelled = true;
+      };
+      try {
+        await expectLater(
+          actions.generate(job, untitled: '未命名'),
+          throwsA(
+            isA<StateError>().having(
+              (error) => error.message,
+              '取消原因',
+              'MEMO_EXPORT_CANCELLED',
+            ),
+          ),
+        );
+        expect(job.directory, isNull);
+      } finally {
+        ui.Image.onCreate = previous;
+        await job.dispose();
+      }
+    });
+  });
+
   testWidgets('超长内容明确失败，不生成截断图或多张图', (tester) async {
     await tester.runAsync(() async {
       final document = MemoDocument(

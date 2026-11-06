@@ -36,6 +36,11 @@ class ProductAnalyticsService implements ProductAnalyticsEventWriter {
   CancelToken? _request;
   bool _disposed = false;
   DateTime? _retryAfter;
+  String? _confirmedKey;
+  String? _confirmedJson;
+  static final _actionNames = {
+    for (final action in ProductAction.values) action.eventName,
+  };
 
   /// 环境和账号共同组成缓存键，切换服务端后不能把旧环境事件补报到新环境。
   String _key(String account) =>
@@ -46,6 +51,8 @@ class ProductAnalyticsService implements ProductAnalyticsEventWriter {
   void identityChanged() {
     _request?.cancel('统计队列账号已变化');
     _retryAfter = null;
+    _confirmedKey = null;
+    _confirmedJson = null;
   }
 
   /// 释放服务只取消网络，不清空尚未补报的本地事件。
@@ -53,6 +60,8 @@ class ProductAnalyticsService implements ProductAnalyticsEventWriter {
   void dispose() {
     _disposed = true;
     _request?.cancel('统计服务已释放');
+    _confirmedKey = null;
+    _confirmedJson = null;
   }
 
   /// 所有读写串行执行，防止上报确认覆盖期间追加的事件。
@@ -229,6 +238,8 @@ class ProductAnalyticsService implements ProductAnalyticsEventWriter {
       final raw = preferences.getString(_key(account));
       if (raw == null) return [];
       final now = clock().toUtc();
+      final oldest = now.subtract(const Duration(days: 90));
+      final latest = now.add(const Duration(minutes: 4));
       final seen = <String>{};
       final result = <Map<String, dynamic>>[];
       var invalid = 0;
@@ -249,8 +260,8 @@ class ProductAnalyticsService implements ProductAnalyticsEventWriter {
             !Uuid.isValidUUID(fromString: id) ||
             row['occurred_at'] is! String ||
             occurred == null ||
-            !occurred.isAfter(now.subtract(const Duration(days: 90))) ||
-            occurred.isAfter(now.add(const Duration(minutes: 4))) ||
+            !occurred.isAfter(oldest) ||
+            occurred.isAfter(latest) ||
             !productAnalyticsPageIds.contains(page) ||
             row['platform'] != 'app' ||
             sessionId is! String ||
@@ -293,12 +304,22 @@ class ProductAnalyticsService implements ProductAnalyticsEventWriter {
     }
   }
 
-  /// 写入失败显式记录，不把未落盘内容当作可靠上报成功。
+  /// 只跳过已经确认落盘的相同快照；失败写入即使更新了偏好内存缓存也必须重试。
   Future<void> _save(String account, List<Map<String, dynamic>> queue) async {
-    final saved = queue.isEmpty
-        ? await preferences.remove(_key(account))
-        : await preferences.setString(_key(account), jsonEncode(queue));
+    final key = _key(account);
+    final json = queue.isEmpty ? null : jsonEncode(queue);
+    if (_confirmedKey == key &&
+        _confirmedJson == json &&
+        preferences.getString(key) == json) {
+      return;
+    }
+    final saved = json == null
+        ? await preferences.remove(key)
+        : await preferences.setString(key, json);
     if (!saved) throw StateError('统计队列保存失败');
+    // 只保留最近一次确认的单份字符串引用，不缓存各账号的解析对象或历史快照。
+    _confirmedKey = key;
+    _confirmedJson = json;
   }
 
   /// 操作流只接收随机 UUID，尚未形成明确业务流时允许空值。
@@ -311,9 +332,7 @@ class ProductAnalyticsService implements ProductAnalyticsEventWriter {
         'active' => name == null,
         'page_view' =>
           pageId is String && name == productAnalyticsPageViewName(pageId),
-        'action' => ProductAction.values.any(
-          (action) => action.eventName == name,
-        ),
+        'action' => _actionNames.contains(name),
         _ => false,
       };
 }

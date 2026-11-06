@@ -17,6 +17,7 @@ class AppUpdateController extends ChangeNotifier {
   AppUpdate? _update;
   UpdateDownload? _download;
   bool _working = false, _refreshing = false, _closed = false;
+  bool _foreground = true;
   bool _waitingForPermission = false;
   String? _errorCode;
 
@@ -31,7 +32,19 @@ class AppUpdateController extends ChangeNotifier {
   String? get errorCode => _errorCode;
 
   /// 每次读取当前门控，避免使用异步操作开始时保存的前台状态。
-  bool get _installAllowed => !_closed && (_canInstallNow?.call() ?? true);
+  bool get _installAllowed =>
+      !_closed && _foreground && (_canInstallNow?.call() ?? true);
+
+  /// 后台停止进度查询，系统下载继续；返回前台先读取最新状态再恢复必要的轮询。
+  void setForeground(bool foreground) {
+    if (_closed || _foreground == foreground) return;
+    _foreground = foreground;
+    _poll?.cancel();
+    _poll = null;
+    if (foreground) {
+      unawaited(refreshDownload().whenComplete(_watchDownload));
+    }
+  }
 
   /// 关闭元数据请求和进度订阅，独立的系统下载继续运行。
   void close() {
@@ -97,34 +110,42 @@ class AppUpdateController extends ChangeNotifier {
   /// 窗口展示系统下载进度，自动安装统一由应用根部监听器领取，避免重复弹出。
   void _watchDownload() {
     _poll?.cancel();
-    if (_closed || !downloading) return;
+    _poll = null;
+    if (_closed || !_foreground || !downloading) return;
     _poll = Timer.periodic(
       const Duration(seconds: 2),
       (_) => unawaited(refreshDownload()),
     );
   }
 
-  /// 前台全局监听器可领取一次安装意图，普通进度窗口不会自动安装。
-  Future<void> refreshDownload({bool allowInstall = false}) async {
-    if (_closed || _refreshing) return;
+  /// 返回是否成功读取系统状态；安装动作失败不等同于任务状态未知。
+  Future<bool> refreshDownload({bool allowInstall = false}) async {
+    if (_closed || !_foreground || _refreshing) return false;
     _refreshing = true;
+    var readSucceeded = false;
     try {
       final task = await _service.currentDownload();
-      if (_closed) return;
+      readSucceeded = true;
+      if (_closed || !_foreground) return true;
       if (task == null) {
-        _set(() => _download = null);
+        if (_download != null) _set(() => _download = null);
       } else if (allowInstall ||
           _update == null ||
           _update!.sha256Digest == task.update.sha256Digest) {
-        _set(() {
-          _download = task;
-          _update = task.update;
-          if (task.status == 'failed') _errorCode = 'UPDATE_DOWNLOAD_FAILED';
-          if (task.status != 'failed' &&
-              _errorCode == 'UPDATE_DOWNLOAD_FAILED') {
-            _errorCode = null;
-          }
-        });
+        final nextError = task.status == 'failed'
+            ? 'UPDATE_DOWNLOAD_FAILED'
+            : _errorCode == 'UPDATE_DOWNLOAD_FAILED'
+            ? null
+            : _errorCode;
+        if (!_sameDownload(_download, task) ||
+            !_sameUpdate(_update, task.update) ||
+            nextError != _errorCode) {
+          _set(() {
+            _download = task;
+            _update = task.update;
+            _errorCode = nextError;
+          });
+        }
       }
       if (!downloading) _poll?.cancel();
       if (allowInstall &&
@@ -134,11 +155,11 @@ class AppUpdateController extends ChangeNotifier {
           !_waitingForPermission &&
           !_working &&
           _installAllowed) {
-        if (!await _service.consumeInstall(task)) return;
+        if (!await _service.consumeInstall(task)) return true;
         // 领取任务本身也跨平台异步执行；门控关闭时把意图交还原生持久任务。
         if (!_installAllowed) {
           await _deferInstall(task);
-          return;
+          return true;
         }
         await install();
       }
@@ -147,7 +168,28 @@ class AppUpdateController extends ChangeNotifier {
     } finally {
       _refreshing = false;
     }
+    return readSucceeded;
   }
+
+  /// 平台每次返回新对象，内容一致时无需重建进度窗口。
+  bool _sameDownload(UpdateDownload? previous, UpdateDownload next) =>
+      previous != null &&
+      previous.id == next.id &&
+      previous.status == next.status &&
+      previous.received == next.received &&
+      previous.installPending == next.installPending &&
+      previous.reason == next.reason &&
+      _sameUpdate(previous.update, next.update);
+
+  /// 发布说明和下载身份均参与比较，真正的版本或说明变化仍通知界面。
+  bool _sameUpdate(AppUpdate? previous, AppUpdate next) =>
+      previous != null &&
+      previous.version == next.version &&
+      previous.buildNumber == next.buildNumber &&
+      previous.url == next.url &&
+      previous.size == next.size &&
+      previous.sha256Digest == next.sha256Digest &&
+      previous.notes == next.notes;
 
   /// 用户明确取消时移除系统任务，保留版本信息供再次下载。
   Future<void> cancelDownload() async {

@@ -120,11 +120,12 @@ class _DaysHomePageState extends ConsumerState<DaysHomePage> {
                                 onRetry: () =>
                                     ref.invalidate(dayEventsProvider(book.id)),
                               ),
-                              data: (_) => _events(
+                              data: (calendarEvents) => _events(
                                 context,
                                 book,
                                 sorted,
                                 display.invalid,
+                                calendarEvents,
                                 referenceDate,
                                 today,
                                 recent,
@@ -245,6 +246,7 @@ class _DaysHomePageState extends ConsumerState<DaysHomePage> {
     DayBook book,
     List<DayEvent> sorted,
     List<DayEvent> invalid,
+    List<DayEvent> calendarEvents,
     DateOnly today,
     DateOnly actualToday,
     DayEvent? recent,
@@ -256,7 +258,7 @@ class _DaysHomePageState extends ConsumerState<DaysHomePage> {
       (_) => DayWeekStrip(
         today: actualToday,
         selectedDay: today,
-        events: [...sorted, ...invalid],
+        events: calendarEvents,
         onDateSelected: _selectDate,
       ),
       for (final category in dayCategoryOrder) ...[

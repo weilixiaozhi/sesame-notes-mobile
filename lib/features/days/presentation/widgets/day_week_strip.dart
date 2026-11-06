@@ -30,6 +30,28 @@ class DayWeekStrip extends StatefulWidget {
 
 class _DayWeekStripState extends State<DayWeekStrip> {
   bool _expanded = false;
+  ({List<DayEvent> events, DateTime month, CalendarDayEvents projection})?
+  _calendarSnapshot;
+
+  /// 日期标记只依赖事件快照和月份，周月展开及同月选日复用当前投影。
+  CalendarDayEvents _projectMonth(DateTime selected) {
+    final month = DateTime(selected.year, selected.month);
+    final cached = _calendarSnapshot;
+    if (cached != null &&
+        identical(cached.events, widget.events) &&
+        cached.month == month) {
+      return cached.projection;
+    }
+    // 仅保留当前月份；新事件或月份到达时先释放不再适用的旧投影。
+    _calendarSnapshot = null;
+    final projection = projectCalendarDayEvents(widget.events, month);
+    _calendarSnapshot = (
+      events: widget.events,
+      month: month,
+      projection: projection,
+    );
+    return projection;
+  }
 
   /// 循环日子按领域规则派生真实发生日期，日期标签与统一日历保持一致。
   @override
@@ -39,7 +61,7 @@ class _DayWeekStripState extends State<DayWeekStrip> {
       widget.selectedDay.month,
       widget.selectedDay.day,
     );
-    final projected = projectCalendarDayEvents(widget.events, selected);
+    final projected = _projectMonth(selected);
     // 周历翻页保留相邻页参与动画，行高需要同时容纳这些日期的标签。
     final maxLabels = projected.byDate.values.fold(
       0,

@@ -3,6 +3,7 @@ import 'package:sesame_notes/utils/wire_timestamp.dart';
 import '../../models/fitness_custom_exercise.dart';
 import 'fitness_space_repository.dart';
 import '../../models/private_book.dart';
+import 'dart:async';
 import 'dart:convert';
 import 'package:drift/drift.dart' as d;
 import 'package:uuid/uuid.dart';
@@ -10,6 +11,7 @@ import '../../db.dart';
 import '../../models/fitness.dart';
 import 'package:sesame_notes/domain/fitness/fitness_rules.dart';
 import '../support/change_recorder.dart';
+import 'package:sesame_notes/core/logging/logger_service.dart';
 
 /// 每个实例固定账号与会话代次；异步编辑不能在切号后落入另一账号。
 class FitnessRepository
@@ -120,14 +122,99 @@ class FitnessRepository
     return rows.map((r) => parse(_json(r))).toList();
   }
 
+  /// 监听结果只保留当前正文和已发布模型的引用，未变化的实体直接复用模型。
+  ///
+  /// 每个订阅独立持有当前快照，删除、隐藏和取消都会释放移出的实体。
+  Stream<List<T>> _watchDecoded<T>(
+    d.Selectable<FitnessEntityRow> query,
+    T Function(Map<String, dynamic>) parse,
+  ) => Stream<List<T>>.multi((sink) {
+    var previous = <String, ({String payload, T value})>{};
+    List<T>? previousValues;
+
+    /// 错误清空旧账号或无效正文的引用，后续有效结果必须重新发布。
+    void fail(Object error, StackTrace stackTrace) {
+      previous = {};
+      previousValues = null;
+      logger.error(
+        'FitnessQuery',
+        '监听训练数据失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      sink.addError(error, stackTrace);
+    }
+
+    late StreamSubscription<List<FitnessEntityRow>> subscription;
+    try {
+      subscription = query.watch().listen(
+        (rows) {
+          try {
+            // 权限及会话检查先于内容比较，即使正文未变也不能保留旧会话数据。
+            _check();
+            final next = <String, ({String payload, T value})>{};
+            final values = <T>[];
+            var unchanged =
+                previousValues != null && previousValues!.length == rows.length;
+            for (var index = 0; index < rows.length; index++) {
+              final row = rows[index];
+              final cached = previous[row.id];
+              final value = cached != null && cached.payload == row.payload
+                  ? cached.value
+                  : parse(_json(row));
+              // 引用当前 SQL 结果中的正文，避免持续保留上一轮相同内容的字符串副本。
+              next[row.id] = (payload: row.payload, value: value);
+              values.add(value);
+              if (unchanged && !identical(previousValues![index], value)) {
+                unchanged = false;
+              }
+            }
+            previous = next;
+            if (!unchanged) {
+              previousValues = values;
+              sink.add(values);
+            }
+          } catch (error, stackTrace) {
+            fail(error, stackTrace);
+          }
+        },
+        onError: fail,
+        onDone: () {
+          previous = {};
+          previousValues = null;
+          sink.close();
+        },
+      );
+    } catch (error, stackTrace) {
+      fail(error, stackTrace);
+      sink.close();
+      return;
+    }
+    sink.onPause = subscription.pause;
+    sink.onResume = subscription.resume;
+    sink.onCancel = () async {
+      previous = {};
+      previousValues = null;
+      try {
+        await subscription.cancel();
+      } catch (error, stackTrace) {
+        logger.error(
+          'FitnessQuery',
+          '关闭训练数据监听失败',
+          safeErrorSummary(error),
+          stackTrace,
+        );
+        rethrow;
+      }
+    };
+  }, isBroadcast: true);
+
+  /// 类型目录沿用所属空间过滤，正文发生变化的实体才重新解码。
   Stream<List<T>> _watch<T>(
     String type,
     T Function(Map<String, dynamic>) parse, {
     bool includeDeleted = false,
-  }) => _query(type, includeDeleted: includeDeleted).watch().map((rows) {
-    _check();
-    return rows.map((r) => parse(_json(r))).toList();
-  });
+  }) => _watchDecoded(_query(type, includeDeleted: includeDeleted), parse);
   @override
   Future<List<FitnessTemplate>> getTemplates() =>
       _get('fitness_template', FitnessTemplate.fromJson);
@@ -152,13 +239,10 @@ class FitnessRepository
 
   /// 详情和提醒只读取目标训练，其他历史不进入 Dart 对象图。
   @override
-  Stream<FitnessWorkout?> watchWorkout(String id) =>
-      (_query(
-        'fitness_workout',
-      )..where((row) => row.id.equals(id))).watchSingleOrNull().map((row) {
-        _check();
-        return row == null ? null : FitnessWorkout.fromJson(_json(row));
-      });
+  Stream<FitnessWorkout?> watchWorkout(String id) => _watchDecoded(
+    _query('fitness_workout')..where((row) => row.id.equals(id)),
+    FitnessWorkout.fromJson,
+  ).map((rows) => rows.firstOrNull);
 
   d.SimpleSelectStatement<FitnessEntities, FitnessEntityRow> _runningQuery() =>
       _query('fitness_workout')
@@ -168,12 +252,13 @@ class FitnessRepository
           ),
         )
         ..limit(1);
+
+  /// 进行中训练只在正文或查询成员发生变化时发布，其他实体保存不重建计时界面。
   @override
-  Stream<FitnessWorkout?> watchRunningWorkout() =>
-      _runningQuery().watchSingleOrNull().map((row) {
-        _check();
-        return row == null ? null : FitnessWorkout.fromJson(_json(row));
-      });
+  Stream<FitnessWorkout?> watchRunningWorkout() => _watchDecoded(
+    _runningQuery(),
+    FitnessWorkout.fromJson,
+  ).map((rows) => rows.firstOrNull);
 
   static const _visibleSpaceSql =
       "fitness_space_id IN (SELECT id FROM fitness_spaces WHERE deleted_at IS NULL AND is_hidden=0 AND pending_local_delete=0 AND (storage_mode='local' OR scope_account_id=?))";
@@ -191,32 +276,26 @@ class FitnessRepository
         return rows.map((r) => r.read<String>('exercise_id')).toList();
       });
 
+  /// 范围和动作历史保留 SQL 过滤与排序，未变化的历史模型在本次订阅内复用。
   Stream<List<FitnessWorkout>> _watchWorkoutQuery(
     String predicate,
     List<d.Variable> parameters, {
     int? limit,
-  }) => db
-      .customSelect(
-        "SELECT w.* FROM fitness_entities w WHERE w.fitness_space_id=? AND $_visibleSpaceSql AND w.entity_type='fitness_workout' AND w.deleted_at IS NULL AND ($predicate) ORDER BY json_extract(w.payload,'\$.run_segments[0].started_at') DESC,w.id ${limit == null ? '' : 'LIMIT ?'}",
-        variables: [
-          d.Variable(spaceId),
-          d.Variable(accountId ?? ''),
-          ...parameters,
-          if (limit != null) d.Variable(limit),
-        ],
-        readsFrom: {db.fitnessEntities, db.fitnessSpaces},
-      )
-      .watch()
-      .map((rows) {
-        _check();
-        return rows
-            .map(
-              (r) => FitnessWorkout.fromJson(
-                _json(db.fitnessEntities.map(r.data)),
-              ),
-            )
-            .toList();
-      });
+  }) => _watchDecoded(
+    db
+        .customSelect(
+          "SELECT w.* FROM fitness_entities w WHERE w.fitness_space_id=? AND $_visibleSpaceSql AND w.entity_type='fitness_workout' AND w.deleted_at IS NULL AND ($predicate) ORDER BY json_extract(w.payload,'\$.run_segments[0].started_at') DESC,w.id ${limit == null ? '' : 'LIMIT ?'}",
+          variables: [
+            d.Variable(spaceId),
+            d.Variable(accountId ?? ''),
+            ...parameters,
+            if (limit != null) d.Variable(limit),
+          ],
+          readsFrom: {db.fitnessEntities, db.fitnessSpaces},
+        )
+        .map((row) => db.fitnessEntities.map(row.data)),
+    FitnessWorkout.fromJson,
+  );
 
   /// 查询当前展示区间；跨午夜训练按时段重叠保留，日程日期与训练归档日期均参与。
   @override
