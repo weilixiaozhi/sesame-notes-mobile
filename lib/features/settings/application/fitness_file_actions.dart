@@ -39,13 +39,19 @@ class FitnessFileActions {
   Future<List<FitnessExerciseDefinition>> catalog(
     FitnessFileTarget target,
   ) async {
-    await validateTarget(target);
-    final preferences = await ref
-        .read(fitnessTargetQueryRepositoryProvider(target))
-        .getPreferences();
-    final builtin = await ref.read(fitnessBuiltinCatalogProvider.future);
-    await validateTarget(target);
-    return [...builtin, ...transferCustomCatalog(preferences.toJson())];
+    try {
+      await validateTarget(target);
+      final query = ref.read(fitnessTargetQueryRepositoryFactoryProvider)(
+        target,
+      );
+      final preferences = await query.getPreferences();
+      final builtin = await ref.read(fitnessBuiltinCatalogProvider.future);
+      await validateTarget(target);
+      return [...builtin, ...transferCustomCatalog(preferences.toJson())];
+    } catch (error, stackTrace) {
+      logger.error('FitnessFileActions', '读取目标训练目录失败', error, stackTrace);
+      rethrow;
+    }
   }
 
   /// 固定目标校验与内容写入共用事务，提交前再次确认目标仍可用。

@@ -19,6 +19,28 @@ Decimal categoryDetailAmountOf(TransactionDisplay transaction) {
   return Decimal.tryParse(raw) ?? Decimal.zero;
 }
 
+/// 每笔金额只解析一次，再以精确十进制排序；相同金额保留输入顺序。
+List<TransactionDisplay> sortCategoryDetailByAmount(
+  List<TransactionDisplay> transactions, {
+  required bool descending,
+}) {
+  final keyed = [
+    for (var index = 0; index < transactions.length; index++)
+      (
+        transaction: transactions[index],
+        amount: categoryDetailAmountOf(transactions[index]),
+        index: index,
+      ),
+  ];
+  keyed.sort((left, right) {
+    final amountOrder = descending
+        ? right.amount.compareTo(left.amount)
+        : left.amount.compareTo(right.amount);
+    return amountOrder == 0 ? left.index.compareTo(right.index) : amountOrder;
+  });
+  return [for (final item in keyed) item.transaction];
+}
+
 /// 分类详情汇总：总额按 Decimal 累加（避免浮点尾差），平均 = 总额 / 笔数。
 ///
 /// 无交易时总额与平均都为 0（不做除零）。

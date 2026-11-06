@@ -16,10 +16,10 @@ import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/theme/typography.dart';
 
 import '../../application/fitness_providers.dart';
-import 'package:sesame_notes/domain/fitness/fitness_rules.dart';
 import 'fitness_widgets.dart';
 import 'fitness_exercise_media.dart';
 import 'fitness_rest_sheet.dart';
+import 'fitness_clock.dart';
 
 class FitnessHomeCard extends StatelessWidget {
   const FitnessHomeCard({
@@ -66,19 +66,17 @@ class FitnessHomeCard extends StatelessWidget {
   );
 }
 
-class FitnessHomeWorkoutCard extends ConsumerStatefulWidget {
+class FitnessHomeWorkoutCard extends StatefulWidget {
   /// 各训练状态共用紧凑卡片，卡片点击只负责详情导航。
   const FitnessHomeWorkoutCard({super.key, required this.workout});
   final FitnessWorkout workout;
 
   /// 卡片持有详情导航的防重入状态，不在入口处改变训练状态。
   @override
-  ConsumerState<FitnessHomeWorkoutCard> createState() =>
-      _FitnessHomeWorkoutCardState();
+  State<FitnessHomeWorkoutCard> createState() => _FitnessHomeWorkoutCardState();
 }
 
-class _FitnessHomeWorkoutCardState
-    extends ConsumerState<FitnessHomeWorkoutCard> {
+class _FitnessHomeWorkoutCardState extends State<FitnessHomeWorkoutCard> {
   bool _busy = false;
 
   /// 当前卡片展示的训练快照。
@@ -104,7 +102,6 @@ class _FitnessHomeWorkoutCardState
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final now = ref.watch(fitnessClockProvider).value ?? DateTime.now();
     final sets = workout.exercises.expand((e) => e.sets).toList();
     final done = sets.where((s) => s.completed).length;
     final paused = fitnessWorkoutIsPaused(workout);
@@ -129,8 +126,8 @@ class _FitnessHomeWorkoutCardState
           ),
         ),
         const SizedBox(height: AppDimens.p4),
-        Text(
-          fitnessDuration(fitnessElapsed(workout, now).inSeconds),
+        FitnessWorkoutElapsedText(
+          workout: workout,
           style: AppTextTokens.strongTitle(context),
         ),
       ],
@@ -391,7 +388,9 @@ class FitnessRunningBanner extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final workout = ref.watch(fitnessRunningWorkoutProvider).value;
     if (workout == null) return const SizedBox.shrink();
-    final now = ref.watch(fitnessClockProvider).value ?? DateTime.now();
+    final restSeconds =
+        ref.watch(fitnessPreferencesProvider).value?.defaultRestSeconds ??
+        FitnessDefaults.restSeconds;
     final l = AppLocalizations.of(context);
     return Material(
       // 与上方同步横幅同为贴底常驻条：中性底色 + 主色强调，
@@ -438,10 +437,8 @@ class FitnessRunningBanner extends ConsumerWidget {
                           ).copyWith(color: AppTokens.primary(context)),
                         ),
                         const SizedBox(width: AppDimens.p8),
-                        Text(
-                          fitnessDuration(
-                            fitnessElapsed(workout, now).inSeconds,
-                          ),
+                        FitnessWorkoutElapsedText(
+                          workout: workout,
                           style: AppTextTokens.label(context),
                         ),
                       ],
@@ -453,16 +450,14 @@ class FitnessRunningBanner extends ConsumerWidget {
               // 休息状态只作展示：点击常驻条统一进入训练详情。
               Tooltip(
                 message: l.fitnessRest,
-                child: FitnessRestCountdown(
+                child: FitnessRestClock(
                   timer: workout.restTimer,
-                  now: now,
-                  seconds:
-                      ref
-                          .watch(fitnessPreferencesProvider)
-                          .value
-                          ?.defaultRestSeconds ??
-                      FitnessDefaults.restSeconds,
-                  style: FitnessRestCountdownStyle.inline,
+                  builder: (context, now) => FitnessRestCountdown(
+                    timer: workout.restTimer,
+                    now: now,
+                    seconds: restSeconds,
+                    style: FitnessRestCountdownStyle.inline,
+                  ),
                 ),
               ),
               const SizedBox(width: AppDimens.p4),

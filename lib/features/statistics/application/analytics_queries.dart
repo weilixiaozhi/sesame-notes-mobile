@@ -9,13 +9,8 @@ import 'package:sesame_notes/utils/date/month_range.dart';
 
 import 'statistics_queries.dart';
 
-/// 并发查询的错误顺序与分类、日序列、笔数和共享快照一致。
-typedef _AnalyticsQueryErrors = (
-  AsyncError?,
-  AsyncError?,
-  AsyncError?,
-  AsyncError?,
-);
+/// 并发查询的错误顺序与范围统计、共享快照一致。
+typedef _AnalyticsQueryErrors = (AsyncError?, AsyncError?);
 
 /// 分类排行保留二级分类的标识、展示快照和区间金额。
 typedef AnalyticsSubcategory = ({
@@ -90,20 +85,8 @@ class AnalyticsQueries {
   }) async {
     try {
       // 具名变量保留各查询的静态类型，查询并发执行并共同等待完成。
-      final (hierarchy, days, txCount, synthetic) = await (
-        _queries.totalsByCategoryWithHierarchy(
-          ledgerId: ledgerId,
-          type: type,
-          start: current.start,
-          end: current.end,
-        ),
-        _queries.totalsByDay(
-          ledgerId: ledgerId,
-          type: type,
-          start: current.start,
-          end: current.end,
-        ),
-        _queries.countByTypeInRange(
+      final (totals, synthetic) = await (
+        _queries.totalsForRange(
           ledgerId: ledgerId,
           type: type,
           start: current.start,
@@ -112,24 +95,24 @@ class AnalyticsQueries {
         _queries.sharedSyntheticCategories(ledgerId),
       ).wait;
       final categories = await _aggregateCategories(
-        hierarchy,
+        totals.categories,
         synthetic,
         ledgerId: ledgerId,
       );
       return AnalyticsData(
         catData: categories,
         series: period == AnalyticsPeriod.year
-            ? _monthlySeries(days, selectedYear, monthStartDay)
-            : DailyAnalyticsSeries(days),
-        txCount: txCount,
-        sum: categories.fold<double>(0, (sum, row) => sum + row.total),
+            ? _monthlySeries(totals.days, selectedYear, monthStartDay)
+            : DailyAnalyticsSeries(totals.days),
+        txCount: totals.txCount,
+        sum: totals.total,
       );
     } catch (error, stackTrace) {
       // 并发查询的包装异常还原到首个原始原因，保留数据库等异常的诊断信息。
       final errors = error is ParallelWaitError<Object?, _AnalyticsQueryErrors>
           ? error.errors
           : null;
-      final cause = errors?.$1 ?? errors?.$2 ?? errors?.$3 ?? errors?.$4;
+      final cause = errors?.$1 ?? errors?.$2;
       final failure = cause?.error ?? error;
       final failureStack = cause?.stackTrace ?? stackTrace;
       logger.error(

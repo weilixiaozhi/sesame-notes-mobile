@@ -5,6 +5,7 @@ import 'package:sesame_notes/shared/providers/simple_state_notifier.dart';
 import 'package:sesame_notes/utils/date/analytics_sub_tabs.dart';
 
 import 'package:sesame_notes/domain/fitness/fitness_rules.dart';
+import 'package:sesame_notes/core/clock/local_clock.dart';
 
 /// 健身统计与外壳周期入口共享选择，各业务分别保留当前周期。
 final fitnessAnalyticsPeriodProvider =
@@ -46,8 +47,9 @@ final fitnessPreferencesProvider =
 
 /// 只驱动显示重绘；真实运行时间与休息截止时间由仓库保存。
 final fitnessClockProvider = StreamProvider.autoDispose<DateTime>((ref) async* {
-  yield DateTime.now();
-  yield* Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now());
+  final now = ref.watch(localClockNowProvider);
+  yield now();
+  yield* Stream.periodic(const Duration(seconds: 1), (_) => now());
 });
 
 final fitnessWorkoutProvider = StreamProvider.autoDispose

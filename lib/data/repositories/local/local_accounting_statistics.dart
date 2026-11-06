@@ -1,40 +1,29 @@
 import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/data/models/statistics_range_totals.dart';
 
 import 'local_accounting_context.dart';
 
 /// statistics 数据能力的具体实现，与其他能力共享当前事务上下文。
 mixin LocalStatisticsOperations on LocalAccountingContext {
-  /// 批量读取统计所需分摊关系，与单笔编辑共用底层交易仓储。
+  /// 分类、趋势、笔数和总额使用同一次范围交易读取。
   @override
-  Future<Map<String, List<TransactionSplit>>>
-  getTransactionSplitsByTransactionIds(Iterable<String> transactionIds) =>
-      transactionStore.getTransactionSplitsByTransactionIds(transactionIds);
-
-  /// 提供 totalsByCategoryWithHierarchy 对应的持久化能力。
-  @override
-  Future<
-    List<
-      ({
-        String? id,
-        String name,
-        String? icon,
-        String? parentId,
-        int level,
-        double total,
-      })
-    >
-  >
-  totalsByCategoryWithHierarchy({
+  Future<StatisticsRangeTotals> totalsForRange({
     required String ledgerId,
     required String type,
     required DateTime start,
     required DateTime end,
-  }) => statisticsStore.totalsByCategoryWithHierarchy(
+  }) => statisticsStore.totalsForRange(
     ledgerId: ledgerId,
     type: type,
     start: start,
     end: end,
   );
+
+  /// 批量读取统计所需分摊关系，与单笔编辑共用底层交易仓储。
+  @override
+  Future<Map<String, List<TransactionSplit>>>
+  getTransactionSplitsByTransactionIds(Iterable<String> transactionIds) =>
+      transactionStore.getTransactionSplitsByTransactionIds(transactionIds);
 
   /// 提供 totalsByDay 对应的持久化能力。
   @override

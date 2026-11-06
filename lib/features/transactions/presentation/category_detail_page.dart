@@ -80,11 +80,14 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
     // 仅统计当前账本：不做跨账本汇总（账本标签显示异常，
     // 且多币种 nativeAmount 直接求和后挂单一币种符号的语义不严谨）。
     final ledgerId = _ledgerId;
+    final query = (
+      categoryId: widget.categoryId,
+      ledgerId: ledgerId,
+      start: widget.startDate,
+      end: widget.endDate,
+    );
     final transactionsAsync = ref.watch(
-      _categoryTransactionsWithSortProvider((
-        categoryId: widget.categoryId,
-        ledgerId: ledgerId,
-      )),
+      _categoryTransactionsWithSortProvider(query),
     );
     final currentSortType = ref.watch(
       _categorySortTypeProvider(widget.categoryId),
@@ -98,27 +101,8 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
       )),
     );
 
-    // 如果有周期限制，需要筛选交易数据
-    final filteredTransactionsAsync = transactionsAsync.when(
-      loading: () => const AsyncValue<List<db.TransactionDisplay>>.loading(),
-      error: (error, stack) =>
-          AsyncValue<List<db.TransactionDisplay>>.error(error, stack),
-      data: (transactions) {
-        if (widget.startDate != null && widget.endDate != null) {
-          final filtered = transactions.where((t) {
-            // 区间为 [startDate, endDate):包含起始日,排除结束日的下一天。
-            return t.happenedAt.isAtSameMomentAs(widget.startDate!) ||
-                (t.happenedAt.isAfter(widget.startDate!) &&
-                    t.happenedAt.isBefore(widget.endDate!));
-          }).toList();
-          return AsyncValue.data(filtered);
-        }
-        return AsyncValue.data(transactions);
-      },
-    );
-
-    // 基于筛选后的数据计算汇总
-    final summaryAsync = filteredTransactionsAsync.when(
+    // 仓储已限定日期范围，汇总和列表直接使用同一份区间数据。
+    final summaryAsync = transactionsAsync.when(
       loading: () => const AsyncValue.loading(),
       error: (error, stack) => AsyncValue.error(error, stack),
       data: (transactions) {
@@ -174,7 +158,7 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
                 _buildSortControls(currentSortType),
                 // 交易记录列表
                 Expanded(
-                  child: filteredTransactionsAsync.when(
+                  child: transactionsAsync.when(
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (error, stack) {
@@ -186,10 +170,7 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
                       );
                       return _buildLoadError(
                         () => ref.invalidate(
-                          _categoryTransactionsWithSortProvider((
-                            categoryId: widget.categoryId,
-                            ledgerId: ledgerId,
-                          )),
+                          _categoryTransactionsWithSortProvider(query),
                         ),
                       );
                     },
@@ -599,49 +580,45 @@ final _categorySortTypeProvider =
 
 // 排序列表仅在页面使用期间保留，退出后释放列表及上游交易查询。
 final _categoryTransactionsWithSortProvider = Provider.autoDispose
-    .family<
-      AsyncValue<List<db.TransactionDisplay>>,
-      ({String categoryId, String ledgerId})
-    >((ref, params) {
-      final transactionsAsync = ref.watch(categoryTransactionsProvider(params));
-      final sortType = ref.watch(_categorySortTypeProvider(params.categoryId));
+    .family<AsyncValue<List<db.TransactionDisplay>>, CategoryTransactionsQuery>(
+      (ref, params) {
+        final transactionsAsync = ref.watch(
+          categoryTransactionsProvider(params),
+        );
+        final sortType = ref.watch(
+          _categorySortTypeProvider(params.categoryId),
+        );
 
-      return transactionsAsync.when(
-        loading: () => const AsyncValue.loading(),
-        error: (error, stack) => AsyncValue.error(error, stack),
-        data: (transactions) {
-          final sorted = List<db.TransactionDisplay>.from(transactions);
-
-          switch (sortType) {
-            case SortType.timeAsc:
-              sorted.sort((a, b) => a.happenedAt.compareTo(b.happenedAt));
-              break;
-            case SortType.timeDesc:
-              sorted.sort((a, b) => b.happenedAt.compareTo(a.happenedAt));
-              break;
-            case SortType.amountAsc:
-              // 金额排序与列表展示/小计口径一致:按折本位币金额排。
-              // decimal 字符串不能按字典序比较（"9.99" > "10.00" 会出错），
-              // 直接比较十进制值，避免高精度金额转 double 后失去排序差异。
-              sorted.sort(
-                (a, b) => categoryDetailAmountOf(
-                  a,
-                ).compareTo(categoryDetailAmountOf(b)),
-              );
-              break;
-            case SortType.amountDesc:
-              sorted.sort(
-                (a, b) => categoryDetailAmountOf(
-                  b,
-                ).compareTo(categoryDetailAmountOf(a)),
-              );
-              break;
-          }
-
-          return AsyncValue.data(sorted);
-        },
-      );
-    });
+        return transactionsAsync.when(
+          loading: () => const AsyncValue.loading(),
+          error: (error, stack) => AsyncValue.error(error, stack),
+          data: (transactions) {
+            try {
+              if (sortType == SortType.amountAsc ||
+                  sortType == SortType.amountDesc) {
+                // 每条金额只解析一次，排序比较复用精确十进制值。
+                return AsyncValue.data(
+                  sortCategoryDetailByAmount(
+                    transactions,
+                    descending: sortType == SortType.amountDesc,
+                  ),
+                );
+              }
+              final sorted = List<db.TransactionDisplay>.from(transactions)
+                ..sort(
+                  sortType == SortType.timeAsc
+                      ? (a, b) => a.happenedAt.compareTo(b.happenedAt)
+                      : (a, b) => b.happenedAt.compareTo(a.happenedAt),
+                );
+              return AsyncValue.data(sorted);
+            } catch (error, stackTrace) {
+              logger.error('CategoryDetailPage', '分类交易排序失败', error, stackTrace);
+              return AsyncValue.error(error, stackTrace);
+            }
+          },
+        );
+      },
+    );
 
 class _SortButton extends StatelessWidget {
   final String label;

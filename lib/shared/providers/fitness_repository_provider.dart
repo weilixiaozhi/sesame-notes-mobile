@@ -52,14 +52,15 @@ final fitnessPreferencesRepositoryProvider =
       (ref) => ref.watch(fitnessRepositoryProvider),
     );
 
-/// 文件交换固定目标的只读实例，与首页当前空间选择相互独立。
-final fitnessTargetQueryRepositoryProvider =
-    Provider.family<FitnessQueryRepository, PrivateBookTarget>(
-      (ref, target) => FitnessRepository(
-        ref.watch(databaseProvider),
+/// 文件交换按操作创建固定目标实例，完成后不按账号和会话代次保留仓储缓存。
+final fitnessTargetQueryRepositoryFactoryProvider =
+    Provider<FitnessQueryRepository Function(PrivateBookTarget)>((ref) {
+      final db = ref.watch(databaseProvider);
+      return (target) => FitnessRepository(
+        db,
         spaceId: target.bookId,
         syncId: target.syncId,
         accountIdGetter: () => ref.read(currentAccountIdProvider),
         generationGetter: () => ref.read(authIdentityGenerationProvider),
-      ),
-    );
+      );
+    });

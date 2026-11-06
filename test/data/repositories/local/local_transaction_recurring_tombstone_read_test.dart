@@ -148,12 +148,12 @@ void main() {
       expected,
     );
     expect(
-      await repo.countByTypeInRange(
+      (await repo.totalsForRange(
         ledgerId: ledgerId,
         type: 'expense',
         start: start,
         end: end,
-      ),
+      )).txCount,
       2,
     );
     expect(ids(await repo.getTransactionsByLedger(ledgerId)), expected);

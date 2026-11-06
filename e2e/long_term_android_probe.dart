@@ -406,14 +406,13 @@ Future<void> _readBenchmarks(
       }
     },
     'expense_statistics_all_years': () async {
-      final values = await LocalStatisticsRepository(db)
-          .totalsByCategoryWithHierarchy(
-            ledgerId: androidProbeLedgerId,
-            type: 'expense',
-            start: anchor.subtract(Duration(days: years * 366)),
-            end: anchor.add(const Duration(days: 1)),
-          );
-      final sum = values.fold<double>(0, (sum, value) => sum + value.total);
+      final totals = await LocalStatisticsRepository(db).totalsForRange(
+        ledgerId: androidProbeLedgerId,
+        type: 'expense',
+        start: anchor.subtract(Duration(days: years * 366)),
+        end: anchor.add(const Duration(days: 1)),
+      );
+      final sum = totals.total;
       if ((sum - years * 1460 * 12.34).abs() > 0.01) {
         throw StateError('统计金额与合成数据不符');
       }

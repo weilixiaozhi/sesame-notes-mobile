@@ -38,12 +38,12 @@ void main() {
 
     // 一笔支出即形成有效区间统计。
     expect(
-      await repo.countByTypeInRange(
+      (await repo.totalsForRange(
         ledgerId: lid,
         type: 'expense',
         start: start,
         end: end,
-      ),
+      )).txCount,
       1,
     );
     await repo.addTransaction(
@@ -78,12 +78,12 @@ void main() {
     );
 
     expect(
-      await repo.countByTypeInRange(
+      (await repo.totalsForRange(
         ledgerId: lid,
         type: 'expense',
         start: start,
         end: end,
-      ),
+      )).txCount,
       2,
     );
     final ledgerStats = (await repo.getLedgerListStats({lid}))[lid]!;

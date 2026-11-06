@@ -30,6 +30,17 @@ mixin LocalTransactionOperations on LocalAccountingContext {
   watchTransactionsWithCategoryAll({String? ledgerId}) =>
       transactionStore.watchTransactionsWithCategoryAll(ledgerId: ledgerId);
 
+  /// 支出人过滤由数据库执行，分类解析只接收该成员的交易。
+  @override
+  Future<List<({Transaction t, Category? category})>>
+  transactionsWithCategoryForMember({
+    required String ledgerId,
+    required String memberId,
+  }) => transactionStore.transactionsWithCategoryForMember(
+    ledgerId: ledgerId,
+    memberId: memberId,
+  );
+
   /// 提供 watchExcludedAaTransactions 对应的持久化能力。
   @override
   Stream<List<({Transaction t, Category? category})>>
@@ -180,20 +191,6 @@ mixin LocalTransactionOperations on LocalAccountingContext {
   }) => transactionStore.getRecentTransactionsWithCategory(
     ledgerId: ledgerId,
     limit: limit,
-  );
-
-  /// 提供 countByTypeInRange 对应的持久化能力。
-  @override
-  Future<int> countByTypeInRange({
-    required String ledgerId,
-    required String type,
-    required DateTime start,
-    required DateTime end,
-  }) => transactionStore.countByTypeInRange(
-    ledgerId: ledgerId,
-    type: type,
-    start: start,
-    end: end,
   );
 
   /// 提供 getTransactionsByLedger 对应的持久化能力。

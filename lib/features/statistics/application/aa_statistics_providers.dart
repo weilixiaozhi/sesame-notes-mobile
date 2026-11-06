@@ -391,10 +391,8 @@ final aaNoSplitTxProvider = StreamProvider.autoDispose
       ref,
       ledgerId,
     ) {
-      // 依赖统计 provider:交易变化重算汇总时,清单同步刷新。
-      ref.watch(aaStatisticsProvider(ledgerId));
-      // 过滤下沉到数据层查询(aaMode=1),避免整库交易流在客户端过滤。
-      return ref.read(statisticsQueriesProvider).watchExcludedAa(ledgerId);
+      // 数据库流自行监听交易和分类变化；仅查询来源变更时重新建立订阅。
+      return ref.watch(statisticsQueriesProvider).watchExcludedAa(ledgerId);
     });
 
 /// 分摊详情表展示的参与人:有 AA 活动的参与人 + 仅有不分摊支出的参与人。
@@ -538,20 +536,11 @@ final aaMemberDetailProvider = FutureProvider.autoDispose
         for (final p in stats.participants) p.participantId: p.isSelf,
       };
 
-      // 取账本全部交易(带分类);watch 变体返回流,取首帧快照即可。
-      // 成员详情本质是「首页支出列表按支出人筛选」:全部支出(含不分摊)
-      // 都要展示；支出人未知的交易无法归属任何成员。
-      final all = await repo
-          .watchTransactionsWithCategoryAll(ledgerId: args.ledgerId)
-          .first;
-      // 明细只为当前支出人的指定分摊交易读取关系行，不查询其他成员的账单。
-      final memberTransactions = all
-          .where(
-            (entry) =>
-                entry.t.payerMemberId?.isNotEmpty == true &&
-                entry.t.payerMemberId == args.participantId,
-          )
-          .toList(growable: false);
+      // 在数据库中限定支出人，含不分摊账单；分类和分摊只解析该成员的交易。
+      final memberTransactions = await repo.transactionsWithCategoryForMember(
+        ledgerId: args.ledgerId,
+        memberId: args.participantId,
+      );
       final customIds = memberTransactions
           .where((entry) => AaMode.fromDb(entry.t.aaMode) == AaMode.custom)
           .map((entry) => entry.t.id)

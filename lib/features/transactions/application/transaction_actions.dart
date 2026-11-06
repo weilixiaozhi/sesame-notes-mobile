@@ -43,12 +43,17 @@ final categorySubsMapProvider = StreamProvider.autoDispose
           );
     });
 
-/// 分类下的交易流（一级分类汇总需包含二级分类交易，故固定含子分类）。
+/// 分类、账本和日期范围共同决定交易缓存，避免不同统计区间共用全历史结果。
+typedef CategoryTransactionsQuery = ({
+  String categoryId,
+  String ledgerId,
+  DateTime? start,
+  DateTime? end,
+});
+
+/// 分类下的交易流固定包含子分类，日期范围在仓储读取时生效。
 final categoryTransactionsProvider = StreamProvider.autoDispose
-    .family<List<TransactionDisplay>, ({String categoryId, String ledgerId})>((
-      ref,
-      params,
-    ) {
+    .family<List<TransactionDisplay>, CategoryTransactionsQuery>((ref, params) {
       ref.watch(currentAccountIdProvider);
       ref.watch(authIdentityGenerationProvider);
       return ref
@@ -57,6 +62,8 @@ final categoryTransactionsProvider = StreamProvider.autoDispose
             params.categoryId,
             ledgerId: params.ledgerId,
             includeSubCategories: true,
+            start: params.start,
+            end: params.end,
           )
           .map(
             (rows) =>

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' as d;
 import 'package:decimal/decimal.dart';
 
 import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/data/models/statistics_range_totals.dart';
 import 'package:sesame_notes/data/repositories/support/ledger_lookup.dart';
 import 'package:sesame_notes/data/repositories/support/ledger_category_catalog.dart';
 import 'package:sesame_notes/data/repositories/support/category_scope.dart';
@@ -15,6 +16,98 @@ class LocalStatisticsRepository {
   final SesameDatabase db;
 
   LocalStatisticsRepository(this.db);
+
+  /// 一次读取必要字段，同时累计分类、每日金额、笔数和总额。
+  Future<StatisticsRangeTotals> totalsForRange({
+    required String ledgerId,
+    required String type,
+    required DateTime start,
+    required DateTime end,
+  }) async {
+    try {
+      final transactions = db.transactions;
+      final query = db.selectOnly(transactions)
+        ..addColumns([
+          transactions.categoryId,
+          transactions.happenedAt,
+          transactions.nativeAmount,
+          transactions.amount,
+        ])
+        ..where(
+          transactions.ledgerId.equals(ledgerId) &
+              transactions.txType.equals(type) &
+              transactions.deletedAt.isNull() &
+              transactions.happenedAt.isBiggerOrEqualValue(start) &
+              transactions.happenedAt.isSmallerThanValue(end),
+        );
+      final rows = await query.get();
+      // 分类解析始终以账本的真实账号域或共享镜像为准。
+      final categories = await readLedgerCategoryCatalog(
+        db,
+        ledgerId,
+        categoryIds: rows
+            .map((row) => row.read(transactions.categoryId))
+            .whereType<String>(),
+      );
+      final categoryTotals = <String?, Decimal>{};
+      final dayTotals = <DateTime, Decimal>{};
+      var total = Decimal.zero;
+      for (final row in rows) {
+        final amount =
+            Decimal.tryParse(row.read(transactions.nativeAmount)!) ??
+            Decimal.tryParse(row.read(transactions.amount)!);
+        if (amount == null) continue;
+        final category = categories[row.read(transactions.categoryId)];
+        final happened = row.read(transactions.happenedAt)!.toLocal();
+        final day = DateTime(happened.year, happened.month, happened.day);
+        // 每笔金额只解析一次，三个聚合口径共享同一个十进制值。
+        categoryTotals.update(
+          category?.id,
+          (value) => value + amount,
+          ifAbsent: () => amount,
+        );
+        dayTotals.update(
+          day,
+          (value) => value + amount,
+          ifAbsent: () => amount,
+        );
+        total += amount;
+      }
+      final hierarchy = <CategoryHierarchyTotal>[
+        for (final entry in categoryTotals.entries)
+          (
+            id: entry.key,
+            name: categories[entry.key]?.name ?? '未分类',
+            icon: categories[entry.key]?.icon,
+            parentId: categories[entry.key]?.parentId,
+            level: categories[entry.key]?.level ?? 1,
+            total: entry.value.toDouble(),
+          ),
+      ]..sort((left, right) => right.total.compareTo(left.total));
+      return StatisticsRangeTotals(
+        categories: hierarchy,
+        days: [
+          // 按当地日历推进，夏令时切换不改变每日零点和半开区间。
+          for (
+            var day = DateTime(start.year, start.month, start.day);
+            day.isBefore(end);
+            day = DateTime(day.year, day.month, day.day + 1)
+          )
+            (day: day, total: (dayTotals[day] ?? Decimal.zero).toDouble()),
+        ],
+        txCount: rows.length,
+        total: total.toDouble(),
+      );
+    } catch (error, stackTrace) {
+      logger.error(
+        'Statistics',
+        '读取区间统计失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      rethrow;
+    }
+  }
 
   /// 协作者统计使用当前账本的所有者镜像，其他账本返回空镜像目录。
   Future<Map<String, Category>> getSharedSyntheticCategoriesForLedger(
@@ -37,81 +130,6 @@ class LocalStatisticsRepository {
       logger.error('Statistics', '读取统计账本分类镜像失败', error, stackTrace);
       rethrow;
     }
-  }
-
-  /// 汇总一本账本真实分类域的金额及层级，不按跨账号的裸分类 ID 拼接主表。
-  Future<
-    List<
-      ({
-        String? id,
-        String name,
-        String? icon,
-        String? parentId,
-        int level,
-        double total,
-      })
-    >
-  >
-  totalsByCategoryWithHierarchy({
-    required String ledgerId,
-    required String type,
-    required DateTime start,
-    required DateTime end,
-  }) async {
-    final q = (db.select(db.transactions)
-      ..where(
-        (t) =>
-            t.ledgerId.equals(ledgerId) &
-            t.txType.equals(type) &
-            t.deletedAt.isNull() &
-            t.happenedAt.isBiggerOrEqualValue(start) &
-            t.happenedAt.isSmallerThanValue(end),
-      ));
-
-    final rows = await q.get();
-    final categories = await readLedgerCategoryCatalog(
-      db,
-      ledgerId,
-      categoryIds: rows.map((row) => row.categoryId).whereType<String>(),
-    );
-    final map = <String?, Decimal>{};
-    final categoryInfo =
-        <String?, ({String name, String? icon, String? parentId, int level})>{};
-
-    for (final t in rows) {
-      final c = categories[t.categoryId];
-      String? id = c?.id;
-
-      if (c != null) {
-        categoryInfo[id] = (
-          name: c.name,
-          icon: c.icon,
-          parentId: c.parentId,
-          level: c.level,
-        );
-      } else {
-        categoryInfo[id] = (name: '未分类', icon: null, parentId: null, level: 1);
-      }
-
-      final v = Decimal.tryParse(t.nativeAmount) ?? Decimal.tryParse(t.amount);
-      if (v != null) {
-        map.update(id, (acc) => acc + v, ifAbsent: () => v);
-      }
-    }
-
-    final list = map.entries.map((e) {
-      final info = categoryInfo[e.key]!;
-      return (
-        id: e.key,
-        name: info.name,
-        icon: info.icon,
-        parentId: info.parentId,
-        level: info.level,
-        total: e.value.toDouble(),
-      );
-    }).toList()..sort((a, b) => b.total.compareTo(a.total));
-
-    return list;
   }
 
   Future<List<({DateTime day, double total})>> totalsByDay({

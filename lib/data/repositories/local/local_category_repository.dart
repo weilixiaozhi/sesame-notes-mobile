@@ -1145,6 +1145,8 @@ class LocalCategoryRepository implements CategoryQueryRepository {
     String categoryId, {
     String? ledgerId,
     bool includeSubCategories = false,
+    DateTime? start,
+    DateTime? end,
   }) => _watchRead(() async {
     final categories = await getAllCategories(ledgerId: ledgerId);
     if (!categories.any((c) => c.id == categoryId)) return <Transaction>[];
@@ -1159,6 +1161,13 @@ class LocalCategoryRepository implements CategoryQueryRepository {
         : db.select(db.transactions);
     query.where((t) => t.categoryId.isIn(ids) & t.deletedAt.isNull());
     if (ledgerId != null) query.where((t) => t.ledgerId.equals(ledgerId));
+    // 日期条件参与数据库筛选，页面只接收所选范围内的父子分类交易。
+    if (start != null) {
+      query.where((t) => t.happenedAt.isBiggerOrEqualValue(start));
+    }
+    if (end != null) {
+      query.where((t) => t.happenedAt.isSmallerThanValue(end));
+    }
     query.orderBy([(t) => d.OrderingTerm.desc(t.happenedAt)]);
     return query.get();
   });

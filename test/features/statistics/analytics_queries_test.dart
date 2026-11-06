@@ -23,38 +23,23 @@ class _Queries extends Fake implements StatisticsQueries {
   final requestedRanges = <DateRange>[];
   Object? failure;
 
-  /// 当前区间提供分类层级行，错误场景模拟读取失败。
+  /// 一次范围读取提供分类、日序列和笔数，记录真实查询边界。
   @override
-  Future<List<CategoryHierarchyTotal>> totalsByCategoryWithHierarchy({
+  Future<StatisticsRangeTotals> totalsForRange({
     required String ledgerId,
     required String type,
     required DateTime start,
     required DateTime end,
   }) async {
     if (failure case final error?) throw error;
-    return hierarchy;
-  }
-
-  /// 记录日序列读取范围，确保只为当前展示期间取数。
-  @override
-  Future<List<({DateTime day, double total})>> totalsByDay({
-    required String ledgerId,
-    required String type,
-    required DateTime start,
-    required DateTime end,
-  }) async {
     requestedRanges.add((start: start, end: end));
-    return [(day: start, total: 11.0)];
+    return StatisticsRangeTotals(
+      categories: hierarchy,
+      days: [(day: start, total: 11.0)],
+      txCount: hierarchy.length,
+      total: hierarchy.fold(0, (total, row) => total + row.total),
+    );
   }
-
-  /// 笔数直接由测试提供的分类聚合行数量决定。
-  @override
-  Future<int> countByTypeInRange({
-    required String ledgerId,
-    required String type,
-    required DateTime start,
-    required DateTime end,
-  }) async => hierarchy.length;
 
   /// 返回共享账本本次查询固定的分类快照。
   @override

@@ -27,6 +27,7 @@ import 'widgets/fitness_rest_sheet.dart';
 import 'widgets/fitness_widgets.dart';
 import 'widgets/fitness_rest_settings.dart';
 import 'widgets/fitness_session_summary.dart';
+import 'widgets/fitness_clock.dart';
 import 'widgets/fitness_editor_footer.dart';
 import 'widgets/fitness_set_keyboard.dart';
 import 'widgets/fitness_editable_title.dart';
@@ -420,6 +421,7 @@ class _FitnessWorkoutPageState extends ConsumerState<FitnessWorkoutPage> {
     }
   }
 
+  /// 训练内容依赖持久化快照，时长和到期提示由各自局部组件更新。
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -433,7 +435,6 @@ class _FitnessWorkoutPageState extends ConsumerState<FitnessWorkoutPage> {
     final workouts = ref.watch(fitnessWorkoutProvider(widget.workoutId));
     final catalog = ref.watch(fitnessCatalogProvider);
     final prefs = ref.watch(fitnessPreferencesProvider);
-    final now = ref.watch(fitnessClockProvider).value ?? DateTime.now();
     Widget failure(VoidCallback retry) => AppSheet(
       child: AppLoadError(message: l.fitnessLoadFailed, onRetry: retry),
     );
@@ -463,7 +464,6 @@ class _FitnessWorkoutPageState extends ConsumerState<FitnessWorkoutPage> {
     }
     _synchronizeDraft(stored);
     final w = _draft ?? stored;
-    _promptRestCompletion(w, now);
     final running = w.status == 'in_progress';
     final ticking = running && w.runSegments.last.endedAt == null;
     final editor = FitnessExerciseEditor(
@@ -543,6 +543,13 @@ class _FitnessWorkoutPageState extends ConsumerState<FitnessWorkoutPage> {
               ),
               child: Stack(
                 children: [
+                  FitnessRestClock(
+                    timer: w.restTimer,
+                    builder: (context, now) {
+                      _promptRestCompletion(w, now);
+                      return const SizedBox.shrink();
+                    },
+                  ),
                   CustomScrollView(
                     slivers: [
                       SliverToBoxAdapter(
@@ -562,13 +569,8 @@ class _FitnessWorkoutPageState extends ConsumerState<FitnessWorkoutPage> {
                                           child: FittedBox(
                                             fit: BoxFit.scaleDown,
                                             alignment: Alignment.centerLeft,
-                                            child: Text(
-                                              fitnessDuration(
-                                                fitnessElapsed(
-                                                  w,
-                                                  now,
-                                                ).inSeconds,
-                                              ),
+                                            child: FitnessWorkoutElapsedText(
+                                              workout: w,
                                               style: AppTextTokens.display2(
                                                 context,
                                               ),
@@ -662,11 +664,14 @@ class _FitnessWorkoutPageState extends ConsumerState<FitnessWorkoutPage> {
                             message: l.fitnessRest,
                             child: Padding(
                               padding: const EdgeInsets.all(AppDimens.p4),
-                              child: FitnessRestCountdown(
+                              child: FitnessRestClock(
                                 timer: w.restTimer,
-                                now: now,
-                                seconds: prefs.value!.defaultRestSeconds,
-                                style: FitnessRestCountdownStyle.compact,
+                                builder: (context, now) => FitnessRestCountdown(
+                                  timer: w.restTimer,
+                                  now: now,
+                                  seconds: prefs.value!.defaultRestSeconds,
+                                  style: FitnessRestCountdownStyle.compact,
+                                ),
                               ),
                             ),
                           ),

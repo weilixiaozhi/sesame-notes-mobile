@@ -61,7 +61,12 @@ class AutoSyncCoordinator {
   bool _retryPending = false;
   int _retryAttempt = 0;
   int _downloadRevision = 0;
-  int _mutationReadRevision = 0;
+  int _mutationRevision = 0;
+  int _mutationSnapshotRevision = 0;
+  Future<void>? _pendingMutationRead;
+  bool _triggerMutationWork = false;
+  bool _externalSyncRunning = false;
+  bool _externalSyncDirty = false;
 
   /// 同步执行期间到达的新变更标记：执行完成后重新排队，避免变更被吞。
   bool _pendingWhileRunning = false;
@@ -98,7 +103,7 @@ class AutoSyncCoordinator {
   void start({bool syncOnStart = false}) {
     if (_disposed || _sub != null) return;
     _environmentReady = _canRun;
-    _sub = changes.listen((_) => unawaited(_localChangesChanged()));
+    _sub = changes.listen(_onLocalChanges);
     if (syncOnStart) _schedule();
   }
 
@@ -111,6 +116,28 @@ class AutoSyncCoordinator {
     _retryTimer?.cancel();
     _sub?.cancel();
     _sub = null;
+  }
+
+  /// 同步中的表通知合并到轮次结束，读取最终待推内容仍会发现执行期间的新编辑。
+  void _onLocalChanges(Set<TableUpdate> changes) {
+    if (_disposed || !isLoggedIn()) return;
+    _mutationRevision++;
+    if (_running) return;
+    if (_externalSyncRunning) {
+      _externalSyncDirty = true;
+      return;
+    }
+    unawaited(_localChangesChanged());
+  }
+
+  /// 手动与实时同步也共用忙状态，其冻结和回执通知只在整轮结束后检查一次。
+  void syncActivityChanged(bool running) {
+    if (_disposed) return;
+    _externalSyncRunning = running;
+    if (!running && _externalSyncDirty) {
+      _externalSyncDirty = false;
+      if (!_running) unawaited(_localChangesChanged());
+    }
   }
 
   /// 新增任务及时唤醒，集合未变的通知不能重置失败退避。
@@ -176,27 +203,48 @@ class AutoSyncCoordinator {
     }
   }
 
-  /// 快照仅接纳最新一次读取；移除已完成项不会补充重试预算，新增或编辑才会唤醒。
-  Future<void> _refreshPendingMutations({required bool triggerNewWork}) async {
-    if (_disposed || !isLoggedIn()) return;
-    final revision = ++_mutationReadRevision;
-    final current = await pendingMutations();
-    if (_disposed || !isLoggedIn() || revision != _mutationReadRevision) return;
-    final added = current.any(
-      (mutation) => !_knownMutations.contains(mutation),
-    );
-    _knownMutations = Set.of(current);
-    _mutationsPresent = current.isNotEmpty;
-    if (!_mutationsPresent && !_downloadsPresent) {
-      _retryTimer?.cancel();
-      _retryTimer = null;
-      _retryPending = false;
-      _retryAttempt = 0;
-    }
-    if (added && triggerNewWork) {
-      _retryAttempt = 0;
-      _schedule();
-    }
+  /// 共享在途读取；读取期间收到的通知只补查最新快照，不并发搬运整份队列。
+  Future<void> _refreshPendingMutations({required bool triggerNewWork}) {
+    if (_disposed || !isLoggedIn()) return Future<void>.value();
+    _triggerMutationWork = _triggerMutationWork || triggerNewWork;
+    return _pendingMutationRead ??= Future<void>.microtask(() async {
+      try {
+        while (!_disposed && isLoggedIn()) {
+          final revision = _mutationRevision;
+          final current = await pendingMutations();
+          if (_disposed || !isLoggedIn()) return;
+          if (revision != _mutationRevision) {
+            // 手动同步尚在写队列时保留原比较基线，结束通知会统一补查。
+            if (_externalSyncRunning && !_running) {
+              _externalSyncDirty = true;
+              return;
+            }
+            continue;
+          }
+          final added = current.any(
+            (mutation) => !_knownMutations.contains(mutation),
+          );
+          _knownMutations = current;
+          _mutationSnapshotRevision = revision;
+          _mutationsPresent = current.isNotEmpty;
+          if (!_mutationsPresent && !_downloadsPresent) {
+            _retryTimer?.cancel();
+            _retryTimer = null;
+            _retryPending = false;
+            _retryAttempt = 0;
+          }
+          if (added && _triggerMutationWork) {
+            _retryAttempt = 0;
+            _schedule();
+          }
+          return;
+        }
+      } finally {
+        // 成功、失败及账号退出均释放在途引用，下一次通知可以重新读取。
+        _pendingMutationRead = null;
+        _triggerMutationWork = false;
+      }
+    });
   }
 
   /// 防抖调度：窗口内多次变更重置计时器只触发一次；执行期间的变更
@@ -277,14 +325,23 @@ class AutoSyncCoordinator {
         if (!_disposed && isLoggedIn()) {
           var downloadsRetryable = false;
           while (!_disposed && isLoggedIn()) {
-            final revision = _downloadRevision;
+            var revision = _downloadRevision;
             downloadsRetryable = await hasPendingDownloads();
-            if (_disposed || revision == _downloadRevision) break;
-            if (!_downloadsPresent) {
+            if (_disposed || !isLoggedIn()) break;
+            // 两类待办的读取都跨异步边界，只有版本同时稳定才能结束本轮。
+            if (_mutationSnapshotRevision != _mutationRevision) {
+              await _refreshPendingMutations(triggerNewWork: true);
+            }
+            if (revision != _downloadRevision && !_downloadsPresent) {
+              // 持久任务已明确清空，迟到查询不能重新创建已完成任务的重试。
               downloadsRetryable = false;
+              revision = _downloadRevision;
+            }
+            if (revision == _downloadRevision &&
+                _mutationSnapshotRevision == _mutationRevision) {
               break;
             }
-            // 查询期间其他任务可能完成或新邀请到达，按最新集合重新核实资格。
+            // 补读编辑期间也可能新增下载；保留新任务并再次核实下载资格。
           }
           if (!_disposed && isLoggedIn()) {
             _downloadsPresent = downloadsRetryable;
@@ -372,21 +429,22 @@ final autoSyncCoordinatorProvider = Provider<AutoSyncCoordinator>((ref) {
     // 只比较真实编辑字段；冻结请求、拒收说明和回执字段不会为同一任务续重试次数。
     pendingMutations: () async {
       if (!isLoggedIn()) return const {};
-      final query = db.select(db.syncChanges)
+      final table = db.syncChanges;
+      final query = db.selectOnly(table)
+        ..addColumns([table.mutationId, table.payload, table.updatedAt])
         ..where(
-          (c) =>
-              c.pushedAt.isNull() &
-              c.rejectionReason.isNull() &
-              c.accountId.equals(accountId!),
+          table.pushedAt.isNull() &
+              table.rejectionReason.isNull() &
+              table.accountId.equals(accountId!),
         );
       final rows = await query.get();
       if (!isLoggedIn()) return const {};
       return {
         for (final row in rows)
           (
-            mutationId: row.mutationId,
-            payload: row.payload,
-            updatedAt: row.updatedAt,
+            mutationId: row.read(table.mutationId)!,
+            payload: row.read(table.payload)!,
+            updatedAt: row.readWithConverter(table.updatedAt)!,
           ),
       };
     },
@@ -414,6 +472,9 @@ final autoSyncCoordinatorProvider = Provider<AutoSyncCoordinator>((ref) {
     sync: () => ref.read(syncCoordinatorProvider).run(),
   );
   coordinator.start(syncOnStart: canSync && accountId != null);
+  ref.listen(syncBusyProvider, (_, running) {
+    coordinator.syncActivityChanged(running);
+  }, fireImmediately: true);
   ref.listen<AsyncValue<Set<String>>>(pendingCloudLedgerDownloadsProvider, (
     _,
     next,

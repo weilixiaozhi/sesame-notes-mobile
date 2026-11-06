@@ -66,19 +66,19 @@ void main() {
         happenedAt: DateTime(2026, 6, 12),
       );
 
-      final rows = await stats.totalsByCategoryWithHierarchy(
+      final rows = (await stats.totalsForRange(
         ledgerId: lid,
         type: 'expense',
         start: start,
         end: end,
-      );
+      )).categories;
       expect(rows, hasLength(2));
       expect(rows.firstWhere((r) => r.id == foodId).total, 30.0);
       expect(rows.firstWhere((r) => r.name == '未分类').total, 119.99);
     });
   });
 
-  group('totalsByCategoryWithHierarchy', () {
+  group('范围分类统计', () {
     test('二级分类带 parentId 与 level', () async {
       final lid = await seedLedger();
       final parentId = await seedCategory('购物');
@@ -94,12 +94,12 @@ void main() {
         happenedAt: DateTime(2026, 6, 10),
       );
 
-      final rows = await stats.totalsByCategoryWithHierarchy(
+      final rows = (await stats.totalsForRange(
         ledgerId: lid,
         type: 'expense',
         start: start,
         end: end,
-      );
+      )).categories;
       final child = rows.firstWhere((r) => r.id == childId);
       expect(child.parentId, parentId);
       expect(child.level, 2);
@@ -153,12 +153,12 @@ void main() {
 
       final start = DateTime(2026, 6, 1);
       final end = DateTime(2026, 7, 1);
-      final rows = await stats.totalsByCategoryWithHierarchy(
+      final rows = (await stats.totalsForRange(
         ledgerId: lid,
         type: 'expense',
         start: start,
         end: end,
-      );
+      )).categories;
       expect(rows, hasLength(1));
       expect(rows.first.name, '主人分类');
       // 聚合 key 即真实 UUID，层级沿用镜像父子链

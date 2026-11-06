@@ -13,16 +13,9 @@ import 'package:sesame_notes/data/mappers/category_display_mapper.dart';
 import 'package:sesame_notes/data/mappers/transaction_display_mapper.dart';
 import 'package:sesame_notes/data/models/category_display.dart';
 import 'package:sesame_notes/data/models/transaction_display.dart';
+import 'package:sesame_notes/data/models/statistics_range_totals.dart';
 
-/// 分类层级聚合行（一级/二级分类及其区间总额）。
-typedef CategoryHierarchyTotal = ({
-  String? id,
-  String name,
-  String? icon,
-  String? parentId,
-  int level,
-  double total,
-});
+export 'package:sesame_notes/data/models/statistics_range_totals.dart';
 
 /// 统计查询。
 class StatisticsQueries {
@@ -42,26 +35,13 @@ class StatisticsQueries {
   }) =>
       _repo.totalsByDay(ledgerId: ledgerId, type: type, start: start, end: end);
 
-  /// 区间内分类层级聚合（含二级分类明细行）。
-  Future<List<CategoryHierarchyTotal>> totalsByCategoryWithHierarchy({
+  /// 区间统计只读取一次交易字段，分类、趋势、笔数和总额共用快照。
+  Future<StatisticsRangeTotals> totalsForRange({
     required String ledgerId,
     required String type,
     required DateTime start,
     required DateTime end,
-  }) => _repo.totalsByCategoryWithHierarchy(
-    ledgerId: ledgerId,
-    type: type,
-    start: start,
-    end: end,
-  );
-
-  /// 区间内的支出交易笔数。
-  Future<int> countByTypeInRange({
-    required String ledgerId,
-    required String type,
-    required DateTime start,
-    required DateTime end,
-  }) => _repo.countByTypeInRange(
+  }) => _repo.totalsForRange(
     ledgerId: ledgerId,
     type: type,
     start: start,
@@ -100,6 +80,8 @@ class StatisticsQueries {
 }
 
 /// 统计查询 provider。
-final statisticsQueriesProvider = Provider<StatisticsQueries>(
-  (ref) => StatisticsQueries(ref),
-);
+final statisticsQueriesProvider = Provider<StatisticsQueries>((ref) {
+  // 查询来源变化时让列表重建订阅，普通统计状态变化不影响数据库流。
+  ref.watch(statisticsDataAccessProvider);
+  return StatisticsQueries(ref);
+});

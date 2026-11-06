@@ -258,8 +258,8 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
   /// 周期、账本或数据变化时更新统计查询，并保留各周期的日期选择。
   @override
   Widget build(BuildContext context) {
-    // 监听统一数据变更信号，交易增删改/导入/清空/同步后重新统计
-    final dataSignal = ref.watch(dataChangeSignalProvider);
+    // 财务写入驱动统计，其他业务的正文和训练保存不会触发交易重查。
+    final dataSignal = ref.watch(accountingDataChangeSignalProvider);
     // 同时监听当前账本：切换账本后统计页必须整体重算，否则仍显示旧账本数据
     final ledgerId = ref.watch(currentLedgerIdProvider);
     final monthStartDay = ref.watch(currentMonthStartDayProvider);

@@ -379,15 +379,15 @@ void main() {
               );
             });
             await _measure(sample, 'expense_statistics_us', () async {
-              final groups = await LocalStatisticsRepository(source)
-                  .totalsByCategoryWithHierarchy(
+              final totals = await LocalStatisticsRepository(source)
+                  .totalsForRange(
                     ledgerId: _ledger,
                     type: 'expense',
                     start: _start,
                     end: _start.add(Duration(days: years * 366)),
                   );
               expect(
-                groups.single.total,
+                totals.categories.single.total,
                 closeTo(years * 1460 * 12.34, 0.0001),
               );
             });

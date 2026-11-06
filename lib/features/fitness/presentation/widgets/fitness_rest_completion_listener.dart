@@ -9,6 +9,7 @@ import 'package:sesame_notes/theme/icons/app_icons.dart';
 import '../../application/fitness_providers.dart';
 import 'package:sesame_notes/domain/fitness/fitness_rules.dart';
 import 'fitness_widgets.dart';
+import 'fitness_clock.dart';
 
 /// 常驻导航器上方，只占顶部通知区域，不改路由、焦点或用户输入。
 class FitnessRestCompletionListener extends ConsumerStatefulWidget {
@@ -27,17 +28,22 @@ class FitnessRestCompletionListener extends ConsumerStatefulWidget {
 class _FitnessRestCompletionListenerState
     extends ConsumerState<FitnessRestCompletionListener> {
   bool _busy = false;
+
+  /// 关闭提示或没有活动休息时不保留时钟；到期提示保持可操作的静态状态。
   @override
   Widget build(BuildContext context) {
-    final owner = ref.watch(fitnessActionsProvider);
+    if (!widget.enabled) return const SizedBox.shrink();
     final workout = ref.watch(fitnessRunningWorkoutProvider).value;
-    final now = ref.watch(fitnessClockProvider).value ?? DateTime.now();
     final timer = workout?.restTimer;
-    if (!widget.enabled ||
-        workout == null ||
-        !fitnessRestCompleted(timer, now)) {
+    final now = fitnessDisplayNow(
+      ref,
+      ticking: timer?.status == 'running',
+      until: timer?.endsAt,
+    );
+    if (workout == null || !fitnessRestCompleted(timer, now)) {
       return const SizedBox.shrink();
     }
+    final owner = ref.watch(fitnessActionsProvider);
     final l = AppLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
     Future<void> act(bool repeat) async {

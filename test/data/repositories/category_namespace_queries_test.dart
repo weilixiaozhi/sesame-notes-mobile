@@ -302,13 +302,12 @@ void main() {
   test('共享统计读取Owner镜像且不受本人墓碑影响', () async {
     try {
       await _seed(db, privateDeleted: true);
-      final totals = await LocalStatisticsRepository(db)
-          .totalsByCategoryWithHierarchy(
-            ledgerId: 'shared',
-            type: 'expense',
-            start: DateTime.utc(2026, 10, 1),
-            end: DateTime.utc(2026, 11, 1),
-          );
+      final totals = (await LocalStatisticsRepository(db).totalsForRange(
+        ledgerId: 'shared',
+        type: 'expense',
+        start: DateTime.utc(2026, 10, 1),
+        end: DateTime.utc(2026, 11, 1),
+      )).categories;
       expect(totals.single.name, '共享账本所有者名称');
       expect(totals.single.total, 10);
     } catch (error, stackTrace) {
@@ -336,12 +335,12 @@ void main() {
             >
           >{};
       for (final ledger in ['own', 'shared']) {
-        byLedger[ledger] = await statistics.totalsByCategoryWithHierarchy(
+        byLedger[ledger] = (await statistics.totalsForRange(
           ledgerId: ledger,
           type: 'expense',
           start: DateTime.utc(2026, 10, 1),
           end: DateTime.utc(2026, 11, 1),
-        );
+        )).categories;
       }
       expect(byLedger['own']!.single.id, _id);
       expect(byLedger['shared']!.single.id, _id);
@@ -453,13 +452,12 @@ void main() {
               ),
             );
       }
-      final totals = await LocalStatisticsRepository(db)
-          .totalsByCategoryWithHierarchy(
-            ledgerId: 'own',
-            type: 'expense',
-            start: DateTime.utc(2026, 10, 1),
-            end: DateTime.utc(2026, 11, 1),
-          );
+      final totals = (await LocalStatisticsRepository(db).totalsForRange(
+        ledgerId: 'own',
+        type: 'expense',
+        start: DateTime.utc(2026, 10, 1),
+        end: DateTime.utc(2026, 11, 1),
+      )).categories;
       final coffees = totals.where((row) => row.name == '咖啡').toList();
       expect(coffees, hasLength(2));
       expect(coffees.map((row) => (row.id, row.parentId, row.total)).toSet(), {

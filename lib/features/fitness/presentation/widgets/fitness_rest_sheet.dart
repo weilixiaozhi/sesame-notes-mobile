@@ -11,6 +11,7 @@ import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import '../../application/fitness_providers.dart';
 import 'fitness_widgets.dart';
+import 'fitness_clock.dart';
 import '../../application/fitness_lifecycle.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/theme/colors.dart';
@@ -56,13 +57,17 @@ class _FitnessRestSheetState extends ConsumerState<FitnessRestSheet> {
     final remindersEnabled = ref.watch(reminderSettingsProvider).restActive;
     final workout = ref.watch(fitnessWorkoutProvider(widget.workoutId)).value;
     final prefs = ref.watch(fitnessPreferencesProvider).value;
-    final now = ref.watch(fitnessClockProvider).value ?? DateTime.now();
+    final timer = workout?.restTimer;
+    final now = fitnessDisplayNow(
+      ref,
+      ticking: timer?.status == 'running',
+      until: timer?.endsAt,
+    );
     final seconds =
         _draftSeconds ??
         prefs?.defaultRestSeconds ??
         FitnessDefaults.restSeconds;
     final active = workout?.status == 'in_progress';
-    final timer = workout?.restTimer;
     final remaining = fitnessRestRemaining(timer, now);
     final counting = timer != null && remaining > 0;
     final completed = fitnessRestCompleted(timer, now);

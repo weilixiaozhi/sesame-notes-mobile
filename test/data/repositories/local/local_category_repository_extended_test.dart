@@ -234,12 +234,12 @@ void main() {
       expect(summary.averageAmount, 80 / 3);
 
       final StatisticsRepository statistics = LocalRepository(db);
-      final totals = await statistics.totalsByCategoryWithHierarchy(
+      final totals = (await statistics.totalsForRange(
         ledgerId: ledgerId,
         type: 'expense',
         start: DateTime(2026, 8, 1),
         end: DateTime(2026, 9, 1),
-      );
+      )).categories;
       expect(totals.single.id, catId);
       expect(totals.single.total, 80.0);
     });

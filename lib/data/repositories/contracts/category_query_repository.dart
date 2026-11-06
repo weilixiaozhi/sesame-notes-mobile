@@ -68,10 +68,12 @@ abstract interface class CategoryQueryRepository {
     String? ledgerId,
   });
 
-  /// 监听分类关联交易，按需包含直属子分类的交易。
+  /// 监听分类关联交易，按需包含直属子分类，并在数据库限定半开日期区间。
   Stream<List<TransactionSnapshot>> watchTransactionsByCategory(
     String categoryId, {
     String? ledgerId,
     bool includeSubCategories = false,
+    DateTime? start,
+    DateTime? end,
   });
 }

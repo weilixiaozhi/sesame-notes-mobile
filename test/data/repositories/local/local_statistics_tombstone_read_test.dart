@@ -31,12 +31,12 @@ void main() {
     final end = DateTime(now.year + 1, 1, 1);
 
     expect(
-      await repo.totalsByCategoryWithHierarchy(
+      (await repo.totalsForRange(
         ledgerId: ledgerId,
         type: 'expense',
         start: start,
         end: end,
-      ),
+      )).categories,
       isEmpty,
     );
     expect(
@@ -109,12 +109,12 @@ void main() {
     await (db.update(db.categories)..where((row) => row.id.equals(categoryId)))
         .write(CategoriesCompanion(deletedAt: d.Value(now)));
 
-    final hierarchy = await repo.totalsByCategoryWithHierarchy(
+    final hierarchy = (await repo.totalsForRange(
       ledgerId: ledgerId,
       type: 'expense',
       start: now.subtract(const Duration(days: 1)),
       end: now.add(const Duration(days: 1)),
-    );
+    )).categories;
 
     expect(hierarchy.single, (
       id: null,

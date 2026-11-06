@@ -72,7 +72,7 @@ class SesameNotesApp extends ConsumerStatefulWidget {
 
 class _SesameNotesAppState extends ConsumerState<SesameNotesApp>
     with WidgetsBindingObserver {
-  final _visitedModes = <AppMode>{};
+  final _visitedPages = <int>{};
   final _domainTabs = <AppMode, int>{};
   DateTime? _lastBackPressTime;
   double _horizontalDrag = 0;
@@ -80,8 +80,8 @@ class _SesameNotesAppState extends ConsumerState<SesameNotesApp>
   Future<void> _backgroundWrite = Future<void>.value();
   bool _backgroundRecordFailed = false;
 
-  /// 页组索引保留共享日历与我的，避免现有通知和同步入口丢失目的地。
-  List<Widget> get _pages => [
+  /// 缓存各页实例；导航切换只改变可见性，不重复更新隐藏页面的组件配置。
+  late final List<Widget> _pages = [
     HomePage(onViewAnalytics: () => _selectTab(1)),
     const AnalyticsPage(embedded: true),
     CalendarPage(
@@ -436,7 +436,6 @@ class _SesameNotesAppState extends ConsumerState<SesameNotesApp>
     final idx = ref.watch(bottomTabIndexProvider);
     final mode = ref.watch(currentModeProvider);
     final shared = idx == 2 || idx == 3;
-    _visitedModes.add(mode);
     if (!shared) _domainTabs[mode] = idx;
     final pageIndex = idx == 3
         ? 12
@@ -447,6 +446,8 @@ class _SesameNotesAppState extends ConsumerState<SesameNotesApp>
         : idx == 4 && mode == AppMode.memos
         ? 8
         : idx + mode.index * 3;
+    // 页面首次进入才挂载；已访问页面保留编辑和滚动状态。
+    _visitedPages.add(pageIndex);
     final pages = _pages;
     final l = AppLocalizations.of(context);
     return PopScope(
@@ -528,15 +529,10 @@ class _SesameNotesAppState extends ConsumerState<SesameNotesApp>
                     index: pageIndex,
                     children: [
                       for (var index = 0; index < pages.length; index++)
-                        if (index == 2 ||
-                            index == 12 ||
-                            (index == 13
-                                ? _visitedModes.contains(AppMode.fitness)
-                                : _visitedModes.contains(
-                                    AppMode.values[index ~/ 3],
-                                  )))
+                        if (_visitedPages.contains(index))
                           TickerMode(
-                            enabled: index == 2 || index == pageIndex,
+                            // 隐藏页面暂停动画及 Riverpod 订阅，恢复时读取最新数据。
+                            enabled: index == pageIndex,
                             child: pages[index],
                           )
                         else

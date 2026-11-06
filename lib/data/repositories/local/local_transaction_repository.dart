@@ -138,6 +138,36 @@ class LocalTransactionRepository implements CurrencyTransactionRepository {
     return _watchTransactionsWithCategories(select);
   }
 
+  /// 成员详情只读取该账本中由指定成员支付的有效账单，再批量解析分类。
+  Future<List<({Transaction t, Category? category})>>
+  transactionsWithCategoryForMember({
+    required String ledgerId,
+    required String memberId,
+  }) async {
+    try {
+      if (memberId.isEmpty) return const [];
+      final rows =
+          await (db.select(db.transactions)
+                ..where(
+                  (row) =>
+                      row.ledgerId.equals(ledgerId) &
+                      row.payerMemberId.equals(memberId) &
+                      row.deletedAt.isNull(),
+                )
+                ..orderBy([(row) => d.OrderingTerm.desc(row.happenedAt)]))
+              .get();
+      return await readTransactionCategories(db, rows);
+    } catch (error, stackTrace) {
+      logger.error(
+        'TransactionQuery',
+        '读取成员账单失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      rethrow;
+    }
+  }
+
   Stream<List<({Transaction t, Category? category})>>
   watchExcludedAaTransactions(String ledgerId) {
     // 只取 aaMode=1(不分摊)的交易,过滤下沉到 SQL,避免客户端全量过滤。
@@ -791,46 +821,6 @@ class LocalTransactionRepository implements CurrencyTransactionRepository {
       ..limit(limit));
     final rows = await q.get();
     return readTransactionCategories(db, rows);
-  }
-
-  /// 统计区间内参与收支分析的交易笔数，排除已删除的记录。
-  Future<int> countByTypeInRange({
-    required String ledgerId,
-    required String type,
-    required DateTime start,
-    required DateTime end,
-  }) async {
-    try {
-      final row = await db
-          .customSelect(
-            'SELECT COUNT(*) AS c FROM transactions '
-            'WHERE ledger_id = ?1 AND tx_type = ?2 '
-            'AND happened_at >= ?3 AND happened_at < ?4 '
-            'AND deleted_at IS NULL',
-            variables: [
-              d.Variable.withString(ledgerId),
-              d.Variable.withString(type),
-              d.Variable.withDateTime(start),
-              d.Variable.withDateTime(end),
-            ],
-            readsFrom: {db.transactions},
-          )
-          .getSingle();
-      final v = row.data['c'];
-      if (v is int) return v;
-      if (v is BigInt) return v.toInt();
-      if (v is num) return v.toInt();
-      return 0;
-    } catch (error, stackTrace) {
-      logger.error(
-        'LocalTransactionRepository',
-        '读取统计笔数失败 type=$type '
-            'start=${start.toIso8601String()} end=${end.toIso8601String()}',
-        safeErrorSummary(error),
-        stackTrace,
-      );
-      rethrow;
-    }
   }
 
   Future<List<Transaction>> getTransactionsByLedger(String ledgerId) async {

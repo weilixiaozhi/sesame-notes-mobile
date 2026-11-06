@@ -2,6 +2,7 @@ import 'package:sesame_notes/data/models/transaction_import.dart';
 import 'package:sesame_notes/data/models/accounting_records.dart';
 import 'package:sesame_notes/data/models/transaction_split_input.dart';
 import 'package:sesame_notes/data/models/ledger_directory_member.dart';
+import 'package:sesame_notes/data/models/statistics_range_totals.dart';
 
 /// 账号恢复与迁移的最小数据能力，不能通过此接口访问其他仓储操作。
 abstract interface class AccountLedgerRepository {
@@ -333,8 +334,8 @@ abstract interface class AccountingTransferRepository {
 
 /// 统计与分摊查询的最小数据能力，不能通过此接口访问其他仓储操作。
 abstract interface class StatisticsRepository {
-  /// 统计与分摊查询所需的countByTypeInRange能力。
-  Future<int> countByTypeInRange({
+  /// 从同一交易快照累计分类、每日金额、笔数与总额。
+  Future<StatisticsRangeTotals> totalsForRange({
     required String ledgerId,
     required String type,
     required DateTime start,
@@ -409,26 +410,6 @@ abstract interface class StatisticsRepository {
     required DateTime now,
   });
 
-  /// 统计与分摊查询所需的totalsByCategoryWithHierarchy能力。
-  Future<
-    List<
-      ({
-        String? id,
-        String name,
-        String? icon,
-        String? parentId,
-        int level,
-        double total,
-      })
-    >
-  >
-  totalsByCategoryWithHierarchy({
-    required String ledgerId,
-    required String type,
-    required DateTime start,
-    required DateTime end,
-  });
-
   /// 统计与分摊查询所需的totalsByDay能力。
   Future<List<({DateTime day, double total})>> totalsByDay({
     required String ledgerId,
@@ -447,6 +428,13 @@ abstract interface class StatisticsRepository {
   /// 统计与分摊查询所需的watchTransactionsWithCategoryAll能力。
   Stream<List<({TransactionSnapshot t, CategorySnapshot? category})>>
   watchTransactionsWithCategoryAll({String? ledgerId});
+
+  /// 在数据库中限定账本和支出人，只为该成员的账单解析分类。
+  Future<List<({TransactionSnapshot t, CategorySnapshot? category})>>
+  transactionsWithCategoryForMember({
+    required String ledgerId,
+    required String memberId,
+  });
 
   /// 统计与分摊查询所需的weekExpense能力。
   Future<double> weekExpense({required String ledgerId, required DateTime now});

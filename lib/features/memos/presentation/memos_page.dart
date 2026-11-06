@@ -35,6 +35,26 @@ import 'widgets/memo_entry_tile.dart';
 
 enum MemoPageKind { home, tools }
 
+/// 列表只保存分组标题和摘要引用，实际卡片由可见行构建器创建。
+sealed class _MemoListRow {
+  /// 平铺行描述不持有页面或渲染对象。
+  const _MemoListRow();
+}
+
+/// 月份分组标题占用一个列表行。
+class _MemoMonthRow extends _MemoListRow {
+  /// 保存当前分组的月份标签。
+  const _MemoMonthRow(this.month);
+  final String month;
+}
+
+/// 摘要行复用仓储返回的不可变记录。
+class _MemoEntryRow extends _MemoListRow {
+  /// 保存当前行对应的备忘摘要。
+  const _MemoEntryRow(this.entry);
+  final MemoEntry entry;
+}
+
 /// 首页和工具页共用当前本入口与摘要查询。
 class MemosPage extends ConsumerStatefulWidget {
   final MemoPageKind kind;
@@ -195,15 +215,18 @@ class _MemosPageState extends ConsumerState<MemosPage> {
         AppEmpty(text: l.memoHomeEmpty),
       ], bookId: bookId);
     }
-    String group(MemoEntry entry) {
-      final date = entry.updatedAt.toLocal();
-      return DateFormat('yyyy-MM').format(date);
+    if (!book.isComplete || book.isStale) {
+      return _scrollableContent([
+        AppStatusBanner(
+          icon: AppIcons.download,
+          message: l.memoDownloadRequired,
+        ),
+      ], bookId: bookId);
     }
-
-    final rows = entries.when(
+    return entries.when(
       skipLoadingOnReload: true,
-      loading: () => <Widget>[],
-      error: (_, _) => <Widget>[
+      loading: () => _scrollableContent(const [], bookId: bookId),
+      error: (_, _) => _scrollableContent([
         AppLoadError(
           message: l.memoLoadFailed,
           onRetry: () => _retryRefresh(
@@ -211,49 +234,89 @@ class _MemosPageState extends ConsumerState<MemosPage> {
                 ref.invalidate(memoEntriesProvider(query)),
           ),
         ),
-      ],
-      data: (values) {
-        final groups = <String, List<MemoEntry>>{};
-        for (final entry in values) {
-          (groups[group(entry)] ??= []).add(entry);
-        }
-        return <Widget>[
-          if (values.isEmpty) AppEmpty(text: l.memoNoEntries),
+      ], bookId: bookId),
+      data: (values) => _entriesList(values, query),
+    );
+  }
 
-          for (final group in groups.entries) ...[
-            ListSectionHeader(title: group.key, horizontalPadding: 0),
-            ...group.value.map(_entryTile),
-          ],
-          if (values.length >= _limit)
-            TextButton(
+  /// 月份与摘要先平铺为行描述，滚动视口只创建当前需要的卡片。
+  Widget _entriesList(List<MemoEntry> entries, MemoListQuery query) {
+    final l = AppLocalizations.of(context);
+    try {
+      if (entries.isEmpty) {
+        return _scrollableContent([
+          AppEmpty(text: l.memoNoEntries),
+        ], bookId: query.bookId);
+      }
+      final monthFormat = DateFormat('yyyy-MM');
+      final groups = <String, List<MemoEntry>>{};
+      for (final entry in entries) {
+        final month = monthFormat.format(entry.updatedAt.toLocal());
+        (groups[month] ??= []).add(entry);
+      }
+      final rows = <_MemoListRow>[
+        for (final group in groups.entries) ...[
+          _MemoMonthRow(group.key),
+          for (final entry in group.value) _MemoEntryRow(entry),
+        ],
+      ];
+      final hasMore = entries.length >= query.limit;
+      return _scrollableList(
+        bookId: query.bookId,
+        itemCount: rows.length + (hasMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == rows.length) {
+            return TextButton(
               onPressed: () => setState(() => _limit += 100),
               child: Text(l.memoMore),
+            );
+          }
+          return switch (rows[index]) {
+            _MemoMonthRow(:final month) => ListSectionHeader(
+              title: month,
+              horizontalPadding: 0,
             ),
-        ];
-      },
-    );
-    final state = !book.isComplete || book.isStale
-        ? AppStatusBanner(
-            icon: AppIcons.download,
-            message: l.memoDownloadRequired,
-          )
-        : null;
-    return _scrollableContent([
-      if (state != null) state else ...rows,
-    ], bookId: bookId);
+            _MemoEntryRow(:final entry) => _entryTile(entry),
+          };
+        },
+      );
+    } catch (error, stackTrace) {
+      logger.error('MemosHome', '整理备忘列表失败', error, stackTrace);
+      return _scrollableContent([
+        AppLoadError(
+          message: l.memoLoadFailed,
+          onRetry: () => ref.invalidate(memoEntriesProvider(query)),
+        ),
+      ], bookId: query.bookId);
+    }
   }
 
   /// 正常、空本、加载和失败状态共用列表骨架，保留刷新和重试。
   Widget _scrollableContent(List<Widget> children, {String bookId = ''}) =>
-      ListView(
-        key: PageStorageKey('memo-${widget.kind}-$bookId'),
-        physics: AppPullToRefresh.physics,
-        padding: const EdgeInsets.fromLTRB(
-          AppDimens.domainPageInset,
-          AppDimens.p8,
-          AppDimens.domainPageInset,
-          AppDimens.domainBottomClearance,
-        ),
-        children: [if (_retrying) const LinearProgressIndicator(), ...children],
+      _scrollableList(
+        bookId: bookId,
+        itemCount: children.length,
+        itemBuilder: (context, index) => children[index],
       );
+
+  /// 重试进度占用独立首行，数据行继续按可见位置延迟构建。
+  Widget _scrollableList({
+    required String bookId,
+    required int itemCount,
+    required IndexedWidgetBuilder itemBuilder,
+  }) => ListView.builder(
+    key: PageStorageKey('memo-${widget.kind}-$bookId'),
+    physics: AppPullToRefresh.physics,
+    padding: const EdgeInsets.fromLTRB(
+      AppDimens.domainPageInset,
+      AppDimens.p8,
+      AppDimens.domainPageInset,
+      AppDimens.domainBottomClearance,
+    ),
+    itemCount: itemCount + (_retrying ? 1 : 0),
+    itemBuilder: (context, index) {
+      if (_retrying && index == 0) return const LinearProgressIndicator();
+      return itemBuilder(context, index - (_retrying ? 1 : 0));
+    },
+  );
 }

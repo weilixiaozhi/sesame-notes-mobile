@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sesame_notes/data/models/transaction_display.dart';
@@ -25,6 +26,53 @@ TransactionDisplay buildTx({
 );
 
 void main() {
+  test('金额排序保留十进制精度、折算回退和相同金额顺序，不修改输入', () {
+    try {
+      final day = DateTime(2026, 11, 6);
+      final transactions = [
+        buildTx(
+          id: 'higher',
+          amount: '1',
+          nativeAmount: '100000000000000000.0000000002',
+          happenedAt: day,
+        ),
+        buildTx(
+          id: 'lower',
+          amount: '1',
+          nativeAmount: '100000000000000000.0000000001',
+          happenedAt: day,
+        ),
+        buildTx(
+          id: 'same',
+          amount: '1',
+          nativeAmount: '100000000000000000.0000000001',
+          happenedAt: day,
+        ),
+        buildTx(id: 'fallback', amount: '2', nativeAmount: '', happenedAt: day),
+        buildTx(id: 'invalid', amount: 'bad', happenedAt: day),
+      ];
+      expect(
+        sortCategoryDetailByAmount(
+          transactions,
+          descending: false,
+        ).map((row) => row.id),
+        ['invalid', 'fallback', 'lower', 'same', 'higher'],
+      );
+      expect(
+        sortCategoryDetailByAmount(
+          transactions,
+          descending: true,
+        ).map((row) => row.id),
+        ['higher', 'lower', 'same', 'fallback', 'invalid'],
+      );
+      expect(transactions.first.id, 'higher');
+      expect(transactions.last.id, 'invalid');
+    } catch (error, stackTrace) {
+      debugPrint('分类金额排序回归失败：$error\n$stackTrace');
+      rethrow;
+    }
+  });
+
   group('分类详情汇总 summarizeCategoryDetail', () {
     test('父分类 10.00 + 子分类 20.00：总额 30、笔数 2、平均 15', () {
       final day = DateTime(2026, 7, 20);
