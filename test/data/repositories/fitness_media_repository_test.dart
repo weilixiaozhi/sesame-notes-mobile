@@ -5,11 +5,14 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/repositories/fitness_media_repository.dart';
 import 'package:sesame_notes/data/repositories/support/fitness_media_cache.dart';
+import 'package:sesame_notes/features/fitness/application/fitness_media_queries.dart';
+import 'package:sesame_notes/features/fitness/presentation/widgets/fitness_official_image.dart';
 
 import '../../helpers/test_isolation.dart';
 
@@ -245,6 +248,91 @@ void main() {
     expect(await old.readAsBytes(), historical);
     expect(await folder.list().where((entity) => entity is File).length, 1);
   });
+  test('真实GIF副本回收后断网，正式图片Provider仍从随包素材解码同一图片', () async {
+    final gif = base64Decode(
+      'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+    );
+    const source = 'https://fitness.example.test';
+    var offline = false;
+    var fallbackLoads = 0;
+    final dio = Dio(BaseOptions(baseUrl: source))
+      ..httpClientAdapter = _Adapter((options, _) async {
+        if (offline) {
+          throw DioException(
+            requestOptions: options,
+            type: DioExceptionType.connectionError,
+          );
+        }
+        return ResponseBody.fromBytes(gif, 200);
+      });
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMessageHandler('flutter/assets', (message) async {
+      final data = message!;
+      final path = utf8.decode(
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+      );
+      if (path != _BuiltinBundle.asset) return null;
+      fallbackLoads++;
+      return ByteData.sublistView(gif);
+    });
+    FitnessOfficialImage? provider;
+    ImageStream? stream;
+    ImageStreamListener? listener;
+    ImageInfo? decoded;
+    try {
+      const builtin = '/api/v1/fitness/media/builtin-0025';
+      final folder = Directory(
+        '${root.path}${Platform.pathSeparator}fitness-media',
+      );
+      await folder.create();
+      final previous = File(
+        '${folder.path}${Platform.pathSeparator}${key('$source|$builtin')}.gif',
+      );
+      await previous.writeAsBytes(gif);
+      final repository = FitnessMediaRepository(
+        dio: dio,
+        directory: () async => root,
+        assetBundle: _BuiltinBundle(true, mediaBytes: gif),
+        cacheLimitBytes: gif.length,
+      );
+      expect(
+        await repository.load('/api/v1/fitness/media/${sha256.convert(gif)}'),
+        gif,
+      );
+      expect(await previous.exists(), isFalse, reason: '本轮容量回收确实删除了重复缓存');
+      offline = true;
+      provider = FitnessOfficialImage(
+        queries: FitnessMediaQueries(repository),
+        mediaUrl: builtin,
+        fallbackAsset: _BuiltinBundle.asset,
+        animated: false,
+      );
+      final completed = Completer<ImageInfo>();
+      stream = provider.resolve(ImageConfiguration.empty);
+      listener = ImageStreamListener(
+        (image, _) {
+          if (!completed.isCompleted) completed.complete(image.clone());
+        },
+        onError: (Object error, StackTrace? stack) {
+          if (!completed.isCompleted) {
+            completed.completeError(error, stack ?? StackTrace.current);
+          }
+        },
+      );
+      stream.addListener(listener);
+      decoded = await completed.future.timeout(const Duration(seconds: 3));
+      expect(decoded.image.width, 1);
+      expect(decoded.image.height, 1);
+      expect(fallbackLoads, 1);
+    } finally {
+      if (listener != null) stream?.removeListener(listener);
+      decoded?.dispose();
+      await provider?.evict();
+      messenger.setMockMessageHandler('flutter/assets', null);
+      dio.close(force: true);
+    }
+  });
 }
 
 /// 测试网络只消费预设响应并允许观测实际取消信号，不连接外部服务器。
@@ -269,8 +357,9 @@ class _Adapter implements HttpClientAdapter {
 /// 目录中声明的builtin图片可独立模拟已打包或缺失，验证回收证明不能只看字符串。
 class _BuiltinBundle extends CachingAssetBundle {
   /// 指定目标GIF是否真实存在于构建资源清单。
-  _BuiltinBundle(this.available);
+  _BuiltinBundle(this.available, {this.mediaBytes});
   final bool available;
+  final Uint8List? mediaBytes;
   static const asset = 'assets/fitness/videos/0025-example.gif';
 
   /// 返回受控目录内容，避免访问仓库资源或设备数据。
@@ -287,7 +376,7 @@ class _BuiltinBundle extends CachingAssetBundle {
   Future<ByteData> load(String key) async {
     if (key == asset && available) {
       return ByteData.sublistView(
-        Uint8List.fromList([...ascii.encode('GIF89a'), 1, 2]),
+        mediaBytes ?? Uint8List.fromList([...ascii.encode('GIF89a'), 1, 2]),
       );
     }
     return const StandardMessageCodec().encodeMessage(

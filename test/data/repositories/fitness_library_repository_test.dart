@@ -4,8 +4,10 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_notes/data/repositories/fitness_library_repository.dart';
+import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -18,6 +20,53 @@ void main() {
     String name, [
     String baseUrl = 'https://fitness.example.test',
   ]) => '${name}_${sha256.convert(utf8.encode(baseUrl))}';
+
+  for (final retryAfter304 in [false, true]) {
+    test('内容库${retryAfter304 ? '304重取' : '首次请求'}超时取消实际传输并保留本地快照', () async {
+      await logger.clear();
+      final preferences = await SharedPreferences.getInstance();
+      final builtin =
+          jsonDecode(await File('assets/fitness/library.json').readAsString())
+              as Map<String, dynamic>;
+      Dio? dio;
+      late FitnessLibraryRepository repository;
+      try {
+        fakeAsync((clock) {
+          final adapter = _HangingAdapter(retryAfter304: retryAfter304);
+          dio = Dio(BaseOptions(baseUrl: 'https://fitness.example.test'))
+            ..httpClientAdapter = adapter;
+          repository = FitnessLibraryRepository(
+            dio: dio!,
+            preferences: preferences,
+          );
+          bool? refreshed;
+          final request = repository.refresh();
+          expect(identical(request, repository.refresh()), isTrue);
+          request.then((value) => refreshed = value);
+          clock.flushMicrotasks();
+          // Dio的请求入口使用零延时Future，必须推进事件定时器后才能证明适配器已开始传输。
+          clock.elapse(Duration.zero);
+          clock.flushMicrotasks();
+          expect(adapter.requests, retryAfter304 ? 2 : 1);
+          clock.elapse(const Duration(seconds: 8));
+          clock.flushMicrotasks();
+          expect(refreshed, isFalse);
+          expect(
+            adapter.cancelledRequests,
+            1,
+            reason: '局部期限必须停止传输，不能只提前完成Future',
+          );
+        });
+        expect(
+          (await repository.loadLocal()).contentVersion,
+          builtin['content_version'],
+        );
+      } finally {
+        dio?.close(force: true);
+        await logger.clear();
+      }
+    });
+  }
 
   test('损坏缓存残留 ETag 时重新下载正文，意外 304 也能恢复', () async {
     final source =
@@ -280,6 +329,34 @@ class _AsyncAdapter implements HttpClientAdapter {
   ) => respond(options);
 
   /// 测试适配器没有需要释放的外部连接。
+  @override
+  void close({bool force = false}) {}
+}
+
+/// 持续等待完整响应的传输，可选择先返回一次意外304以覆盖无缓存重取分支。
+class _HangingAdapter implements HttpClientAdapter {
+  /// 指定是否先返回304，后续请求均保持未完成直到被取消。
+  _HangingAdapter({required this.retryAfter304});
+  final bool retryAfter304;
+  int requests = 0;
+  int cancelledRequests = 0;
+
+  /// 观测Dio真实取消信号，不通过测试返回值冒充实际传输停止。
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<List<int>>? requestStream,
+    Future<void>? cancelFuture,
+  ) {
+    requests++;
+    if (retryAfter304 && requests == 1) {
+      return Future.value(ResponseBody.fromString('', 304));
+    }
+    cancelFuture?.then((_) => cancelledRequests++);
+    return Completer<ResponseBody>().future;
+  }
+
+  /// 测试传输未打开外部连接。
   @override
   void close({bool force = false}) {}
 }

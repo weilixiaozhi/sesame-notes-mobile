@@ -189,6 +189,8 @@ class ArchitectureAudit {
   final declarations = <String, Map<String, Object?>>{};
   final consumers = <String, Set<String>>{};
   final parts = <String, String>{};
+  final partOfDeclarations = <String, Map<String, Object?>>{};
+  final libraryNames = <String, String?>{};
 
   /// 声明身份以规范源路径、偏移及元素种类区分同名符号。
   String? elementKey(Element? input) {
@@ -275,6 +277,21 @@ class ArchitectureAudit {
       failures.add('$file：语法解析失败 ${result.errors}');
     }
     for (final directive in result.unit.directives) {
+      if (directive is LibraryDirective) {
+        libraryNames[file] = directive.name?.toSource();
+        continue;
+      }
+      if (directive is PartOfDirective) {
+        if (partOfDeclarations.containsKey(file)) {
+          failures.add('$file：存在多个part of归属声明');
+        }
+        partOfDeclarations[file] = {
+          'uri': directive.uri?.stringValue,
+          'name': directive.libraryName?.toSource(),
+          'line': result.lineInfo.getLocation(directive.offset).lineNumber,
+        };
+        continue;
+      }
       if (directive is! UriBasedDirective) continue;
       final uri = directive.uri.stringValue;
       if (uri == null) {
@@ -325,6 +342,40 @@ class ArchitectureAudit {
     }
   }
 
+  /// 快速模式也核对双向part归属，URI和命名library不能被当成普通引用猜测。
+  void _validateParts(Set<String> files, Map<String, String> packages) {
+    for (final file in partOfDeclarations.keys) {
+      if (!parts.containsKey(file)) {
+        failures.add('$file：part of没有对应的所属library声明');
+      }
+      if (libraryNames.containsKey(file)) {
+        failures.add('$file：part of与library声明不能同时存在');
+      }
+    }
+    for (final entry in parts.entries) {
+      final file = entry.key, owner = entry.value;
+      if (!files.contains(file)) continue;
+      if (partOfDeclarations.containsKey(owner)) {
+        failures.add('$owner：part文件不能继续声明其他part');
+      }
+      final declaration = partOfDeclarations[file];
+      if (declaration == null) {
+        failures.add('$file：被$owner声明为part但缺少part of');
+        continue;
+      }
+      final uri = declaration['uri'] as String?;
+      final name = declaration['name'] as String?;
+      if (uri != null) {
+        final declaredOwner = resolveAuditUri(root, file, uri, packages);
+        if (!p.equals(declaredOwner, owner)) {
+          failures.add('$file:${declaration['line']}：part of URI与所属library不匹配');
+        }
+      } else if (name == null || libraryNames[owner] != name) {
+        failures.add('$file:${declaration['line']}：part of名称与所属library不匹配');
+      }
+    }
+  }
+
   /// 分析已解析元素，包括生成part、命名extension、注解和构造入口。
   Future<void> _resolve(List<String> files) async {
     final collection = AnalysisContextCollection(includedPaths: [root]);
@@ -371,6 +422,7 @@ class ArchitectureAudit {
         stderr.writeln('架构审计AST解析失败：$file\n$error\n$stack');
       }
     }
+    _validateParts(files.toSet(), packages);
     final production = files
         .where((file) => auditCategory(file) == 'production')
         .map(libraryOf)
@@ -438,6 +490,7 @@ class ArchitectureAudit {
       'productionLibraries': production.length,
       'edges': edges.map((edge) => edge.toJson()).toList(),
       'parts': parts,
+      'partOfDeclarations': partOfDeclarations,
       'libraryScc': stronglyConnectedComponents(graph),
       'directoryScc': stronglyConnectedComponents(modules),
       'moduleEdges': {
@@ -514,10 +567,17 @@ class _SymbolVisitor extends RecursiveAstVisitor<void> {
     };
   }
 
-  /// 记录静态引用；构造器消费同时登记所属类型。
+  /// 记录静态引用；构造器消费所属类型，隐式扩展成员消费所属extension。
   void _reference(Element? element) {
     final key = audit.elementKey(element);
     if (key != null) (audit.consumers[key] ??= {}).add(file);
+    final owner = element?.baseElement.nonSynthetic.enclosingElement;
+    if (owner is ExtensionElement) {
+      final extensionKey = audit.elementKey(owner);
+      if (extensionKey != null) {
+        (audit.consumers[extensionKey] ??= {}).add(file);
+      }
+    }
     if (element is ConstructorElement) {
       final typeKey = audit.elementKey(element.enclosingElement);
       if (typeKey != null) (audit.consumers[typeKey] ??= {}).add(file);
@@ -647,7 +707,16 @@ Future<void> main(List<String> arguments) async {
       final failures = report['analysisFailures'] as List;
       print('分析失败：${failures.length} 项 ${failures.take(12).toList()}');
       if (failures.length > 12) print('完整诊断请使用 --json，未省略任何失败判定。');
-      print('零显式消费者候选：${(report['symbolCandidates'] as List).length}；不代表可删除。');
+      if (report['symbolAnalysisRequested'] == true) {
+        print(
+          '零显式消费者候选：${(report['symbolCandidates'] as List).length}；不代表可删除。',
+        );
+        if (report['symbolAnalysisComplete'] != true) {
+          print('符号分析未完整完成，当前候选只供诊断，不能用于删除判断。');
+        }
+      } else {
+        print('符号消费分析未启用；使用 --symbols 后才生成精简候选。');
+      }
       print('原生、资源、动态入口、虚分派及跨仓消费者需人工核查。');
     }
     if ((report['analysisFailures'] as List).isNotEmpty) {

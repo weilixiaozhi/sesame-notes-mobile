@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
@@ -14,7 +15,7 @@ import '../models/fitness_library.dart';
 class FitnessLibraryRepository {
   static const _assetPath = 'assets/fitness/library.json';
 
-  /// 单次在线刷新的最长等待：连接或解析悬挂时放弃本次刷新并保留本地内容。
+  /// 每次在线请求的最长等待，超时同时停止传输并保留本地内容。
   static const _requestTimeout = Duration(seconds: 8);
 
   final Dio dio;
@@ -69,25 +70,12 @@ class FitnessLibraryRepository {
       if (_baseUrl.isEmpty || !_current) return false;
       final cached = _loadCached();
       final etag = cached == null ? null : preferences.getString(_etagKey);
-      var response = await dio
-          .get<Object?>(
-            '/api/v1/fitness/library',
-            options: Options(
-              headers: {'if-none-match': ?etag},
-              validateStatus: (status) => status == 200 || status == 304,
-            ),
-          )
-          .timeout(_requestTimeout);
+      var response = await _request(etag: etag);
       if (!_current) return false;
       // 本地已有可用内容时，304 直接沿用缓存，不需要正文。
       if (response.statusCode == 304 && cached != null) return false;
       if (response.statusCode == 304) {
-        response = await dio
-            .get<Object?>(
-              '/api/v1/fitness/library',
-              options: Options(validateStatus: (status) => status == 200),
-            )
-            .timeout(_requestTimeout);
+        response = await _request(allowNotModified: false);
         if (!_current) return false;
       }
       final json = response.data;
@@ -107,6 +95,38 @@ class FitnessLibraryRepository {
         stackTrace,
       );
       return false;
+    }
+  }
+
+  /// 条件读取和无缓存重取共用取消边界，局部超时不能遗留传输后再接受新一轮刷新。
+  Future<Response<Object?>> _request({
+    String? etag,
+    bool allowNotModified = true,
+  }) async {
+    final cancel = CancelToken();
+    try {
+      return await dio
+          .get<Object?>(
+            '/api/v1/fitness/library',
+            cancelToken: cancel,
+            options: Options(
+              headers: {'if-none-match': ?etag},
+              validateStatus: (status) =>
+                  status == 200 || (allowNotModified && status == 304),
+            ),
+          )
+          .timeout(
+            _requestTimeout,
+            onTimeout: () {
+              cancel.cancel('训练内容请求超时');
+              throw TimeoutException(
+                'FITNESS_LIBRARY_REQUEST_TIMEOUT',
+                _requestTimeout,
+              );
+            },
+          );
+    } catch (error, stack) {
+      Error.throwWithStackTrace(error, stack);
     }
   }
 

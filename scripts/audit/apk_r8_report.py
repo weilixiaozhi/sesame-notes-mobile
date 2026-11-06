@@ -258,6 +258,31 @@ def read_mapping(path):
     return classes, members, counts
 
 
+def merge_requirements(current, historical):
+    """当前与历史保护取并集，任一版本要求固定类名时都必须保留。"""
+    if current is None:
+        current = {'fixed_class_name': False, 'fields': [], 'methods': []}
+    # 缺字段、错误标记和字符串集合都必须拒绝，不能被转换成宽松的保护要求。
+    for requirement in (current, historical):
+        if (
+            not isinstance(requirement, dict)
+            or set(requirement) != {'fixed_class_name', 'fields', 'methods'}
+            or type(requirement['fixed_class_name']) is not bool
+            or any(
+                not isinstance(requirement[kind], list)
+                or any(not isinstance(name, str) or not name for name in requirement[kind])
+                for kind in ('fields', 'methods')
+            )
+        ):
+            raise ValueError('通知模型保护要求格式无效，请检查基准报告。')
+    # 成员保留双方完整集合，类名保护只允许增强，不能由另一份输入降低。
+    return {
+        'fixed_class_name': current['fixed_class_name'] or historical['fixed_class_name'],
+        'fields': sorted(set(current['fields']) | set(historical['fields'])),
+        'methods': sorted(set(current['methods']) | set(historical['methods'])),
+    }
+
+
 def report(args):
     """关联实际 DEX、mapping 和 SDK 入口，产出有界测量及名称保护结果。"""
     apk, mapping_dir = Path(args.apk), Path(args.mapping_dir)
@@ -295,7 +320,7 @@ def report(args):
         # 历史模型字段是升级兼容边界，不能只用新产物中剩余的字段自证完整。
         for name, expected in baseline['requirements'].items():
             if name.startswith(MODEL_PREFIX):
-                requirements[name] = expected
+                requirements[name] = merge_requirements(requirements.get(name), expected)
     failures = []
     for name, expected in requirements.items():
         target = mapping.get(name)

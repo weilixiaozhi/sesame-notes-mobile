@@ -49,8 +49,14 @@ import '../../helpers/bound_ledger_seed.dart';
 class _MemorySecureStore implements SecureStore {
   String? value;
   bool failWrite = false;
+  bool failRead = false;
+
+  /// 独立模拟读取失败，后续写入仍可成功，覆盖不能把平台故障视为凭证缺失的边界。
   @override
-  Future<String?> read() async => value;
+  Future<String?> read() async {
+    if (failRead) throw StateError('安全凭证暂时无法读取');
+    return value;
+  }
 
   /// 模拟原子安全写入及平台存储不可用。
   @override
@@ -346,6 +352,55 @@ void main() {
           );
     }
   }
+
+  for (final switchAccount in [false, true]) {
+    test('主凭证读取失败时${switchAccount ? '换号' : '退出'}不能绕过A未同步预检或报告成功', () async {
+      await seedAccountA();
+      final credentialBefore = rawStore.value;
+      rawStore.failRead = true;
+      final coordinator = container.read(accountSwitchCoordinatorProvider);
+      if (switchAccount) {
+        expect(
+          await coordinator.commitLogin(
+            candidate: candidateB(),
+            onReconnect: null,
+          ),
+          isFalse,
+        );
+      } else {
+        await expectLater(coordinator.logout(), throwsStateError);
+      }
+      await pumpEventQueue();
+      expect(rawStore.value, credentialBefore, reason: '无法确认A身份时不能覆盖或清除现存凭证');
+      expect(container.read(authSessionProvider)?.userId, userA);
+      expect(container.read(accountStateProvider).profile?.userId, userA);
+      expect(await repo.getLedgerById('ledger-a'), isNotNull);
+      expect(
+        await (db.select(db.syncChanges)..where(
+              (row) => row.ledgerId.equals('ledger-a') & row.pushedAt.isNull(),
+            ))
+            .get(),
+        hasLength(1),
+      );
+    });
+  }
+
+  test('主凭证确实不存在时退出仍成功，隔离A而保留其未上传数据', () async {
+    await seedAccountA();
+    await rawStore.delete();
+    await container.read(accountSwitchCoordinatorProvider).logout();
+    expect(rawStore.value, isNull);
+    expect(container.read(authSessionProvider), isNull);
+    expect(container.read(accountStateProvider).isAuthenticated, isFalse);
+    expect(await repo.getLedgerById('ledger-a'), isNotNull);
+    expect(
+      await (db.select(db.syncChanges)..where(
+            (row) => row.ledgerId.equals('ledger-a') & row.pushedAt.isNull(),
+          ))
+          .get(),
+      hasLength(1),
+    );
+  });
 
   for (final switchAccount in [false, true]) {
     test('${switchAccount ? '换号' : '退出'}被未同步修改阻断后恢复原账号唯一连接', () async {

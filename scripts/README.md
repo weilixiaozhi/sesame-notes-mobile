@@ -178,7 +178,7 @@ dart scripts/audit/architecture_test.dart
 
 重定向前自行确认目标文件不存在；所有一次性报告存放在本仓 `Temp/`，不要覆盖既有报告。工具本身只读源码，默认输出覆盖、手写生产 library SCC、明确边界违规和解析失败。`--symbols` 使用固定的 analyzer 12.1.0 解析元素身份和消费者，JSON 另含全部 import/export/条件分支/part、目录 SCC、模块引用广度、声明及零显式消费者候选。首次完整符号分析比快速边界检查耗时更长。
 
-包路径取当前 `.dart_tool/package_config.json` 的实际根和 `packageUri`，支持本地包目录与包名不同、URI 有无末尾斜杠；相对路径归一化。`part` 与 `part of` 归属同一 library，不能机械构成普通循环。`show`、`hide`、export 转发、命名 extension、构造/注解引用按解析元素记录。生成 part 和生成 SDK 参与消费核查，手写生产主图分别排除生成物、测试、工具及 e2e。模块边的强度为不同引用源 library 数，目录聚合环不能等同真实文件循环。
+包路径取当前 `.dart_tool/package_config.json` 的实际根和 `packageUri`，支持本地包目录与包名不同、URI 有无末尾斜杠；相对路径归一化。快速模式双向核对 `part` 与 `part of` 的 URI 或 library 名称归属，缺少声明、归属错误及孤立 part 都使解析失败；合法组成关系归并到同一 library，不能机械构成普通循环。`show`、`hide`、export 转发、构造/注解引用按解析元素记录，隐式扩展成员调用同时消费所属 extension。生成 part 和生成 SDK 参与消费核查，手写生产主图分别排除生成物、测试、工具及 e2e。模块边的强度为不同引用源 library 数，目录聚合环不能等同真实文件循环。
 
 明确边界按职责失败：core 不依赖 features/shared/infrastructure/顶层 providers；API 传输不反引 shared/features；启动端口不读取顶层启动实现或 features；共享领域不依赖业务实现/状态装配；领域规则不读取 presentation/application/共享 Provider；备份核心不依赖应用或具体备份服务商。生成边同样接受对应边界检查。没有按现有违规个数建立白名单或阈值。退出码 `0` 表示本次边界和解析检查完成，`1` 表示明确边界违规，`2` 表示参数/依赖配置/语法/符号解析不完整；候选数及 SCC 数不控制退出码。
 
@@ -219,7 +219,9 @@ python -B scripts/audit/apk_r8_report.py --apk <新APK> --mapping-dir <新构建
 
 `mapping目录`应同时包含 `configuration.txt`、`mapping.txt`、`seeds.txt`、`usage.txt`。报告文件必须不存在，且位于当前仓库根目录的 `Temp/`；工具不会覆盖已有报告、改写 APK/规则/映射、启动构建、连接设备或下载依赖。终端输出聚合字节、符号数量、关键保护结果与可选基准差异；完整 JSON 仅额外保存产物摘要和代码入口名，不输出配置正文、签名材料、地址或用户数据。
 
-测量分别统计根目录 `classes*.dex` 的原始字节、ZIP 压缩字节和实际定义类数，以及 R8 seeds 的类/成员保留根和 mapping 的类名变化。解析 DEX 035–040；未知格式、损坏输入或缺失文件会失败，不能据不完整解析宣布通过。JVM classfile 解析区分类注解与成员注解，从传入引擎 JAR 的真实 `@Keep`/native 声明生成入口要求，再关联 mapping 与 DEX 的定义名称；同时核对反射注册器、应用清单组件和通知模型。传入 `--baseline` 后继续校验旧包的通知模型及其字段，避免只用新包剩下的字段自证升级兼容。
+测量分别统计根目录 `classes*.dex` 的原始字节、ZIP 压缩字节和实际定义类数，以及 R8 seeds 的类/成员保留根和 mapping 的类名变化。解析 DEX 035–040；未知格式、损坏输入或缺失文件会失败，不能据不完整解析宣布通过。JVM classfile 解析区分类注解与成员注解，从传入引擎 JAR 的真实 `@Keep`/native 声明生成入口要求，再关联 mapping 与 DEX 的定义名称；同时核对反射注册器、应用清单组件和通知模型。传入 `--baseline` 后取当前与历史模型字段、方法的并集；任一方要求固定类名时都保持严格保护，不能用旧基准覆盖当前新增入口。格式不完整的保护要求直接失败。
+
+运行 `python -B scripts/test/apk_r8_report_test.py` 可验证旧基准与新增字段/方法、严格类名要求的组合，以及错误基准的拒绝行为；回归仅使用本仓 `Temp/` 的隔离小夹具，不操作真实APK或触发构建。
 
 退出码 `0` 表示本次名称/定义保护检查通过，`1` 表示保护检查失败，`2` 表示输入、格式或报告写入错误。seeds 不是 DEX 大小或运行频率，mapping 与 APK 的关键入口相符也不能证明它们来自同一完整构建；应保存同轮文件。DEX 字节差异只说明这些产物的体积变化，其他源码/SDK/依赖变化也会影响结果，不能直接归因某条 keep 规则或宣称启动/内存提升。
 

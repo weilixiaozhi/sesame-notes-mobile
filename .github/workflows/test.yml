@@ -47,6 +47,9 @@ jobs:
       - name: iOS 环境配置回归
         run: python3 -B scripts/test/ios_environment_test.py
 
+      - name: R8 当前与历史模型保护回归
+        run: python3 -B scripts/test/apk_r8_report_test.py
+
       - name: API 契约固定测试（契约哈希与乐观锁约定）
         run: |
           python3 scripts/test/api_contract_test.py

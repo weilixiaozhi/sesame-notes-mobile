@@ -110,6 +110,16 @@ Future<void> main() async {
     );
     writeFixture(
       fixture,
+      'lib/named_owner.dart',
+      "library fixture.named;\npart 'named_part.dart';",
+    );
+    writeFixture(
+      fixture,
+      'lib/named_part.dart',
+      'part of fixture.named;\nint namedValue() => 1;',
+    );
+    writeFixture(
+      fixture,
       'lib/platform_stub.dart',
       'int platformValue() => 0;',
     );
@@ -194,6 +204,15 @@ void main() {
       'show/export后的命名extension调用必须被识别',
     );
     require(
+      (audit.consumers[declarationKey(audit, 'lib/extension.dart', 'Times')] ??
+                  {})
+              .contains('lib/main.dart') &&
+          !(report['symbolCandidates'] as List).any(
+            (entry) => (entry as Map)['name'] == 'Times',
+          ),
+      '隐式成员调用必须消费所属extension，不能把活跃扩展列为零消费候选',
+    );
+    require(
       (audit.consumers[declarationKey(audit, 'lib/same_a.dart', 'used')] ?? {})
           .contains('lib/main.dart'),
       '必须识别实际调用的同名成员',
@@ -230,6 +249,51 @@ void main() {
           }).single.join(',') ==
           'a,b',
       'Tarjan必须报告真实跨library循环',
+    );
+    writeFixture(
+      fixture,
+      'lib/state.g.dart',
+      "part of 'wrong.dart';\nint generatedValue() => handwrittenByGenerated();",
+    );
+    final wrongUri = await ArchitectureAudit(fixture.path).run();
+    require(
+      wrongUri['analysisComplete'] == false &&
+          (wrongUri['analysisFailures'] as List).isNotEmpty,
+      '快速模式必须拒绝URI归属错误的part of',
+    );
+    writeFixture(
+      fixture,
+      'lib/state.g.dart',
+      "part of 'state.dart';\nint generatedValue() => handwrittenByGenerated();",
+    );
+    writeFixture(fixture, 'lib/named_part.dart', 'part of wrong.library;');
+    final wrongName = await ArchitectureAudit(fixture.path).run();
+    require(
+      wrongName['analysisComplete'] == false &&
+          (wrongName['analysisFailures'] as List).isNotEmpty,
+      '快速模式必须拒绝名称归属错误的part of',
+    );
+    writeFixture(
+      fixture,
+      'lib/named_part.dart',
+      'part of fixture.named;\nint namedValue() => 1;',
+    );
+    final restored = await ArchitectureAudit(fixture.path).run();
+    require(restored['analysisComplete'] == true, '合法URI和命名part不得被误报');
+    writeFixture(fixture, 'lib/orphan.dart', "part of 'missing_owner.dart';");
+    final orphan = await ArchitectureAudit(fixture.path).run();
+    require(orphan['analysisComplete'] == false, '孤立part必须使快速分析失败');
+    File(p.join(fixture.path, 'lib/orphan.dart')).deleteSync();
+    writeFixture(fixture, 'lib/state.g.dart', 'int generatedValue() => 1;');
+    final missingDeclaration = await ArchitectureAudit(fixture.path).run();
+    require(
+      missingDeclaration['analysisComplete'] == false,
+      'part目标缺少part of时必须使快速分析失败',
+    );
+    writeFixture(
+      fixture,
+      'lib/state.g.dart',
+      "part of 'state.dart';\nint generatedValue() => handwrittenByGenerated();",
     );
     writeFixture(
       fixture,

@@ -158,7 +158,8 @@ class AccountSwitchCoordinator {
       // 将已认证候选写入独立槽位，启动恢复可撤销未提交的候选会话。
       verifyService();
       await store.savePending(credential);
-      final active = await store.load();
+      // 读取故障不能冒充空账号，否则会跳过原账号的未同步预检和撤销材料保护。
+      final active = await store.load(requireReadable: true);
       verifyService();
       final sameAccount =
           active != null && active.userId == candidate.session.userId;
@@ -267,7 +268,8 @@ class AccountSwitchCoordinator {
     final store = ref.read(secureAccountStoreProvider);
     final state = ref.read(accountStateProvider);
     final profile = state.profile;
-    final credential = await store.load();
+    // 只有系统确认槽位为空才能按无账号退出；读取失败必须保留身份并提示重试。
+    final credential = await store.load(requireReadable: true);
     if (credential == null) {
       // 没有已认证账号时只清理内存会话，持久化账号数据保持隔离。
       ref.read(accountStateProvider.notifier).signOut();
