@@ -48,7 +48,7 @@ class _DayWeekStripState extends State<DayWeekStrip> {
     return SectionCard(
       key: const ValueKey('days-week-strip'),
       margin: const EdgeInsets.only(bottom: AppDimens.p16),
-      child: AppExpandableCalendar<DayEvent>(
+      child: AppExpandableCalendar(
         firstDay: DateTime(DayLimits.minYear),
         lastDay: DateTime(DayLimits.maxYear, 12, 31),
         selectedDay: selected,

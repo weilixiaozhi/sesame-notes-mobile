@@ -114,89 +114,56 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     }
   }
 
+  /// 字段与认证状态由页面持有，外框复用认证模块的表单布局。
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return Scaffold(
-      backgroundColor: AppTokens.scaffoldBackground(context),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            AppDimens.p20,
-            AppDimens.p40,
-            AppDimens.p20,
-            AppDimens.p20,
-          ),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: AppDimens.authFormMaxWidth,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const AuthBrandLogo(),
-                  const SizedBox(height: AppDimens.p32),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimens.p4,
-                    ),
-                    child: Text(
-                      l10n.authPhone,
-                      style: AppTextTokens.label(context),
-                    ),
-                  ),
-                  const SizedBox(height: AppDimens.p8),
-                  AuthPhoneField(
-                    controller: phoneCtrl,
-                    region: _region,
-                    onRegionChanged: (region) =>
-                        setState(() => _region = region),
-                  ),
-                  const SizedBox(height: AppDimens.p16),
-                  AuthPasswordField(
-                    controller: pwdCtrl,
-                    label: l10n.authPassword,
-                    hint: l10n.authRegisterPasswordHint,
-                    show: _showPwd,
-                    onToggle: () => setState(() => _showPwd = !_showPwd),
-                  ),
-                  const SizedBox(height: AppDimens.p16),
-                  AuthPasswordField(
-                    controller: confirmCtrl,
-                    label: l10n.authConfirmPassword,
-                    hint: l10n.authConfirmPasswordHint,
-                    show: _showConfirm,
-                    onToggle: () =>
-                        setState(() => _showConfirm = !_showConfirm),
-                  ),
-                  if (errorText != null) ...[
-                    const SizedBox(height: AppDimens.p12),
-                    Text(
-                      errorText!,
-                      style: AppTextTokens.body(
-                        context,
-                      ).copyWith(color: AppTokens.error(context)),
-                    ),
-                  ],
-                  const SizedBox(height: AppDimens.p32),
-                  AppPrimaryButton(
-                    onPressed: _submit,
-                    busy: busy,
-                    label: l10n.authRegister,
-                  ),
-                  const SizedBox(height: AppDimens.p12),
-                  TextButton(
-                    onPressed: busy ? null : () => context.pop(false),
-                    child: Text(l10n.authAlreadyHaveAccount),
-                  ),
-                ],
-              ),
-            ),
-          ),
+    return AuthFormScaffold(
+      children: [
+        const SizedBox(height: AppDimens.p32),
+        AuthPhoneField(
+          controller: phoneCtrl,
+          region: _region,
+          onRegionChanged: (region) => setState(() => _region = region),
         ),
-      ),
+        const SizedBox(height: AppDimens.p16),
+        AuthPasswordField(
+          controller: pwdCtrl,
+          label: l10n.authPassword,
+          hint: l10n.authRegisterPasswordHint,
+          show: _showPwd,
+          onToggle: () => setState(() => _showPwd = !_showPwd),
+        ),
+        const SizedBox(height: AppDimens.p16),
+        AuthPasswordField(
+          controller: confirmCtrl,
+          label: l10n.authConfirmPassword,
+          hint: l10n.authConfirmPasswordHint,
+          show: _showConfirm,
+          onToggle: () => setState(() => _showConfirm = !_showConfirm),
+        ),
+        if (errorText != null) ...[
+          const SizedBox(height: AppDimens.p12),
+          Text(
+            errorText!,
+            style: AppTextTokens.body(
+              context,
+            ).copyWith(color: AppTokens.error(context)),
+          ),
+        ],
+        const SizedBox(height: AppDimens.p32),
+        AppPrimaryButton(
+          onPressed: _submit,
+          busy: busy,
+          label: l10n.authRegister,
+        ),
+        const SizedBox(height: AppDimens.p12),
+        TextButton(
+          onPressed: busy ? null : () => context.pop(false),
+          child: Text(l10n.authAlreadyHaveAccount),
+        ),
+      ],
     );
   }
 }

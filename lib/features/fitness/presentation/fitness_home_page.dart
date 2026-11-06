@@ -265,7 +265,7 @@ class _FitnessHomePageState extends ConsumerState<FitnessHomePage> {
       0,
       (n, values) => values.length > n ? values.length : n,
     );
-    return AppExpandableCalendar<FitnessWorkout>(
+    return AppExpandableCalendar(
       firstDay: DateTime(1900),
       lastDay: DateTime(2200, 12, 31),
       selectedDay: _selected,

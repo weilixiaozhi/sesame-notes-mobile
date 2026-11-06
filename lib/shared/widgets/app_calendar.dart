@@ -28,7 +28,6 @@ class AppCalendarHeader extends StatelessWidget {
   const AppCalendarHeader({
     super.key,
     required this.title,
-    this.trailing,
     this.selectedDay,
     this.focusedDay,
     this.currentDay,
@@ -37,7 +36,6 @@ class AppCalendarHeader extends StatelessWidget {
   });
 
   final String title;
-  final Widget? trailing;
   final DateTime? selectedDay, focusedDay, currentDay;
   final VoidCallback? onToday;
 
@@ -72,9 +70,7 @@ class AppCalendarHeader extends StatelessWidget {
               ],
             ),
       actions: [
-        if (trailing != null)
-          trailing!
-        else if (showToday)
+        if (showToday)
           HeaderTextAction(
             label: AppLocalizations.of(context).calendarToday,
             onPressed: onToday,
@@ -85,7 +81,7 @@ class AppCalendarHeader extends StatelessWidget {
 }
 
 /// 各业务共用农历、节日与节气月历，业务仅提供日期内容与下方标记。
-class AppCalendar<T> extends StatelessWidget {
+class AppCalendar extends StatelessWidget {
   /// 接收业务日期范围和选择回调，保留每个日历自己的状态。
   const AppCalendar({
     super.key,
@@ -96,25 +92,16 @@ class AppCalendar<T> extends StatelessWidget {
     required this.onDaySelected,
     required this.onPageChanged,
     this.currentDay,
-    this.eventLoader,
     this.dayMarkerBuilder,
-    this.dayContentBuilder,
-    this.showLunarDetails = true,
     this.calendarFormat = CalendarFormat.month,
     this.headerTitleBuilder,
-    this.previousPageLabel,
-    this.nextPageLabel,
     this.rowHeight = AppDimens.calendarRowHeight,
     this.adaptiveRows = false,
     this.showWeekDividers = false,
-    this.rangeOnly = false,
-    this.allowHorizontalSwipe = true,
   });
 
-  final bool showLunarDetails;
   final DateTime firstDay;
   final CalendarFormat calendarFormat;
-  final String? previousPageLabel, nextPageLabel;
   final Widget Function(BuildContext, DateTime)? headerTitleBuilder;
 
   final double rowHeight;
@@ -122,21 +109,15 @@ class AppCalendar<T> extends StatelessWidget {
 
   /// 自适应月历可用轻分隔线区分每周，不改变其他日历的视觉样式。
   final bool showWeekDividers;
-  final bool rangeOnly;
-
-  /// 嵌入业务页签时可将横滑交给外层导航，左右箭头继续切换日期范围。
-  final bool allowHorizontalSwipe;
   final DateTime lastDay;
   final DateTime focusedDay;
   final DateTime? currentDay;
   final bool Function(DateTime) selectedDayPredicate;
   final void Function(DateTime, DateTime) onDaySelected;
   final ValueChanged<DateTime> onPageChanged;
-  final List<T> Function(DateTime)? eventLoader;
-  final Widget? Function(BuildContext, DateTime, bool)? dayMarkerBuilder;
 
-  /// 有业务内容时替换日期数字，颜色继续遵循选中、今天与相邻月状态。
-  final Widget? Function(BuildContext, DateTime, Color)? dayContentBuilder;
+  /// 业务标记由日期格子内部统一排列，与日期和农历共同确定行高。
+  final Widget? Function(BuildContext, DateTime, bool)? dayMarkerBuilder;
 
   /// 月份标题、星期行、网格尺寸和四种日期状态均由同一组件呈现。
   ///
@@ -148,37 +129,8 @@ class AppCalendar<T> extends StatelessWidget {
   Widget build(BuildContext context) =>
       _CalendarStorageScope(child: _calendar(context));
 
-  /// 根据日期范围和展示模式选择固定网格、周历或自适应月历。
+  /// 根据展示模式选择周历或月历，横滑与箭头共同切换日期范围。
   Widget _calendar(BuildContext context) {
-    if (rangeOnly) {
-      final start = DateTime.utc(firstDay.year, firstDay.month, firstDay.day);
-      final end = DateTime.utc(lastDay.year, lastDay.month, lastDay.day);
-      return MediaQuery.withClampedTextScaling(
-        maxScaleFactor: 1.3,
-        child: GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.zero,
-          itemCount: end.difference(start).inDays + 1,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: DateTime.daysPerWeek,
-            mainAxisExtent: rowHeight,
-          ),
-          itemBuilder: (context, index) {
-            final date = start.add(Duration(days: index));
-            return InkWell(
-              onTap: () => onDaySelected(date, date),
-              child: _dayCell(
-                context,
-                date,
-                isSelected: selectedDayPredicate(date),
-                isToday: isSameDay(date, currentDay ?? DateTime.now()),
-              ),
-            );
-          },
-        ),
-      );
-    }
     if (adaptiveRows && calendarFormat == CalendarFormat.month) {
       return MediaQuery.withClampedTextScaling(
         maxScaleFactor: 1.3,
@@ -189,7 +141,7 @@ class AppCalendar<T> extends StatelessWidget {
     // 七列网格限制极端文字缩放，完整农历及假期信息仍通过长按提示和读屏提供。
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: 1.3,
-      child: TableCalendar<T>(
+      child: TableCalendar<Object>(
         locale: Localizations.localeOf(context).toString(),
         firstDay: firstDay,
         lastDay: lastDay,
@@ -200,9 +152,7 @@ class AppCalendar<T> extends StatelessWidget {
         onPageChanged: onPageChanged,
         calendarFormat: calendarFormat,
         startingDayOfWeek: StartingDayOfWeek.monday,
-        availableGestures: allowHorizontalSwipe
-            ? AvailableGestures.horizontalSwipe
-            : AvailableGestures.none,
+        availableGestures: AvailableGestures.horizontalSwipe,
         // 日期行容纳圆形日期与金额或数量标记，星期标题单独保留行高。
         rowHeight: rowHeight,
         daysOfWeekHeight: AppDimens.calendarWeekdayHeight,
@@ -210,39 +160,15 @@ class AppCalendar<T> extends StatelessWidget {
           formatButtonVisible: false,
           titleCentered: true,
           headerPadding: const EdgeInsets.symmetric(vertical: AppDimens.p8),
-          leftChevronPadding: previousPageLabel == null
-              ? const EdgeInsets.all(AppDimens.p12)
-              : EdgeInsets.zero,
-          rightChevronPadding: nextPageLabel == null
-              ? const EdgeInsets.all(AppDimens.p12)
-              : EdgeInsets.zero,
-          leftChevronIcon: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                AppIcons.chevronLeft,
-                size: previousPageLabel == null ? null : AppDimens.icon20,
-                color: previousPageLabel == null
-                    ? AppTokens.iconTertiary(context)
-                    : primary,
-              ),
-              if (previousPageLabel != null)
-                Text(previousPageLabel!, style: AppTextTokens.label(context)),
-            ],
+          leftChevronPadding: const EdgeInsets.all(AppDimens.p12),
+          rightChevronPadding: const EdgeInsets.all(AppDimens.p12),
+          leftChevronIcon: Icon(
+            AppIcons.chevronLeft,
+            color: AppTokens.iconTertiary(context),
           ),
-          rightChevronIcon: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (nextPageLabel != null)
-                Text(nextPageLabel!, style: AppTextTokens.label(context)),
-              Icon(
-                AppIcons.chevronRight,
-                size: nextPageLabel == null ? null : AppDimens.icon20,
-                color: nextPageLabel == null
-                    ? AppTokens.iconTertiary(context)
-                    : primary,
-              ),
-            ],
+          rightChevronIcon: Icon(
+            AppIcons.chevronRight,
+            color: AppTokens.iconTertiary(context),
           ),
           titleTextStyle: AppTextTokens.strongTitle(context),
         ),
@@ -271,18 +197,12 @@ class AppCalendar<T> extends StatelessWidget {
           weekendTextStyle: AppTextTokens.title(
             context,
           ).copyWith(color: AppTokens.textPrimary(context)),
-          markersAlignment: Alignment.bottomCenter,
-          markerDecoration: BoxDecoration(
-            color: primary,
-            shape: BoxShape.circle,
-          ),
         ),
         daysOfWeekStyle: DaysOfWeekStyle(
           weekdayStyle: AppTextTokens.label(context),
           weekendStyle: AppTextTokens.label(context),
         ),
-        eventLoader: eventLoader,
-        calendarBuilders: CalendarBuilders<T>(
+        calendarBuilders: CalendarBuilders<Object>(
           headerTitleBuilder: headerTitleBuilder,
           dowBuilder: (context, date) {
             final locale = Localizations.localeOf(context);
@@ -301,8 +221,6 @@ class AppCalendar<T> extends StatelessWidget {
               _dayCell(context, date, isSelected: true),
           outsideBuilder: (context, date, _) =>
               _dayCell(context, date, isOutside: true),
-          // 标记随日期格子统一布局，关闭 TableCalendar 自带的重复圆点。
-          markerBuilder: (_, _, _) => const SizedBox.shrink(),
         ),
       ),
     );
@@ -370,22 +288,16 @@ class AppCalendar<T> extends StatelessWidget {
         ),
         GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onHorizontalDragStart: allowHorizontalSwipe
-              ? (_) => dragDistance = 0
-              : null,
-          onHorizontalDragUpdate: allowHorizontalSwipe
-              ? (details) => dragDistance += details.delta.dx
-              : null,
-          onHorizontalDragEnd: allowHorizontalSwipe
-              ? (details) {
-                  final velocity = details.primaryVelocity ?? 0;
-                  if (velocity.abs() > 50) {
-                    move(velocity < 0 ? 1 : -1);
-                  } else if (dragDistance.abs() > 25) {
-                    move(dragDistance < 0 ? 1 : -1);
-                  }
-                }
-              : null,
+          onHorizontalDragStart: (_) => dragDistance = 0,
+          onHorizontalDragUpdate: (details) => dragDistance += details.delta.dx,
+          onHorizontalDragEnd: (details) {
+            final velocity = details.primaryVelocity ?? 0;
+            if (velocity.abs() > 50) {
+              move(velocity < 0 ? 1 : -1);
+            } else if (dragDistance.abs() > 25) {
+              move(dragDistance < 0 ? 1 : -1);
+            }
+          },
           child: Table(
             border: showWeekDividers
                 ? TableBorder(
@@ -511,30 +423,28 @@ class AppCalendar<T> extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      dayContentBuilder?.call(context, date, textColor) ??
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              '${date.day}',
-                              maxLines: 1,
-                              style: AppTextTokens.title(context).copyWith(
-                                color: textColor,
-                                fontWeight: isToday || isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.normal,
-                                height: 1.1,
-                              ),
-                            ),
-                          ),
-                      if (showLunarDetails)
-                        Text(
-                          info.label,
-                          style: AppTextTokens.caption(
-                            context,
-                          ).copyWith(color: secondaryColor, height: 1.1),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '${date.day}',
                           maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          style: AppTextTokens.title(context).copyWith(
+                            color: textColor,
+                            fontWeight: isToday || isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                            height: 1.1,
+                          ),
                         ),
+                      ),
+                      Text(
+                        info.label,
+                        style: AppTextTokens.caption(
+                          context,
+                        ).copyWith(color: secondaryColor, height: 1.1),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                   ),
                 ),
@@ -716,18 +626,11 @@ class AppCalendarEntriesSkeleton extends StatelessWidget {
 
 /// 周历、月历和计划日期共享训练与休息标签。
 class AppCalendarLabels extends StatelessWidget {
-  const AppCalendarLabels({
-    super.key,
-    required this.labels,
-    this.semanticsLabel,
-    this.tooltipTriggerMode,
-    this.isPlaceholder = false,
-  });
-  final bool isPlaceholder;
-  final TooltipTriggerMode? tooltipTriggerMode;
+  /// 标签完整内容同时提供给长按提示和辅助功能。
+  const AppCalendarLabels({super.key, required this.labels});
   final List<String> labels;
-  final String? semanticsLabel;
 
+  /// 依据主题字体和系统缩放计算每行标签的自然高度。
   static double labelHeight(BuildContext context) {
     final painter = TextPainter(
       text: TextSpan(text: '训练', style: AppTextTokens.caption(context)),
@@ -740,6 +643,7 @@ class AppCalendarLabels extends StatelessWidget {
     return height;
   }
 
+  /// 周历预留同周最大标签数量，日期行和事项行保持一致间距。
   static double rowHeight(BuildContext context, int count) =>
       (AppDimens.calendarDayDiameter +
               AppDimens.p8 +
@@ -747,13 +651,13 @@ class AppCalendarLabels extends StatelessWidget {
               count * (labelHeight(context) + AppDimens.p4 / 2))
           .clamp(AppDimens.calendarRowHeight, double.infinity);
 
+  /// 空日期不占标签空间，有事项时完整播报并按主题展示。
   @override
   Widget build(BuildContext context) {
     if (labels.isEmpty) return const SizedBox.shrink();
-    final description = semanticsLabel ?? labels.join(', ');
+    final description = labels.join(', ');
     return Tooltip(
       message: description,
-      triggerMode: tooltipTriggerMode,
       child: Semantics(
         label: description,
         child: ExcludeSemantics(
@@ -761,8 +665,7 @@ class AppCalendarLabels extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: AppDimens.p8),
-              for (final label in labels)
-                _CalendarLabel(label: label, isPlaceholder: isPlaceholder),
+              for (final label in labels) _CalendarLabel(label: label),
             ],
           ),
         ),
@@ -771,18 +674,13 @@ class AppCalendarLabels extends StatelessWidget {
   }
 }
 
-/// 单行标签共享尺寸和省略逻辑，业务色调与计划占位各自使用成对颜色。
+/// 单行标签共享尺寸和省略逻辑，各业务使用成对的背景与前景颜色。
 class _CalendarLabel extends StatelessWidget {
   /// 未指定业务色调时沿用周历和训练计划的中性标签样式。
-  const _CalendarLabel({
-    required this.label,
-    this.tone,
-    this.isPlaceholder = false,
-  });
+  const _CalendarLabel({required this.label, this.tone});
 
   final String label;
   final CalendarDayLabelTone? tone;
-  final bool isPlaceholder;
 
   /// 窄格只裁剪文字，完整事项仍由外层提示和读屏标签提供。
   @override
@@ -807,74 +705,25 @@ class _CalendarLabel extends StatelessWidget {
             : AppTokens.primary(context),
       ),
     };
-    return CustomPaint(
-      foregroundPainter: isPlaceholder
-          ? _CalendarPlaceholderBorder(AppTokens.borderStrong(context))
-          : null,
-      child: Container(
-        height: AppCalendarLabels.labelHeight(context),
-        margin: const EdgeInsets.only(
-          left: AppDimens.p4 / 2,
-          right: AppDimens.p4 / 2,
-          bottom: AppDimens.p4 / 2,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: AppDimens.p4 / 2),
-        decoration: BoxDecoration(
-          color: isPlaceholder ? AppTokens.surfaceInput(context) : background,
-          borderRadius: BorderRadius.circular(AppDimens.radius4),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppTextTokens.caption(context).copyWith(
-            color: isPlaceholder
-                ? AppTokens.textSecondary(context)
-                : foreground,
-          ),
-        ),
+    return Container(
+      height: AppCalendarLabels.labelHeight(context),
+      margin: const EdgeInsets.only(
+        left: AppDimens.p4 / 2,
+        right: AppDimens.p4 / 2,
+        bottom: AppDimens.p4 / 2,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimens.p4 / 2),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(AppDimens.radius4),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppTextTokens.caption(context).copyWith(color: foreground),
       ),
     );
   }
-}
-
-// 虚线仅标识等待填入的位置，正式训练标签继续使用原有样式。
-class _CalendarPlaceholderBorder extends CustomPainter {
-  const _CalendarPlaceholderBorder(this.color);
-  final Color color;
-  @override
-  void paint(Canvas canvas, Size size) {
-    final outline = Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTRB(
-            AppDimens.p4 / 2,
-            0,
-            size.width - AppDimens.p4 / 2,
-            size.height - AppDimens.p4 / 2,
-          ).deflate(0.5),
-          const Radius.circular(AppDimens.radius4),
-        ),
-      );
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-    for (final metric in outline.computeMetrics()) {
-      for (double start = 0; start < metric.length; start += AppDimens.p8) {
-        canvas.drawPath(
-          metric.extractPath(
-            start,
-            (start + AppDimens.p4).clamp(0, metric.length),
-          ),
-          paint,
-        );
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _CalendarPlaceholderBorder oldDelegate) =>
-      color != oldDelegate.color;
 }

@@ -231,27 +231,17 @@ class _CategoryDeleteReviewSheetState extends State<CategoryDeleteReviewSheet> {
         title: l10n.categoryDeleteSelectedTitle,
         onBack: widget.onBack,
       ),
-      footer: SizedBox(
-        width: double.infinity,
-        child: FilledButton(
-          onPressed: canConfirm
-              ? () => widget.onConfirm((
-                  option: _option,
-                  targetId: _option == 1 ? _targetId : null,
-                ))
-              : null,
-          style: _option == 1
-              ? null
-              : FilledButton.styleFrom(
-                  backgroundColor: AppTokens.error(context),
-                ),
-          child: Text(
-            _option == 1
-                ? l10n.categoryMigrateConfirmButton
-                : l10n.categoryManageConfirmDelete,
-            textAlign: TextAlign.center,
-          ),
-        ),
+      footer: AppPrimaryButton(
+        onPressed: canConfirm
+            ? () => widget.onConfirm((
+                option: _option,
+                targetId: _option == 1 ? _targetId : null,
+              ))
+            : null,
+        destructive: _option != 1,
+        label: _option == 1
+            ? l10n.categoryMigrateConfirmButton
+            : l10n.categoryManageConfirmDelete,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

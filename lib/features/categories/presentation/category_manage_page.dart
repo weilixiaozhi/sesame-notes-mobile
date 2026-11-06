@@ -470,15 +470,10 @@ class _CategoryManagePageState extends ConsumerState<CategoryManagePage>
       child: AppSheet(
         title: l10n.categoryClearUnused,
         footer: Builder(
-          builder: (sheetContext) => SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () => Navigator.pop(sheetContext, true),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppTokens.error(context),
-              ),
-              child: Text(l10n.commonDelete),
-            ),
+          builder: (sheetContext) => AppPrimaryButton(
+            onPressed: () => Navigator.pop(sheetContext, true),
+            label: l10n.commonDelete,
+            destructive: true,
           ),
         ),
         child: SingleChildScrollView(

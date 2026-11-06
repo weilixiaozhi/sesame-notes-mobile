@@ -10,7 +10,7 @@ import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/theme/typography.dart';
 
 /// 业务首页共用周月切换、日期标签与回到今天操作。
-class AppExpandableCalendar<T> extends StatelessWidget {
+class AppExpandableCalendar extends StatelessWidget {
   /// 日期和展开状态由业务持有，切换日期只通知当前页面。
   const AppExpandableCalendar({
     super.key,
@@ -25,8 +25,6 @@ class AppExpandableCalendar<T> extends StatelessWidget {
     required this.dayMarkerBuilder,
     this.rangeToggleKey,
     this.rangeTextKey,
-    this.previousWeekLabel,
-    this.nextWeekLabel,
   });
 
   final DateTime firstDay, lastDay, selectedDay, currentDay;
@@ -36,7 +34,6 @@ class AppExpandableCalendar<T> extends StatelessWidget {
   final int maxLabels;
   final Widget? Function(BuildContext, DateTime, bool) dayMarkerBuilder;
   final Key? rangeToggleKey, rangeTextKey;
-  final String? previousWeekLabel, nextWeekLabel;
 
   /// 标题和留白区域同样归日期导航，按当前展开状态移动一周或一月。
   void _movePage(int direction) {
@@ -97,7 +94,7 @@ class AppExpandableCalendar<T> extends StatelessWidget {
                 onPressed: () => onDateSelected(DateUtils.dateOnly(currentDay)),
               ),
             ),
-          AppCalendar<T>(
+          AppCalendar(
             firstDay: firstDay,
             lastDay: lastDay,
             focusedDay: selectedDay,
@@ -106,8 +103,6 @@ class AppExpandableCalendar<T> extends StatelessWidget {
                 ? CalendarFormat.month
                 : CalendarFormat.week,
             adaptiveRows: expanded,
-            previousPageLabel: expanded ? null : previousWeekLabel,
-            nextPageLabel: expanded ? null : nextWeekLabel,
             rowHeight: expanded
                 ? AppDimens.calendarRowHeight
                 : AppCalendarLabels.rowHeight(context, maxLabels),

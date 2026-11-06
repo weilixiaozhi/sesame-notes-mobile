@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';
 import 'format_money.dart';
 
+/// 金额展示统一采用格式化函数默认的最多两位小数。
 class AmountText extends ConsumerWidget {
   final double value;
   final bool signed; // 是否显示正负号
-  final int decimals;
   final TextStyle? style;
   final bool showCurrency; // 是否显示币种符号(¥/$等),默认false
   final String? currencyCode; // 指定币种代码，null 时使用当前账本币种。
@@ -14,17 +14,18 @@ class AmountText extends ConsumerWidget {
   /// 为 true 时缩字完整显示金额；默认使用省略号。
   final bool scaleDown;
 
+  /// 调用方提供金额、币种及文字样式，精度沿用公共金额展示规则。
   const AmountText({
     super.key,
     required this.value,
     this.signed = true,
-    this.decimals = 2,
     this.style,
     this.showCurrency = false,
     this.currencyCode,
     this.scaleDown = false,
   });
 
+  /// 按币种与符号要求格式化数值，必要时缩小文字以完整显示。
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     String displayText;
@@ -37,22 +38,13 @@ class AmountText extends ConsumerWidget {
       // signed 时负值带 '-'、正值不带 '+'（即自然符号，对应函数 signed=false 行为）；
       // 非 signed 时恒按绝对值显示（不区分正负）。
       displayText = signed
-          ? formatMoneyWithCurrency(
-              value,
-              currencyCode: effectiveCurrencyCode,
-              decimals: decimals,
-            )
+          ? formatMoneyWithCurrency(value, currencyCode: effectiveCurrencyCode)
           : formatMoneyWithCurrency(
               value.abs(),
               currencyCode: effectiveCurrencyCode,
-              decimals: decimals,
             );
     } else {
-      displayText = formatMoneyCompact(
-        value,
-        maxDecimals: decimals,
-        signed: signed,
-      );
+      displayText = formatMoneyCompact(value, signed: signed);
     }
 
     // 主数字保持中性色 textPrimary：支出着色由外部调用方

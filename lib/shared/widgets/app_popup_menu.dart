@@ -11,15 +11,12 @@ enum AppMenuItemType {
 
   /// 提示信息（禁用状态）
   tip,
-
-  /// 分隔线
-  divider,
 }
 
 /// 菜单项配置
 class AppMenuItem {
   final String? value;
-  final String? label;
+  final String label;
   final String? subtitle;
   final AppMenuItemType type;
   final bool isDanger;
@@ -29,9 +26,10 @@ class AppMenuItem {
   /// 用于区分不同危险等级的动作（如警示级用黄色、破坏级用红色）
   final Color? color;
 
+  /// 操作项和提示项都提供标签，是否可点击由类型决定。
   const AppMenuItem._({
     this.value,
-    this.label,
+    required this.label,
     this.subtitle,
     required this.type,
     this.isDanger = false,
@@ -39,6 +37,7 @@ class AppMenuItem {
     this.color,
   });
 
+  /// 可点击操作声明业务值、标签和可选的说明与强调样式。
   const AppMenuItem.action({
     required String value,
     required String label,
@@ -56,10 +55,9 @@ class AppMenuItem {
          color: color,
        );
 
+  /// 提示项保留标签，但不参与选择回调。
   const AppMenuItem.tip({required String label})
     : this._(label: label, type: AppMenuItemType.tip);
-
-  const AppMenuItem.divider() : this._(type: AppMenuItemType.divider);
 }
 
 /// 美化的弹出菜单组件
@@ -80,9 +78,6 @@ class AppPopupMenu extends StatelessWidget {
   /// 提示文字
   final String? tooltip;
 
-  /// 自定义触发区域；未提供时显示页面头部的省略号。
-  final Widget? child;
-
   /// 暂停操作时同时禁用菜单触发。
   final bool enabled;
 
@@ -96,15 +91,16 @@ class AppPopupMenu extends StatelessWidget {
   /// 每行最小高度：56px
   static const double _rowHeight = 56;
 
+  /// 统一使用页面头部的省略号作为菜单入口。
   const AppPopupMenu({
     super.key,
     required this.items,
     this.onSelected,
     this.tooltip,
-    this.child,
     this.enabled = true,
   });
 
+  /// 菜单沿触发按钮下缘展开，操作项之间自动绘制细分隔线。
   @override
   Widget build(BuildContext context) {
     // 菜单锚定按钮下沿，触发图标与返回按钮共用尺寸和颜色规范。
@@ -138,25 +134,20 @@ class AppPopupMenu extends StatelessWidget {
             case AppMenuItemType.tip:
               entries.add(_buildTipItem(context, item));
               break;
-            case AppMenuItemType.divider:
-              entries.add(const PopupMenuDivider(height: 1));
-              break;
           }
         }
         return entries;
       },
-      child:
-          child ??
-          SizedBox.square(
-            dimension: AppDimens.menuIconBoxSize,
-            child: Icon(
-              AppIcons.moreVertical,
-              size: AppDimens.icon20,
-              color: enabled
-                  ? AppTokens.iconPrimary(context)
-                  : AppTokens.textDisabled(context),
-            ),
-          ),
+      child: SizedBox.square(
+        dimension: AppDimens.menuIconBoxSize,
+        child: Icon(
+          AppIcons.moreVertical,
+          size: AppDimens.icon20,
+          color: enabled
+              ? AppTokens.iconPrimary(context)
+              : AppTokens.textDisabled(context),
+        ),
+      ),
     );
   }
 
@@ -213,7 +204,7 @@ class AppPopupMenu extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    item.label ?? '',
+                    item.label,
                     style: AppTextTokens.title(context).copyWith(
                       // 自定义颜色优先，其次使用危险红色，最后使用主题文字色。
                       color:
@@ -255,7 +246,7 @@ class AppPopupMenu extends StatelessWidget {
         ),
         alignment: Alignment.centerLeft,
         child: Text(
-          item.label ?? '',
+          item.label,
           style: AppTextTokens.title(
             context,
           ).copyWith(color: AppTokens.textTertiary(context)),

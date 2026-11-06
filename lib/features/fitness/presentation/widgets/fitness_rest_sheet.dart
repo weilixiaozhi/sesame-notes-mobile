@@ -138,54 +138,38 @@ class _FitnessRestSheetState extends ConsumerState<FitnessRestSheet> {
       absorbing: _busy,
       child: AppSheet(
         title: l.fitnessRest,
-        footer: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: !active || timer == null
-                    ? null
-                    : () => _run((repo) => repo.skipRest(widget.workoutId)),
-                child: Text(l.fitnessSkip),
-              ),
-            ),
-            const SizedBox(width: AppDimens.p12),
-            Expanded(
-              child: AppPrimaryButton(
-                fullWidth: false,
-                label: !counting
-                    ? l.fitnessStartTimer
-                    : timer.status == 'paused'
-                    ? l.fitnessResume
-                    : l.fitnessPause,
-                onPressed: !active
-                    ? null
-                    : () => _run((repo) async {
-                        if (!counting && remindersEnabled && prefs != null) {
-                          // 开始计时属于用户主动操作，在此补齐首次使用所需的系统授权。
-                          final granted =
-                              await requestFitnessReminderPermission(
-                                preferences: prefs,
-                                channelName: l.fitnessRest,
-                              );
-                          if (context.mounted) {
-                            ref.invalidate(exactReminderPermissionProvider);
-                            if (!granted) {
-                              showToast(
-                                context,
-                                l.fitnessReminderPermissionDenied,
-                              );
-                            }
-                          }
-                        }
-                        return !counting
-                            ? repo.startRest(widget.workoutId, seconds: seconds)
-                            : timer.status == 'paused'
-                            ? repo.resumeRest(widget.workoutId)
-                            : repo.pauseRest(widget.workoutId);
-                      }),
-              ),
-            ),
-          ],
+        footer: AppPairedActions(
+          secondaryLabel: l.fitnessSkip,
+          onSecondaryPressed: !active || timer == null
+              ? null
+              : () => _run((repo) => repo.skipRest(widget.workoutId)),
+          primaryLabel: !counting
+              ? l.fitnessStartTimer
+              : timer.status == 'paused'
+              ? l.fitnessResume
+              : l.fitnessPause,
+          onPrimaryPressed: !active
+              ? null
+              : () => _run((repo) async {
+                  if (!counting && remindersEnabled && prefs != null) {
+                    // 开始计时属于用户主动操作，在此补齐首次使用所需的系统授权。
+                    final granted = await requestFitnessReminderPermission(
+                      preferences: prefs,
+                      channelName: l.fitnessRest,
+                    );
+                    if (context.mounted) {
+                      ref.invalidate(exactReminderPermissionProvider);
+                      if (!granted) {
+                        showToast(context, l.fitnessReminderPermissionDenied);
+                      }
+                    }
+                  }
+                  return !counting
+                      ? repo.startRest(widget.workoutId, seconds: seconds)
+                      : timer.status == 'paused'
+                      ? repo.resumeRest(widget.workoutId)
+                      : repo.pauseRest(widget.workoutId);
+                }),
         ),
         child: SingleChildScrollView(
           child: Padding(

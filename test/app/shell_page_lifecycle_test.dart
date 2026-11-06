@@ -191,7 +191,7 @@ void main() {
       final calendarState = tester.state(find.byType(CalendarPage));
       final chosenDate = DateTime(2027, 2, 10);
       tester
-          .widget<AppCalendar<Object>>(find.byType(AppCalendar<Object>))
+          .widget<AppCalendar>(find.byType(AppCalendar))
           .onPageChanged(chosenDate);
       await tester.pumpAndSettle();
       expect(find.text('切换前的笔记'), findsOneWidget);
@@ -217,9 +217,7 @@ void main() {
       await tester.tap(find.byTooltip(l.tabCalendar));
       await tester.pumpAndSettle();
       expect(tester.state(find.byType(CalendarPage)), same(calendarState));
-      final calendar = tester.widget<AppCalendar<Object>>(
-        find.byType(AppCalendar<Object>),
-      );
+      final calendar = tester.widget<AppCalendar>(find.byType(AppCalendar));
       expect(calendar.focusedDay, DateTime(2027, 2));
       expect(calendar.selectedDayPredicate(chosenDate), isTrue);
       expect(find.text('隐藏期间更新的笔记'), findsOneWidget);

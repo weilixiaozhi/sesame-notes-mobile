@@ -10,23 +10,53 @@ import 'package:sesame_notes/theme/shadows.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
-/// 登录与注册使用同一品牌尺寸、裁切和明暗主题阴影。
-class AuthBrandLogo extends StatelessWidget {
-  /// 品牌容器的规格由认证界面统一维护。
-  const AuthBrandLogo({super.key});
+/// 登录与注册共用品牌、表单宽度、安全区和键盘弹出后的滚动布局。
+class AuthFormScaffold extends StatelessWidget {
+  /// 表单只提供字段、提示和操作，页面外框由认证模块统一维护。
+  const AuthFormScaffold({super.key, required this.children});
 
-  /// 居中展示品牌资源，暗色主题下保持无投影表面。
+  final List<Widget> children;
+
+  /// 宽屏限制表单宽度，内容超出键盘上方空间时可继续滚动操作。
   @override
-  Widget build(BuildContext context) => Center(
-    child: Container(
-      width: AppDimens.authLogoSize,
-      height: AppDimens.authLogoSize,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppDimens.radius16),
-        boxShadow: AppTokens.isDark(context) ? null : AppShadows.card,
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: AppTokens.scaffoldBackground(context),
+    body: SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(
+          AppDimens.p20,
+          AppDimens.p40,
+          AppDimens.p20,
+          AppDimens.p20,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: AppDimens.authFormMaxWidth,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: AppDimens.authLogoSize,
+                    height: AppDimens.authLogoSize,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(AppDimens.radius16),
+                      boxShadow: AppTokens.isDark(context)
+                          ? null
+                          : AppShadows.card,
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: const AppLogo(size: AppDimens.authLogoSize),
+                  ),
+                ),
+                ...children,
+              ],
+            ),
+          ),
+        ),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: const AppLogo(size: AppDimens.authLogoSize),
     ),
   );
 }
@@ -72,30 +102,42 @@ class _AuthPhoneFieldState extends State<AuthPhoneField> {
     }
   }
 
-  /// 输入样式沿用主题，区号变化不会重建手机号控制器。
-
+  /// 外置标签与区号入口共同属于手机号字段，重建时保留输入控制器。
   @override
-  Widget build(BuildContext context) => TextField(
-    controller: widget.controller,
-    keyboardType: TextInputType.phone,
-    textInputAction: TextInputAction.next,
-    decoration: InputDecoration(
-      hintText: AppLocalizations.of(context).authPhoneHint,
-      prefixIcon: Padding(
-        padding: const EdgeInsets.only(right: AppDimens.p8),
-        child: TextButton(
-          onPressed: _pickRegion,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(widget.region.code),
-              const SizedBox(width: AppDimens.p4),
-              const Icon(AppIcons.chevronDown, size: AppDimens.icon16),
-            ],
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppDimens.p4),
+        child: Text(
+          AppLocalizations.of(context).authPhone,
+          style: AppTextTokens.label(context),
+        ),
+      ),
+      const SizedBox(height: AppDimens.p8),
+      TextField(
+        controller: widget.controller,
+        keyboardType: TextInputType.phone,
+        textInputAction: TextInputAction.next,
+        decoration: InputDecoration(
+          hintText: AppLocalizations.of(context).authPhoneHint,
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(right: AppDimens.p8),
+            child: TextButton(
+              onPressed: _pickRegion,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(widget.region.code),
+                  const SizedBox(width: AppDimens.p4),
+                  const Icon(AppIcons.chevronDown, size: AppDimens.icon16),
+                ],
+              ),
+            ),
           ),
         ),
       ),
-    ),
+    ],
   );
 }
 

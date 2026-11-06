@@ -14,15 +14,14 @@ class DelayedSkeleton extends StatefulWidget {
   /// 延迟期间显示的占位。建议传一个等高的 [SizedBox] 避免布局抖动。
   final Widget placeholder;
 
-  final Duration delay;
-
+  /// 快速加载期间使用占位内容，达到统一延迟后显示骨架。
   const DelayedSkeleton({
     super.key,
     required this.child,
     this.placeholder = const SizedBox.shrink(),
-    this.delay = defaultDelay,
   });
 
+  /// 每个加载区域独立维护延迟计时器。
   @override
   State<DelayedSkeleton> createState() => _DelayedSkeletonState();
 }
@@ -31,20 +30,23 @@ class _DelayedSkeletonState extends State<DelayedSkeleton> {
   bool _show = false;
   Timer? _timer;
 
+  /// 等待统一的三百毫秒后显示骨架，避免快速查询闪烁。
   @override
   void initState() {
     super.initState();
-    _timer = Timer(widget.delay, () {
+    _timer = Timer(DelayedSkeleton.defaultDelay, () {
       if (mounted) setState(() => _show = true);
     });
   }
 
+  /// 区域离开时取消尚未触发的计时器。
   @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
   }
 
+  /// 计时完成前后只切换当前区域的占位内容。
   @override
   Widget build(BuildContext context) {
     return _show ? widget.child : widget.placeholder;
@@ -56,15 +58,10 @@ class _DelayedSkeletonState extends State<DelayedSkeleton> {
 class PulseSkeleton extends StatefulWidget {
   final Widget child;
 
-  /// 单次循环时长,默认 900ms,大多数 loading 场景节奏舒适。
-  final Duration period;
+  /// 骨架内容共用固定的呼吸节奏。
+  const PulseSkeleton({super.key, required this.child});
 
-  const PulseSkeleton({
-    super.key,
-    required this.child,
-    this.period = const Duration(milliseconds: 900),
-  });
-
+  /// 呼吸动画与当前区域一起创建和释放。
   @override
   State<PulseSkeleton> createState() => _PulseSkeletonState();
 }
@@ -73,15 +70,17 @@ class _PulseSkeletonState extends State<PulseSkeleton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: widget.period,
+    duration: const Duration(milliseconds: 900),
   )..repeat(reverse: true);
 
+  /// 区域离开时释放持续播放的动画控制器。
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
+  /// 子内容保持挂载，只更新透明度以产生呼吸反馈。
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(

@@ -52,6 +52,7 @@ class AppRadioTile<T> extends StatefulWidget {
   final T? value;
   final bool _grouped;
 
+  /// 普通单选通过点击回调更新业务状态，可按列表需要限制标题长度。
   const AppRadioTile({
     super.key,
     required this.title,
@@ -59,10 +60,10 @@ class AppRadioTile<T> extends StatefulWidget {
     this.onTap,
     this.leading,
     this.subtitle,
-    this.bottom,
     this.compact = false,
     this.titleMaxLines,
-  }) : value = null,
+  }) : bottom = null,
+       value = null,
        _grouped = false;
 
   /// 分组模式复用原生单选焦点导航，视觉仍由统一单选行承载。
@@ -73,9 +74,9 @@ class AppRadioTile<T> extends StatefulWidget {
     this.leading,
     this.subtitle,
     this.bottom,
-    this.compact = false,
-    this.titleMaxLines,
-  }) : selected = false,
+  }) : compact = false,
+       titleMaxLines = null,
+       selected = false,
        onTap = null,
        _grouped = true;
 

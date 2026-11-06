@@ -25,28 +25,17 @@ ShapeBorder selectableCardShape(
       : shape;
 }
 
-/// 选中卡片右上角角标：26×26 斜切角标，完整选中为对勾、部分选中为短横线。
+/// 选中卡片右上角使用 26×26 斜切对勾角标。
 ///
 /// 组件自身渲染为 [Positioned](top/right 各外移 1px,与边框宽度齐平,
 /// 使角标覆盖在边框之上且不凸出卡片),须作为 [Stack] 直接子级、仅选中时挂载。
 class SelectableCardCheckBadge extends StatelessWidget {
-  /// 是否使用可操作的主题色；禁用态使用主题禁用灰。
-  final bool enabled;
-
-  /// 是否仅覆盖卡片内的部分条目。
-  final bool partial;
-
   /// 创建贴合卡片右上圆角的选中标记。
-  const SelectableCardCheckBadge({
-    super.key,
-    this.enabled = true,
-    this.partial = false,
-  });
+  const SelectableCardCheckBadge({super.key});
 
   /// 沿卡片外缘绘制角标，斜线左下留给卡片内容。
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final foreground = AppTokens.textOnPrimary(context);
     final shape = selectableCardShape(context);
     return Positioned(
@@ -63,7 +52,7 @@ class SelectableCardCheckBadge extends StatelessWidget {
                 : Radius.zero,
           ),
           child: ColoredBox(
-            color: enabled ? theme.colorScheme.primary : theme.disabledColor,
+            color: AppTokens.primary(context),
             child: SizedBox.square(
               dimension: AppDimens.selectionBadgeSize,
               child: Padding(
@@ -74,27 +63,11 @@ class SelectableCardCheckBadge extends StatelessWidget {
                 ),
                 child: Align(
                   alignment: Alignment.topRight,
-                  child: partial
-                      ? SizedBox.square(
-                          dimension: AppDimens.icon12,
-                          child: Center(
-                            child: Container(
-                              width: AppDimens.p8,
-                              height: AppDimens.selectionBadgeGap,
-                              decoration: BoxDecoration(
-                                color: foreground,
-                                borderRadius: BorderRadius.circular(
-                                  AppDimens.radius4,
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                      : Icon(
-                          AppIcons.check,
-                          size: AppDimens.icon12,
-                          color: foreground,
-                        ),
+                  child: Icon(
+                    AppIcons.check,
+                    size: AppDimens.icon12,
+                    color: foreground,
+                  ),
                 ),
               ),
             ),

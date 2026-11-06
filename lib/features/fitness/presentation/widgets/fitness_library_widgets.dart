@@ -56,44 +56,42 @@ Future<Map<String, String>?> chooseTemplateCopies(
     context,
     title: title,
     content: StatefulBuilder(
-      builder: (dialogContext, setState) => SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final entry in candidates.entries) ...[
-              // 每个来源单独一行标题：一个计划可能引用多个官方模板。
-              Text(
-                l.fitnessReuseForTemplate(labels[entry.key] ?? ''),
-                style: AppTextTokens.label(dialogContext),
-              ),
-              RadioGroup<String>(
-                groupValue: selected[entry.key] ?? '',
-                onChanged: (value) => setState(() {
-                  if (value == null || value.isEmpty) {
-                    selected.remove(entry.key);
-                  } else {
-                    selected[entry.key] = value;
-                  }
-                }),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (final copy in entry.value)
-                      AppRadioTile<String>.grouped(
-                        value: copy.id,
-                        title: copy.name,
-                      ),
+      builder: (dialogContext, setState) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final entry in candidates.entries) ...[
+            // 每个来源单独一行标题：一个计划可能引用多个官方模板。
+            Text(
+              l.fitnessReuseForTemplate(labels[entry.key] ?? ''),
+              style: AppTextTokens.label(dialogContext),
+            ),
+            RadioGroup<String>(
+              groupValue: selected[entry.key] ?? '',
+              onChanged: (value) => setState(() {
+                if (value == null || value.isEmpty) {
+                  selected.remove(entry.key);
+                } else {
+                  selected[entry.key] = value;
+                }
+              }),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final copy in entry.value)
                     AppRadioTile<String>.grouped(
-                      value: '',
-                      title: l.fitnessCreateCopies,
+                      value: copy.id,
+                      title: copy.name,
                     ),
-                  ],
-                ),
+                  AppRadioTile<String>.grouped(
+                    value: '',
+                    title: l.fitnessCreateCopies,
+                  ),
+                ],
               ),
-            ],
+            ),
           ],
-        ),
+        ],
       ),
     ),
     onConfirm: () => Map<String, String>.from(selected),

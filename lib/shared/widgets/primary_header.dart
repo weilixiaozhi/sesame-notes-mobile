@@ -13,6 +13,13 @@ const _headerTextActionPadding = EdgeInsets.symmetric(
   vertical: AppDimens.p4,
 );
 
+/// 标题与附加内容共用状态栏下方和页面两侧的留白。
+const _headerPadding = EdgeInsets.only(
+  top: AppDimens.p8,
+  left: AppDimens.p12,
+  right: AppDimens.p12,
+);
+
 /// 统一页面头部；[content] 是标题之外的附加内容。
 class PrimaryHeader extends StatelessWidget {
   final String title;
@@ -23,11 +30,9 @@ class PrimaryHeader extends StatelessWidget {
   final bool showBack;
   final List<Widget>? actions;
   final Widget? content;
-  final EdgeInsetsGeometry padding;
 
   /// 标题旁的功能入口使用 HeaderIconAction 等公共操作组件。
   final Widget? titleAction;
-  final BoxDecoration? decoration;
   // 隐藏内置标题/副标题行，仅渲染自定义 content。
   final bool showTitleSection;
 
@@ -40,16 +45,7 @@ class PrimaryHeader extends StatelessWidget {
     this.showBack = false,
     this.actions,
     this.content,
-    // 全局头部统一留白：状态栏底到标题的顶部留白为 8，标题行底部留白取消为 0，
-    // 左右内缩为 12；所有页面（一级 tab 与二级页）共用此默认值，请勿在调用处覆盖。
-    this.padding = const EdgeInsets.only(
-      top: AppDimens.p8,
-      left: AppDimens.p12,
-      right: AppDimens.p12,
-      bottom: 0,
-    ),
     this.titleAction,
-    this.decoration,
     this.showTitleSection = true,
   });
 
@@ -115,7 +111,7 @@ class PrimaryHeader extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          decoration: decoration ?? BoxDecoration(color: headerBg),
+          decoration: BoxDecoration(color: headerBg),
           child: SafeArea(
             bottom: false,
             child: Column(
@@ -123,7 +119,7 @@ class PrimaryHeader extends StatelessWidget {
               children: [
                 if (showTitleSection)
                   Padding(
-                    padding: padding,
+                    padding: _headerPadding,
                     // 单行槽位包含文字操作的内边距，副标题等更高内容仍可自然增高。
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
@@ -195,7 +191,7 @@ class PrimaryHeader extends StatelessWidget {
                   ),
                 if (content != null)
                   Padding(
-                    padding: padding,
+                    padding: _headerPadding,
                     child: DefaultTextStyle(
                       style: DefaultTextStyle.of(
                         context,

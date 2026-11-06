@@ -304,7 +304,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                   children: [
                     SectionCard(
                       margin: EdgeInsets.zero,
-                      child: AppCalendar<Object>(
+                      child: AppCalendar(
                         firstDay: DateTime(1900),
                         lastDay: DateTime(2200, 12, 31),
                         focusedDay: _month,

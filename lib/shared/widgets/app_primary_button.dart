@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 
 /// 全宽主操作统一继承按钮主题，忙碌时保留文案并阻止重复触发。
@@ -10,6 +11,7 @@ class AppPrimaryButton extends StatelessWidget {
     required this.onPressed,
     this.busy = false,
     this.fullWidth = true,
+    this.destructive = false,
   });
 
   final String label;
@@ -17,11 +19,17 @@ class AppPrimaryButton extends StatelessWidget {
   final bool busy;
   final bool fullWidth;
 
+  /// 删除等破坏性操作使用主题错误底色，其余规格沿用主按钮主题。
+  final bool destructive;
+
   /// 进度指示器占用固定位置，长文案允许换行，加载时保持按钮名称可读。
   @override
   Widget build(BuildContext context) {
     final button = FilledButton(
       onPressed: busy ? null : onPressed,
+      style: destructive
+          ? FilledButton.styleFrom(backgroundColor: AppTokens.error(context))
+          : null,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
