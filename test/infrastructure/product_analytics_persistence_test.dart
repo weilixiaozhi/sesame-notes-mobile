@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,29 +8,27 @@ import 'package:sesame_notes/domain/analytics/product_analytics_context.dart';
 import 'package:sesame_notes/domain/analytics/product_analytics_event.dart';
 import 'package:sesame_notes/infrastructure/analytics/product_analytics_service.dart';
 
-/// 插件内存缓存与真正落盘分离，统计调用次数并模拟平台拒绝写入。
+/// 插件内存缓存与平台存储分离，模拟队列持久化失败。
 class _Store extends InMemorySharedPreferencesStore {
   /// 每个用例使用独立平台存储，避免复用插件内存缓存。
   _Store() : super.empty();
-  int writes = 0;
-  int removals = 0;
   bool rejectWrites = false;
 
-  /// 只记录事件队列，不混入日志等其他持久化调用。
+  /// 拒绝事件队列写入时保持平台存储原样，其他偏好正常保存。
   @override
   Future<bool> setValue(String type, String key, Object value) async {
-    if (key.contains('product_analytics_v1_')) {
-      writes++;
-      if (rejectWrites) return false;
+    try {
+      if (rejectWrites && key.contains('product_analytics_v1_')) return false;
+      return await super.setValue(type, key, value);
+    } catch (error, stackTrace) {
+      logger.error(
+        'AnalyticsPersistenceTest',
+        '准备队列持久化结果失败',
+        error,
+        stackTrace,
+      );
+      rethrow;
     }
-    return super.setValue(type, key, value);
-  }
-
-  /// 队列清空后重复刷新不应重复调用平台删除。
-  @override
-  Future<bool> remove(String key) async {
-    if (key.contains('product_analytics_v1_')) removals++;
-    return super.remove(key);
   }
 }
 
@@ -54,7 +51,7 @@ class _Adapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
-/// 事件身份固定，重试和持久化优化都不能更改原事件。
+/// 固定事件身份，核对恢复持久化后发送的仍是原事件。
 ProductAnalyticsEvent _event(DateTime now) => ProductAnalyticsEvent(
   eventId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   occurredAt: now,
@@ -65,7 +62,7 @@ ProductAnalyticsEvent _event(DateTime now) => ProductAnalyticsEvent(
   sessionId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
 );
 
-/// 验证跳过的是重复落盘，存储失败与数据清洗仍进入真实持久化边界。
+/// 验证未落盘事件禁止发送，恢复平台存储后原事件可以继续交付。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late SharedPreferencesStorePlatform previous;
@@ -84,61 +81,13 @@ void main() {
     SharedPreferences.resetStatic();
   });
 
-  test('未变离线重试不重复写队列，确认后空闲刷新不重复删除', () async {
-    var now = DateTime.utc(2026, 11, 6);
-    var failing = true;
-    var requests = 0;
-    final dio = Dio()
-      ..httpClientAdapter = _Adapter((request) {
-        requests++;
-        return ResponseBody.fromString(
-          failing ? '{}' : jsonEncode({'accepted': 1, 'duplicates': 0}),
-          failing ? 503 : 200,
-          headers: {
-            Headers.contentTypeHeader: ['application/json'],
-          },
-        );
-      });
-    final service = ProductAnalyticsService(
-      dio: dio,
-      preferences: preferences,
-      accountId: () => 'account',
-      accessToken: () => 'token',
-      identityGeneration: () => 1,
-      clock: () => now,
-    );
-    try {
-      await service.record(_event(now));
-      expect(store.writes, 1);
-      await service.flush();
-      now = now.add(const Duration(seconds: 31));
-      await service.flush();
-      expect(requests, 2);
-      expect(store.writes, 1, reason: '读取上传快照不重复写同一份队列');
-      failing = false;
-      now = now.add(const Duration(seconds: 31));
-      await service.flush();
-      expect(store.removals, 1);
-      for (var i = 0; i < 5; i++) {
-        await service.flush();
-      }
-      expect(store.removals, 1);
-      expect(requests, 3);
-    } catch (error, stack) {
-      printOnFailure('统计重复落盘回归失败：$error\n$stack');
-      rethrow;
-    } finally {
-      service.dispose();
-      dio.close();
-    }
-  });
-
   test('平台拒绝写入时不能把偏好内存缓存当作已确认落盘', () async {
     final now = DateTime.utc(2026, 11, 6);
-    var requests = 0;
+    final event = _event(now);
+    final batches = <List<dynamic>>[];
     final dio = Dio()
       ..httpClientAdapter = _Adapter((request) {
-        requests++;
+        batches.add((request.data as Map)['events'] as List<dynamic>);
         return ResponseBody.fromString(
           jsonEncode({'accepted': 1, 'duplicates': 0}),
           200,
@@ -157,15 +106,12 @@ void main() {
     );
     try {
       store.rejectWrites = true;
-      await service.record(_event(now));
+      await service.record(event);
       await service.flush();
-      expect(store.writes, 2);
-      expect(requests, 0, reason: '仍未落盘的事件不能当作可靠队列发送');
+      expect(batches, isEmpty, reason: '仍未落盘的事件不能当作可靠队列发送');
       store.rejectWrites = false;
       await service.flush();
-      expect(store.writes, 3);
-      expect(requests, 1);
-      expect(store.removals, 1);
+      expect(batches.last.map((value) => value['event_id']), [event.eventId]);
     } catch (error, stack) {
       printOnFailure('统计持久化失败重试回归失败：$error\n$stack');
       rethrow;

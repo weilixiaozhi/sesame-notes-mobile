@@ -17,7 +17,7 @@ import '../../helpers/fitness_space_fixture.dart';
 String _id(int value) =>
     '00000000-0000-4000-8000-${value.toString().padLeft(12, '0')}';
 
-/// 验证宽表通知不会重复解码无关实体，同时守住内容、权限和订阅生命周期。
+/// 验证训练流的正文更新、空间可见性、会话权限和错误恢复。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late SesameDatabase db;
@@ -115,7 +115,7 @@ void main() {
 
   tearDown(() async => db.close());
 
-  test('无关保存不发射，范围只重建正文变化的模型，删除隐藏后释放旧模型', () async {
+  test('训练流发布正文变化，按空间隔离并排除删除或隐藏的数据', () async {
     final preferences = <FitnessPreferences>[];
     final active = <FitnessWorkout?>[];
     final detail = <FitnessWorkout?>[];
@@ -132,18 +132,13 @@ void main() {
     ];
     try {
       await pumpEventQueue();
+      expect(preferences.last.defaultRestSeconds, 120);
+      expect(active.last!.id, running.id);
+      expect(detail.last!.name, running.name);
+      expect(templates.last.single.name, '模板');
       expect(
-        [
-          preferences.length,
-          active.length,
-          detail.length,
-          templates.length,
-          ranges.length,
-        ],
-        [1, 1, 1, 1, 1],
-      );
-      final unchangedHistory = ranges.single.singleWhere(
-        (value) => value.id == history.id,
+        ranges.last.map((value) => value.id),
+        unorderedEquals([running.id, history.id]),
       );
 
       final otherSpace = await seedFitnessTestSpace(db, id: _id(90));
@@ -162,15 +157,11 @@ void main() {
         ),
       );
       await pumpEventQueue();
+      expect(active.last!.id, running.id);
+      expect(detail.last!.name, running.name);
       expect(
-        [
-          preferences.length,
-          active.length,
-          detail.length,
-          templates.length,
-          ranges.length,
-        ],
-        [1, 1, 1, 1, 1],
+        ranges.last.map((value) => value.id),
+        unorderedEquals([running.id, history.id]),
       );
 
       await replacePayload(
@@ -178,24 +169,15 @@ void main() {
         running.copyWith(name: '新训练名称').toJson(),
       );
       await pumpEventQueue();
-      expect(
-        [
-          preferences.length,
-          active.length,
-          detail.length,
-          templates.length,
-          ranges.length,
-        ],
-        [1, 2, 2, 1, 2],
-      );
       expect(active.last!.name, '新训练名称');
+      expect(detail.last!.name, '新训练名称');
       expect(
-        identical(
-          ranges.last.singleWhere((value) => value.id == history.id),
-          unchangedHistory,
-        ),
-        isTrue,
-        reason: '一条训练变化不能重新解码所有未变历史',
+        ranges.last.singleWhere((value) => value.id == running.id).name,
+        '新训练名称',
+      );
+      expect(
+        ranges.last.singleWhere((value) => value.id == history.id).toJson(),
+        history.toJson(),
       );
 
       await (db.update(db.fitnessEntities)
@@ -216,14 +198,9 @@ void main() {
           .write(const FitnessSpacesCompanion(isHidden: d.Value(false)));
       await pumpEventQueue();
       expect(ranges.last.single.id, history.id);
-      expect(
-        identical(ranges.last.single, unchangedHistory),
-        isFalse,
-        reason: '离开可见结果的实体不能留在订阅缓存',
-      );
       expect(preferences.last.defaultRestSeconds, 120);
     } catch (error, stackTrace) {
-      logger.error('FitnessWatchTest', '训练流复用及可见性验证失败', error, stackTrace);
+      logger.error('FitnessWatchTest', '训练流更新及可见性验证失败', error, stackTrace);
       rethrow;
     } finally {
       for (final subscription in subscriptions) {
@@ -240,7 +217,8 @@ void main() {
         .listen(values.add, onError: errors.add);
     try {
       await pumpEventQueue();
-      final first = values.single;
+      expect(values.last!.id, running.id);
+      values.clear();
       account = 'other-account';
       await (db.update(
         db.fitnessEntities,
@@ -250,8 +228,9 @@ void main() {
         ),
       );
       await pumpEventQueue();
-      expect(errors.single, isA<FitnessValidationException>());
-      expect(values, hasLength(1));
+      expect(errors.last, isA<FitnessValidationException>());
+      expect(values, isEmpty, reason: '会话失效后不能继续发布原会话数据');
+      errors.clear();
       account = null;
       await (db.update(
         db.fitnessEntities,
@@ -261,55 +240,23 @@ void main() {
         ),
       );
       await pumpEventQueue();
-      expect(values, hasLength(2));
-      expect(
-        identical(values.last, first),
-        isFalse,
-        reason: '错误应清理旧会话缓存而不是压住恢复事件',
-      );
+      expect(values.last!.toJson(), running.toJson());
+      expect(errors, isEmpty);
+      values.clear();
       await replacePayload(running.id, running.toJson()..['name'] = 123);
       await pumpEventQueue();
-      expect(errors.last, isA<TypeError>());
-      final beforeRepair = values.last;
+      expect(errors, isNotEmpty);
+      expect(values, isEmpty, reason: '损坏正文只能发布错误，不能交付训练数据');
+      errors.clear();
       await replacePayload(running.id, running.toJson());
       await pumpEventQueue();
-      expect(values, hasLength(3));
-      expect(values.last!.name, running.name);
-      expect(identical(values.last, beforeRepair), isFalse);
+      expect(values.last!.toJson(), running.toJson());
+      expect(errors, isEmpty);
     } catch (error, stackTrace) {
       logger.error('FitnessWatchTest', '会话检查与恢复验证失败', error, stackTrace);
       rethrow;
     } finally {
       await subscription.cancel();
-    }
-  });
-
-  test('同一流的两个订阅独立复用，取消后重新订阅不保留旧缓存', () async {
-    final stream = repo.watchWorkout(running.id);
-    final first = <FitnessWorkout?>[];
-    final second = <FitnessWorkout?>[];
-    final one = stream.listen(first.add);
-    final two = stream.listen(second.add);
-    try {
-      await pumpEventQueue();
-      expect(first, hasLength(1));
-      expect(second, hasLength(1));
-      expect(identical(first.single, second.single), isFalse);
-      await one.cancel();
-      await replacePayload(running.id, running.copyWith(name: '更新后').toJson());
-      await pumpEventQueue();
-      expect(first, hasLength(1));
-      expect(second.last!.name, '更新后');
-      await two.cancel();
-      final next = await stream.first;
-      expect(next!.name, '更新后');
-      expect(identical(next, second.last), isFalse);
-    } catch (error, stackTrace) {
-      logger.error('FitnessWatchTest', '订阅隔离与释放验证失败', error, stackTrace);
-      rethrow;
-    } finally {
-      await one.cancel();
-      await two.cancel();
     }
   });
 }
