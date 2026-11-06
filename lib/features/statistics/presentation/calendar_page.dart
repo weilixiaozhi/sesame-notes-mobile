@@ -310,6 +310,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                         focusedDay: _month,
                         currentDay: currentDay,
                         adaptiveRows: true,
+                        showWeekDividers: true,
                         selectedDayPredicate: (date) =>
                             isSameDay(date, selected),
                         onDaySelected: (date, _) =>
@@ -319,21 +320,37 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                           final key = fitnessDate(date);
                           final day = DateUtils.dateOnly(date);
                           final amount = totals.asData?.value[key];
-                          final labels = <String>[
+                          // 标签携带业务色彩，月份网格只按实际内容排列。
+                          final labels = <CalendarDayLabel>[
                             for (final event
                                 in days.asData?.value.byDate[key] ?? [])
-                              event.definition.name,
+                              CalendarDayLabel(
+                                event.definition.name,
+                                tone: CalendarDayLabelTone.peach,
+                              ),
                             if ((noteCounts.asData?.value[day] ?? 0) > 0)
-                              '${l.calendarNote} ${noteCounts.asData!.value[day]}',
+                              CalendarDayLabel(
+                                '${l.calendarNote} ${noteCounts.asData!.value[day]}',
+                                tone: CalendarDayLabelTone.purple,
+                              ),
                             if ((credentialCounts.asData?.value[day] ?? 0) > 0)
-                              '${l.calendarCredential} ${credentialCounts.asData!.value[day]}',
+                              CalendarDayLabel(
+                                '${l.calendarCredential} ${credentialCounts.asData!.value[day]}',
+                                tone: CalendarDayLabelTone.purple,
+                              ),
                             for (final workout
                                 in byDate[key] ?? <FitnessWorkout>[])
-                              workout.name,
+                              CalendarDayLabel(
+                                workout.name,
+                                tone: CalendarDayLabelTone.sage,
+                              ),
                             for (final _ in rests[key] ?? <FitnessRestDay>[])
-                              l.fitnessRestDay,
+                              CalendarDayLabel(
+                                l.fitnessRestDay,
+                                tone: CalendarDayLabelTone.sage,
+                              ),
                           ];
-                          // 无支出的日期也保留金额行，让同一周的首条业务标签对齐。
+                          // 事项紧贴日期，金额仅在有支出时接在事项下方。
                           return AppCalendarDayMarkers(
                             amountText:
                                 amount != null &&

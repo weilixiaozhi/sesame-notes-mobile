@@ -106,6 +106,7 @@ class AppCalendar<T> extends StatelessWidget {
     this.nextPageLabel,
     this.rowHeight = AppDimens.calendarRowHeight,
     this.adaptiveRows = false,
+    this.showWeekDividers = false,
     this.rangeOnly = false,
     this.allowHorizontalSwipe = true,
   });
@@ -118,6 +119,9 @@ class AppCalendar<T> extends StatelessWidget {
 
   final double rowHeight;
   final bool adaptiveRows;
+
+  /// 自适应月历可用轻分隔线区分每周，不改变其他日历的视觉样式。
+  final bool showWeekDividers;
   final bool rangeOnly;
 
   /// 嵌入业务页签时可将横滑交给外层导航，左右箭头继续切换日期范围。
@@ -144,6 +148,7 @@ class AppCalendar<T> extends StatelessWidget {
   Widget build(BuildContext context) =>
       _CalendarStorageScope(child: _calendar(context));
 
+  /// 根据日期范围和展示模式选择固定网格、周历或自适应月历。
   Widget _calendar(BuildContext context) {
     if (rangeOnly) {
       final start = DateTime.utc(firstDay.year, firstDay.month, firstDay.day);
@@ -303,7 +308,7 @@ class AppCalendar<T> extends StatelessWidget {
     );
   }
 
-  // TableCalendar 只支持统一行高；原生 Table 让内容仅撑高所在周。
+  /// 每周按本周最多的内容确定高度，日期始终在各自格子的顶部对齐。
   Widget _adaptiveMonth(BuildContext context) {
     final month = DateTime.utc(focusedDay.year, focusedDay.month);
     final start = month.subtract(Duration(days: month.weekday - 1));
@@ -318,6 +323,8 @@ class AppCalendar<T> extends StatelessWidget {
     final canPrevious = !previous.isBefore(first);
     final canNext = !next.isAfter(last);
     var dragDistance = 0.0;
+
+    /// 翻月目标限制在可用日期范围内，箭头与横滑共用同一导航逻辑。
     void move(int direction) {
       if (direction < 0 && canPrevious) {
         final target = DateTime.utc(previous.year, previous.month);
@@ -380,6 +387,14 @@ class AppCalendar<T> extends StatelessWidget {
                 }
               : null,
           child: Table(
+            border: showWeekDividers
+                ? TableBorder(
+                    horizontalInside: BorderSide(
+                      color: AppTokens.divider(context),
+                      width: AppTokens.cardInnerDividerHeight(context),
+                    ),
+                  )
+                : null,
             children: [
               TableRow(
                 children: List.generate(7, (index) {
@@ -603,24 +618,6 @@ class AppCalendarValue extends StatelessWidget {
   final String text;
   final Color color;
 
-  /// 预留行高按金额字体测量，不受长金额横向缩放影响。
-  static double lineHeight(BuildContext context) {
-    final painter = TextPainter(
-      text: TextSpan(
-        text: '0',
-        style: AppTextTokens.caption(
-          context,
-        ).copyWith(fontWeight: FontWeight.w600, height: 1.1),
-      ),
-      textDirection: Directionality.of(context),
-      textScaler: MediaQuery.textScalerOf(context),
-      maxLines: 1,
-    )..layout();
-    final height = painter.height;
-    painter.dispose();
-    return height;
-  }
-
   /// 金额不带标签背景，字重与颜色沿用既有数值令牌。
   @override
   Widget build(BuildContext context) => FittedBox(
@@ -635,8 +632,21 @@ class AppCalendarValue extends StatelessWidget {
   );
 }
 
-/// 所有日期保留等高金额行，业务标签不随当天有无支出上下错位。
+/// 业务显式选择标签色调，文字本身不参与类型推断。
+enum CalendarDayLabelTone { peach, purple, sage }
+
+/// 月历事项同时携带文字与语义色调，避免同名事项共用错误的业务颜色。
+class CalendarDayLabel {
+  /// 创建由业务决定色调的单行事项标签。
+  const CalendarDayLabel(this.text, {required this.tone});
+
+  final String text;
+  final CalendarDayLabelTone tone;
+}
+
+/// 当天事项紧接日期排列，支出作为末尾的轻量数字，仅有内容时占位。
 class AppCalendarDayMarkers extends StatelessWidget {
+  /// 按业务顺序接收事项，金额独立于事项数量。
   const AppCalendarDayMarkers({
     super.key,
     this.amountText,
@@ -644,25 +654,48 @@ class AppCalendarDayMarkers extends StatelessWidget {
   });
 
   final String? amountText;
-  final List<String> labels;
+  final List<CalendarDayLabel> labels;
 
-  /// 空金额保留空白行，长金额缩放仅发生在行内，不挤占标签位置。
+  /// 事项、金额按实际内容自然堆叠，无记录的日期不生成空白标记行。
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      SizedBox(
-        height: AppCalendarValue.lineHeight(context),
-        child: amountText == null
-            ? null
-            : AppCalendarValue(
+  Widget build(BuildContext context) {
+    final hasAmount = amountText?.isNotEmpty ?? false;
+    if (labels.isEmpty && !hasAmount) return const SizedBox.shrink();
+    final description = labels.map((label) => label.text).join(', ');
+    return Padding(
+      padding: const EdgeInsets.only(top: AppDimens.p4, bottom: AppDimens.p8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (labels.isNotEmpty)
+            Tooltip(
+              message: description,
+              child: Semantics(
+                label: description,
+                child: ExcludeSemantics(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (final label in labels)
+                        _CalendarLabel(label: label.text, tone: label.tone),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          if (hasAmount)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppDimens.p4 / 2),
+              child: AppCalendarValue(
                 text: amountText!,
                 color: AppTokens.error(context),
               ),
+            ),
+        ],
       ),
-      if (labels.isNotEmpty) AppCalendarLabels(labels: labels),
-    ],
-  );
+    );
+  }
 }
 
 /// 当日明细读取中共用三行列表占位。
@@ -729,44 +762,76 @@ class AppCalendarLabels extends StatelessWidget {
             children: [
               const SizedBox(height: AppDimens.p8),
               for (final label in labels)
-                CustomPaint(
-                  foregroundPainter: isPlaceholder
-                      ? _CalendarPlaceholderBorder(
-                          AppTokens.borderStrong(context),
-                        )
-                      : null,
-                  child: Container(
-                    height: labelHeight(context),
-                    margin: const EdgeInsets.only(
-                      left: AppDimens.p4 / 2,
-                      right: AppDimens.p4 / 2,
-                      bottom: AppDimens.p4 / 2,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimens.p4 / 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isPlaceholder
-                          ? AppTokens.surfaceInput(context)
-                          : AppTokens.surfaceSecondary(context),
-                      borderRadius: BorderRadius.circular(AppDimens.radius4),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextTokens.caption(context).copyWith(
-                        color: isPlaceholder
-                            ? AppTokens.textSecondary(context)
-                            : AppTokens.isDark(context)
-                            ? AppTokens.textPrimary(context)
-                            : AppTokens.primary(context),
-                      ),
-                    ),
-                  ),
-                ),
+                _CalendarLabel(label: label, isPlaceholder: isPlaceholder),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 单行标签共享尺寸和省略逻辑，业务色调与计划占位各自使用成对颜色。
+class _CalendarLabel extends StatelessWidget {
+  /// 未指定业务色调时沿用周历和训练计划的中性标签样式。
+  const _CalendarLabel({
+    required this.label,
+    this.tone,
+    this.isPlaceholder = false,
+  });
+
+  final String label;
+  final CalendarDayLabelTone? tone;
+  final bool isPlaceholder;
+
+  /// 窄格只裁剪文字，完整事项仍由外层提示和读屏标签提供。
+  @override
+  Widget build(BuildContext context) {
+    final (background, foreground) = switch (tone) {
+      CalendarDayLabelTone.peach => (
+        AppTokens.peachBackground(context),
+        AppTokens.peachForeground(context),
+      ),
+      CalendarDayLabelTone.purple => (
+        AppTokens.purpleBackground(context),
+        AppTokens.purpleForeground(context),
+      ),
+      CalendarDayLabelTone.sage => (
+        AppTokens.sageBackground(context),
+        AppTokens.sageForeground(context),
+      ),
+      null => (
+        AppTokens.surfaceSecondary(context),
+        AppTokens.isDark(context)
+            ? AppTokens.textPrimary(context)
+            : AppTokens.primary(context),
+      ),
+    };
+    return CustomPaint(
+      foregroundPainter: isPlaceholder
+          ? _CalendarPlaceholderBorder(AppTokens.borderStrong(context))
+          : null,
+      child: Container(
+        height: AppCalendarLabels.labelHeight(context),
+        margin: const EdgeInsets.only(
+          left: AppDimens.p4 / 2,
+          right: AppDimens.p4 / 2,
+          bottom: AppDimens.p4 / 2,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: AppDimens.p4 / 2),
+        decoration: BoxDecoration(
+          color: isPlaceholder ? AppTokens.surfaceInput(context) : background,
+          borderRadius: BorderRadius.circular(AppDimens.radius4),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTextTokens.caption(context).copyWith(
+            color: isPlaceholder
+                ? AppTokens.textSecondary(context)
+                : foreground,
           ),
         ),
       ),
