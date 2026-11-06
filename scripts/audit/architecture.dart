@@ -216,7 +216,7 @@ class ArchitectureAudit {
     return file;
   }
 
-  /// 使用rg遵守gitignore枚举所有应用、本地包、测试、工具的Dart源码。
+  /// 优先按忽略规则枚举源码；缺少 rg 时读取 Git 受管及未忽略文件。
   List<String> _files() {
     final directories = [
       'lib',
@@ -228,21 +228,57 @@ class ArchitectureAudit {
     if (directories.isEmpty) {
       throw StateError('没有可审计的Dart源码目录，请在目标仓库根目录运行');
     }
-    final result = Process.runSync(
-      'rg',
-      ['--files', ...directories, '-g', '*.dart'],
-      workingDirectory: root,
-      stdoutEncoding: utf8,
-      stderrEncoding: utf8,
-    );
+    late final ProcessResult result;
+    var gitListing = false;
+    try {
+      result = Process.runSync(
+        'rg',
+        ['--files', ...directories, '-g', '*.dart'],
+        workingDirectory: root,
+        stdoutEncoding: utf8,
+        stderrEncoding: utf8,
+      );
+    } on ProcessException catch (error) {
+      // 只处理命令不存在；权限和其他进程错误保留原始诊断，不能跳过检查。
+      if (error.errorCode != 2) rethrow;
+      gitListing = true;
+      result = Process.runSync(
+        'git',
+        [
+          'ls-files',
+          '--cached',
+          '--others',
+          '--exclude-standard',
+          '-z',
+          '--',
+          ...directories,
+        ],
+        workingDirectory: root,
+        stdoutEncoding: utf8,
+        stderrEncoding: utf8,
+      );
+    }
+    if (gitListing && result.exitCode != 0) {
+      throw StateError('Git枚举失败(${result.exitCode})：${result.stderr}');
+    }
     if (result.exitCode > 1) {
       throw StateError('rg枚举失败(${result.exitCode})：${result.stderr}');
     }
     final files =
         (result.stdout as String)
-            .split(RegExp(r'\r?\n'))
-            .where((file) => file.isNotEmpty)
+            .split(gitListing ? '\u0000' : RegExp(r'\r?\n'))
+            .where((file) => file.endsWith('.dart'))
             .map((file) => file.replaceAll('\\', '/'))
+            // 已删除的受管文件和符号链接不属于当前可读源码。
+            .where(
+              (file) =>
+                  FileSystemEntity.typeSync(
+                    p.join(root, file),
+                    followLinks: false,
+                  ) ==
+                  FileSystemEntityType.file,
+            )
+            .toSet()
             .toList()
           ..sort();
     // 空覆盖不能代表检查完成，忽略规则或运行目录错误必须明确失败。

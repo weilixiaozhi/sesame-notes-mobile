@@ -172,6 +172,8 @@ dart scripts/audit/architecture.dart --symbols --json > Temp/architecture-audit.
 
 重定向前自行确认目标文件不存在；所有一次性报告存放在本仓 `Temp/`，不要覆盖既有报告。工具本身只读源码，默认输出覆盖、手写生产 library SCC、明确边界违规和解析失败。`--symbols` 使用固定的 analyzer 12.1.0 解析元素身份和消费者，JSON 另含全部 import/export/条件分支/part、目录 SCC、模块引用广度、声明及零显式消费者候选。首次完整符号分析比快速边界检查耗时更长。
 
+源码枚举优先使用现有 `rg`；未提供 `rg` 时使用现有 Git 枚举受管源码及未忽略文件。两条路径都跳过已删除文件和符号链接，空覆盖或枚举失败仍返回错误，不安装工具或跳过检查。
+
 包路径取当前 `.dart_tool/package_config.json` 的实际根和 `packageUri`，支持本地包目录与包名不同、URI 有无末尾斜杠；相对路径归一化。快速模式双向核对 `part` 与 `part of` 的 URI 或 library 名称归属，缺少声明、归属错误及孤立 part 都使解析失败；合法组成关系归并到同一 library，不能机械构成普通循环。`show`、`hide`、export 转发、构造/注解引用按解析元素记录，隐式扩展成员调用同时消费所属 extension。生成 part 和生成 SDK 参与消费核查，手写生产主图分别排除生成物、测试、工具及 e2e。模块边的强度为不同引用源 library 数，目录聚合环不能等同真实文件循环。
 
 明确边界按职责失败：core 不依赖 features/shared/infrastructure/顶层 providers；API 传输不反引 shared/features；启动端口不读取顶层启动实现或 features；共享领域不依赖业务实现/状态装配；领域规则不读取 presentation/application/共享 Provider；备份核心不依赖应用或具体备份服务商。生成边同样接受对应边界检查。没有按现有违规个数建立白名单或阈值。退出码 `0` 表示本次边界和解析检查完成，`1` 表示明确边界违规，`2` 表示参数/依赖配置/语法/符号解析不完整；候选数及 SCC 数不控制退出码。
