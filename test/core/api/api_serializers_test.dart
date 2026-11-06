@@ -80,7 +80,7 @@ void main() {
     );
   });
 
-  test('六种明确分类枚举均保持整数往返', () {
+  test('六种明确分类枚举接受同值数字表达并保持整数发送', () {
     for (final type in [
       CategoryLevelEnum,
       CategoryConflictLocalPayloadLevelEnum,
@@ -89,18 +89,41 @@ void main() {
       PostLedgersByLedgerIdCategoriesAddBatchRequestAnyOfItemsInnerLevelEnum,
       PostSyncPushRequestChangesInnerAnyOf5AnyOfPayloadLevelEnum,
     ]) {
-      for (final level in [1, 2]) {
+      for (final level in <num>[1, 1.0, 2, 2.0]) {
         final specified = FullType(type);
         final value = apiSerializers.deserialize(
           level,
           specifiedType: specified,
         );
+        final wire = apiSerializers.serialize(value, specifiedType: specified);
+        expect(wire, level.toInt());
+        expect(wire, isA<int>(), reason: '$type 必须发送整数层级');
+      }
+      // 本地分类状态与生成枚举沿用字符串 wire name，数字适配保留该委托入口。
+      for (final wire in ['1', '2']) {
+        final specified = FullType(type);
+        final value = apiSerializers.deserialize(
+          wire,
+          specifiedType: specified,
+        );
         expect(
           apiSerializers.serialize(value, specifiedType: specified),
-          level,
+          int.parse(wire),
         );
       }
-      for (final invalid in [0, 3, -1, 1.5, true, 'invalid']) {
+      for (final invalid in [
+        0,
+        0.0,
+        3,
+        3.0,
+        -1,
+        1.5,
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+        true,
+        'invalid',
+      ]) {
         expect(
           () => apiSerializers.deserialize(
             invalid,
@@ -116,6 +139,48 @@ void main() {
           reason: '$type 必须拒绝非法分类层级 $invalid',
         );
       }
+    }
+  });
+
+  test('正式 API 接收同值小数分类层级并以整数序列化', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://contract.invalid'));
+    final client = SesameApiClient(dio: dio, serializers: apiSerializers);
+    addTearDown(() => dio.close(force: true));
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          handler.resolve(
+            Response(
+              requestOptions: options,
+              statusCode: 200,
+              data: [
+                for (final level in [1.0, 2.0])
+                  {
+                    'id': 'category-$level',
+                    'name': '餐饮',
+                    'kind': 'expense',
+                    'level': level,
+                    'sort_order': 0,
+                    'updated_at': '2026-10-13T00:00:00.000Z',
+                    'version_token': 'version',
+                  },
+              ],
+            ),
+          );
+        },
+      ),
+    );
+    final response = await client
+        .getCategoriesApi()
+        .getLedgersByLedgerIdCategories(ledgerId: 'ledger');
+    expect(response.data!.map((category) => category.level), [
+      CategoryLevelEnum.n1,
+      CategoryLevelEnum.n2,
+    ]);
+    for (final category in response.data!) {
+      final wire =
+          apiSerializers.serializeWith(Category.serializer, category) as Map;
+      expect(wire['level'], isA<int>());
     }
   });
 

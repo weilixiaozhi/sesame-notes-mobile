@@ -133,7 +133,7 @@ class _FitnessCatalogSerializer
   }
 }
 
-/// 委托明确 DTO 的生成枚举验证值域，只转换整数和枚举 wire name。
+/// 委托明确 DTO 的生成枚举验证值域，将同值数字规范为整数 wire name。
 class _IntegerEnumSerializer<T> implements PrimitiveSerializer<T> {
   /// 已注册的六个分类层级枚举均由生成器提供 primitive serializer。
   _IntegerEnumSerializer.categoryLevel(Serializer<T> delegate)
@@ -182,9 +182,22 @@ class _IntegerEnumSerializer<T> implements PrimitiveSerializer<T> {
     FullType specifiedType = FullType.unspecified,
   }) {
     try {
+      Object wire = serialized;
+      if (serialized is num) {
+        if (!serialized.isFinite) {
+          throw FormatException(invalidValueMessage);
+        }
+        final integer = serialized.toInt();
+        // JSON 的 1 与 1.0 表达同一枚举值；小数不能截断成合法层级。
+        if (serialized != integer) {
+          throw FormatException(invalidValueMessage);
+        }
+        wire = integer.toString();
+      }
+      // 本地分类状态使用字符串 wire name，合法值域由生成枚举统一验证。
       return _delegate.deserialize(
         serializers,
-        serialized is int ? serialized.toString() : serialized,
+        wire,
         specifiedType: specifiedType,
       );
     } catch (error, stack) {
