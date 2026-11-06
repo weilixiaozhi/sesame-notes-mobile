@@ -606,7 +606,7 @@ class _FitnessExerciseEditorState extends State<FitnessExerciseEditor> {
                   ? AppTokens.primary(context)
                   : AppTokens.surfaceInput(context),
               borderRadius: BorderRadius.circular(
-                AppTokens.inputRadius(context),
+                AppTokens.buttonRadius(context),
               ),
             ),
             child: IconButton(
@@ -644,13 +644,15 @@ class _FitnessExerciseEditorState extends State<FitnessExerciseEditor> {
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // 单边口径的格子数最多，按它等分出固定格子宽度：
-                // 切到总重量时每个格子尺寸不变，只是整体少一格并保持左对齐。
+                // 数值与完成框以统一目标宽度左对齐，空间不足时按可见框数等比分配。
+                final fieldCount = fields.length - 1;
                 final cellWidth =
-                    (constraints.maxWidth -
-                        kindWidth -
-                        _fieldGap * _fieldSlots) /
-                    _fieldSlots;
+                    ((constraints.maxWidth -
+                                kindWidth -
+                                _fieldGap * fieldCount) /
+                            fieldCount)
+                        .clamp(0.0, AppDimens.fitnessSetFieldWidth)
+                        .toDouble();
                 // 各格宽度确定后按最高内容测量行高，再拉伸所有格子以统一外框高度。
                 return IntrinsicHeight(
                   child: Row(
@@ -813,9 +815,6 @@ class _ExerciseExpansionState extends State<_ExerciseExpansion>
 
 /// 组行内各字段之间的固定间距。
 const _fieldGap = AppDimens.p16;
-
-/// 单边口径一行的字段格子数（左kg、右kg、次数、勾选），作为格子宽度基准。
-const _fieldSlots = 4;
 
 /// 焦点内保留用户原始输入（包括未输完的小数），单位显示变化不回写原精度。
 class FitnessNumericInput extends StatefulWidget {
