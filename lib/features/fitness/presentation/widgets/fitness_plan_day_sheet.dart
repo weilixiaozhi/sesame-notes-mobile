@@ -184,12 +184,10 @@ class _FitnessPlanDaySheetState extends ConsumerState<FitnessPlanDaySheet> {
     return AppSheet(
       title: l.fitnessPlanArrangeDay(widget.dayIndex + 1),
       trailing: widget.filled
-          ? KeyedSubtree(
+          ? HeaderTextAction(
               key: const ValueKey('fitness-plan-clear-day'),
-              child: HeaderTextAction(
-                label: l.fitnessPlanClearDay,
-                onPressed: () => _choose(const FitnessPlanDaySelection.clear()),
-              ),
+              label: l.fitnessPlanClearDay,
+              onPressed: () => _choose(const FitnessPlanDaySelection.clear()),
             )
           : null,
       child: Column(
