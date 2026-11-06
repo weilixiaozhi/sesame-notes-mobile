@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -9,7 +10,9 @@ import 'package:sesame_notes/data/models/memo.dart';
 import 'package:sesame_notes/data/models/private_book.dart';
 import 'package:sesame_notes/domain/analytics/product_analytics_context.dart';
 import 'package:sesame_notes/features/memos/application/memo_actions.dart';
+import 'package:sesame_notes/features/memos/application/memo_providers.dart';
 import 'package:sesame_notes/features/memos/presentation/memo_editor_page.dart';
+import 'package:sesame_notes/features/memos/presentation/memo_editor_surface.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/providers/product_analytics_providers.dart';
 import 'package:sesame_notes/shared/application/product_analytics_controller.dart';
@@ -21,11 +24,28 @@ import '../../helpers/test_isolation.dart';
 /// 保存替身只收集页面生成的快照，不读取真实数据库或账号配置。
 class _MemoActions extends Fake implements MemoActions {
   final saved = <MemoEntry>[];
+  final attempts = <MemoEntry>[];
+  Future<void> Function(MemoEntry)? beforeSave;
+  var failuresRemaining = 0;
+  var activeWrites = 0;
+  var maxActiveWrites = 0;
 
-  /// 模拟保存成功，保留完整正文以验证编辑切换没有丢失输入。
+  /// 控制写入延迟与失败，区分已请求的快照和真正完成保存的快照。
   @override
   Future<void> saveEntry(MemoEntry entry, PrivateBookTarget target) async {
-    saved.add(entry);
+    attempts.add(entry);
+    activeWrites++;
+    if (activeWrites > maxActiveWrites) maxActiveWrites = activeWrites;
+    try {
+      await beforeSave?.call(entry);
+      if (failuresRemaining > 0) {
+        failuresRemaining--;
+        throw StateError('MEMO_TEST_SAVE_FAILURE');
+      }
+      saved.add(entry);
+    } finally {
+      activeWrites--;
+    }
   }
 }
 
@@ -34,6 +54,8 @@ Future<_MemoActions> _openEditor(
   WidgetTester tester, {
   int additionalLines = 0,
   bool newNote = false,
+  bool withBackStack = false,
+  _MemoActions? actions,
 }) async {
   try {
     tester.view.physicalSize = const Size(390, 844);
@@ -41,7 +63,7 @@ Future<_MemoActions> _openEditor(
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetViewInsets);
-    final actions = _MemoActions();
+    actions ??= _MemoActions();
     final analytics = ProductAnalyticsController(
       writer: () async => throw StateError('测试不应发送统计'),
       runtime: () => const ProductAnalyticsRuntime(
@@ -70,7 +92,12 @@ Future<_MemoActions> _openEditor(
       }),
     );
     final router = GoRouter(
+      initialLocation: withBackStack ? '/list' : '/',
       routes: [
+        GoRoute(
+          path: '/list',
+          builder: (context, state) => const Scaffold(body: Text('测试笔记列表')),
+        ),
         GoRoute(
           path: '/',
           builder: (context, state) => MemoEditorPage(
@@ -113,6 +140,10 @@ Future<_MemoActions> _openEditor(
       ),
     );
     await tester.pumpAndSettle();
+    if (withBackStack) {
+      unawaited(router.push<void>('/'));
+      await tester.pumpAndSettle();
+    }
     return actions;
   } catch (error, stackTrace) {
     debugPrint('备忘录页面测试初始化失败：$error\n$stackTrace');
@@ -123,6 +154,30 @@ Future<_MemoActions> _openEditor(
 /// 读取当前页面真实持有的编辑器，避免操作复制出来的控制器状态。
 QuillEditor _editor(WidgetTester tester) =>
     tester.widget<QuillEditor>(find.byType(QuillEditor));
+
+/// 通过真实输入通道提交正文和组合区，等待文档事件进入自动保存链路。
+Future<void> _typeText(
+  WidgetTester tester,
+  String text, {
+  TextRange composing = TextRange.empty,
+}) async {
+  tester.testTextInput.updateEditingValue(
+    TextEditingValue(
+      text: '$text\n',
+      selection: TextSelection.collapsed(offset: text.length),
+      composing: composing,
+    ),
+  );
+  await tester.pump();
+}
+
+/// 还原测试使用的纯文本 Delta，检查保存的是完整最新内容。
+String _savedText(MemoEntry entry) {
+  final body = jsonDecode(entry.bodyJson!) as Map<String, dynamic>;
+  return (body['ops'] as List)
+      .map((operation) => (operation as Map)['insert'] as String)
+      .join();
+}
 
 /// 点击正文第二行，验证模式切换保留用户点击位置而非重置到文首。
 Future<void> _enterEditing(WidgetTester tester) async {
@@ -247,8 +302,7 @@ void main() {
     await _enterEditing(tester);
     expect(_editor(tester).controller, same(controller));
     expect(controller.document, same(document));
-    expect(_editor(tester).scrollController, same(scroll));
-    expect(scroll.offset, closeTo(position, 1));
+    expect(_editor(tester).scrollController.offset, closeTo(position, 1));
     expect(controller.selection.baseOffset, greaterThan(100));
 
     final originalSelection = controller.selection;
@@ -267,12 +321,12 @@ void main() {
     expect(document.toPlainText(), isNot(originalText));
     expect(controller.selection.baseOffset, originalSelection.baseOffset + 3);
 
-    final savedPosition = scroll.offset;
+    final savedPosition = _editor(tester).scrollController.offset;
     await tester.tap(find.byType(HeaderTextAction));
     await tester.pump();
     await tester.pump();
     expect(controller.readOnly, isTrue);
-    expect(scroll.offset, closeTo(savedPosition, 1));
+    expect(_editor(tester).scrollController.offset, closeTo(savedPosition, 1));
     expect(actions.saved, hasLength(1));
     expect(actions.saved.single.bodyJson, contains(inserted));
     expect(document.toPlainText(), edited);
@@ -302,6 +356,167 @@ void main() {
     expect(actions.saved, hasLength(1));
     expect(actions.saved.single.title, '新笔记');
     expect(actions.saved.single.bodyJson, contains('新笔记'));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('连续中文输入防抖只保存最新正文，自动保存不打断组合输入', (tester) async {
+    final actions = await _openEditor(tester, newNote: true);
+    final surface = tester.state(find.byType(MemoEditorSurface));
+    final raw = tester.state<QuillRawEditorState>(find.byType(QuillRawEditor));
+    final focus = _editor(tester).focusNode;
+    tester.testTextInput.log.clear();
+
+    await _typeText(tester, '备');
+    await tester.pump(const Duration(milliseconds: 250));
+    await _typeText(tester, '备忘');
+    await tester.pump(const Duration(milliseconds: 250));
+    await _typeText(
+      tester,
+      '备忘录',
+      composing: const TextRange(start: 0, end: 3),
+    );
+    await tester.pump(const Duration(milliseconds: 399));
+    expect(actions.attempts, isEmpty);
+    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pump();
+
+    expect(actions.saved.map(_savedText), ['备忘录\n']);
+    expect(tester.state(find.byType(MemoEditorSurface)), same(surface));
+    expect(tester.state(find.byType(QuillRawEditor)), same(raw));
+    expect(_editor(tester).focusNode, same(focus));
+    expect(focus.hasFocus, isTrue);
+    expect(raw.currentTextEditingValue!.selection.baseOffset, 3);
+    expect(
+      raw.currentTextEditingValue!.composing,
+      const TextRange(start: 0, end: 3),
+    );
+    expect(_composingText(tester), contains('备忘录'));
+    expect(
+      tester.testTextInput.log.where(
+        (call) =>
+            call.method == 'TextInput.setClient' ||
+            call.method == 'TextInput.clearClient',
+      ),
+      isEmpty,
+    );
+
+    // 提交组合区只改变输入法状态，不重复保存没有变化的正文。
+    await _typeText(tester, '备忘录');
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(actions.attempts, hasLength(1));
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('自动保存中继续输入串行保存最新版本，不重置光标或输入连接', (tester) async {
+    final firstWrite = Completer<void>();
+    final actions = _MemoActions();
+    actions.beforeSave = (_) async {
+      if (actions.attempts.length == 1) await firstWrite.future;
+    };
+    await _openEditor(tester, newNote: true, actions: actions);
+    final raw = tester.state<QuillRawEditorState>(find.byType(QuillRawEditor));
+    tester.testTextInput.log.clear();
+
+    await _typeText(tester, '第一版');
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(actions.attempts.map(_savedText), ['第一版\n']);
+    expect(actions.saved, isEmpty);
+    await _typeText(tester, '第一版继续输入');
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(actions.attempts, hasLength(1));
+
+    firstWrite.complete();
+    await tester.pump();
+    await tester.pump();
+    expect(actions.saved.map(_savedText), ['第一版\n', '第一版继续输入\n']);
+    expect(actions.maxActiveWrites, 1);
+    expect(tester.state(find.byType(QuillRawEditor)), same(raw));
+    expect(_editor(tester).controller.selection.baseOffset, 7);
+    expect(_editor(tester).controller.readOnly, isFalse);
+    expect(_editor(tester).focusNode.hasFocus, isTrue);
+    expect(
+      tester.testTextInput.log.where(
+        (call) =>
+            call.method == 'TextInput.setClient' ||
+            call.method == 'TextInput.clearClient',
+      ),
+      isEmpty,
+    );
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('自动保存失败保留草稿与编辑状态，继续输入后重试最新版本', (tester) async {
+    final actions = _MemoActions()..failuresRemaining = 1;
+    await _openEditor(tester, newNote: true, actions: actions);
+    final surface = tester.state(find.byType(MemoEditorSurface));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(MemoEditorPage)),
+      listen: false,
+    );
+    await _typeText(tester, '保存失败也要保留');
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump();
+
+    final l = AppLocalizations.of(tester.element(find.byType(MemoEditorPage)));
+    expect(find.text(l.memoSaveFailed), findsOneWidget);
+    expect(actions.saved, isEmpty);
+    expect(container.read(memoProtectedDraftsProvider).values.map(_savedText), [
+      '保存失败也要保留\n',
+    ]);
+    expect(tester.state(find.byType(MemoEditorSurface)), same(surface));
+    expect(_editor(tester).controller.readOnly, isFalse);
+    expect(_editor(tester).focusNode.hasFocus, isTrue);
+    await tester.pump(const Duration(seconds: 1));
+    expect(actions.attempts, hasLength(1));
+
+    await _typeText(tester, '保存失败也要保留，继续写');
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump();
+    expect(actions.saved.map(_savedText), ['保存失败也要保留，继续写\n']);
+    expect(actions.attempts, hasLength(2));
+    expect(container.read(memoProtectedDraftsProvider), isEmpty);
+    expect(find.text(l.memoSaveFailed), findsNothing);
+    expect(tester.state(find.byType(MemoEditorSurface)), same(surface));
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('切到后台和返回列表会立即保存尚未到防抖期限的最新正文', (tester) async {
+    final actions = await _openEditor(
+      tester,
+      newNote: true,
+      withBackStack: true,
+    );
+    addTearDown(
+      () => tester.binding.handleAppLifecycleStateChanged(
+        AppLifecycleState.resumed,
+      ),
+    );
+    await _typeText(tester, '后台前输入');
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(actions.saved, isEmpty);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    await tester.pump();
+    expect(actions.saved.map(_savedText), ['后台前输入\n']);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+
+    await _typeText(tester, '返回前继续输入');
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(actions.saved, hasLength(1));
+    final tooltip = MaterialLocalizations.of(
+      tester.element(find.byType(MemoEditorPage)),
+    ).backButtonTooltip;
+    await tester.tap(
+      find.descendant(
+        of: find.byType(PrimaryHeader),
+        matching: find.byTooltip(tooltip),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(MemoEditorPage), findsNothing);
+    expect(find.text('测试笔记列表'), findsOneWidget);
+    expect(actions.saved.map(_savedText), ['后台前输入\n', '返回前继续输入\n']);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });

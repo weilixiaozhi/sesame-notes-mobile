@@ -74,7 +74,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
   final _title = TextEditingController();
   final _fields = <_CardFieldRow>[];
   bool _fieldsReady = false;
-  final _editorScroll = MemoEditorScrollController();
+  final _editorScrollState = MemoEditorScrollState();
   final _editorViewport = GlobalKey();
   late final QuillController _quill;
   late final MemoDraft _draft;
@@ -554,7 +554,6 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
       field.dispose();
     }
     _quill.dispose();
-    _editorScroll.dispose();
     super.dispose();
   }
 
@@ -638,7 +637,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
                       child: MemoEditorSurface(
                         key: ValueKey(_readOnly),
                         controller: _quill,
-                        scrollController: _editorScroll,
+                        scrollState: _editorScrollState,
                         readOnly: _readOnly,
                         contextMenuBuilder: _selectionMenu,
                         onTapUp: _beginEditing,
