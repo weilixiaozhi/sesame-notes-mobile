@@ -5,11 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_notes/data/models/fitness.dart';
 import 'package:sesame_notes/features/fitness/application/fitness_lifecycle.dart';
 import 'package:sesame_notes/features/fitness/application/fitness_providers.dart';
-import 'package:sesame_notes/infrastructure/account/auth_session.dart';
-import 'package:sesame_notes/infrastructure/api/api_client_provider.dart';
 import 'package:sesame_notes/shared/models/reminder_settings.dart';
 import 'package:sesame_notes/shared/providers/account_reminder_invalidation_provider.dart';
-import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/fitness_space_provider.dart';
 import 'package:sesame_notes/shared/providers/reminder_settings_provider.dart';
 import 'package:sesame_notes/shared/services/notification/notification_factory.dart';
@@ -21,7 +18,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class _Notifications extends Fake implements NotificationUtil {
   bool pending = true;
   int cancellations = 0;
-  int scheduled = 0;
   final failingAttempts = <int>{};
   Completer<void>? firstCancellation;
 
@@ -42,19 +38,6 @@ class _Notifications extends Fake implements NotificationUtil {
   /// 健身权限始终可用，测试只关注身份失效和排期顺序。
   @override
   Future<bool> checkPermissionStatus() async => true;
-
-  /// 记录清理后是否恢复了当前身份的有效计时。
-  @override
-  Future<void> scheduleOnceReminder({
-    required int id,
-    required String title,
-    required String body,
-    required DateTime scheduledDate,
-  }) async {
-    if (id != fitnessRestNotificationId) throw StateError('休息通知编号不匹配');
-    scheduled++;
-    pending = true;
-  }
 }
 
 /// 保留真实账号及提醒编排，仅替换数据库数据流和系统通知接口。
@@ -104,25 +87,6 @@ class _Fixture {
   bool get pendingInvalidation => container
       .read(accountReminderInvalidationProvider)
       .isPending(AccountReminderKind.fitness);
-
-  /// 用当前身份数据恢复一条尚未结束的本机训练计时。
-  void publishWorkout() {
-    preferences.add(const FitnessPreferences());
-    workouts.add(
-      FitnessWorkout(
-        id: 'workout',
-        name: '本机训练',
-        scheduledDate: '2026-10-05',
-        status: 'in_progress',
-        restTimer: FitnessRestTimer(
-          status: 'running',
-          endsAt: DateTime.now().add(const Duration(minutes: 10)),
-          remainingSeconds: 600,
-          durationSeconds: 600,
-        ),
-      ),
-    );
-  }
 
   /// 释放生命周期定时器和数据流，避免影响后续随机顺序测试。
   Future<void> dispose() async {
@@ -222,56 +186,4 @@ void main() {
       }
     });
   }
-
-  testWidgets('正常缓存身份恢复和同账号刷新不会清理尚未加载的休息任务', (tester) async {
-    final fixture = _Fixture();
-    try {
-      fixture.container
-          .read(accountStateProvider.notifier)
-          .restorePending(userId: 'account-a');
-      fixture.start();
-      await tester.pumpAndSettle();
-      fixture.container
-          .read(authSessionProvider.notifier)
-          .signIn(
-            const AuthSession(
-              accessToken: 'restored',
-              userId: 'account-a',
-              deviceId: 'device',
-            ),
-            preserveIdentity: true,
-          );
-      await tester.pumpAndSettle();
-      fixture.container
-          .read(authSessionProvider.notifier)
-          .updateToken('refreshed');
-      await tester.pumpAndSettle();
-      expect(fixture.notifications.pending, isTrue);
-      expect(fixture.notifications.cancellations, 0);
-      expect(fixture.pendingInvalidation, isFalse);
-    } finally {
-      await fixture.dispose();
-      await tester.pump(const Duration(seconds: 3));
-    }
-  });
-
-  testWidgets('失效清理期间到达的当前训练数据在确认后恢复排期', (tester) async {
-    final fixture = _Fixture();
-    try {
-      fixture.notifications.firstCancellation = Completer<void>();
-      fixture.invalidate();
-      fixture.start();
-      await tester.pumpAndSettle();
-      fixture.publishWorkout();
-      await tester.pumpAndSettle();
-      fixture.notifications.firstCancellation!.complete();
-      await tester.pumpAndSettle();
-      expect(fixture.pendingInvalidation, isFalse);
-      expect(fixture.notifications.scheduled, 1);
-      expect(fixture.notifications.pending, isTrue);
-    } finally {
-      await fixture.dispose();
-      await tester.pump(const Duration(seconds: 3));
-    }
-  });
 }

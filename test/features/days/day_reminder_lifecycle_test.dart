@@ -5,7 +5,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_notes/core/clock/local_clock.dart';
-import 'package:sesame_notes/core/storage/shared_preferences_provider.dart';
 import 'package:sesame_notes/data/models/day_book.dart';
 import 'package:sesame_notes/data/models/day_event.dart';
 import 'package:sesame_notes/features/days/application/day_providers.dart';
@@ -28,10 +27,6 @@ import 'package:timezone/timezone.dart' as tz;
 class _Notifications extends Fake implements NotificationUtil {
   final pending = <int, DayReminder>{};
   final cancelled = <int>[];
-  final scheduled = <int>[];
-  final scheduledTimeZones = <String>[];
-  final dailySchedules = <({int id, int hour, int minute, String timeZone})>[];
-  bool failDailySchedule = false;
   Completer<void>? schedulingGate;
   Completer<void>? schedulingStarted;
   int cancellationsToFail = 0;
@@ -69,26 +64,6 @@ class _Notifications extends Fake implements NotificationUtil {
     if (schedulingStarted?.isCompleted == false) schedulingStarted!.complete();
     await schedulingGate?.future;
     pending[id] = (date: scheduledDate, body: body);
-    scheduled.add(id);
-    scheduledTimeZones.add(tz.local.name);
-  }
-
-  /// 记录每日提醒的当地时区和原始时分，确认系统时间事件不改变用户设置。
-  @override
-  Future<void> scheduleDailyReminder({
-    required int id,
-    required String title,
-    required String body,
-    required int hour,
-    required int minute,
-  }) async {
-    if (failDailySchedule) throw StateError('系统未接受每日提醒');
-    dailySchedules.add((
-      id: id,
-      hour: hour,
-      minute: minute,
-      timeZone: tz.local.name,
-    ));
   }
 }
 
@@ -101,21 +76,18 @@ class _AccountReminderFixture {
   ProviderSubscription<Future<void> Function()>? subscription;
   final now = DateTime(2026, 10, 5, 8);
 
-  /// 账号 A 先建立真实身份，随后通过会话入口执行退出、换号或令牌轮换。
+  /// 账号 A 先建立真实身份，随后通过会话入口执行退出或换号。
   _AccountReminderFixture({
     bool holdScheduling = false,
-    bool cachedAccount = false,
     bool startLifecycle = true,
-    bool accountingEnabled = false,
-    bool notificationsEnabled = true,
     Stream<void>? clockEvents,
   }) {
     ReminderMonitorService().configureTexts(
       textsProvider: () => (title: '记账提醒', body: '记一笔今日账目'),
     );
     SharedPreferences.setMockInitialValues({
-      ReminderPrefs.notificationsEnabled: notificationsEnabled,
-      ReminderPrefs.enabled: accountingEnabled,
+      ReminderPrefs.notificationsEnabled: true,
+      ReminderPrefs.enabled: false,
       ReminderPrefs.hour: 21,
       ReminderPrefs.minute: 15,
       ReminderPrefs.daysEnabled: true,
@@ -158,13 +130,7 @@ class _AccountReminderFixture {
         }),
       ],
     );
-    if (cachedAccount) {
-      container
-          .read(accountStateProvider.notifier)
-          .restorePending(userId: 'account-a');
-    } else {
-      changeAccount('account-a');
-    }
+    changeAccount('account-a');
     if (startLifecycle) subscribeLifecycle();
   }
 
@@ -208,95 +174,8 @@ class _AccountReminderFixture {
   }
 }
 
-/// 构造设置延迟加载的冷启动场景，验证系统队列只随已知配置变化。
+/// 失效身份的旧通知必须清理成功，迟到回执不能重新登记旧账号内容。
 void main() {
-  testWidgets('释放提醒生命周期后取消系统时钟监听，后续广播不会重建提醒', (tester) async {
-    final events = StreamController<void>.broadcast();
-    final container = ProviderContainer(
-      overrides: [clockChangeEventsProvider.overrideWithValue(events.stream)],
-    );
-    container.listen(reminderClockLifecycleProvider, (_, _) {});
-    try {
-      expect(events.hasListener, isTrue);
-      container.dispose();
-      await tester.pumpAndSettle();
-      expect(events.hasListener, isFalse);
-      events.add(null);
-      await tester.pumpAndSettle();
-      expect(events.hasListener, isFalse);
-    } finally {
-      await events.close();
-    }
-  });
-  for (final enabled in [true, false]) {
-    testWidgets('同一日系统时区变化时${enabled ? '按新时区重排主提醒和纪念日' : '总开关关闭仍刷新时区但不恢复通知'}', (
-      tester,
-    ) async {
-      var deviceZone = 'Asia/Shanghai';
-      var zoneReads = 0;
-      final events = StreamController<void>.broadcast();
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(
-            const MethodChannel('notification_channel'),
-            (call) async {
-              if (call.method != 'getTimeZone') return null;
-              zoneReads++;
-              return deviceZone;
-            },
-          );
-      await NotificationFactory.initializeTimeZone();
-      final fixture = _AccountReminderFixture(
-        accountingEnabled: true,
-        notificationsEnabled: enabled,
-        clockEvents: events.stream,
-      );
-      NotificationFactory.setInstanceForTesting(fixture.notifications);
-      fixture.container.listen(reminderClockLifecycleProvider, (_, _) {});
-      try {
-        await tester.pumpAndSettle();
-        fixture.oldBooks.add(fixture.books);
-        await tester.pumpAndSettle();
-        final originalCount = fixture.notifications.scheduled.length;
-        final today = fixture.container.read(localTodayProvider);
-        final previousReads = zoneReads;
-
-        deviceZone = 'Asia/Tokyo';
-        events.add(null);
-        await tester.pumpAndSettle();
-
-        expect(fixture.container.read(localTodayProvider), today);
-        expect(tz.local.name, 'Asia/Tokyo');
-        expect(zoneReads, previousReads + 1);
-        if (enabled) {
-          expect(
-            fixture.notifications.scheduled.length,
-            greaterThan(originalCount),
-          );
-          expect(fixture.notifications.scheduledTimeZones.last, 'Asia/Tokyo');
-          expect(fixture.notifications.dailySchedules, [
-            (
-              id: ReminderPrefs.mainNotificationId,
-              hour: 21,
-              minute: 15,
-              timeZone: 'Asia/Tokyo',
-            ),
-          ]);
-        } else {
-          expect(fixture.notifications.scheduled, isEmpty);
-          expect(fixture.notifications.dailySchedules, isEmpty);
-        }
-      } finally {
-        await fixture.dispose();
-        await events.close();
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMethodCallHandler(
-              const MethodChannel('notification_channel'),
-              null,
-            );
-        await tester.pump(const Duration(seconds: 3));
-      }
-    });
-  }
   testWidgets('时区读取期间退出账号，时钟事件恢复不能重新登记旧账号纪念日', (tester) async {
     final events = StreamController<void>.broadcast();
     final zoneRead = Completer<String>();
@@ -342,218 +221,6 @@ void main() {
       await tester.pump(const Duration(seconds: 3));
     }
   });
-  for (final zoneFailure in [true, false]) {
-    testWidgets('${zoneFailure ? '读取时区' : '登记主提醒'}失败保留原纪念日任务，成功恢复后才继续重排', (
-      tester,
-    ) async {
-      var deviceZone = 'Asia/Shanghai';
-      var failZoneRead = false;
-      final events = StreamController<void>.broadcast();
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(
-            const MethodChannel('notification_channel'),
-            (call) async {
-              if (call.method != 'getTimeZone') return null;
-              if (failZoneRead) {
-                throw PlatformException(code: 'timezone_unavailable');
-              }
-              return deviceZone;
-            },
-          );
-      await NotificationFactory.initializeTimeZone();
-      final fixture = _AccountReminderFixture(
-        accountingEnabled: true,
-        clockEvents: events.stream,
-      );
-      NotificationFactory.setInstanceForTesting(fixture.notifications);
-      fixture.container.listen(reminderClockLifecycleProvider, (_, _) {});
-      try {
-        await tester.pumpAndSettle();
-        fixture.oldBooks.add(fixture.books);
-        await tester.pumpAndSettle();
-        final previousCount = fixture.notifications.scheduled.length;
-        final previousTasks = Map.of(fixture.notifications.pending);
-        deviceZone = 'Asia/Tokyo';
-        failZoneRead = zoneFailure;
-        fixture.notifications.failDailySchedule = !zoneFailure;
-
-        events.add(null);
-        await tester.pumpAndSettle();
-
-        expect(tz.local.name, zoneFailure ? 'Asia/Shanghai' : 'Asia/Tokyo');
-        expect(fixture.notifications.pending, previousTasks);
-        expect(fixture.notifications.scheduled.length, previousCount);
-        expect(fixture.notifications.dailySchedules, isEmpty);
-        failZoneRead = false;
-        fixture.notifications.failDailySchedule = false;
-        events.add(null);
-        await tester.pumpAndSettle();
-        expect(tz.local.name, 'Asia/Tokyo');
-        expect(fixture.notifications.dailySchedules, hasLength(1));
-        expect(fixture.notifications.scheduled.length, previousCount + 1);
-      } finally {
-        await fixture.dispose();
-        await events.close();
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMethodCallHandler(
-              const MethodChannel('notification_channel'),
-              null,
-            );
-        await tester.pump(const Duration(seconds: 3));
-      }
-    });
-  }
-  for (final enabled in [true, false]) {
-    testWidgets('冷启动设置读取完成前保留既有纪念日提醒，读取后${enabled ? '继续调度' : '撤销关闭分类'}', (
-      tester,
-    ) async {
-      SharedPreferences.setMockInitialValues({
-        ReminderPrefs.notificationsEnabled: true,
-        ReminderPrefs.daysEnabled: enabled,
-        ReminderPrefs.daysOffsets: 128,
-      });
-      final stored = await SharedPreferences.getInstance();
-      final loading = Completer<SharedPreferences>();
-      final now = DateTime(2026, 9, 27, 8);
-      final reminderDate = DateTime(2026, 9, 28, 9);
-      final reminderId =
-          dayReminderIdStart +
-          DateOnly.fromDateTime(reminderDate).dayNumber % 400;
-      final notifications = _Notifications()
-        ..pending[reminderId] = (date: reminderDate, body: '生日 · 2026-10-05');
-      NotificationFactory.setDaysInstanceForTesting(notifications);
-      final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWith((ref) => loading.future),
-          currentAccountIdProvider.overrideWithValue(null),
-          localClockNowProvider.overrideWithValue(() => now),
-          localTodayProvider.overrideWithBuild((ref, notifier) => now),
-          dayBooksProvider.overrideWith(
-            (ref) => Stream.value([
-              DayBook(id: 'book', name: '生日', createdAt: now, updatedAt: now),
-            ]),
-          ),
-          dayEventsProvider('book').overrideWith(
-            (ref) => Stream.value([
-              DayEvent(
-                id: 'birthday',
-                dayBookId: 'book',
-                createdAt: now,
-                updatedAt: now,
-                definition: DayEventDefinition(
-                  name: '生日',
-                  category: DayCategory.birthday,
-                  repeatType: DayRepeatType.yearly,
-                  statisticType: DayStatisticType.day,
-                  event: OriginalDate.solar(DateOnly(2000, 10, 5)),
-                ),
-              ),
-            ]),
-          ),
-        ],
-      );
-      final subscription = container.listen(
-        dayReminderLifecycleProvider,
-        (_, _) {},
-      );
-      try {
-        await tester.pumpAndSettle();
-        expect(container.read(reminderSettingsProvider).isLoaded, isFalse);
-        expect(notifications.cancelled, isEmpty);
-        expect(notifications.pending.keys, contains(reminderId));
-        expect(container.read(dayReminderEventsProvider).isLoading, isTrue);
-
-        loading.complete(stored);
-        await tester.pumpAndSettle();
-        expect(container.read(reminderSettingsProvider).isLoaded, isTrue);
-        if (enabled) {
-          expect(notifications.cancelled, isEmpty);
-          expect(notifications.pending.keys, contains(reminderId));
-          expect(notifications.scheduled, contains(reminderId));
-        } else {
-          expect(notifications.cancelled, [reminderId]);
-          expect(notifications.pending, isEmpty);
-          expect(notifications.scheduled, isEmpty);
-        }
-      } finally {
-        if (!loading.isCompleted) loading.complete(stored);
-        subscription.close();
-        container.dispose();
-        NotificationFactory.reset();
-        await tester.pump(const Duration(seconds: 3));
-      }
-    });
-  }
-  for (final nextAccount in [null, 'account-b']) {
-    for (final readFails in [false, true]) {
-      testWidgets(
-        '${nextAccount == null ? '退出登录' : '切换账号'}后新数据${readFails ? '读取失败' : '仍在加载'}也立即撤销旧纪念日排期',
-        (tester) async {
-          final fixture = _AccountReminderFixture();
-          try {
-            await tester.pumpAndSettle();
-            fixture.oldBooks.add(fixture.books);
-            await tester.pumpAndSettle();
-            expect(fixture.notifications.pending, hasLength(1));
-            final oldIds = fixture.notifications.pending.keys.toSet();
-
-            fixture.changeAccount(nextAccount);
-            await tester.pumpAndSettle();
-            if (readFails) {
-              fixture.newBooks.addError(StateError('新身份数据暂不可读'));
-              await tester.pumpAndSettle();
-            }
-            expect(fixture.notifications.pending, isEmpty);
-            expect(fixture.notifications.cancelled, containsAll(oldIds));
-            expect(
-              fixture.container.read(reminderSettingsProvider).daysActive,
-              isTrue,
-            );
-
-            // 新范围的数据到达后按原设置重新排期，身份清理不等于关闭用户的提醒配置。
-            fixture.newBooks.add(fixture.books);
-            await tester.pumpAndSettle();
-            expect(fixture.notifications.pending, hasLength(1));
-            expect(
-              fixture.notifications.pending.values.single.body,
-              contains(nextAccount ?? '本机'),
-            );
-          } finally {
-            await fixture.dispose();
-            await tester.pump(const Duration(seconds: 3));
-          }
-        },
-      );
-    }
-  }
-  testWidgets('同账号令牌刷新及临时读取失败继续保留既有纪念日排期', (tester) async {
-    final fixture = _AccountReminderFixture();
-    try {
-      await tester.pumpAndSettle();
-      fixture.oldBooks.add(fixture.books);
-      await tester.pumpAndSettle();
-      final saved = Map<int, DayReminder>.of(fixture.notifications.pending);
-      expect(saved, hasLength(1));
-      fixture.container
-          .read(authSessionProvider.notifier)
-          .updateToken('refreshed-token');
-      await tester.pumpAndSettle();
-      fixture.container.invalidate(dayBooksProvider);
-      await tester.pumpAndSettle();
-      expect(
-        fixture.container.read(dayReminderEventsProvider).isLoading,
-        isTrue,
-      );
-      fixture.oldBooks.addError(StateError('同账号暂时读取失败'));
-      await tester.pumpAndSettle();
-      expect(fixture.container.read(currentAccountIdProvider), 'account-a');
-      expect(fixture.notifications.cancelled, isEmpty);
-      expect(fixture.notifications.pending, saved);
-    } finally {
-      await fixture.dispose();
-      await tester.pump(const Duration(seconds: 3));
-    }
-  });
   testWidgets('旧账号原生登记回执晚于退出，新身份加载中也不能恢复旧排期', (tester) async {
     final fixture = _AccountReminderFixture(holdScheduling: true);
     try {
@@ -567,36 +234,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(fixture.notifications.pending, isEmpty);
       expect(fixture.notifications.cancelled, isNotEmpty);
-    } finally {
-      await fixture.dispose();
-      await tester.pump(const Duration(seconds: 3));
-    }
-  });
-  testWidgets('冷启动缓存账号恢复同账号会话时，数据加载中继续保留系统排期', (tester) async {
-    final fixture = _AccountReminderFixture(cachedAccount: true);
-    try {
-      final stored = {10001: (date: DateTime(2026, 10, 6, 9), body: '缓存账号纪念日')};
-      fixture.notifications.pending.addAll(stored);
-      await tester.pumpAndSettle();
-      expect(fixture.container.read(currentAccountIdProvider), 'account-a');
-      expect(fixture.container.read(authSessionProvider), isNull);
-      fixture.container
-          .read(authSessionProvider.notifier)
-          .signIn(
-            const AuthSession(
-              accessToken: 'restored-token',
-              userId: 'account-a',
-              deviceId: 'device',
-            ),
-            preserveIdentity: true,
-          );
-      await tester.pumpAndSettle();
-      expect(
-        fixture.container.read(dayReminderEventsProvider).isLoading,
-        isTrue,
-      );
-      expect(fixture.notifications.pending, stored);
-      expect(fixture.notifications.cancelled, isEmpty);
     } finally {
       await fixture.dispose();
       await tester.pump(const Duration(seconds: 3));

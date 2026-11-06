@@ -51,6 +51,7 @@ FitnessWorkout workout({
   updatedAt: time,
 );
 
+/// 训练参数、动作分类与完成状态必须满足领域规则。
 void main() {
   test('同动作所有实例共用重量口径，空白组和不同动作独立校验', () {
     final total = exercise();
@@ -1111,5 +1112,50 @@ void main() {
       ),
       throwsA(isA<FitnessValidationException>()),
     );
+  });
+
+  test('自定义动作允许后台新增的稳定分类标识，拒绝空值与超长标识', () {
+    try {
+      const custom = FitnessCustomExercise(
+        id: 'custom:11111111-1111-4111-8111-111111111111',
+        name: '新增分类动作',
+        bodyPart: 'grip',
+        equipment: 'new-machine',
+        icon: 'dumbbell',
+      );
+      final payload = FitnessPreferences(
+        customExercises: [custom],
+        createdAt: DateTime.utc(2026),
+        updatedAt: DateTime.utc(2026),
+      ).toJson();
+      expect(
+        () => validateFitnessPayload('fitness_preferences', payload),
+        returnsNormally,
+      );
+      // 同步发送和接收均经过正式生成的序列化器，动态分类标识必须能无损往返。
+      final serializer =
+          api.PostSyncPushRequestChangesInnerAnyOf14AnyOfPayload.serializer;
+      final serialized = api.standardSerializers.deserializeWith(
+        serializer,
+        payload,
+      );
+      expect(
+        api.standardSerializers.serializeWith(serializer, serialized),
+        payload,
+      );
+      for (final invalid in ['', ' ', 'x' * 101]) {
+        expect(
+          () => validateFitnessPayload('fitness_preferences', {
+            ...payload,
+            'custom_exercises': [
+              {...custom.toJson(), 'body_part': invalid},
+            ],
+          }),
+          throwsA(isA<FitnessValidationException>()),
+        );
+      }
+    } catch (error, stackTrace) {
+      Error.throwWithStackTrace(StateError('动态分类同步载荷验收失败：$error'), stackTrace);
+    }
   });
 }

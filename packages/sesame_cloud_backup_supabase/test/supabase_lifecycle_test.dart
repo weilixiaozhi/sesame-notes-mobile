@@ -107,6 +107,7 @@ void main() {
   test('无效配置不会污染后续初始化队列', () async {
     final provider = SupabaseProvider();
     addTearDown(provider.dispose);
+    expect(() => provider.storage, throwsA(isA<CloudConfigurationException>()));
     await expectLater(
       provider.initialize({}),
       throwsA(isA<CloudConfigurationException>()),
@@ -137,6 +138,12 @@ void main() {
     });
     registerSupabaseBackend();
     addTearDown(() => CloudProviderRegistry.unregister('supabase'));
+    expect(
+        CloudProviderRegistry.backendOf('supabase')!
+            .fields
+            .where((field) => field.isSecret)
+            .map((field) => field.key),
+        ['anonKey', 'password']);
     final provider = await createCloudProvider(CloudServiceConfig(
       backendId: 'supabase',
       settings: {

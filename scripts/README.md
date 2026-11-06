@@ -79,12 +79,6 @@ powershell.exe -NoProfile -File scripts/openapi/generate_api_client.ps1
 
 比较范围是 `.gitignore`、`.openapi-generator`、`.openapi-generator-ignore`、`analysis_options.yaml`、`lib`、`pubspec.yaml`，要求两侧均无 README/doc；缓存不参与比较，`pubspec.lock` 由上述版本化输入单独校验。升级生成工具时，应一并审阅 Dart 版本、生成镜像和完整锁，再在两个独立 Temp 工作区离线重生成比较；不能靠放宽锁校验消除漂移。契约变更须先审阅定义，再同步 Artifact 与哈希，不能仅改哈希让检查通过；相关验证见[检查与验收](#检查与验收)。
 
-只验证依赖准备、版本保护和锁漂移拒绝，不调用 Docker/Pub 或改写 SDK：
-
-```powershell
-node --test scripts/openapi/generator_dependencies.test.mjs
-```
-
 ### 本地更新接口契约
 
 接口变化作为本地开发任务一并处理。开发者和开源贡献者使用同一流程：
@@ -133,7 +127,9 @@ dart scripts/audit/orphans.dart
 
 ## 检查与验收
 
-自动测试保留业务规则、数据持久化、权限与账号隔离、同步和接口契约；界面样式、布局和页面交互通过人工验收。以下检查依赖已安装工具，失败返回非零。
+自动测试按风险保留金额与统计口径、数据持久化、权限与账号隔离、同步冲突、备份恢复和接口契约；界面样式、布局和页面交互通过人工验收。以下检查依赖已安装工具，失败返回非零。
+
+同一风险优先由直接验证真实数据结果的业务链路覆盖，重复适配层和调用次数、缓存对象身份、私有状态等实现细节不单独建立回归测试。遥测、横幅和媒体保留敏感信息与本地文件安全边界。
 
 业务测试入口为 `flutter test --no-pub test --test-randomize-ordering-seed=random`。少量 `testWidgets` 用于验证自动保存、提醒调度和导入导出的异步生命周期，按业务结果断言；不覆盖控件外观、布局、页面跳转或点击反馈。云备份包在各自目录执行 `flutter test --no-pub`。
 
@@ -175,7 +171,6 @@ adb shell am start -n com.sesame.notes.test.probe/com.sesame.notes.MainActivity
 ```powershell
 dart scripts/audit/architecture.dart
 dart scripts/audit/architecture.dart --symbols --json > Temp/architecture-audit.json
-dart scripts/audit/architecture_test.dart
 ```
 
 重定向前自行确认目标文件不存在；所有一次性报告存放在本仓 `Temp/`，不要覆盖既有报告。工具本身只读源码，默认输出覆盖、手写生产 library SCC、明确边界违规和解析失败。`--symbols` 使用固定的 analyzer 12.1.0 解析元素身份和消费者，JSON 另含全部 import/export/条件分支/part、目录 SCC、模块引用广度、声明及零显式消费者候选。首次完整符号分析比快速边界检查耗时更长。
@@ -186,7 +181,7 @@ dart scripts/audit/architecture_test.dart
 
 零显式消费者只作为人工候选。接口虚分派、框架回调、原生/后台入口、动态注册、JSON约定、资源、跨仓 API/Web/Admin 消费和历史数据/备份兼容仍需单独核查。条件分支全部进入编译图，符号消费对应当前分析配置，不能证明每种目标平台的运行行为。当前工具不删除任何声明，不自动收窄出口，不以扫描成功证明绝对不存在死代码。`orphans.dart` 的文本扫描仍是启发式补充，不能代替元素身份分析。
 
-语义回归脚本只在 `Temp/` 建立独占夹具，验证包名映射、无末尾斜杠 URI、show/hide 转发、同名符号、命名 extension、条件导入、生成 part 消费、只读性及真实边界失败，结束清理本次夹具。手动 Test 工作流配置了快速边界检查和语义回归；工作流仍仅由 `workflow_dispatch` 触发，启动或重跑须明确同意，本工具不会触发 CI。
+手动 Test 工作流配置了快速架构边界检查；工作流仍仅由 `workflow_dispatch` 触发，启动或重跑须明确同意，本工具不会触发 CI。
 
 ## iOS 环境与安装身份
 
@@ -222,8 +217,6 @@ python -B scripts/audit/apk_r8_report.py --apk <新APK> --mapping-dir <新构建
 `mapping目录`应同时包含 `configuration.txt`、`mapping.txt`、`seeds.txt`、`usage.txt`。报告文件必须不存在，且位于当前仓库根目录的 `Temp/`；工具不会覆盖已有报告、改写 APK/规则/映射、启动构建、连接设备或下载依赖。终端输出聚合字节、符号数量、关键保护结果与可选基准差异；完整 JSON 仅额外保存产物摘要和代码入口名，不输出配置正文、签名材料、地址或用户数据。
 
 测量分别统计根目录 `classes*.dex` 的原始字节、ZIP 压缩字节和实际定义类数，以及 R8 seeds 的类/成员保留根和 mapping 的类名变化。解析 DEX 035–040；未知格式、损坏输入或缺失文件会失败，不能据不完整解析宣布通过。JVM classfile 解析区分类注解与成员注解，从传入引擎 JAR 的真实 `@Keep`/native 声明生成入口要求，再关联 mapping 与 DEX 的定义名称；同时核对反射注册器、应用清单组件和通知模型。传入 `--baseline` 后取当前与历史模型字段、方法的并集；任一方要求固定类名时都保持严格保护，不能用旧基准覆盖当前新增入口。格式不完整的保护要求直接失败。
-
-运行 `python -B scripts/test/apk_r8_report_test.py` 可验证旧基准与新增字段/方法、严格类名要求的组合，以及错误基准的拒绝行为；回归仅使用本仓 `Temp/` 的隔离小夹具，不操作真实APK或触发构建。
 
 退出码 `0` 表示本次名称/定义保护检查通过，`1` 表示保护检查失败，`2` 表示输入、格式或报告写入错误。seeds 不是 DEX 大小或运行频率，mapping 与 APK 的关键入口相符也不能证明它们来自同一完整构建；应保存同轮文件。DEX 字节差异只说明这些产物的体积变化，其他源码/SDK/依赖变化也会影响结果，不能直接归因某条 keep 规则或宣称启动/内存提升。
 

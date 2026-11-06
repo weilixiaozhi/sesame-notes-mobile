@@ -63,6 +63,7 @@ CloudServiceConfig _s3Cfg() => const CloudServiceConfig(
       },
     );
 
+/// 配置和凭据按后端隔离存储，失败不能改变激活状态或泄漏原文。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -281,16 +282,42 @@ void main() {
     });
 
     test('损坏凭据的读取和激活明确失败，保留原文且不推进激活状态', () async {
-      final secure = _MemoryCredentialStorage();
-      final store = CloudServiceStore(credentialStorage: secure);
-      await store.saveOnly(_webdavCfg());
-      const damaged = 'secret-original invalid-json';
-      await secure.write('webdav', damaged);
+      try {
+        final secure = _MemoryCredentialStorage();
+        final messages = <String>[];
+        final store = CloudServiceStore(
+          credentialStorage: secure,
+          logger: CloudSyncLogger(onLog: (_, message) => messages.add(message)),
+        );
+        await store.saveOnly(_webdavCfg());
+        const damaged = 'secret-original invalid-json';
+        await secure.write('webdav', damaged);
 
-      await expectLater(store.load('webdav'), throwsStateError);
-      await expectLater(store.activate('webdav'), throwsStateError);
-      expect(secure.peek('webdav'), damaged);
-      expect((await store.loadActive()).isLocal, isTrue);
+        await expectLater(store.load('webdav'), throwsStateError);
+        await expectLater(store.activate('webdav'), throwsStateError);
+        expect(secure.peek('webdav'), damaged);
+        expect((await store.loadActive()).isLocal, isTrue);
+
+        // 普通配置损坏与凭据损坏都必须保留原件，诊断不能带出未解析的正文。
+        final preferences = await SharedPreferences.getInstance();
+        const damagedConfig = 'password-secret backup-plaintext invalid-json';
+        await preferences.setString(
+            CloudServiceStore.configKeyFor('webdav'), damagedConfig);
+        await expectLater(store.load('webdav'), throwsStateError);
+        expect(preferences.getString(CloudServiceStore.configKeyFor('webdav')),
+            damagedConfig);
+        expect(messages, isNotEmpty);
+        for (final secret in [
+          'secret-original',
+          'password-secret',
+          'backup-plaintext'
+        ]) {
+          expect(messages.join('\n'), isNot(contains(secret)));
+        }
+      } catch (error, stackTrace) {
+        printOnFailure('损坏配置与凭据保护验证失败：$error\n$stackTrace');
+        rethrow;
+      }
     });
 
     test('配置位置与后端身份不一致时拒绝读取及激活，保留故障原文', () async {

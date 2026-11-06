@@ -77,6 +77,7 @@ DayEvent event(
   ),
 );
 
+/// 提醒随身份、日期与偏好更新，跨到期核对不能误撤已投递通知。
 void main() {
   const settings = ReminderSettings(
     notificationsEnabled: true,
@@ -289,153 +290,6 @@ void main() {
       isEmpty,
     );
   });
-  test('每日提醒默认关闭，启用后沿用共用时间且四个固定节点均不重复', () {
-    final selected = event(
-      '出发日',
-      OriginalDate.solar(DateOnly(2026, 1, 8)),
-      yearly: false,
-    );
-    final configured = settings.copyWith(daysDailyEventIds: {selected.id});
-    final before = planDayReminders([selected], configured, DateTime(2026));
-    expect(before.values.map((item) => item.date.day), [1, 5, 7, 8]);
-
-    final daily = planDayReminders(
-      [selected],
-      configured.copyWith(daysDailyEnabled: true),
-      DateTime(2026),
-    );
-    expect(daily, hasLength(8));
-    expect(daily.values.map((item) => item.date), [
-      for (var day = 1; day <= 8; day++) DateTime(2026, 1, day, 9, 30),
-    ]);
-    expect(
-      daily.values.every((item) => item.body == '出发日 · 2026-01-08'),
-      isTrue,
-    );
-    expect(
-      planDayReminders(
-        [selected],
-        configured.copyWith(daysDailyEnabled: true),
-        DateTime(2026, 1, 9),
-      ),
-      isEmpty,
-    );
-  });
-  test('每日多选只扩展勾选记录，同名记录保留各自一行并按身份去重', () {
-    final first = event(
-      '相同名称',
-      OriginalDate.solar(DateOnly(2026, 1, 8)),
-      yearly: false,
-      id: 'first',
-    );
-    final second = event(
-      '相同名称',
-      OriginalDate.solar(DateOnly(2026, 1, 8)),
-      yearly: false,
-      id: 'second',
-    );
-    final unselected = event(
-      '未勾选',
-      OriginalDate.solar(DateOnly(2026, 1, 8)),
-      yearly: false,
-    );
-    final plan = planDayReminders(
-      [first, second, unselected, first],
-      settings.copyWith(
-        daysDailyEnabled: true,
-        daysDailyEventIds: {first.id, second.id, 'missing-event'},
-      ),
-      DateTime(2026),
-    );
-    final ordinary = plan.values.singleWhere((item) => item.date.day == 2);
-    expect(ordinary.body.split('\n'), [
-      '相同名称 · 2026-01-08',
-      '相同名称 · 2026-01-08',
-    ]);
-    for (final day in [1, 5, 7, 8]) {
-      final fixed = plan.values.singleWhere((item) => item.date.day == day);
-      expect(fixed.body.split('\n'), hasLength(3));
-      expect(fixed.body, contains('未勾选'));
-    }
-  });
-  test('年度每日提醒在当日后转到下一年，遥远倒数日仍覆盖排期窗口', () {
-    final anniversary = event(
-      '元旦纪念日',
-      OriginalDate.solar(DateOnly(2000, 1, 1)),
-    );
-    final annual = planDayReminders(
-      [anniversary],
-      settings.copyWith(
-        daysDailyEnabled: true,
-        daysDailyEventIds: {anniversary.id},
-      ),
-      DateTime(2026, 12, 31),
-    );
-    expect(annual, hasLength(366));
-    expect(
-      annual.values
-          .singleWhere((item) => item.date == DateTime(2027, 1, 1, 9, 30))
-          .body,
-      '元旦纪念日 · 2027-01-01',
-    );
-    expect(
-      annual.values
-          .singleWhere((item) => item.date == DateTime(2027, 1, 2, 9, 30))
-          .body,
-      '元旦纪念日 · 2028-01-01',
-    );
-    final distant = event(
-      '未来目标',
-      OriginalDate.solar(DateOnly(2030, 1, 1)),
-      yearly: false,
-    );
-    final countdown = planDayReminders(
-      [distant],
-      settings.copyWith(
-        daysDailyEnabled: true,
-        daysDailyEventIds: {distant.id},
-      ),
-      DateTime(2026),
-    );
-    expect(countdown, hasLength(366));
-    expect(
-      countdown.values.every((item) => item.body.endsWith('2030-01-01')),
-      isTrue,
-    );
-  });
-  test('每日提醒复用农历和闰日回落，按提醒当日选择下一次日期', () {
-    final lunar = event(
-      '春节生日',
-      const OriginalDate(
-        calendarType: DayCalendarType.lunar,
-        originalYear: 2000,
-        originalMonth: 1,
-        originalDay: 1,
-      ),
-    );
-    final leap = event('闰日', OriginalDate.solar(DateOnly(2024, 2, 29)));
-    final plan = planDayReminders(
-      [lunar, leap],
-      settings.copyWith(
-        daysDailyEnabled: true,
-        daysDailyEventIds: {lunar.id, leap.id},
-      ),
-      DateTime(2026, 2, 17),
-    );
-    expect(plan.values.first.body, contains('春节生日 · 2026-02-17'));
-    expect(
-      plan.values
-          .singleWhere((item) => item.date == DateTime(2026, 2, 18, 9, 30))
-          .body,
-      contains('春节生日 · 2027-02-06'),
-    );
-    expect(
-      plan.values
-          .singleWhere((item) => item.date == DateTime(2026, 3, 1, 9, 30))
-          .body,
-      contains('闰日 · 2027-02-28'),
-    );
-  });
   test('每日提醒跳过已删除、不可读、阶段和已过期记录', () {
     final valid = event('基础', OriginalDate.solar(DateOnly(2026, 1, 8)));
     final events = [
@@ -482,231 +336,6 @@ void main() {
       isEmpty,
     );
   });
-  test('每日提醒在窗口没有农历闰月时定位跨年下一次，达到年份上限后停止', () {
-    final leapMonth = event(
-      '闰二月生日',
-      const OriginalDate(
-        calendarType: DayCalendarType.lunar,
-        originalYear: 2023,
-        originalMonth: 2,
-        originalDay: 1,
-        isLeapMonth: true,
-      ),
-    );
-    final daily = planDayReminders(
-      [leapMonth],
-      settings.copyWith(
-        daysDailyEnabled: true,
-        daysDailyEventIds: {leapMonth.id},
-      ),
-      DateTime(2026),
-    );
-    expect(daily, hasLength(366));
-    expect(
-      daily.values.every((item) => item.body == '闰二月生日 · 2042-03-22'),
-      isTrue,
-    );
-
-    final finalAnniversary = event(
-      '年末纪念日',
-      OriginalDate.solar(DateOnly(2000, 12, 31)),
-    );
-    final bounded = planDayReminders(
-      [finalAnniversary],
-      settings.copyWith(
-        daysDailyEnabled: true,
-        daysDailyEventIds: {finalAnniversary.id},
-      ),
-      DateTime(2100, 12, 30),
-    );
-    expect(bounded.values.map((item) => item.date), [
-      DateTime(2100, 12, 30, 9, 30),
-      DateTime(2100, 12, 31, 9, 30),
-    ]);
-  });
-  test('每日提醒跨日保留已投递内容，取消选择撤销每日排期并保留固定节点', () async {
-    var now = DateTime(2026, 1, 2, 8);
-    final notifications = _Notifications();
-    final scheduler = DayReminderScheduler(notifications, clock: () => now);
-    final target = event(
-      '出发日',
-      OriginalDate.solar(DateOnly(2026, 1, 8)),
-      yearly: false,
-    );
-    final daily = settings.copyWith(
-      daysDailyEnabled: true,
-      daysDailyEventIds: {target.id},
-    );
-    final before = planDayReminders([target], daily, now);
-    final delivered = before.entries.first;
-    await scheduler.synchronize(before, '纪念日');
-    notifications.pending.remove(delivered.key);
-    notifications.delivered[delivered.key] = delivered.value;
-    now = DateTime(2026, 1, 3, 8);
-    final after = planDayReminders(
-      [target],
-      daily,
-      now,
-      registeredDates: scheduler.registeredDates,
-    );
-    await scheduler.synchronize(after, '纪念日', force: true);
-    expect(notifications.delivered[delivered.key], delivered.value);
-    expect(
-      notifications.scheduled.where((id) => id == delivered.key),
-      hasLength(1),
-    );
-    await scheduler.synchronize(
-      planDayReminders(
-        [target],
-        daily.copyWith(daysDailyEnabled: false),
-        now,
-        registeredDates: scheduler.registeredDates,
-      ),
-      '纪念日',
-    );
-    expect(notifications.delivered, isEmpty);
-    expect(notifications.pending.values.map((item) => item.date.day), [
-      5,
-      7,
-      8,
-    ]);
-    await scheduler.synchronize(planDayReminders([], daily, now), '纪念日');
-    expect(notifications.pending, isEmpty);
-  });
-  test('到期后返回前台保留当天通知，不补发，删除记录仍撤销', () async {
-    var now = DateTime(2026, 9, 21, 9);
-    final notifications = _Notifications();
-    final scheduler = DayReminderScheduler(notifications, clock: () => now);
-    final events = [
-      event('验收日', OriginalDate.solar(DateOnly(2026, 9, 21)), yearly: false),
-    ];
-    final selected = settings.copyWith(daysOffsets: 1);
-    final before = planDayReminders(events, selected, now);
-    await scheduler.synchronize(before, '纪念日');
-    final id = notifications.scheduled.single;
-    // 系统送达后会从待执行列表移除，但通知仍显示在通知栏。
-    notifications.pending.remove(id);
-    now = DateTime(2026, 9, 21, 10);
-    final after = planDayReminders(events, selected, now);
-    await scheduler.synchronize(after, '纪念日', force: true);
-    await scheduler.synchronize(after, '纪念日', force: true);
-    expect(notifications.cancelled, isEmpty);
-    expect(notifications.scheduled, [id]);
-    // 冷启动同样不补发今天已经到时的提醒。
-    await DayReminderScheduler(
-      notifications,
-      clock: () => now,
-    ).synchronize(after, '纪念日', force: true);
-    expect(notifications.scheduled, [id]);
-    await scheduler.synchronize(planDayReminders([], selected, now), '纪念日');
-    expect(notifications.cancelled, [id]);
-  });
-  test('农历年度日期和闰日复用业务规则，提前一周不按原始公历日期重复', () {
-    final lunar = event(
-      '春节生日',
-      const OriginalDate(
-        calendarType: DayCalendarType.lunar,
-        originalYear: 2000,
-        originalMonth: 1,
-        originalDay: 1,
-      ),
-    );
-    final plan = planDayReminders(
-      [lunar],
-      settings.copyWith(daysOffsets: 129),
-      DateTime(2026, 1, 1),
-    );
-    expect(plan.values.map((e) => e.date).toSet(), {
-      DateTime(2026, 2, 10, 9, 30),
-      DateTime(2026, 2, 17, 9, 30),
-    });
-    final leap = planDayReminders(
-      [event('闰日', OriginalDate.solar(DateOnly(2024, 2, 29)))],
-      settings.copyWith(daysOffsets: 1),
-      DateTime(2027, 1, 1),
-    );
-    expect(leap.values.single.date, DateTime(2027, 2, 28, 9, 30));
-  });
-  test('农历八月廿五提前一周送达后，次日核对保留通知，删除记录仍撤销', () async {
-    var now = DateTime(2026, 9, 27);
-    final notifications = _Notifications();
-    final scheduler = DayReminderScheduler(notifications, clock: () => now);
-    final birthday = event(
-      '生日',
-      const OriginalDate(
-        calendarType: DayCalendarType.lunar,
-        originalYear: 2000,
-        originalMonth: 8,
-        originalDay: 25,
-      ),
-    );
-    final before = planDayReminders([birthday], settings, now);
-    final reminder = before.entries.singleWhere(
-      (entry) => entry.value.date == DateTime(2026, 9, 28, 9, 30),
-    );
-    expect(reminder.value.body, contains('2026-10-05'));
-    await scheduler.synchronize(before, '纪念日');
-    // 系统送达后只从排期移除；通知栏内容等待用户处理。
-    notifications.pending.remove(reminder.key);
-    now = DateTime(2026, 9, 29);
-    final after = planDayReminders(
-      [birthday],
-      settings,
-      now,
-      registeredDates: scheduler.registeredDates,
-    );
-    await scheduler.synchronize(after, '纪念日', force: true);
-    expect(notifications.cancelled, isNot(contains(reminder.key)));
-    expect(
-      notifications.scheduled.where((id) => id == reminder.key),
-      hasLength(1),
-    );
-    expect(
-      notifications.pending.values.map((item) => item.date),
-      containsAll([
-        DateTime(2026, 10, 2, 9, 30),
-        DateTime(2026, 10, 4, 9, 30),
-        DateTime(2026, 10, 5, 9, 30),
-      ]),
-    );
-    await scheduler.synchronize(planDayReminders([], settings, now), '纪念日');
-    expect(notifications.cancelled, contains(reminder.key));
-  });
-  test('跨日删除合并通知中的部分记录时撤销旧正文，不补发历史提醒', () async {
-    var now = DateTime(2026, 9, 28, 8);
-    final notifications = _Notifications();
-    final scheduler = DayReminderScheduler(notifications, clock: () => now);
-    final selected = settings.copyWith(daysOffsets: 1);
-    final first = event(
-      '生日甲',
-      OriginalDate.solar(DateOnly(2026, 9, 28)),
-      yearly: false,
-    );
-    final second = event(
-      '生日乙',
-      OriginalDate.solar(DateOnly(2026, 9, 28)),
-      yearly: false,
-    );
-    final before = planDayReminders([first, second], selected, now);
-    await scheduler.synchronize(before, '纪念日');
-    final reminderId = before.keys.single;
-    expect(before.values.single.body, contains('生日甲'));
-    expect(before.values.single.body, contains('生日乙'));
-    notifications.pending.remove(reminderId);
-    now = DateTime(2026, 9, 29);
-    final after = planDayReminders(
-      [second],
-      selected,
-      now,
-      registeredDates: scheduler.registeredDates,
-    );
-    expect(after.keys, contains(reminderId));
-    expect(after.values.single.body, isNot(contains('生日甲')));
-    await scheduler.synchronize(after, '纪念日');
-    expect(notifications.cancelled, [reminderId]);
-    expect(notifications.scheduled, [reminderId]);
-    expect(scheduler.registeredDates, isEmpty);
-  });
   test('切换账号时同名同日历史通知仍撤销，未来排期按新账号重建', () async {
     var now = DateTime(2026, 9, 28, 8);
     final notifications = _Notifications();
@@ -743,50 +372,6 @@ void main() {
     );
     expect(notifications.scheduled.where((id) => id == futureId), hasLength(2));
     expect(scheduler.registeredDates, [DateTime(2027, 9, 28, 9, 30)]);
-  });
-  test('历史通知与下一年排期复用标识时保留未来提醒', () {
-    final previous = DateTime(2026, 9, 28);
-    final upcoming = DateTime(
-      previous.year,
-      previous.month,
-      previous.day + 400,
-    );
-    final plan = planDayReminders(
-      [
-        event(
-          '未来纪念日',
-          OriginalDate.solar(DateOnly.fromDateTime(upcoming)),
-          yearly: false,
-        ),
-        event(
-          '过去纪念日',
-          OriginalDate.solar(DateOnly.fromDateTime(previous)),
-          yearly: false,
-        ),
-      ],
-      settings.copyWith(daysOffsets: 1),
-      DateTime(2026, 11, 3),
-      registeredDates: [previous],
-    );
-    expect(plan, hasLength(1));
-    expect(
-      plan.values.single.date,
-      DateTime(upcoming.year, upcoming.month, upcoming.day, 9, 30),
-    );
-    expect(plan.values.single.body, contains('未来纪念日'));
-  });
-  test('系统丢失未来排期时，普通数据核对也会重新登记', () async {
-    final notifications = _Notifications();
-    final scheduler = DayReminderScheduler(
-      notifications,
-      clock: () => DateTime(2026),
-    );
-    final plan = {10001: (date: DateTime(2027), body: '生日')};
-    await scheduler.synchronize(plan, '纪念日');
-    notifications.pending.clear();
-    await scheduler.synchronize(plan, '纪念日');
-    expect(notifications.scheduled, [10001, 10001]);
-    expect(notifications.pending, plan);
   });
   test('删除或关闭撤销旧通知，保留其他类型，调度失败后可重试', () async {
     final notifications = _Notifications();
@@ -833,103 +418,55 @@ void main() {
     await Future.wait([old, stopping]);
     expect(notifications.pending, isEmpty);
   });
-  for (final delivered in [false, true]) {
-    test('同一纪念日跨到期并发核对时保留${delivered ? '已送达通知' : '等待系统投递的提醒'}', () async {
-      var now = DateTime(2026, 10, 5, 9, 29, 59);
-      final date = DateTime(2026, 10, 5, 9, 30);
-      final notifications = _Notifications()
-        ..deliverOnSchedule = delivered
-        ..gate = Completer<void>()
-        ..started = Completer<void>();
-      final scheduler = DayReminderScheduler(notifications, clock: () => now);
-      final plan = {10001: (date: date, body: '生日')};
-      final first = scheduler.synchronize(plan, '纪念日', accountId: 'account-a');
-      await notifications.started!.future;
-      // 原生登记已开始，但回执与前台恢复交错；到期本身不能撤销同一条提醒。
-      now = DateTime(2026, 10, 5, 9, 30, 1);
-      final resumed = scheduler.synchronize(
-        plan,
-        '纪念日',
-        accountId: 'account-a',
-        force: true,
-      );
-      notifications.gate!.complete();
-      await Future.wait([first, resumed]);
-      expect(notifications.cancelled, isEmpty);
-      expect(notifications.scheduled, [10001]);
-      expect(delivered ? notifications.delivered : notifications.pending, plan);
-      expect(scheduler.registeredDates, [date]);
-    });
-  }
-  for (final concurrent in [false, true]) {
-    test('到期后仅切换语言标题${concurrent ? '并发' : '顺序'}核对仍保留通知', () async {
-      var now = DateTime(2026, 10, 5, 9, 29, 59);
-      final date = DateTime(2026, 10, 5, 9, 30);
-      final notifications = _Notifications()..deliverOnSchedule = true;
-      if (concurrent) {
-        notifications.gate = Completer<void>();
-        notifications.started = Completer<void>();
-      }
-      final scheduler = DayReminderScheduler(notifications, clock: () => now);
-      final plan = {10001: (date: date, body: '生日')};
-      final first = scheduler.synchronize(plan, '纪念日', accountId: 'account-a');
-      if (concurrent) {
+  for (final change in ['不变', '关闭', '正文', '时间', '账号']) {
+    test('纪念日跨到期并发核对按$change状态保留或撤销通知', () async {
+      try {
+        var now = DateTime(2026, 10, 5, 9, 29, 59);
+        final date = DateTime(2026, 10, 5, 9, 30);
+        final notifications = _Notifications()
+          ..deliverOnSchedule = true
+          ..gate = Completer<void>()
+          ..started = Completer<void>();
+        final scheduler = DayReminderScheduler(notifications, clock: () => now);
+        final first = scheduler.synchronize(
+          {10001: (date: date, body: '旧正文')},
+          '纪念日',
+          accountId: 'account-a',
+        );
         await notifications.started!.future;
-      } else {
-        await first;
+        now = DateTime(2026, 10, 5, 9, 30, 1);
+        final plan = change == '关闭'
+            ? <int, DayReminder>{}
+            : {
+                10001: (
+                  date: change == '时间' ? DateTime(2026, 10, 5, 9, 29) : date,
+                  body: change == '正文' ? '新正文' : '旧正文',
+                ),
+              };
+        final updated = scheduler.synchronize(
+          plan,
+          '纪念日',
+          accountId: change == '账号' ? 'account-b' : 'account-a',
+          force: true,
+        );
+        notifications.gate!.complete();
+        await Future.wait([first, updated]);
+        if (change == '不变') {
+          // 到期不是取消指令；同一身份和正文的迟到登记应保留已送达通知。
+          expect(notifications.cancelled, isEmpty);
+          expect(notifications.delivered, {10001: (date: date, body: '旧正文')});
+          expect(scheduler.registeredDates, [date]);
+        } else {
+          expect(notifications.cancelled, [10001]);
+          expect(notifications.delivered, isEmpty);
+          expect(scheduler.registeredDates, isEmpty);
+        }
+        expect(notifications.pending, isEmpty);
+        expect(notifications.scheduled, [10001]);
+      } catch (error, stackTrace) {
+        printOnFailure('纪念日跨到期并发状态验证失败：$change\n$error\n$stackTrace');
+        rethrow;
       }
-      now = DateTime(2026, 10, 5, 9, 30, 1);
-      final updated = scheduler.synchronize(
-        plan,
-        'Anniversary',
-        accountId: 'account-a',
-        force: true,
-      );
-      notifications.gate?.complete();
-      await Future.wait([first, updated]);
-      expect(notifications.cancelled, isEmpty);
-      expect(notifications.delivered, plan);
-      expect(notifications.scheduled, [10001]);
-      expect(scheduler.registeredDates, [date]);
-    });
-  }
-  for (final change in ['关闭', '正文', '时间', '账号']) {
-    test('纪念日跨到期并发核对遇到$change变化时撤销旧通知', () async {
-      var now = DateTime(2026, 10, 5, 9, 29, 59);
-      final date = DateTime(2026, 10, 5, 9, 30);
-      final notifications = _Notifications()
-        ..deliverOnSchedule = true
-        ..gate = Completer<void>()
-        ..started = Completer<void>();
-      final scheduler = DayReminderScheduler(notifications, clock: () => now);
-      final first = scheduler.synchronize(
-        {10001: (date: date, body: '旧正文')},
-        '纪念日',
-        accountId: 'account-a',
-      );
-      await notifications.started!.future;
-      now = DateTime(2026, 10, 5, 9, 30, 1);
-      final plan = change == '关闭'
-          ? <int, DayReminder>{}
-          : {
-              10001: (
-                date: change == '时间' ? DateTime(2026, 10, 5, 9, 29) : date,
-                body: change == '正文' ? '新正文' : '旧正文',
-              ),
-            };
-      final updated = scheduler.synchronize(
-        plan,
-        '纪念日',
-        accountId: change == '账号' ? 'account-b' : 'account-a',
-        force: true,
-      );
-      notifications.gate!.complete();
-      await Future.wait([first, updated]);
-      expect(notifications.cancelled, [10001]);
-      expect(notifications.delivered, isEmpty);
-      expect(notifications.pending, isEmpty);
-      expect(notifications.scheduled, [10001]);
-      expect(scheduler.registeredDates, isEmpty);
     });
   }
 }

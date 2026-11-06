@@ -129,6 +129,7 @@ class _TestChangeRecorder extends ChangeRecorder {
   }
 }
 
+/// 多币种导入保留历史折算快照，缺少快照时才使用对应汇率。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   // 每个用例前重置全局状态（prefs mock / 平台 TestValue / 通知单例），
@@ -213,6 +214,14 @@ void main() {
 
   test('导入:源数据已携带 nativeAmount 时保留快照且不补拉汇率', () async {
     await seed();
+    // 当前汇率会把原币金额折算为不同结果，恢复仍必须采用源端历史快照。
+    await repo.upsertAutoRates(
+      base: 'CNY',
+      rateDate: '2026-07-10',
+      rates: {'USD': '0.2'},
+      source: 'test',
+      fetchedAt: DateTime.utc(2026, 7, 10),
+    );
     rateService.error = StateError('不应请求汇率');
     final result = await service.importTransactions(repo, '1', [
       ImportTransaction(

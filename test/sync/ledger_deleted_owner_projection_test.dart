@@ -109,6 +109,7 @@ void main() {
   api.GetSyncPull200ResponseChangesInner event(
     String? owner, {
     bool detached = false,
+    bool explicitDeletedAt = true,
   }) => api.standardSerializers.deserializeWith(
     api.GetSyncPull200ResponseChangesInner.serializer,
     {
@@ -122,24 +123,30 @@ void main() {
       'device_id': 'remote-device',
       'payload': {
         'owner_id': ?owner,
-        'deleted_at': _stamp.add(const Duration(seconds: 1)).toIso8601String(),
+        if (explicitDeletedAt)
+          'deleted_at': _stamp
+              .subtract(const Duration(minutes: 1))
+              .toIso8601String(),
       },
     },
   )!;
 
   /// 采用实际pull相同的账号事务，保护失败不能留下部分账本或类别写入。
-  Future<void> apply(String? owner, {bool detached = false}) =>
-      service.runtime.inAccountTransaction(
-        _viewer,
-        () => service.projectionHandler.applyChange(
-          event(owner, detached: detached),
-        ),
-      );
+  Future<void> apply(
+    String? owner, {
+    bool detached = false,
+    bool explicitDeletedAt = true,
+  }) => service.runtime.inAccountTransaction(
+    _viewer,
+    () => service.projectionHandler.applyChange(
+      event(owner, detached: detached, explicitDeletedAt: explicitDeletedAt),
+    ),
+  );
 
-  for (final (owner, detached) in [
-    (_viewer, false),
-    (_sharedOwner, false),
-    (_sharedOwner, true),
+  for (final (owner, detached, explicitDeletedAt) in [
+    (_viewer, false, true),
+    (_sharedOwner, false, false),
+    (_sharedOwner, true, true),
   ]) {
     test(
       '${detached ? '账号注销解除事件外键' : '账本删除'}：权威${owner == _viewer ? '本人' : '共享'}归属保护未上传正文和原类别身份',
@@ -158,15 +165,22 @@ void main() {
               );
         }
         final privateBefore = await db.select(db.categories).get();
-        await apply(owner, detached: detached);
+        await apply(
+          owner,
+          detached: detached,
+          explicitDeletedAt: explicitDeletedAt,
+        );
         final source = await (db.select(
           db.ledgers,
         )..where((l) => l.id.equals(_ledger))).getSingle();
         expect(source.ownerAccountId, owner);
         expect(source.role, owner == _viewer ? 'owner' : 'editor');
+        // 删除正文有独立时间时优先采用；缺失时才回退到事件信封的服务端时间。
         expect(
           source.deletedAt?.toUtc(),
-          _stamp.add(const Duration(seconds: 1)),
+          explicitDeletedAt
+              ? _stamp.subtract(const Duration(minutes: 1))
+              : _stamp.add(const Duration(seconds: 1)),
         );
         final copy = await (db.select(
           db.ledgers,

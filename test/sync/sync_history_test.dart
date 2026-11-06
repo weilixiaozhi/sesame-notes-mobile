@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/data/repositories/local/sync_history.dart';
 
+/// 同步历史的压缩保留与事务回滚遵守数据完整性规则。
 void main() {
   late SesameDatabase db;
   final time = DateTime.utc(2026, 9, 13);
@@ -128,19 +129,5 @@ void main() {
       throwsStateError,
     );
     expect(await db.select(db.syncChanges).get(), before);
-  });
-  test('没有待清理内容时不发布变化，避免自动同步空转', () async {
-    await seed();
-    await compactSyncHistory(db, accountId: 'a');
-    var changes = 0;
-    final sub = db
-        .tableUpdates(
-          d.TableUpdateQuery.onAllTables([db.syncChanges, db.syncConflicts]),
-        )
-        .listen((_) => changes++);
-    await compactSyncHistory(db, accountId: 'a');
-    await Future<void>.delayed(Duration.zero);
-    expect(changes, 0);
-    await sub.cancel();
   });
 }

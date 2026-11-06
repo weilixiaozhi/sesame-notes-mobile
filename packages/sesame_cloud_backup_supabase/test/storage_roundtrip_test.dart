@@ -7,13 +7,14 @@ import 'package:sesame_cloud_backup_supabase/src/supabase_storage_service.dart';
 
 /// 用户目录只在协议适配层添加一次，列举结果可直接用于后续操作。
 void main() {
-  for (final sidecarStatus in [404, 403, 500]) {
-    test('旁路设施返回$sidecarStatus时文件上传下载及删除仍只使用用户目录', () async {
+  test('上传拒绝后可重试，文件完整传输及幂等删除只访问用户目录', () async {
+    try {
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       addTearDown(() => server.close(force: true));
       final requested = <String>[];
       final uploaded = <String, String>{};
-      final metadataMethods = <String>[];
+      final messages = <String>[];
+      var rejectUpload = true;
       server.listen((request) async {
         try {
           requested.add(request.uri.path);
@@ -22,7 +23,13 @@ void main() {
           if (request.method == 'POST' &&
               request.uri.path.contains('/object/bucket/')) {
             expect(request.headers.value('x-upsert'), 'false');
-            if (uploaded.containsKey(request.uri.path)) {
+            if (rejectUpload) {
+              request.response.statusCode = 403;
+              request.response.write(jsonEncode({
+                'message': 'password-secret backup-plaintext',
+                'code': '42501'
+              }));
+            } else if (uploaded.containsKey(request.uri.path)) {
               request.response.statusCode = 400;
               request.response.write(
                   '{"message":"The resource already exists","error":"Duplicate"}');
@@ -37,7 +44,9 @@ void main() {
                 {
                   'name': 'a.snbak',
                   'id': 'x',
-                  'metadata': {'size': 8}
+                  'metadata': {
+                    'size': utf8.encode(uploaded.values.single).length
+                  }
                 }
             ]));
           } else if (request.method == 'DELETE' &&
@@ -47,13 +56,6 @@ void main() {
             uploaded.remove(
                 '/storage/v1/object/bucket/users/account/backups/a.snbak');
             request.response.write('[]');
-          } else if (request.uri.path == '/rest/v1/file_metadata') {
-            metadataMethods.add(request.method);
-            request.response.statusCode = sidecarStatus;
-            request.response.write(jsonEncode({
-              'message': 'metadata facility unavailable',
-              'code': 'facility_unavailable',
-            }));
           } else if (request.uri.path ==
                   '/storage/v1/object/bucket/users/account/backups/a.snbak' &&
               uploaded.containsKey(request.uri.path)) {
@@ -68,21 +70,37 @@ void main() {
         }
       });
       final client = supabase.SupabaseClient(
-          'http://127.0.0.1:${server.port}', 'key',
+          'http://127.0.0.1:${server.port}', 'password-secret',
           authOptions:
               const supabase.AuthClientOptions(autoRefreshToken: false));
       addTearDown(client.dispose);
       await client.auth.recoverSession(jsonEncode({
-        'access_token': 'token',
+        'access_token': 'password-secret',
         'token_type': 'bearer',
         'user': {'id': 'account'}
       }));
-      final storage = SupabaseStorageService(client, 'bucket');
+      final storage = SupabaseStorageService(client, 'bucket', null,
+          CloudSyncLogger(onLog: (_, message) => messages.add(message)));
       final dir = await (Directory('../../Temp/cleanup-final-residual-20261017')
             ..createSync(recursive: true))
           .createTemp('supabase-stream-');
       addTearDown(() => dir.delete(recursive: true));
-      final file = await File('${dir.path}/source').writeAsString('snapshot');
+      final file =
+          await File('${dir.path}/source').writeAsString('backup-plaintext');
+      await expectLater(
+        storage.uploadFile(path: 'backups/a.snbak', file: file),
+        throwsA(isA<CloudStorageException>()
+            .having((error) => error.statusCode, '上传拒绝状态', 403)
+            .having((error) => error.originalError, '原始传输原因', isNotNull)
+            .having((error) => error.originalStackTrace, '传输失败堆栈', isNotNull)
+            .having(
+                (error) => error.toString(),
+                '安全错误提示',
+                allOf(isNot(contains('password-secret')),
+                    isNot(contains('backup-plaintext'))))),
+      );
+      expect(uploaded, isEmpty);
+      rejectUpload = false;
       await storage.uploadFile(
         path: 'backups/a.snbak',
         file: file,
@@ -98,17 +116,17 @@ void main() {
           await storage.downloadFile(
               path: 'backups/a.snbak', destination: output),
           isTrue);
-      expect(await output.readAsString(), 'snapshot');
+      expect(await output.readAsBytes(), await file.readAsBytes());
       final listed = await storage.list(path: 'backups/');
       expect(listed.single.path, 'backups/a.snbak');
-      expect(listed.single.size, 8);
-      expect(listed.single.metadata, {'size': 8});
+      expect(listed.single.size, await file.length());
+      expect(listed.single.metadata, {'size': await file.length()});
       expect(
         await storage.downloadFile(
             path: listed.single.path, destination: output),
         isTrue,
       );
-      expect(await output.readAsString(), 'snapshot');
+      expect(await output.readAsBytes(), await file.readAsBytes());
       await storage.delete(path: listed.single.path);
       await storage.delete(path: listed.single.path);
       expect(await storage.list(path: 'backups/'), isEmpty);
@@ -119,9 +137,21 @@ void main() {
         isFalse,
       );
       expect(await missingOutput.exists(), isFalse);
-      expect(metadataMethods, isEmpty, reason: '实际文件操作不得请求旁路数据表');
+      expect(requested.where((path) => path.startsWith('/rest/')), isEmpty,
+          reason: '实际文件操作不得请求旁路数据表');
       expect(uploaded, isEmpty);
       expect(requested.any((path) => path.contains('account/users')), isFalse);
-    });
-  }
+      expect(messages, isNotEmpty);
+      for (final secret in [
+        'password-secret',
+        'backup-plaintext',
+        'users/account'
+      ]) {
+        expect(messages.join('\n'), isNot(contains(secret)));
+      }
+    } catch (error, stackTrace) {
+      printOnFailure('Supabase 文件拒绝与恢复链路验证失败：$error\n$stackTrace');
+      rethrow;
+    }
+  });
 }

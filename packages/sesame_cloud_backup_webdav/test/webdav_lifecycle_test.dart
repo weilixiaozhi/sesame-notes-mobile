@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_cloud_backup/sesame_cloud_backup.dart';
+import 'package:sesame_cloud_backup_webdav/sesame_cloud_backup_webdav.dart';
 import 'package:sesame_cloud_backup_webdav/src/webdav_provider.dart';
 
 const _listing =
@@ -60,7 +61,9 @@ void main() {
     final started = Completer<void>();
     final gate = Completer<void>();
     var hold = false;
+    var requests = 0;
     final server = await _Server.start((request) async {
+      requests++;
       if (hold) {
         if (!started.isCompleted) started.complete();
         await gate.future;
@@ -69,6 +72,18 @@ void main() {
     });
     final provider = WebDAVProvider();
     try {
+      registerWebDavBackend();
+      expect(
+          CloudProviderRegistry.backendOf('webdav')!
+              .fields
+              .where((field) => field.isSecret)
+              .map((field) => field.key),
+          ['password']);
+      expect(
+          () => provider.storage, throwsA(isA<CloudConfigurationException>()));
+      await expectLater(
+          provider.initialize({}), throwsA(isA<CloudConfigurationException>()));
+      expect(requests, 0, reason: '无效配置不能建立远端连接');
       await provider.initialize(server.config());
       final storage = provider.storage;
       hold = true;
@@ -83,6 +98,7 @@ void main() {
           storage.list(path: 'closed'), throwsA(isA<CloudStorageException>()));
       await provider.dispose();
     } finally {
+      CloudProviderRegistry.unregister('webdav');
       if (!gate.isCompleted) gate.complete();
       await provider.dispose();
       await server.close();

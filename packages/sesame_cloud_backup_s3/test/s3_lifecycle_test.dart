@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_cloud_backup/sesame_cloud_backup.dart';
+import 'package:sesame_cloud_backup_s3/sesame_cloud_backup_s3.dart';
 import 'package:sesame_cloud_backup_s3/src/s3_provider.dart';
 
 /// 使用延迟的真实 HTTP 探测验证连接取消与错误清理。
@@ -13,6 +14,23 @@ void main() {
     server.listen(received.complete);
     final provider = S3Provider();
     try {
+      registerS3Backend();
+      final backend = CloudProviderRegistry.backendOf('s3')!;
+      expect(
+          backend.fields
+              .where((field) => field.isSecret)
+              .map((field) => field.key),
+          ['accessKey', 'secretKey']);
+      expect(
+          backend.fields
+              .singleWhere((field) => field.key == 'useSSL')
+              .defaultValue,
+          isTrue);
+      expect(
+          () => provider.storage, throwsA(isA<CloudConfigurationException>()));
+      await expectLater(
+          provider.initialize({}), throwsA(isA<CloudConfigurationException>()));
+      expect(received.isCompleted, isFalse, reason: '无效配置不能建立远端连接');
       final initializing = provider.initialize({
         'endpoint': '127.0.0.1',
         'port': server.port,
@@ -35,6 +53,7 @@ void main() {
       stderr.writeln('S3 生命周期测试失败：${error.runtimeType}\n$stackTrace');
       rethrow;
     } finally {
+      CloudProviderRegistry.unregister('s3');
       await provider.dispose();
       await server.close(force: true);
     }

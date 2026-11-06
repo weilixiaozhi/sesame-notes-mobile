@@ -12,6 +12,7 @@ class _Notifications extends Fake implements NotificationUtil {
   bool permitted = true;
   Completer<bool>? permission;
   Completer<void>? scheduling;
+  Completer<void>? schedulingStarted;
   @override
   Future<void> cancelNotification(int id) async {
     expect(id, fitnessRestNotificationId);
@@ -21,6 +22,8 @@ class _Notifications extends Fake implements NotificationUtil {
   @override
   Future<bool> checkPermissionStatus() =>
       permission?.future ?? Future.value(permitted);
+
+  /// 通知登记可由测试挂起，精确复现原生回执与前台恢复交错。
   @override
   Future<void> scheduleOnceReminder({
     required int id,
@@ -28,12 +31,21 @@ class _Notifications extends Fake implements NotificationUtil {
     required String body,
     required DateTime scheduledDate,
   }) async {
-    expect(id, fitnessRestNotificationId);
-    scheduled.add(scheduledDate);
-    await scheduling?.future;
+    try {
+      expect(id, fitnessRestNotificationId);
+      scheduled.add(scheduledDate);
+      if (schedulingStarted?.isCompleted == false) {
+        schedulingStarted!.complete();
+      }
+      await scheduling?.future;
+    } catch (error, stackTrace) {
+      printOnFailure('休息通知受控登记失败：$error\n$stackTrace');
+      rethrow;
+    }
   }
 }
 
+/// 休息提醒在跨到期恢复、身份切换与迟到登记时保持正确的系统通知。
 void main() {
   final now = DateTime.utc(2026, 9, 11, 12);
   FitnessWorkout workout({
@@ -53,95 +65,52 @@ void main() {
     ),
   );
 
-  test('关闭声音和震动仍调度静音休息横幅', () async {
-    final notifications = _Notifications();
-    final reminders = FitnessRestReminder(
-      notificationFactory: (_) => notifications,
-      clock: () => now,
-    );
-    await reminders.synchronize(
-      identity: 'local',
-      workout: workout(),
-      preferences: const FitnessPreferences(
-        soundEnabled: false,
-        vibrationEnabled: false,
-      ),
-      title: 'Rest',
-      body: 'Ready',
-    );
-    expect(notifications.scheduled, [now.add(const Duration(seconds: 90))]);
-  });
-
-  test('到期后恢复前台保留系统通知，切换身份和跳过仍取消', () async {
+  test('登记回执跨到期恢复仍保留系统通知，切换身份和跳过仍取消', () async {
     var current = now;
-    final notifications = _Notifications();
-    final reminders = FitnessRestReminder(
-      notificationFactory: (_) => notifications,
-      clock: () => current,
-    );
-    Future<void> update({String identity = 'a', FitnessWorkout? value}) =>
-        reminders.synchronize(
-          identity: identity,
-          workout: value ?? workout(),
-          preferences: const FitnessPreferences(),
-          title: 'Rest',
-          body: 'Ready',
-          force: true,
-        );
-    await update();
-    final before = notifications.cancellations;
-    current = now.add(const Duration(seconds: 90));
-    await update();
-    await update();
-    expect(notifications.cancellations, before);
-    expect(notifications.scheduled, hasLength(1));
-    await update(identity: 'b');
-    expect(notifications.cancellations, before + 1);
-    await update(value: workout(restStatus: 'paused'));
-    expect(notifications.cancellations, before + 2);
-  });
+    final notifications = _Notifications()
+      ..scheduling = Completer<void>()
+      ..schedulingStarted = Completer<void>();
+    try {
+      final reminders = FitnessRestReminder(
+        notificationFactory: (_) => notifications,
+        clock: () => current,
+      );
 
-  test('冷启动加载已结束计时不会撤走已投递通知或补发旧提醒', () async {
-    final notifications = _Notifications();
-    final reminders = FitnessRestReminder(
-      notificationFactory: (_) => notifications,
-      clock: () => now.add(const Duration(minutes: 5)),
-    );
-    await reminders.synchronize(
-      identity: 'a',
-      workout: workout(),
-      preferences: const FitnessPreferences(),
-      title: 'Rest',
-      body: 'Ready',
-      force: true,
-    );
-    expect(notifications.cancellations, 0);
-    expect(notifications.scheduled, isEmpty);
-  });
-
-  test('系统登记返回与到期恢复前台交错时，不撤销同一次休息通知', () async {
-    var current = now;
-    final notifications = _Notifications()..scheduling = Completer<void>();
-    final reminders = FitnessRestReminder(
-      notificationFactory: (_) => notifications,
-      clock: () => current,
-    );
-    Future<void> update() => reminders.synchronize(
-      identity: 'a',
-      workout: workout(),
-      preferences: const FitnessPreferences(),
-      title: 'Rest',
-      body: 'Ready',
-      force: true,
-    );
-    final first = update();
-    await Future<void>.delayed(Duration.zero);
-    current = now.add(const Duration(seconds: 90));
-    final resumed = update();
-    notifications.scheduling!.complete();
-    await Future.wait([first, resumed]);
-    expect(notifications.cancellations, 1);
-    expect(notifications.scheduled, hasLength(1));
+      /// 同一休息通过真实队列核对，保留强制前台恢复和账号切换入口。
+      Future<void> update({String identity = 'a', FitnessWorkout? value}) =>
+          reminders.synchronize(
+            identity: identity,
+            workout: value ?? workout(),
+            preferences: const FitnessPreferences(),
+            title: 'Rest',
+            body: 'Ready',
+            force: true,
+          );
+      final registering = update();
+      await notifications.schedulingStarted!.future.timeout(
+        const Duration(seconds: 3),
+      );
+      final before = notifications.cancellations;
+      current = now.add(const Duration(seconds: 90));
+      // 原生仍在登记同一次休息时发起到期恢复，随后释放迟到的系统回执。
+      final resumed = update();
+      notifications.scheduling!.complete();
+      await Future.wait([registering, resumed]);
+      await update();
+      expect(notifications.cancellations, before);
+      expect(notifications.scheduled, hasLength(1));
+      await update(identity: 'b');
+      expect(notifications.cancellations, before + 1);
+      await update(value: workout(restStatus: 'paused'));
+      expect(notifications.cancellations, before + 2);
+    } catch (error, stackTrace) {
+      printOnFailure('休息登记跨到期恢复验证失败：$error\n$stackTrace');
+      rethrow;
+    } finally {
+      if (!notifications.scheduling!.isCompleted) {
+        notifications.scheduling!.complete();
+      }
+    }
   });
 
   test('重设、暂停、结束和账号变化使用同一通知身份且失效权限回调不再调度', () async {

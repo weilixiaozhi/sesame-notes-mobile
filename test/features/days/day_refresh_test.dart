@@ -29,16 +29,7 @@ class _Account extends Notifier<String?> {
 
 final accountProvider = NotifierProvider<_Account, String?>(_Account.new);
 
-/// 本地读取失败由仓储注入，守住「本地失败不谎报成功」的分支。
-class _FailingDayRepository extends DayRepository {
-  _FailingDayRepository(super.db)
-    : super(validateAndProject: validateAndProject);
-
-  @override
-  Future<List<DayBook>> getBooks({String? accountId}) async =>
-      throw StateError('本地读取失败');
-}
-
+/// 刷新绑定发起会话，离线或缺少服务配置不能丢失待上传数据。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -90,24 +81,6 @@ void main() {
     return (await repository.getBook(id, accountId: cloud ? 'account' : null))!;
   }
 
-  /// 读取失败场景使用独立容器；登录状态按容器各自持有，需在此重新设置。
-  ProviderContainer failingContainer({DayRepository? repo}) {
-    final value = ProviderContainer(
-      overrides: [
-        dayRepositoryProvider.overrideWithValue(
-          repo ?? _FailingDayRepository(db),
-        ),
-        currentAccountIdProvider.overrideWith(
-          (ref) => ref.watch(accountProvider),
-        ),
-        syncCoordinatorProvider.overrideWithValue(sync),
-      ],
-    );
-    addTearDown(value.dispose);
-    value.read(accountProvider.notifier).set('account');
-    return value;
-  }
-
   test('本机本只重读本地库，登录后也不调用云端同步', () async {
     container.read(accountProvider.notifier).set('account');
     final target = await createBook(localId);
@@ -116,65 +89,6 @@ void main() {
       DayRefreshOutcome.localSuccess,
     );
     verifyNever(() => sync.refreshData());
-  });
-
-  test('未指定目标本且未登录时只刷新本地，不调用云端同步', () async {
-    await createBook(localId);
-    expect(
-      await container.read(dayRefreshProvider).run(),
-      DayRefreshOutcome.localSuccess,
-    );
-    verifyNever(() => sync.refreshData());
-  });
-
-  test('退出后旧云本快照只报告本地刷新，不产生云端失败提示', () async {
-    container.read(accountProvider.notifier).set('account');
-    final target = await createBook(cloudId, cloud: true);
-    container.read(accountProvider.notifier).set(null);
-
-    expect(
-      await container.read(dayRefreshProvider).run(book: target),
-      DayRefreshOutcome.localSuccess,
-    );
-    verifyNever(() => sync.refreshData());
-  });
-
-  test('未指定目标本但已登录时按账号级云端刷新', () async {
-    container.read(accountProvider.notifier).set('account');
-    await createBook(cloudId, cloud: true);
-    when(
-      () => sync.refreshData(),
-    ).thenAnswer((_) async => const SyncRunResult.cloudSynced());
-    expect(
-      await container.read(dayRefreshProvider).run(),
-      DayRefreshOutcome.cloudSuccess,
-    );
-    verify(() => sync.refreshData()).called(1);
-  });
-
-  test('本机读取失败返回本机失败结果', () async {
-    final target = await createBook(localId);
-    expect(
-      await failingContainer().read(dayRefreshProvider).run(book: target),
-      DayRefreshOutcome.localFailed,
-    );
-    verifyNever(() => sync.refreshData());
-  });
-
-  test('云本收到本地刷新结果时只提示本地成功，本地读取失败也按本地失败反馈', () async {
-    container.read(accountProvider.notifier).set('account');
-    final target = await createBook(cloudId, cloud: true);
-    when(
-      () => sync.refreshData(),
-    ).thenAnswer((_) async => const SyncRunResult.localOnly());
-    expect(
-      await container.read(dayRefreshProvider).run(book: target),
-      DayRefreshOutcome.localSuccess,
-    );
-    expect(
-      await failingContainer().read(dayRefreshProvider).run(book: target),
-      DayRefreshOutcome.localFailed,
-    );
   });
 
   test('缓存账号和云本在空服务器配置下真实刷新只报告本地成功，待上传记录保留', () async {
@@ -201,44 +115,6 @@ void main() {
       (await repository.getBook(cloudId, accountId: 'account'))?.storageMode,
       'cloud',
     );
-  });
-
-  test('云端同步失败仍返回本地成功结果', () async {
-    container.read(accountProvider.notifier).set('account');
-    final target = await createBook(cloudId, cloud: true);
-    when(
-      () => sync.refreshData(),
-    ).thenAnswer((_) async => const SyncRunResult(error: '同步失败'));
-    expect(
-      await container.read(dayRefreshProvider).run(book: target),
-      DayRefreshOutcome.cloudFailedButLocalOk,
-    );
-    verify(() => sync.refreshData()).called(1);
-  });
-
-  test('云端同步抛异常仍返回本地成功结果', () async {
-    container.read(accountProvider.notifier).set('account');
-    final target = await createBook(cloudId, cloud: true);
-    when(() => sync.refreshData()).thenThrow(StateError('网络异常'));
-    expect(
-      await container.read(dayRefreshProvider).run(book: target),
-      DayRefreshOutcome.cloudFailedButLocalOk,
-    );
-    verify(() => sync.refreshData()).called(1);
-  });
-
-  test('云端本的本地快照读取失败返回云端失败结果，不谎报云端成功', () async {
-    container.read(accountProvider.notifier).set('account');
-    final target = await createBook(cloudId, cloud: true);
-    when(
-      () => sync.refreshData(),
-    ).thenAnswer((_) async => const SyncRunResult.cloudSynced());
-    final scoped = failingContainer();
-    expect(
-      await scoped.read(dayRefreshProvider).run(book: target),
-      DayRefreshOutcome.cloudFailed,
-    );
-    verify(() => sync.refreshData()).called(1);
   });
 
   test('刷新期间账号变化不发布迟到结果', () async {

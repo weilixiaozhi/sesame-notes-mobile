@@ -165,6 +165,12 @@ void main() {
     try {
       final file = await File('${dir.path}/source')
           .writeAsBytes(List.generate(100003, (i) => i % 256));
+      // 使用可正常读取的源文件，确保异常确实来自路径拒绝，并且尚未访问远端。
+      await expectLater(
+        storage.uploadFile(path: '../secret.snbak', file: file),
+        throwsA(isA<CloudStorageException>()),
+      );
+      expect(methods, isEmpty);
       await storage.uploadFile(
           path: specialKey, file: file, metadata: const {'encoding': 'base64'});
       final replacement = await File('${dir.path}/replacement')
