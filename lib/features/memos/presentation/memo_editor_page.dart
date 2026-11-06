@@ -34,6 +34,7 @@ import '../application/memo_draft.dart';
 import '../application/memo_providers.dart';
 import 'memo_editor_document.dart';
 import 'memo_editor_styles.dart';
+import 'memo_editor_surface.dart';
 
 /// 页面固定一个本子与 UUID；路由返回与后台保存共用同一个 flush。
 class MemoEditorPage extends ConsumerStatefulWidget {
@@ -73,8 +74,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
   final _title = TextEditingController();
   final _fields = <_CardFieldRow>[];
   bool _fieldsReady = false;
-  final _editorFocus = FocusNode();
-  final _editorScroll = ScrollController();
+  final _editorScroll = MemoEditorScrollController();
   final _editorViewport = GlobalKey();
   late final QuillController _quill;
   late final MemoDraft _draft;
@@ -468,12 +468,50 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
   /// 保存成功后停留在正文只读态；失败时保留编辑入口与草稿。
   Future<void> _finishEditing() async {
     if (!await _save(explicit: true) || !mounted) return;
-    _editorFocus.unfocus();
+    FocusScope.of(context).unfocus();
     setState(() {
       _readOnly = true;
       _quill.readOnly = true;
     });
     _publishAnalyticsPage();
+  }
+
+  /// 查看态的点击只负责定位和切换模式，键盘由编辑实例完成布局后唤起。
+  bool _beginEditing(
+    TapUpDetails details,
+    TextPosition Function(Offset) positionForOffset,
+  ) {
+    if (!_readOnly) return false;
+    if (!_identityValid || _busy) return true;
+    try {
+      final position = positionForOffset(details.globalPosition);
+      final ignoreFocus = _quill.ignoreFocusOnTextChange;
+      try {
+        // 命中位置来自切换前的正文布局，更新选区时不向只读实例请求键盘。
+        _quill.ignoreFocusOnTextChange = true;
+        _quill.updateSelection(
+          TextSelection.fromPosition(position),
+          ChangeSource.local,
+        );
+      } finally {
+        _quill.ignoreFocusOnTextChange = ignoreFocus;
+      }
+      setState(() {
+        _readOnly = false;
+        _quill.readOnly = false;
+      });
+      _publishAnalyticsPage();
+    } catch (error, stackTrace) {
+      logger.error(
+        'MemoEditor',
+        '进入备忘录编辑失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      _showEditError();
+    }
+    // 此次点击已消费，避免默认点击链再次选择文字或请求键盘。
+    return true;
   }
 
   void _discardCardDraft() {
@@ -516,7 +554,6 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
       field.dispose();
     }
     _quill.dispose();
-    _editorFocus.dispose();
     _editorScroll.dispose();
     super.dispose();
   }
@@ -598,27 +635,14 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
                   ? AppEmpty(text: l.memoUnavailable)
                   : SizedBox.expand(
                       key: _editorViewport,
-                      child: QuillEditor(
+                      child: MemoEditorSurface(
+                        key: ValueKey(_readOnly),
                         controller: _quill,
-                        focusNode: _editorFocus,
                         scrollController: _editorScroll,
-                        config: QuillEditorConfig(
-                          autoFocus: valid && !_readOnly,
-                          padding: const EdgeInsets.all(AppDimens.p16),
-                          customStyles: memoEditorStyles(context),
-                          contextMenuBuilder: _selectionMenu,
-                          onTapUp: (_, _) {
-                            if (_readOnly && _identityValid && !_busy) {
-                              setState(() {
-                                _readOnly = false;
-                                _quill.readOnly = false;
-                              });
-                              _publishAnalyticsPage();
-                              _editorFocus.requestFocus();
-                            }
-                            return false;
-                          },
-                        ),
+                        readOnly: _readOnly,
+                        contextMenuBuilder: _selectionMenu,
+                        onTapUp: _beginEditing,
+                        onEditError: _showEditError,
                       ),
                     ),
             ),
