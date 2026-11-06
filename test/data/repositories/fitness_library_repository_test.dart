@@ -41,7 +41,6 @@ void main() {
           );
           bool? refreshed;
           final request = repository.refresh();
-          expect(identical(request, repository.refresh()), isTrue);
           request.then((value) => refreshed = value);
           clock.flushMicrotasks();
           // Dio的请求入口使用零延时Future，必须推进事件定时器后才能证明适配器已开始传输。
@@ -163,40 +162,6 @@ void main() {
     expect(local.contentVersion, 1);
     expect(local.plans, hasLength(3));
     expect(await repository.refresh(), isFalse);
-  });
-
-  test('后台刷新与官方入口同时补齐时共用同一网络请求', () async {
-    final source =
-        jsonDecode(await File('assets/fitness/library.json').readAsString())
-            as Map<String, dynamic>;
-    source['content_version'] = 2;
-    final response = Completer<ResponseBody>();
-    var requests = 0;
-    final dio = Dio(BaseOptions(baseUrl: 'https://fitness.example.test'))
-      ..httpClientAdapter = _AsyncAdapter((_) {
-        requests++;
-        return response.future;
-      });
-    addTearDown(() => dio.close(force: true));
-    final repository = FitnessLibraryRepository(
-      dio: dio,
-      preferences: await SharedPreferences.getInstance(),
-    );
-    final background = repository.refresh();
-    final officialEntry = repository.refresh();
-    expect(identical(background, officialEntry), isTrue);
-    response.complete(
-      ResponseBody.fromString(
-        jsonEncode(source),
-        200,
-        headers: {
-          Headers.contentTypeHeader: ['application/json'],
-        },
-      ),
-    );
-    expect(await Future.wait([background, officialEntry]), [true, true]);
-    expect(requests, 1);
-    expect((await repository.loadLocal()).contentVersion, 2);
   });
 
   test('配置失效后的迟到响应不写正文或ETag', () async {

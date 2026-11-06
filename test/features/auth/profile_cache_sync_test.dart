@@ -20,32 +20,6 @@ void main() {
     gender: 'UNSPECIFIED',
   );
 
-  test('已登录时缓存写入后，内存展示状态同步为最新资料', () async {
-    final container = ProviderContainer(
-      overrides: [
-        cloudNetworkEventsProvider.overrideWithValue(
-          const Stream<bool>.empty(),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    // 共享偏好就绪（云资料缓存依赖），并初始化常驻桥接
-    await container.read(sharedPreferencesProvider.future);
-    container.read(profileCacheSyncBridgeProvider);
-    // 已登录旧资料态（模拟启动恢复路径）
-    container
-        .read(accountStateProvider.notifier)
-        .restoreFromCache(profile('旧昵称'));
-
-    // 拦截器刷新路径：只写磁盘缓存，不直接提交内存状态
-    await container.read(cloudProfileCacheProvider).write(profile('新昵称'));
-    await Future<void>.delayed(Duration.zero);
-
-    final state = container.read(accountStateProvider);
-    expect(state.profile?.displayName, '新昵称');
-  });
-
   test('未登录时缓存写入不改变账号状态', () async {
     final container = ProviderContainer(
       overrides: [

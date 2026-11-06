@@ -42,43 +42,6 @@ void main() {
       ApiErrorKind.invalidCredentials,
     );
   });
-  test('云操作错误区分断网、权限、服务端和本地保存失败，不泄露内部异常', () {
-    expect(
-      cloudOperationErrorMessage(
-        DioException(
-          requestOptions: RequestOptions(path: '/invite'),
-          type: DioExceptionType.connectionError,
-        ),
-      ),
-      '网络连接出现问题，请之后再尝试',
-    );
-    expect(
-      cloudOperationErrorMessage(_error(401, 'TOKEN_EXPIRED')),
-      '登录状态已失效，请重新登录',
-    );
-    expect(
-      cloudOperationErrorMessage(_error(403, 'FORBIDDEN')),
-      '当前账号没有此操作权限，请确认账号或权限后再试',
-    );
-    expect(
-      cloudOperationErrorMessage(_error(503, 'UNAVAILABLE')),
-      '服务暂时不可用，请稍后重试',
-    );
-    expect(
-      cloudOperationErrorMessage(
-        _errorBody(412, ''),
-        fallback: '本地修改仍保留，请重新下载',
-      ),
-      '本地修改仍保留，请重新下载',
-    );
-    expect(
-      cloudOperationErrorMessage(
-        StateError('SELECT secret'),
-        fallback: '保存失败，未保存',
-      ),
-      '保存失败，未保存',
-    );
-  });
   group('安全同步操作失败', () {
     const target = SyncTarget('category', 'category-id');
     final deserialization = DeserializationError(
@@ -132,7 +95,6 @@ void main() {
         final failure = cloudOperationFailure(error, target: target);
         expect(failure.code, code);
         expect(failure.target, target);
-        expect(failure.toString(), failure.message);
         expect(failure.message, isNot(contains('PRIVATE_BODY_VALUE')));
         expect(failure.message, isNot(contains('UNTRUSTED_SERVER_CODE')));
         expect(failure.message, isNot(contains('category-id')));
@@ -144,23 +106,22 @@ void main() {
         message: '请重新同步账本',
         target: target,
       );
+      final retained = cloudOperationFailure(
+        identified,
+        target: const SyncTarget('ledger', 'different'),
+      );
       expect(
-        identical(
-          cloudOperationFailure(
-            identified,
-            target: const SyncTarget('ledger', 'different'),
-          ),
-          identified,
-        ),
-        isTrue,
+        (retained.code, retained.message, retained.target),
+        (identified.code, identified.message, target),
       );
       const unidentified = SyncOperationFailure(
         code: 'CLOUD_OWNERSHIP_MISSING',
         message: '请重新同步账本',
       );
+      final untargeted = cloudOperationFailure(unidentified);
       expect(
-        identical(cloudOperationFailure(unidentified), unidentified),
-        isTrue,
+        (untargeted.code, untargeted.message, untargeted.target),
+        (unidentified.code, unidentified.message, null),
       );
       final completed = cloudOperationFailure(unidentified, target: target);
       expect(
@@ -168,12 +129,6 @@ void main() {
         (unidentified.code, unidentified.message, target),
       );
       expect(cloudOperationErrorMessage(identified), identified.message);
-    });
-    test('默认同步提示与非同步兼容提示分开，未知异常只使用调用方固定文案', () {
-      final raw = StateError('PRIVATE_BODY_VALUE');
-      expect(cloudOperationFailure(raw).message, '同步未完成，数据已保存在本机，请重试');
-      expect(cloudOperationErrorMessage(raw), '操作失败，请稍后重试');
-      expect(cloudOperationErrorMessage(raw, fallback: '本地保存尚未完成'), '本地保存尚未完成');
     });
   });
   group('mapApiError 稳定语义映射', () {

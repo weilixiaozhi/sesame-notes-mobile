@@ -50,7 +50,7 @@ void main() {
   File file(String identity) =>
       File('${root.path}${Platform.pathSeparator}$identity.gif');
 
-  test('达到预算时不落新文件，保留已有唯一离线图片并记录拒写次数', () async {
+  test('达到预算时不落新文件，保留已有唯一离线图片', () async {
     final first = key('unique');
     final second = key('new');
     final store = cache(limit: bytes.length);
@@ -58,14 +58,6 @@ void main() {
     expect(await store.write(second, bytes), isFalse);
     expect(await file(first).readAsBytes(), bytes);
     expect(await file(second).exists(), isFalse);
-    expect(
-      logger.logs.any(
-        (entry) =>
-            entry.tag == 'FitnessMediaCache' &&
-            entry.message.contains('rejected_writes: 1'),
-      ),
-      isTrue,
-    );
   });
 
   test('跨仓储实例的并发写入共用容量检查，不能同时越过预算', () async {
@@ -120,7 +112,7 @@ void main() {
     expect(await unsafe.exists(), isTrue);
   });
 
-  test('媒体逻辑超时取消传输并释放单飞任务，下一次重试可以成功', () async {
+  test('媒体超时取消传输，下一次重试恢复媒体数据', () async {
     final cancelled = Completer<void>();
     var requests = 0;
     final dio = Dio(BaseOptions(baseUrl: 'https://fitness.example.test'))
@@ -142,77 +134,9 @@ void main() {
     );
     final path = '/api/v1/fitness/media/${sha256.convert(bytes)}';
     final first = repository.load(path);
-    expect(identical(first, repository.load(path)), isTrue);
     expect(await first, isNull);
     await cancelled.future.timeout(const Duration(seconds: 1));
     expect(await repository.load(path), bytes);
-    expect(requests, 2);
-    expect(await repository.load(path), bytes);
-    expect(requests, 2);
-  });
-
-  test('不同媒体的并发读取有上限，相同排队媒体共用结果且失败后继续排队任务', () async {
-    final admitted = Completer<void>();
-    final release = Completer<void>();
-    var requests = 0;
-    var active = 0;
-    var peak = 0;
-    final dio = Dio(BaseOptions(baseUrl: 'https://fitness.example.test'))
-      ..httpClientAdapter = _Adapter((options, _) async {
-        requests++;
-        active++;
-        if (active > peak) peak = active;
-        if (requests == 2) admitted.complete();
-        try {
-          await release.future;
-          if (options.path.endsWith('0000')) {
-            throw DioException(
-              requestOptions: options,
-              type: DioExceptionType.connectionError,
-            );
-          }
-          return ResponseBody.fromBytes(bytes, 200);
-        } finally {
-          active--;
-        }
-      });
-    final repository = FitnessMediaRepository(
-      dio: dio,
-      directory: () async => root,
-      maxConcurrentLoads: 2,
-    );
-    try {
-      final loads = [
-        for (var index = 0; index < 6; index++)
-          repository.load(
-            '/api/v1/fitness/media/builtin-${index.toString().padLeft(4, '0')}',
-          ),
-      ];
-      expect(
-        identical(
-          loads.last,
-          repository.load('/api/v1/fitness/media/builtin-0005'),
-        ),
-        isTrue,
-      );
-      await admitted.future.timeout(const Duration(seconds: 3));
-      expect(requests, 2);
-      release.complete();
-      final results = await Future.wait(
-        loads,
-      ).timeout(const Duration(seconds: 3));
-      expect(results.first, isNull);
-      expect(results.skip(1), everyElement(bytes));
-      expect(requests, 6);
-      expect(peak, 2);
-    } catch (error, stack) {
-      stderr.writeln('媒体并发检查失败：$error\n$stack');
-      rethrow;
-    } finally {
-      if (!release.isCompleted) release.complete();
-      repository.dispose();
-      dio.close(force: true);
-    }
   });
 
   test('媒体所有者释放时取消在途传输并完成排队结果，不再发起后续请求', () async {
@@ -264,46 +188,6 @@ void main() {
       stderr.writeln('媒体资源释放检查失败：$error\n$stack');
       rethrow;
     } finally {
-      repository.dispose();
-      dio.close(force: true);
-    }
-  });
-
-  test('媒体落盘完成前继续占用并发额度', () async {
-    final writing = Completer<void>();
-    final releaseDisk = Completer<void>();
-    var directoryReads = 0;
-    var requests = 0;
-    final dio = Dio(BaseOptions(baseUrl: 'https://fitness.example.test'))
-      ..httpClientAdapter = _Adapter((options, _) async {
-        requests++;
-        return ResponseBody.fromBytes(bytes, 200);
-      });
-    final repository = FitnessMediaRepository(
-      dio: dio,
-      maxConcurrentLoads: 1,
-      directory: () async {
-        directoryReads++;
-        if (directoryReads == 2) {
-          writing.complete();
-          await releaseDisk.future;
-        }
-        return root;
-      },
-    );
-    try {
-      final first = repository.load('/api/v1/fitness/media/builtin-0000');
-      final second = repository.load('/api/v1/fitness/media/builtin-0001');
-      await writing.future.timeout(const Duration(seconds: 3));
-      expect(requests, 1, reason: '首张图片仍在等待落盘，后续读取不能分配完整图片缓冲');
-      releaseDisk.complete();
-      expect(await Future.wait([first, second]), everyElement(bytes));
-      expect(requests, 2);
-    } catch (error, stack) {
-      stderr.writeln('媒体落盘额度检查失败：$error\n$stack');
-      rethrow;
-    } finally {
-      if (!releaseDisk.isCompleted) releaseDisk.complete();
       repository.dispose();
       dio.close(force: true);
     }

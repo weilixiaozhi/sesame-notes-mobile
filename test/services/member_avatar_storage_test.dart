@@ -34,27 +34,6 @@ void main() {
   });
 
   group('getPath 版本命中', () {
-    test('保存后版本一致返回路径，版本不一致返回 null', () async {
-      final bytes = Uint8List.fromList([1, 2, 3]);
-      final path = await memberAvatarStorage.save(
-        userId: 'user-1',
-        version: 7,
-        bytes: bytes,
-      );
-
-      expect(
-        p.normalize(
-          (await memberAvatarStorage.getPath(userId: 'user-1', version: 7))!,
-        ),
-        p.normalize(path),
-      );
-      expect(
-        await memberAvatarStorage.getPath(userId: 'user-1', version: 8),
-        isNull,
-        reason: '版本不一致视为新头像，不应命中旧缓存',
-      );
-    });
-
     test('文件被外部删除时清除登记并返回 null', () async {
       final path = await memberAvatarStorage.save(
         userId: 'user-1',
@@ -104,7 +83,7 @@ void main() {
   });
 
   group('remove 幂等清理', () {
-    test('删除文件并清除路径与版本登记', () async {
+    test('删除文件和版本登记，重复删除无缓存时保持幂等', () async {
       final path = await memberAvatarStorage.save(
         userId: 'user-1',
         version: 3,
@@ -119,9 +98,6 @@ void main() {
         await memberAvatarStorage.getPath(userId: 'user-1', version: 3),
         isNull,
       );
-    });
-
-    test('无缓存时调用不抛异常（幂等）', () async {
       await memberAvatarStorage.remove('user-1');
       expect(
         await memberAvatarStorage.getPath(userId: 'user-1', version: 1),

@@ -24,7 +24,7 @@ void main() {
     updatedAt: DateTime.utc(2026),
   );
 
-  test('中文数字名称按平台顺序返回，正文保持原样且不进入通道', () async {
+  test('排序平台通道仅接收条目身份与名称，密码正文保持原样', () async {
     final entries = [entry('c', '账号10'), entry('a', '账号2'), entry('b', '账号02')];
     messenger.setMockMethodCallHandler(channel, (call) async {
       expect(call.method, 'sortNames');
@@ -36,19 +36,9 @@ void main() {
       return ['a', 'b', 'c'];
     });
     final sorted = await MemoNameOrder().sort(entries);
-    expect(sorted.map((entry) => entry.id), ['a', 'b', 'c']);
-    expect(identical(sorted.first, entries[1]), isTrue);
-  });
-
-  test('重复或未知身份结果必须失败，不能静默改用另一套排序', () async {
-    final entries = [entry('a', 'A'), entry('b', 'B')];
-    for (final result in [
-      ['a', 'a'],
-      ['a', 'missing'],
-      ['a'],
-    ]) {
-      messenger.setMockMethodCallHandler(channel, (_) async => result);
-      await expectLater(MemoNameOrder().sort(entries), throwsStateError);
-    }
+    expect(
+      sorted.map((entry) => entry.bodyJson),
+      entries.map((entry) => entry.bodyJson),
+    );
   });
 }

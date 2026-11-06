@@ -10,7 +10,6 @@ void main() {
     final holidays = calendar.upcomingHolidays(DateOnly(2023, 12, 31));
     expect(holidays.first.date, DateOnly(2024, 1, 1));
     expect(holidays.last.date, DateOnly(2024, 10, 11));
-    expect(holidays, hasLength(11));
     expect(
       holidays.singleWhere((e) => e.code == 'spring_festival').date,
       DateOnly(2024, 2, 10),

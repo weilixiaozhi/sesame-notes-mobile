@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:sesame_notes/utils/currency/rate_math.dart';
 
+/// 验证汇率倒数的数值边界和手动覆盖自动报价的业务规则。
 void main() {
   // ===========================================================================
   // invertRate
@@ -24,27 +25,27 @@ void main() {
       expect(result, closeTo(1e10, 1));
     });
 
-    test('零值:抛 ArgumentError', () {
-      expect(() => invertRate(0), throwsArgumentError);
-    });
-
-    test('负值:抛 ArgumentError', () {
-      expect(() => invertRate(-7.2), throwsArgumentError);
-      expect(() => invertRate(-1), throwsArgumentError);
-    });
-
-    test('NaN 与正负无穷都不是有效汇率，必须拒绝', () {
-      for (final value in [
-        double.nan,
-        double.infinity,
-        double.negativeInfinity,
-      ]) {
-        expect(() => invertRate(value), throwsArgumentError, reason: '$value');
+    test('零、负数、非有限数和倒数溢出均拒绝，不能产生无效汇率', () {
+      try {
+        for (final value in [
+          0.0,
+          -7.2,
+          -1.0,
+          double.nan,
+          double.infinity,
+          double.negativeInfinity,
+          double.minPositive,
+        ]) {
+          expect(
+            () => invertRate(value),
+            throwsArgumentError,
+            reason: '$value',
+          );
+        }
+      } catch (error, stackTrace) {
+        printOnFailure('汇率非法输入边界验证失败：$error\n$stackTrace');
+        rethrow;
       }
-    });
-
-    test('有限正数取倒数溢出时必须拒绝，不能产生无穷汇率', () {
-      expect(() => invertRate(double.minPositive), throwsArgumentError);
     });
   });
 

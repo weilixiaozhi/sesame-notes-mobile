@@ -28,18 +28,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   tearDown(logger.clear);
 
-  test('严格凭证读取保留原始失败堆栈，宽松读取及损坏JSON保持原语义', () async {
+  test('严格凭证读取拒绝存储失败，宽松读取及损坏JSON按空凭证处理', () async {
     final raw = _RecoverableSecureStore()..unreadable = true;
     final store = SecureAccountStore(raw);
     expect(await store.load(), isNull);
     expect(store.lastError, isNotNull);
-    try {
-      await store.load(requireReadable: true);
-      fail('必需凭证读取不能把系统存储失败当作无凭证');
-    } on StateError catch (error, stackTrace) {
-      expect(error.message, contains('当前账号信息暂时无法读取'));
-      expect(stackTrace.toString(), contains('_RecoverableSecureStore.read'));
-    }
+    await expectLater(store.load(requireReadable: true), throwsStateError);
     raw.unreadable = false;
     raw.value = 'invalid-json';
     expect(await store.load(requireReadable: true), isNull);

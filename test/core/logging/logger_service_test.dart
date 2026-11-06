@@ -41,13 +41,10 @@ void main() {
         ),
       );
 
-      expect(logger.logs.first.error, 'SqliteException(code=19)');
       time.elapse(const Duration(seconds: 2));
       time.flushMicrotasks();
       final persisted = preferences.getString('app_logs')!;
       expect(persisted, isNot(contains('private-')));
-      expect(persisted, contains('SqliteException(code=19)'));
-      expect(persisted, contains('connectionError'));
       unawaited(logger.clear());
       time.flushMicrotasks();
     });

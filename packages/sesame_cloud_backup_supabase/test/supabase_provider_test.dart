@@ -1,82 +1,72 @@
-import 'package:sesame_cloud_backup/sesame_cloud_backup.dart';
-import 'package:sesame_cloud_backup_supabase/src/supabase_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sesame_cloud_backup/sesame_cloud_backup.dart';
+import 'package:sesame_cloud_backup_supabase/sesame_cloud_backup_supabase.dart';
+import 'package:sesame_cloud_backup_supabase/src/supabase_provider.dart';
 
+/// 验证存储配置类型、登录凭据的安全归属与连接初始化守卫。
 void main() {
-  group('SupabaseProvider', () {
-    late SupabaseProvider provider;
-
-    setUp(() {
-      provider = SupabaseProvider();
-    });
-
-    test('validateConfig should return false for empty config', () {
-      expect(provider.validateConfig({}), isFalse);
-    });
-
-    test('validateConfig should return false for missing url', () {
+  test('配置接受可选桶，拒绝缺失或类型错误，密钥和密码只进安全存储', () {
+    try {
+      registerSupabaseBackend();
+      final provider = SupabaseProvider();
+      const valid = {
+        'url': 'https://example.supabase.co',
+        'anonKey': 'test-key'
+      };
+      final backend = CloudProviderRegistry.backendOf('supabase')!;
       expect(
-        provider.validateConfig({'anonKey': 'key'}),
-        isFalse,
-      );
-    });
-
-    test('validateConfig should return false for missing anonKey', () {
+          backend.fields
+              .where((field) => field.isSecret)
+              .map((field) => field.key),
+          ['anonKey', 'password']);
+      for (final settings in [
+        valid,
+        {...valid, 'bucket': 'user-data'}
+      ]) {
+        expect(provider.validateConfig(settings), isTrue);
+      }
+      for (final settings in [
+        <String, dynamic>{},
+        for (final key in valid.keys) {...valid}..remove(key),
+        {...valid, 'bucket': 123}
+      ]) {
+        expect(provider.validateConfig(settings), isFalse,
+            reason: settings.keys.toString());
+      }
+      const registered = {
+        ...valid,
+        'account': 'user@example.com',
+        'password': 'secret'
+      };
       expect(
-        provider.validateConfig({'url': 'https://example.com'}),
-        isFalse,
-      );
-    });
+          CloudProviderRegistry.isConfigValid(const CloudServiceConfig(
+              backendId: 'supabase', settings: registered)),
+          isTrue);
+      for (final key in registered.keys) {
+        expect(
+            CloudProviderRegistry.isConfigValid(CloudServiceConfig(
+                backendId: 'supabase', settings: {...registered}..remove(key))),
+            isFalse,
+            reason: key);
+      }
+    } catch (error, stackTrace) {
+      printOnFailure('Supabase 配置边界验证失败：$error\n$stackTrace');
+      rethrow;
+    } finally {
+      CloudProviderRegistry.unregister('supabase');
+    }
+  });
 
-    test('validateConfig should return true for valid config', () {
+  test('未初始化不得读取存储，无效配置在建立连接前拒绝', () async {
+    try {
+      final provider = SupabaseProvider();
       expect(
-        provider.validateConfig({
-          'url': 'https://example.supabase.co',
-          'anonKey': 'test-key',
-        }),
-        isTrue,
-      );
-    });
-
-    test('validateConfig should accept optional bucket', () {
-      expect(
-        provider.validateConfig({
-          'url': 'https://example.supabase.co',
-          'anonKey': 'test-key',
-          'bucket': 'user-data',
-        }),
-        isTrue,
-      );
-    });
-
-    test('validateConfig should return false for invalid bucket type', () {
-      expect(
-        provider.validateConfig({
-          'url': 'https://example.supabase.co',
-          'anonKey': 'test-key',
-          'bucket': 123, // should be string
-        }),
-        isFalse,
-      );
-    });
-
-    test(
-        'should throw CloudConfigurationException when accessing storage before initialization',
-        () {
-      expect(
-        () => provider.storage,
-        throwsA(isA<CloudConfigurationException>()),
-      );
-    });
-
-    test('initialize should throw on invalid config', () async {
-      expect(
-        () => provider.initialize({}),
-        throwsA(isA<CloudConfigurationException>()),
-      );
-    });
-
-    // Note: Full integration tests require a real Supabase instance
-    // and should be run separately with proper credentials
+          () => provider.storage, throwsA(isA<CloudConfigurationException>()));
+      await expectLater(
+          provider.initialize({}), throwsA(isA<CloudConfigurationException>()));
+    } catch (error, stackTrace) {
+      printOnFailure('Supabase 初始化守卫验证失败：$error\n$stackTrace');
+      rethrow;
+    }
   });
 }

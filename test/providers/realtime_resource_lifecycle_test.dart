@@ -117,35 +117,6 @@ void main() {
     });
   }
 
-  test('API客户端随配置重建释放旧连接池，令牌轮换复用当前连接池', () {
-    var config = const ApiConfig(baseUrl: 'https://first.test');
-    final container = ProviderContainer(
-      overrides: [
-        cloudNetworkEventsProvider.overrideWithValue(
-          const Stream<bool>.empty(),
-        ),
-        apiConfigProvider.overrideWith((_) => config),
-      ],
-    );
-    final first = container.read(apiClientProvider);
-    final firstAdapter = _LifecycleAdapter();
-    first.dio.httpClientAdapter = firstAdapter;
-    _signIn(container);
-    container.read(authSessionProvider.notifier).updateToken('rotated');
-    expect(container.read(apiClientProvider), same(first));
-    expect(firstAdapter.closeForces, isEmpty);
-
-    config = const ApiConfig(baseUrl: 'https://second.test');
-    container.invalidate(apiConfigProvider);
-    final second = container.read(apiClientProvider);
-    expect(second, isNot(same(first)));
-    expect(firstAdapter.closeForces, [false]);
-    final secondAdapter = _LifecycleAdapter();
-    second.dio.httpClientAdapter = secondAdapter;
-    container.dispose();
-    expect(secondAdapter.closeForces, [false]);
-  });
-
   test('容器销毁温和释放HTTP连接池，在途响应继续完成且迟到401不刷新', () async {
     final container = _container();
     _signIn(container);

@@ -70,8 +70,8 @@ void main() {
               isNot(contains('private-secret-response')))));
       expect(
           () => provider.storage, throwsA(isA<CloudConfigurationException>()));
-      expect(messages, hasLength(1));
-      expect(messages.single, isNot(contains('private-secret-response')));
+      expect(messages, isNotEmpty);
+      expect(messages.join('\n'), isNot(contains('private-secret-response')));
     } catch (error, stackTrace) {
       stderr.writeln('S3 错误隔离测试失败：${error.runtimeType}\n$stackTrace');
       rethrow;

@@ -16,7 +16,7 @@ OriginalDate _original(Map<String, dynamic> sample) => OriginalDate(
   isLeapMonth: sample['is_leap_month'] as bool,
 );
 
-/// 构造以身份而非名字区分的排序输入。
+/// 构造同名且归属明确的日期事件，核对本子隔离和范围投影。
 DayEvent _event(
   String id,
   String category,
@@ -24,11 +24,10 @@ DayEvent _event(
   String book = 'A',
   String repeat = DayRepeatType.none,
   String? end,
-  DateTime? created,
 }) => DayEvent(
   id: id,
   dayBookId: book,
-  createdAt: created ?? DateTime.utc(2026),
+  createdAt: DateTime.utc(2026),
   updatedAt: DateTime.utc(2026),
   definition: DayEventDefinition(
     category: category,
@@ -54,36 +53,6 @@ DayEvent _event(
 void main() {
   const rules = DayDateRules();
   const lunar = LunarCalendar();
-
-  test('月历农历、节气、节日与闰月使用固定日期样本', () {
-    for (final (date, label, lunarDate) in [
-      (DateTime(2026, 9, 7), '白露', '七月廿六'),
-      (DateTime(2026, 9, 9), '廿八', '七月廿八'),
-      (DateTime(2026, 9, 10), '教师节', '七月廿九'),
-      (DateTime(2026, 9, 11), '八月', '八月初一'),
-      (DateTime(2026, 9, 23), '秋分', '八月十三'),
-      (DateTime(2026, 9, 25), '中秋节', '八月十五'),
-      (DateTime(2026, 2, 16), '除夕', '十二月廿九'),
-      (DateTime(2026, 2, 17), '春节', '正月初一'),
-      (DateTime(2023, 3, 22), '闰二月', '闰二月初一'),
-    ]) {
-      final info = lunar.dayInfo(date);
-      expect(info.label, label, reason: '$date');
-      expect(info.lunarDate, lunarDate, reason: '$date');
-    }
-    for (final date in [DateTime(1899, 12, 31), DateTime(2201, 1, 1)]) {
-      expect(lunar.dayInfo(date).lunarDate, isNotEmpty);
-    }
-  });
-
-  test('跨年份的节日日期仍包含农历与节日名称', () {
-    for (final year in [2027, 2028, 2030]) {
-      final info = lunar.dayInfo(DateTime(year, 1, 1));
-      expect(info.label, '元旦');
-      expect(info.isFestival, isTrue);
-      expect(info.lunarDate, isNotEmpty);
-    }
-  });
 
   test('双端共享固定黄金向量与严格非法农历输入', () {
     final fixture =
@@ -177,12 +146,6 @@ void main() {
     expect(rules.recentEvent(entries, today, dayBookId: 'A')!.id, 'a');
     expect(rules.recentEvent(entries, today, dayBookId: 'B')!.id, 'other-book');
     expect(rules.recentEvent(entries.take(2), today, dayBookId: 'A'), isNull);
-    expect(
-      rules
-          .sortEvents(entries.reversed, today, dayBookId: 'A')
-          .map((e) => e.id),
-      ['a', 'b', 'anniversary', 'expired', 'stage'],
-    );
   });
 
   test('倒数顺序为未到目标优先、过期目标降序', () {

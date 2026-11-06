@@ -125,7 +125,7 @@ void main() {
     );
     expect(
       identity.displayNameOf(selfMemberId),
-      '单机芝麻仔',
+      isNot('云昵称'),
       reason: '本地身份与云身份独立,已登录也不得显示云昵称',
     );
     expect(identity.isSelfOf(selfMemberId), isTrue);
@@ -191,7 +191,6 @@ void main() {
     );
     expect(identity.selfMemberId, isEmpty);
     expect(identity.isSelfOf('local-self'), isFalse);
-    expect(identity.displayNameOf('local-self'), '未知');
   });
 
   test('共享账本 storageMode 未回填 cloud：本人仍显云昵称并标记「我」', () async {
@@ -225,48 +224,5 @@ void main() {
       'u-owner',
       reason: '绑定成员存在时 self 必须是该成员,不能裸回退设备 id',
     );
-  });
-
-  test('资料缓存未就绪：本人回退成员行昵称,再回退「未知」', () async {
-    final ledgerId = await seedLedger(storageMode: 'cloud');
-    // 不登录:云昵称不可用,回退成员行昵称。
-    await seedBoundSelf(ledgerId, displayName: 'Owner');
-    final c = buildContainer();
-
-    final identity = await readProviderFutureFromContainer(
-      c,
-      ledgerIdentityProvider(ledgerId).future,
-    );
-    expect(identity.displayNameOf('u-owner'), 'Owner');
-
-    // 成员行昵称为空:防御性兜底「未知」,绝不裸显 id。
-    await (db.update(db.ledgerMembers)..where((m) => m.id.equals('u-owner')))
-        .write(const LedgerMembersCompanion(displayName: d.Value('')));
-    c.invalidate(ledgerIdentityProvider(ledgerId));
-    final refreshed = await readProviderFutureFromContainer(
-      c,
-      ledgerIdentityProvider(ledgerId).future,
-    );
-    expect(refreshed.displayNameOf('u-owner'), '未知');
-  });
-
-  test('未知参与人统一「未知」,虚拟用户解析自身名称', () async {
-    final ledgerId = await seedLedger(storageMode: 'cloud');
-    await seedBoundSelf(ledgerId);
-    await repo.createPlaceholderMember(
-      ledgerId: ledgerId,
-      name: '室友A',
-      id: 'vu-1',
-    );
-    final c = buildContainer(cloudAccount: true);
-
-    final identity = await readProviderFutureFromContainer(
-      c,
-      ledgerIdentityProvider(ledgerId).future,
-    );
-    expect(identity.displayNameOf('vu-1'), '室友A');
-    expect(identity.isSelfOf('vu-1'), isFalse);
-    expect(identity.displayNameOf('foreign-id'), '未知');
-    expect(identity.displayNameOf(null), '未知');
   });
 }

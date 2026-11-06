@@ -207,7 +207,7 @@ flutter build ios --release --flavor prod --dart-define-from-file=config/prod.lo
 python -B scripts/test/ios_environment_test.py
 ```
 
-这项回归覆盖配置、共享方案和混用拒绝规则；iOS 签名、打包、系统权限与真机并装仍应在 macOS/iOS 环境验收。方案和配置的对应方式见 [Flutter 官方说明](https://docs.flutter.dev/deployment/flavors-ios)。
+这项回归覆盖环境与安装身份匹配、缺失或冲突参数的拒绝规则；共享方案、iOS 签名、打包、系统权限与真机并装在 macOS/iOS 环境验收。方案和配置的对应方式见 [Flutter 官方说明](https://docs.flutter.dev/deployment/flavors-ios)。
 ## Android R8 规则与 APK 只读测量
 
 正式包只为 Flutter 反射注册入口、通知持久化模型字段/构造器及序列化元数据配置应用规则。通知样式的简单类名、枚举与字段名参与历史 Gson 缓存，不能随混淆改名。Flutter JNI 与类级 `@Keep` 入口由 Android 默认规则和 AndroidX 消费者规则保护，清单组件由 AAPT 生成规则保留；升级 Flutter、AGP 或插件时需要重新核对合并配置与产物。

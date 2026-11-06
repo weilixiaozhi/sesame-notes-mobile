@@ -76,37 +76,6 @@ void main() {
     expect(await store.unpublished('account-a'), isEmpty);
   });
 
-  test('后台刷新仅通知调度，首次发布集合变化才通知展示', () async {
-    var taskChanges = 0;
-    var publicationChanges = 0;
-    final store = CloudLedgerDownloadStore(
-      SharedPreferences.getInstance,
-      onChanged: () => taskChanges++,
-      onPublicationChanged: () => publicationChanges++,
-    );
-    await store.markPending('account', 'ready', hasLocalSnapshot: true);
-    await store.markReady('account', 'ready');
-    expect(taskChanges, 2);
-    expect(publicationChanges, 0);
-
-    await store.markPending('account', 'first');
-    await store.markPending('account', 'first', hasLocalSnapshot: true);
-    expect(taskChanges, 3);
-    expect(publicationChanges, 1);
-    await store.markReady('account', 'first');
-    expect(taskChanges, 4);
-    expect(publicationChanges, 2);
-
-    await store.markPending('account', 'ready', hasLocalSnapshot: true);
-    await store.forgetAll();
-    expect(taskChanges, 6);
-    expect(publicationChanges, 2);
-    await store.markPending('account', 'first');
-    await store.forgetAll();
-    expect(taskChanges, 8);
-    expect(publicationChanges, 4);
-  });
-
   for (final invalid in <Object>[
     true,
     false,

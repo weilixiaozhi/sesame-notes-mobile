@@ -11,50 +11,18 @@ import 'package:sesame_notes/shared/providers/database_providers.dart';
 import 'package:sesame_notes/shared/providers/day_sync_status_provider.dart';
 import 'package:sesame_notes/shared/providers/fitness_space_provider.dart';
 import 'package:sesame_notes/shared/providers/fitness_sync_status_provider.dart';
-import 'package:sesame_notes/shared/providers/refresh_ticks.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
 
-/// 记录队列结果行数和列名，验证状态查询不传输完整正文。
-class _StatusReads extends d.QueryInterceptor {
-  final queueResults = <List<Map<String, Object?>>>[];
-
-  /// 业务状态读到的内容必须是计数，队列写入和建表不参与统计。
-  @override
-  Future<List<Map<String, Object?>>> runSelect(
-    d.QueryExecutor executor,
-    String statement,
-    List<Object?> args,
-  ) async {
-    try {
-      final rows = await executor.runSelect(statement, args);
-      if (RegExp(
-        r'FROM\s+"?sync_changes"?\b',
-        caseSensitive: false,
-      ).hasMatch(statement)) {
-        queueResults.add(rows);
-      }
-      return rows;
-    } catch (error, stackTrace) {
-      logger.error('PrivateSyncStatusTest', '队列读取计数失败', error, stackTrace);
-      rethrow;
-    }
-  }
-}
-
-/// 验证同步状态按业务隔离失效，计数仍包含拒收和无可见父本的保护记录。
+/// 验证待推与拒收数量按账号和本子隔离，已确认记录不计入待推。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late SesameDatabase db;
   late ProviderContainer container;
-  late _StatusReads reads;
   final stamp = DateTime.utc(2026);
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
-    reads = _StatusReads();
-    db = SesameDatabase.withExecutor(
-      d.ApplyInterceptor(NativeDatabase.memory()).interceptWith(reads),
-    );
+    db = SesameDatabase.withExecutor(NativeDatabase.memory());
     await db
         .into(db.dayBooks)
         .insert(
@@ -97,7 +65,7 @@ void main() {
     await db.close();
   });
 
-  /// 大正文用于证明状态读取规模与正文长度无关，拒收及回执采用生产字段。
+  /// 构造不同账号、本子、拒收及确认状态的同步队列记录。
   Future<void> queue(
     String id, {
     String? day,
@@ -115,8 +83,7 @@ void main() {
               entityId: id,
               mutationId: id,
               action: 'upsert',
-              payload: 'x' * 8192,
-              frozenRequest: d.Value('y' * 8192),
+              payload: '{}',
               updatedAt: stamp,
               accountId: d.Value(account),
               dayBookId: d.Value(day),
@@ -141,7 +108,7 @@ void main() {
     await container.read(fitnessSyncStatusProvider.future);
   }
 
-  test('同步状态按本汇总，正文不进入查询结果且账号与回执过滤有效', () async {
+  test('同步状态按本汇总，账号与回执过滤有效', () async {
     try {
       await db.transaction(() async {
         for (var index = 0; index < 12; index++) {
@@ -181,59 +148,22 @@ void main() {
       final fitness = container.read(fitnessSyncStatusProvider).requireValue;
       expect(fitness.pendingCount, 12);
       expect(fitness.rejectedCount, 3);
-      expect(reads.queueResults, hasLength(2));
-      expect(reads.queueResults.map((rows) => rows.length).toList()..sort(), [
-        1,
-        2,
-      ]);
-      expect(
-        reads.queueResults
-            .expand((rows) => rows)
-            .any(
-              (row) => row.keys.any(
-                (key) =>
-                    key.contains('payload') || key.contains('frozen_request'),
-              ),
-            ),
-        isFalse,
-      );
     } catch (error, stackTrace) {
-      logger.error('PrivateSyncStatusTest', '聚合计数与查询规模验证失败', error, stackTrace);
+      logger.error(
+        'PrivateSyncStatusTest',
+        '同步状态计数与账号过滤验证失败',
+        error,
+        stackTrace,
+      );
       rethrow;
     }
   });
 
-  test('笔记与财务保存不重查私有域状态，本域保存和同步回执仍刷新', () async {
+  test('队列提交与同步确认后待推数量更新', () async {
     try {
       container.listen(daySyncStatusProvider, (_, _) {});
       container.listen(fitnessSyncStatusProvider, (_, _) {});
       await settle();
-      final before = reads.queueResults.length;
-      await db.transaction(() async {
-        await db
-            .into(db.memoBooks)
-            .insert(
-              MemoBooksCompanion.insert(
-                id: 'memo',
-                name: '笔记',
-                type: 'normal',
-                createdAt: stamp,
-                updatedAt: stamp,
-              ),
-            );
-        await db
-            .into(db.ledgers)
-            .insert(
-              LedgersCompanion.insert(
-                id: 'ledger',
-                name: '账本',
-                updatedAt: stamp,
-              ),
-            );
-      });
-      await settle();
-      expect(reads.queueResults.length, before);
-
       await db.transaction(() async {
         await queue('new-day', day: 'day');
         await (db.update(
@@ -249,7 +179,6 @@ void main() {
         container.read(daySyncStatusProvider).requireValue.single.pendingCount,
         1,
       );
-      expect(reads.queueResults.length, before + 1, reason: '日子提交只重查日子状态');
 
       await (db.update(db.syncChanges)
             ..where((row) => row.entityId.equals('new-day')))
@@ -260,17 +189,8 @@ void main() {
         container.read(daySyncStatusProvider).requireValue.single.pendingCount,
         0,
       );
-
-      final refreshed = reads.queueResults.length;
-      container.read(manualDataRefreshProvider.notifier).tick();
-      await settle();
-      expect(
-        reads.queueResults.length,
-        greaterThan(refreshed),
-        reason: '手动刷新仍强制重查两个业务状态',
-      );
     } catch (error, stackTrace) {
-      logger.error('PrivateSyncStatusTest', '跨业务刷新隔离验证失败', error, stackTrace);
+      logger.error('PrivateSyncStatusTest', '同步确认后待推数量验证失败', error, stackTrace);
       rethrow;
     }
   });

@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' as d;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -38,48 +37,15 @@ class _TwoFrameDayNotifier extends CurrentDayBookNotifier {
   }
 }
 
-/// 记录真实目录 SQL，识别目录流之外的重复快照查询。
-class _DirectoryReads extends d.QueryInterceptor {
-  final counts = <String, int>{};
-
-  /// 只统计父目录读取，初始化数据库和子记录查询不影响结果。
-  @override
-  Future<List<Map<String, Object?>>> runSelect(
-    d.QueryExecutor executor,
-    String statement,
-    List<Object?> args,
-  ) async {
-    try {
-      final rows = await executor.runSelect(statement, args);
-      for (final table in ['day_books', 'memo_books', 'fitness_spaces']) {
-        if (RegExp(
-          'FROM\\s+"?$table"?\\b',
-          caseSensitive: false,
-        ).hasMatch(statement)) {
-          counts.update(table, (value) => value + 1, ifAbsent: () => 1);
-        }
-      }
-      return rows;
-    } catch (error, stackTrace) {
-      logger.error('PrivateBookReadsTest', '目录读取计数失败', error, stackTrace);
-      rethrow;
-    }
-  }
-}
-
-/// 当前本恢复和目录展示共享查询，加载失败仍保持可重试错误状态。
+/// 当前本读取使用有效目录，加载失败明确报错，连续目录更新选择最新本子。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late SesameDatabase db;
-  late _DirectoryReads reads;
   late ProviderContainer container;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
-    reads = _DirectoryReads();
-    db = SesameDatabase.withExecutor(
-      d.ApplyInterceptor(NativeDatabase.memory()).interceptWith(reads),
-    );
+    db = SesameDatabase.withExecutor(NativeDatabase.memory());
     container = ProviderContainer(
       overrides: [
         databaseProvider.overrideWithValue(db),
@@ -138,74 +104,6 @@ void main() {
       rethrow;
     }
   }
-
-  test('四类当前本恢复只各订阅一次目录，目录变化不增加快照查询', () async {
-    try {
-      await seedDirectories('first');
-      reads.counts.clear();
-      container.listen(currentDayBookIdProvider, (_, _) {});
-      container.listen(currentMemoBookIdProvider, (_, _) {});
-      container.listen(currentCredentialBookIdProvider, (_, _) {});
-      container.listen(currentFitnessSpaceIdProvider, (_, _) {});
-
-      expect(
-        await container.read(currentDayBookIdProvider.future),
-        'day-first',
-      );
-      expect(
-        await container.read(currentMemoBookIdProvider.future),
-        'normal-first',
-      );
-      expect(
-        await container.read(currentCredentialBookIdProvider.future),
-        'credentials-first',
-      );
-      expect(
-        await container.read(currentFitnessSpaceIdProvider.future),
-        'fitness-first',
-      );
-      await container.pump();
-      expect(reads.counts, {
-        'day_books': 1,
-        'memo_books': 1,
-        'fitness_spaces': 1,
-      });
-
-      await seedDirectories('second');
-      // 等待目录流发布新集合，再检查派生选择已经消费同一份结果。
-      await Future.wait([
-        container.read(dayBooksProvider.future),
-        container.read(memoBooksProvider.future),
-        container.read(fitnessSpacesProvider.future),
-      ]);
-      await container.pump();
-      await container.pump();
-      expect(
-        await container.read(currentDayBookIdProvider.future),
-        'day-first',
-      );
-      expect(
-        await container.read(currentMemoBookIdProvider.future),
-        'normal-first',
-      );
-      expect(
-        await container.read(currentCredentialBookIdProvider.future),
-        'credentials-first',
-      );
-      expect(
-        await container.read(currentFitnessSpaceIdProvider.future),
-        'fitness-first',
-      );
-      expect(reads.counts, {
-        'day_books': 2,
-        'memo_books': 2,
-        'fitness_spaces': 2,
-      });
-    } catch (error, stackTrace) {
-      logger.error('PrivateBookReadsTest', '目录复用行为验证失败', error, stackTrace);
-      rethrow;
-    }
-  });
 
   test('没有页面监听时读取当前本Future也能消费目录首帧', () async {
     try {

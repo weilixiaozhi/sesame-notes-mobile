@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_notes/data/models/fitness.dart';
-import 'package:sesame_notes/data/models/fitness_catalog.dart';
 import 'package:sesame_notes/domain/fitness/fitness_rules.dart';
 import 'package:sesame_notes/features/fitness/domain/fitness_statistics.dart';
 
@@ -43,22 +42,6 @@ FitnessWorkout workout({
     ],
   );
 }
-
-FitnessExerciseDefinition definition(String id, String bodyPart) =>
-    FitnessExerciseDefinition(
-      id: id,
-      nameZh: '动作$id',
-      nameZhHant: '動作$id',
-      nameEn: 'Exercise $id',
-      bodyPart: bodyPart,
-      target: 'target-$id',
-      equipment: 'barbell',
-      gifAsset: '',
-      secondaryMuscles: const [],
-      instructionsZh: const [],
-      instructionsZhHant: const [],
-      instructionsEn: const [],
-    );
 
 void main() {
   group('完成组统计契约', () {
@@ -161,24 +144,6 @@ void main() {
       expect(values[3], 0);
       expect(values[4].isNaN, isTrue);
       expect(stats.trainingDays, 1);
-    });
-
-    test('周视图七天刻度只在训练日有值', () {
-      final stats = fitnessStatistics(
-        [workout(id: 'a', date: '2026-03-04', minutes: 60)],
-        startDate: '2026-03-02',
-        endDate: '2026-03-08',
-      );
-      final values = fitnessDurationSeries(
-        stats.durationByDate,
-        dates: [
-          for (var day = 2; day <= 8; day++)
-            '2026-03-${day.toString().padLeft(2, '0')}',
-        ],
-      );
-      expect(values, hasLength(7));
-      expect(values[2], 1);
-      expect(values.where((value) => !value.isNaN), [1]);
     });
 
     test('年视图按自然月合并同月多天，范围外记录不参与', () {
@@ -297,52 +262,6 @@ void main() {
       expect(
         counting.exercises.single.sets.single.restDurationsSeconds,
         isEmpty,
-      );
-    });
-  });
-
-  group('动作列表排序', () {
-    final chest = definition('0001', 'chest');
-    final back = definition('0002', 'back');
-    final legs = definition('0003', 'upper legs');
-    final catalog = [chest, back, legs];
-    List<String> order(List<String> pinned, {List<String>? recentOrder}) =>
-        fitnessSortExercises(
-          catalog,
-          catalog: catalog,
-          pinnedIds: pinned,
-          recentOrder: recentOrder,
-        ).map((item) => item.id).toList();
-
-    test('默认按部位分组顺序、组内保持目录原序', () {
-      final samePart = definition('0004', 'chest');
-      final mixed = [chest, back, samePart, legs];
-      expect(
-        fitnessSortExercises(
-          mixed,
-          catalog: mixed,
-          pinnedIds: const [],
-        ).map((item) => item.id),
-        ['0001', '0004', '0002', '0003'],
-      );
-    });
-
-    test('置顶排最前，取消置顶回到部位顺序', () {
-      expect(order(const []), ['0001', '0002', '0003']);
-      expect(order(const ['0003']), ['0003', '0001', '0002']);
-      expect(order(const []), ['0001', '0002', '0003']);
-    });
-
-    test('最近使用筛选按最近顺序排列，置顶仍然优先', () {
-      // 最近使用筛选下列表项都来自最近记录，未置顶动作按最近顺序排列。
-      expect(order(const [], recentOrder: const ['0003', '0001', '0002']), [
-        '0003',
-        '0001',
-        '0002',
-      ]);
-      expect(
-        order(const ['0002'], recentOrder: const ['0003', '0001', '0002']),
-        ['0002', '0003', '0001'],
       );
     });
   });

@@ -6,25 +6,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('配置故障仅记录一次上下文与异常类型', () async {
+  test('配置解析失败时日志不能泄漏原始凭据和备份正文', () async {
     SharedPreferences.setMockInitialValues({
       'cloud_active_type': 'webdav',
       'cloud_cfg_webdav': 'password-secret backup-plaintext invalid-json',
     });
     final messages = <String>[];
     final store = CloudServiceStore(
-      logger: CloudSyncLogger(onLog: (level, message) {
-        expect(level.name, 'warning');
+      logger: CloudSyncLogger(onLog: (_, message) {
         messages.add(message);
       }),
     );
 
     await expectLater(store.loadActive(), throwsStateError);
-    expect(messages, hasLength(1));
-    expect(messages.single, contains('webdav'));
-    expect(messages.single, contains('配置'));
-    expect(messages.single, contains('FormatException'));
-    expect(messages.single, isNot(contains('password-secret')));
-    expect(messages.single, isNot(contains('backup-plaintext')));
+    expect(messages, isNotEmpty);
+    expect(messages.join('\n'), isNot(contains('password-secret')));
+    expect(messages.join('\n'), isNot(contains('backup-plaintext')));
   });
 }

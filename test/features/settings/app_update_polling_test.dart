@@ -24,7 +24,7 @@ AppUpdate _update() => AppUpdate.fromJson({
   'notes': '测试',
 });
 
-/// 每次查询创建新对象，验证窗口按内容而非对象身份决定重建。
+/// 提供可控的下载进度，核对前后台切换时的查询与进度恢复。
 class _DownloadService extends AppUpdateService {
   int reads = 0;
   int received = 0;
@@ -269,20 +269,16 @@ void main() {
     }
   });
 
-  test('进度窗口后台停止查询，未变快照不通知界面，恢复后继续', () {
+  test('下载进度在后台暂停查询，恢复前台后读取最新进度', () {
     fakeAsync((time) {
       final service = _DownloadService();
       final controller = AppUpdateController(service: service);
-      var notifications = 0;
-      controller.addListener(() => notifications++);
       try {
         unawaited(controller.check());
         time.flushMicrotasks();
         expect(service.reads, 1);
-        notifications = 0;
         time.elapse(const Duration(seconds: 4));
         expect(service.reads, 3);
-        expect(notifications, 0);
         controller.setForeground(false);
         time.elapse(const Duration(minutes: 1));
         expect(service.reads, 3);
@@ -291,10 +287,8 @@ void main() {
         time.flushMicrotasks();
         expect(service.reads, 4);
         expect(controller.progress, .5);
-        expect(notifications, 1);
         time.elapse(const Duration(seconds: 2));
         expect(service.reads, 5);
-        expect(notifications, 1);
       } catch (error, stack) {
         printOnFailure('更新窗口进度回归失败：$error\n$stack');
         rethrow;

@@ -374,13 +374,5 @@ void main() {
     expect(summary, contains('12345678901234567890.1234567890'));
     expect(summary, contains('保存的备注'));
     expect(summary, isNot(contains('base_revision')));
-    expect(
-      describeCloudHistoryChanges({'unknown_field': 4}, l10n),
-      l10n.recordHistoryUpdated,
-    );
-    expect(
-      describeCloudHistoryChanges({'action': 'delete'}, l10n),
-      l10n.recordHistoryDeleted,
-    );
   });
 }

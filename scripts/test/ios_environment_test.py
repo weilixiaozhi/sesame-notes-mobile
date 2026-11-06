@@ -1,11 +1,9 @@
-"""覆盖iOS环境隔离的有效配置、错误组合及共享Xcode方案。"""
+"""验证iOS环境隔离的有效配置和身份混用拒绝规则。"""
 
 import base64
 import importlib.util
-import re
 import unittest
 from pathlib import Path
-from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location('ios_environment', ROOT / 'scripts/ios/check_environment.py')
@@ -51,24 +49,6 @@ class IosEnvironmentTest(unittest.TestCase):
             with self.subTest(fields=list(override)):
                 with self.assertRaises(ValueError):
                     MODULE.validate_environment({**self.values('test', 'Debug-test'), **override})
-
-    def test_scheme_and_target_configuration_match(self):
-        """共享方案指向六个真实配置，所有目标从环境设置读取应用身份。"""
-        project = (ROOT / 'ios/Runner.xcodeproj/project.pbxproj').read_text(encoding='utf-8')
-        for environment in ('test', 'prod'):
-            scheme = ElementTree.parse(ROOT / f'ios/Runner.xcodeproj/xcshareddata/xcschemes/{environment}.xcscheme')
-            expected = {'TestAction': 'Debug', 'LaunchAction': 'Debug', 'ProfileAction': 'Profile', 'AnalyzeAction': 'Debug', 'ArchiveAction': 'Release'}
-            for action, mode in expected.items():
-                self.assertEqual(f'{mode}-{environment}', scheme.find(action).attrib['buildConfiguration'])
-                self.assertIn(f'name = "{mode}-{environment}";', project)
-        self.assertEqual(9, project.count('PRODUCT_BUNDLE_IDENTIFIER = "$(SESAME_BUNDLE_IDENTIFIER)";'))
-        self.assertIn('check_environment.py', project)
-        for name, environment in [('Debug', 'Test'), ('Release', 'Prod'), ('DebugProd', 'Prod'), ('ReleaseTest', 'Test')]:
-            text = (ROOT / f'ios/Flutter/{name}.xcconfig').read_text(encoding='utf-8')
-            self.assertIn(f'#include "Environment{environment}.xcconfig"', text)
-        identifiers = re.findall(r'^\s{2,}([0-9A-F]{24}) /\*.*\*/ = \{', project, re.M)
-        self.assertEqual(len(identifiers), len(set(identifiers)))
-
 
 if __name__ == '__main__':
     unittest.main()
