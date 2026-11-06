@@ -467,6 +467,7 @@ class _FitnessExerciseEditorState extends State<FitnessExerciseEditor> {
     );
   }
 
+  /// 训练组按实际内容统一字段高度，重量、次数和完成按钮保持上下边缘对齐。
   Widget _setFields(
     BuildContext context,
     int index,
@@ -477,6 +478,8 @@ class _FitnessExerciseEditorState extends State<FitnessExerciseEditor> {
     final l = AppLocalizations.of(context);
     final completed = widget.execution && s.completed;
     final fieldHeight = MediaQuery.textScalerOf(context).scale(AppDimens.p36);
+
+    /// 数值字段保留最小高度，单位、输入内容和校验提示共同决定所需行高。
     Widget input(
       String field,
       String label,
@@ -603,13 +606,13 @@ class _FitnessExerciseEditorState extends State<FitnessExerciseEditor> {
                   ? AppTokens.primary(context)
                   : AppTokens.surfaceInput(context),
               borderRadius: BorderRadius.circular(
-                AppTokens.buttonRadius(context),
+                AppTokens.inputRadius(context),
               ),
             ),
             child: IconButton(
               padding: EdgeInsets.zero,
               alignment: Alignment.center,
-              constraints: BoxConstraints.tightFor(height: fieldHeight),
+              constraints: BoxConstraints(minHeight: fieldHeight),
               style: IconButton.styleFrom(
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
@@ -648,14 +651,18 @@ class _FitnessExerciseEditorState extends State<FitnessExerciseEditor> {
                         kindWidth -
                         _fieldGap * _fieldSlots) /
                     _fieldSlots;
-                return Row(
-                  children: [
-                    SizedBox(width: kindWidth, child: fields.first),
-                    for (final field in fields.skip(1)) ...[
-                      const SizedBox(width: _fieldGap),
-                      SizedBox(width: cellWidth, child: field),
+                // 各格宽度确定后按最高内容测量行高，再拉伸所有格子以统一外框高度。
+                return IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(width: kindWidth, child: fields.first),
+                      for (final field in fields.skip(1)) ...[
+                        const SizedBox(width: _fieldGap),
+                        SizedBox(width: cellWidth, child: field),
+                      ],
                     ],
-                  ],
+                  ),
                 );
               },
             ),
