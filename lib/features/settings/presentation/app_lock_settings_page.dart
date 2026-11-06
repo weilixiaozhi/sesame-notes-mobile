@@ -11,7 +11,6 @@ import 'package:sesame_notes/features/auth/application/security_providers.dart';
 import 'package:sesame_notes/navigation/route_consts.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/theme/dimens.dart';
-import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
@@ -368,6 +367,7 @@ class _PinVerifyPageState extends ConsumerState<_PinVerifyPage> {
     }
   }
 
+  /// 关闭应用锁的验证流程保留页面头与安全区，主体复用公共 PIN 输入。
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -380,33 +380,10 @@ class _PinVerifyPageState extends ConsumerState<_PinVerifyPage> {
           Expanded(
             child: SafeArea(
               top: false,
-              child: Column(
-                children: [
-                  const Spacer(flex: 2),
-                  Text(
-                    l10n.appLockVerifyCurrentPin,
-                    style: AppTextTokens.boldTitle(
-                      context,
-                    ).copyWith(color: AppTokens.textPrimary(context)),
-                  ),
-                  SizedBox(height: AppDimens.p32),
-                  ListenableBuilder(
-                    listenable: _pinInput,
-                    builder: (context, _) => PinDotIndicator(
-                      filledCount: _pinInput.length,
-                      isError: _pinInput.hasError,
-                    ),
-                  ),
-                  const Spacer(flex: 1),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: AppDimens.p40),
-                    child: NumberPad(
-                      onNumberTap: _onNumberTap,
-                      onDelete: _pinInput.deleteDigit,
-                    ),
-                  ),
-                  SizedBox(height: AppDimens.p32),
-                ],
+              child: PinEntryPanel(
+                title: l10n.appLockVerifyCurrentPin,
+                controller: _pinInput,
+                onNumberTap: _onNumberTap,
               ),
             ),
           ),

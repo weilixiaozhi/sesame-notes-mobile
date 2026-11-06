@@ -5,8 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/features/auth/application/security_providers.dart';
-import 'package:sesame_notes/theme/dimens.dart';
-import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
@@ -111,6 +109,7 @@ class _PinSetupPageState extends ConsumerState<PinSetupPage> {
     });
   }
 
+  /// 页面头展示设置模式，公共 PIN 主体随验证步骤更新标题。
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,36 +125,10 @@ class _PinSetupPageState extends ConsumerState<PinSetupPage> {
           Expanded(
             child: SafeArea(
               top: false,
-              child: Column(
-                children: [
-                  const Spacer(flex: 2),
-                  // 步骤提示
-                  Text(
-                    _title,
-                    style: AppTextTokens.boldTitle(
-                      context,
-                    ).copyWith(color: AppTokens.textPrimary(context)),
-                  ),
-                  SizedBox(height: AppDimens.p32),
-                  // PIN 圆点
-                  ListenableBuilder(
-                    listenable: _pinInput,
-                    builder: (context, _) => PinDotIndicator(
-                      filledCount: _pinInput.length,
-                      isError: _pinInput.hasError,
-                    ),
-                  ),
-                  const Spacer(flex: 1),
-                  // 数字键盘
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: AppDimens.p40),
-                    child: NumberPad(
-                      onNumberTap: _onNumberTap,
-                      onDelete: _pinInput.deleteDigit,
-                    ),
-                  ),
-                  SizedBox(height: AppDimens.p32),
-                ],
+              child: PinEntryPanel(
+                title: _title,
+                controller: _pinInput,
+                onNumberTap: _onNumberTap,
               ),
             ),
           ),

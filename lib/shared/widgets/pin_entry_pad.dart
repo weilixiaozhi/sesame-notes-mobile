@@ -5,27 +5,76 @@ import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import 'press_key.dart';
+import 'pin_input_controller.dart';
 
-/// PIN 码圆点指示器
-class PinDotIndicator extends StatelessWidget {
-  final int length;
+/// 应用锁、PIN 设置和当前 PIN 验证共用输入主体。
+class PinEntryPanel extends StatelessWidget {
+  /// 页面持有输入资源和认证流程，面板只展示标题、圆点与按键。
+  const PinEntryPanel({
+    super.key,
+    required this.title,
+    required this.controller,
+    required this.onNumberTap,
+    this.leading,
+    this.onBiometric,
+  });
+
+  final String title;
+  final PinInputController controller;
+  final ValueChanged<String> onNumberTap;
+  final Widget? leading;
+  final VoidCallback? onBiometric;
+
+  /// 圆点监听草稿变化，安全区和页面头部由调用页面安排。
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      const Spacer(flex: 2),
+      if (leading != null) ...[leading!, const SizedBox(height: AppDimens.p20)],
+      Text(
+        title,
+        style: AppTextTokens.boldTitle(
+          context,
+        ).copyWith(color: AppTokens.textPrimary(context)),
+      ),
+      const SizedBox(height: AppDimens.p32),
+      ListenableBuilder(
+        listenable: controller,
+        builder: (context, _) => _PinDotIndicator(
+          filledCount: controller.length,
+          isError: controller.hasError,
+        ),
+      ),
+      const Spacer(flex: 1),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppDimens.p40),
+        child: _PinNumberPad(
+          onNumberTap: onNumberTap,
+          onDelete: controller.deleteDigit,
+          onBiometric: onBiometric,
+        ),
+      ),
+      const SizedBox(height: AppDimens.p32),
+    ],
+  );
+}
+
+/// PIN 码圆点展示固定长度与当前输入状态。
+class _PinDotIndicator extends StatelessWidget {
   final int filledCount;
   final bool isError;
 
-  const PinDotIndicator({
-    super.key,
-    this.length = 4,
-    required this.filledCount,
-    this.isError = false,
-  });
+  /// 圆点仅接收位数和错误状态，不读取 PIN 内容。
+  const _PinDotIndicator({required this.filledCount, required this.isError});
 
+  /// 已填圆点使用实色，错误状态由主题错误色标示。
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(length, (index) {
+      children: List.generate(PinInputController.pinLength, (index) {
         final filled = index < filledCount;
         final dotSize = 14.0;
         final color = isError
@@ -48,21 +97,20 @@ class PinDotIndicator extends StatelessWidget {
   }
 }
 
-/// 数字键盘
-class NumberPad extends StatelessWidget {
+/// PIN 数字键盘固定保留生物识别、零和删除三个底行位置。
+class _PinNumberPad extends StatelessWidget {
   final ValueChanged<String> onNumberTap;
   final VoidCallback onDelete;
   final VoidCallback? onBiometric;
-  final bool showBiometric;
 
-  const NumberPad({
-    super.key,
+  /// 生物识别回调可用时显示入口，否则保留相同键位占位。
+  const _PinNumberPad({
     required this.onNumberTap,
     required this.onDelete,
-    this.onBiometric,
-    this.showBiometric = false,
+    required this.onBiometric,
   });
 
+  /// 数字和操作共用同一组圆形按键及行列间距。
   @override
   Widget build(BuildContext context) {
     final keys = [
@@ -83,14 +131,14 @@ class NumberPad extends StatelessWidget {
               if (key == 'bio') {
                 return _buildKeyButton(
                   context,
-                  child: showBiometric
+                  child: onBiometric != null
                       ? Icon(
                           AppIcons.fingerprint,
                           size: AppDimens.icon28,
                           color: AppTokens.textPrimary(context),
                         )
                       : const SizedBox.shrink(),
-                  onTap: showBiometric ? onBiometric : null,
+                  onTap: onBiometric,
                 );
               }
               if (key == 'del') {

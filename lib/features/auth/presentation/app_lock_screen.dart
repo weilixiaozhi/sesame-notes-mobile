@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/features/auth/application/security_providers.dart';
 import 'package:sesame_notes/theme/dimens.dart';
-import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
@@ -106,6 +105,7 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
     ref.read(isAppLockedProvider.notifier).set(false);
   }
 
+  /// 锁屏保留品牌与生物识别入口，PIN 主体使用统一布局。
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -114,41 +114,12 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
     return Scaffold(
       backgroundColor: AppTokens.scaffoldBackground(context),
       body: SafeArea(
-        child: Column(
-          children: [
-            const Spacer(flex: 2),
-            // 品牌图标
-            AppLogo(size: AppDimens.authLogoSize),
-            SizedBox(height: AppDimens.p20),
-            // 标题
-            Text(
-              l10n.appLockEnterPin,
-              style: AppTextTokens.boldTitle(
-                context,
-              ).copyWith(color: AppTokens.textPrimary(context)),
-            ),
-            SizedBox(height: AppDimens.p32),
-            // PIN 圆点
-            ListenableBuilder(
-              listenable: _pinInput,
-              builder: (context, _) => PinDotIndicator(
-                filledCount: _pinInput.length,
-                isError: _pinInput.hasError,
-              ),
-            ),
-            const Spacer(flex: 1),
-            // 数字键盘
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppDimens.p40),
-              child: NumberPad(
-                onNumberTap: _onNumberTap,
-                onDelete: _pinInput.deleteDigit,
-                showBiometric: showBiometric,
-                onBiometric: showBiometric ? _authenticateWithBiometrics : null,
-              ),
-            ),
-            SizedBox(height: AppDimens.p32),
-          ],
+        child: PinEntryPanel(
+          title: l10n.appLockEnterPin,
+          controller: _pinInput,
+          onNumberTap: _onNumberTap,
+          leading: const AppLogo(size: AppDimens.authLogoSize),
+          onBiometric: showBiometric ? _authenticateWithBiometrics : null,
         ),
       ),
     );

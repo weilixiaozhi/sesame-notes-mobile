@@ -223,14 +223,13 @@ List<GoRoute> buildAppRoutes({Map<String, WidgetBuilder> stubs = const {}}) {
       ),
     ),
     // AA 分摊编辑页：参数由调用方(记账编辑器)经 extra 传入，必填强转；
-    // 退场固定为下滑动画（见 [aaPageTransitionBuilder]）：AA 页通常在
+    // 退场固定为下滑动画：AA 页通常在
     // 记账编辑器 sheet 之上 push，保存时 sheet 同步下滑收起，两者同向视觉统一。
     // 自定义转场通过 pageBuilder 返回 CustomTransitionPage 实现。
     GoRoute(
       path: Routes.aaEdit,
       name: Routes.aaEdit,
-      // 自定义转场例外：AA 页退场需与记账 sheet 下滑同步（见
-      // [aaPageTransitionBuilder]），不套用 appPageRoute 的左右滑动。
+      // AA 页退场与记账 sheet 同向下滑，共用进入和退出时长。
       pageBuilder: (context, state) => CustomTransitionPage<dynamic>(
         key: state.pageKey,
         child: page(
@@ -240,9 +239,8 @@ List<GoRoute> buildAppRoutes({Map<String, WidgetBuilder> stubs = const {}}) {
           state,
         ),
         transitionDuration: kAppTransitionDuration,
-        // 退场下滑时长硬编码，不跟随全局转场参数，保证与 sheet 收起动画同步
-        reverseTransitionDuration: kAaPageSlideDuration,
-        transitionsBuilder: aaPageTransitionBuilder,
+        reverseTransitionDuration: kAppTransitionDuration,
+        transitionsBuilder: _aaPageTransitionBuilder,
       ),
     ),
     // AA 成员账单详情：参数由分摊统计页经 extra 传入，必填强转。
@@ -418,6 +416,31 @@ List<GoRoute> buildAppRoutes({Map<String, WidgetBuilder> stubs = const {}}) {
       ),
     ),
   ];
+}
+
+/// AA 页从右侧进入，退出时与下层记账弹层同向下滑。
+Widget _aaPageTransitionBuilder(
+  BuildContext _,
+  Animation<double> animation,
+  Animation<double> _,
+  Widget child,
+) {
+  final slideTween = Tween<Offset>(
+    begin: const Offset(1, 0),
+    end: Offset.zero,
+  ).chain(CurveTween(curve: Curves.linear));
+  // 退出动画由 1 递减至 0，反转后从当前位置向屏幕下方移动。
+  final exitTween = Tween<Offset>(
+    begin: Offset.zero,
+    end: const Offset(0, 1),
+  ).chain(CurveTween(curve: Curves.linear));
+  final isExiting = animation.status == AnimationStatus.reverse;
+  return SlideTransition(
+    position: isExiting
+        ? exitTween.animate(ReverseAnimation(animation))
+        : slideTween.animate(animation),
+    child: child,
+  );
 }
 
 /// 创建全局 GoRouter 实例。

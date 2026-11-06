@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 /// 按压反馈按键：[onDown] 按下触发，[onCancel] 可回滚滑出操作，
 /// [onUp] 用于松手后提交或关闭页面。
 class PressKey extends StatefulWidget {
+  /// 按键统一维护按压反馈，业务只提供各手势阶段的动作。
   const PressKey({
     super.key,
     required this.child,
@@ -11,10 +12,7 @@ class PressKey extends StatefulWidget {
     this.onUp,
     this.onCancel,
     this.onLongPress,
-    this.onLongPressStart,
     this.backgroundColor,
-    this.pressedColor,
-    this.splashFactory,
     this.borderRadius,
     this.scale = 1.0,
     this.enabled = true,
@@ -32,16 +30,9 @@ class PressKey extends StatefulWidget {
   final VoidCallback? onCancel;
 
   final VoidCallback? onLongPress;
-  final VoidCallback? onLongPressStart;
 
   /// 常态背景色；null = 透明。
   final Color? backgroundColor;
-
-  /// 按压态背景色；null 时按明暗模式在常态色上叠 18% 黑/白。
-  final Color? pressedColor;
-
-  /// 导航入口可使用原生涟漪，其余按键保留即时按压反馈。
-  final InteractiveInkFeatureFactory? splashFactory;
 
   final BorderRadius? borderRadius;
 
@@ -51,6 +42,7 @@ class PressKey extends StatefulWidget {
   /// 禁用时无按压态、不触发任何回调。
   final bool enabled;
 
+  /// 每个键位独立保存按下状态，随组件释放。
   @override
   State<PressKey> createState() => _PressKeyState();
 }
@@ -64,92 +56,64 @@ class _PressKeyState extends State<PressKey> {
     setState(() => _pressed = value);
   }
 
+  /// 手势识别为按下时提交即时操作，禁用状态不派发动作。
   void _handleDown(TapDownDetails _) {
     if (!widget.enabled) return;
     widget.onDown?.call();
   }
 
+  /// 松手先恢复外观，再执行提交或关闭动作。
   void _handleUp(TapUpDetails _) {
     if (!widget.enabled) return;
     _setPressed(false);
     widget.onUp?.call();
   }
 
+  /// 滑出或手势竞争取消时恢复外观，并交由业务回滚即时操作。
   void _handleCancel() {
     if (!widget.enabled) return;
     _setPressed(false);
     widget.onCancel?.call();
   }
 
-  void _handleLongPressStart(LongPressStartDetails _) {
-    if (!widget.enabled) return;
-    widget.onLongPressStart?.call();
-  }
-
+  /// 长按到达平台阈值后执行清空等业务动作。
   void _handleLongPress() {
     if (!widget.enabled) return;
     widget.onLongPress?.call();
   }
 
-  Color _resolvedPressedColor(BuildContext context) {
-    final explicit = widget.pressedColor;
-    if (explicit != null) return explicit;
-    final base = widget.backgroundColor ?? Colors.transparent;
-    return AppTokens.pressedBackground(context, base);
-  }
-
   /// 构建按压反馈，并将长按交给当前交互组件按平台默认时长识别。
   @override
   Widget build(BuildContext context) {
-    final color = _pressed
-        ? _resolvedPressedColor(context)
-        : (widget.backgroundColor ?? Colors.transparent);
-    return widget.splashFactory != null
-        ? Material(
-            color: widget.backgroundColor ?? Colors.transparent,
+    final base = widget.backgroundColor ?? Colors.transparent;
+    final color = _pressed ? AppTokens.pressedBackground(context, base) : base;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: widget.enabled ? _handleDown : null,
+      onTapUp: widget.enabled ? _handleUp : null,
+      onTapCancel: widget.enabled ? _handleCancel : null,
+      onLongPress: widget.enabled && widget.onLongPress != null
+          ? _handleLongPress
+          : null,
+      // Listener 立即更新按压态，避免 sheet 的拖拽手势竞争延迟反馈。
+      // 业务回调仍由 GestureDetector 处理。
+      child: Listener(
+        behavior: HitTestBehavior.deferToChild,
+        onPointerDown: widget.enabled ? (_) => _setPressed(true) : null,
+        onPointerUp: widget.enabled ? (_) => _setPressed(false) : null,
+        onPointerCancel: widget.enabled ? (_) => _setPressed(false) : null,
+        child: AnimatedScale(
+          scale: _pressed ? widget.scale : 1.0,
+          duration: const Duration(milliseconds: 70),
+          curve: Curves.easeOut,
+          child: Material(
+            color: color,
             borderRadius: widget.borderRadius ?? BorderRadius.zero,
             clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              splashFactory: widget.splashFactory,
-              onTap: widget.enabled ? widget.onUp : null,
-              onTapDown: widget.enabled ? _handleDown : null,
-              onTapCancel: widget.enabled ? _handleCancel : null,
-              onLongPress: widget.enabled ? widget.onLongPress : null,
-              child: widget.child,
-            ),
-          )
-        : GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTapDown: widget.enabled ? _handleDown : null,
-            onTapUp: widget.enabled ? _handleUp : null,
-            onTapCancel: widget.enabled ? _handleCancel : null,
-            onLongPressStart: widget.enabled && widget.onLongPressStart != null
-                ? _handleLongPressStart
-                : null,
-            onLongPress: widget.enabled && widget.onLongPress != null
-                ? _handleLongPress
-                : null,
-            // Listener 立即更新按压态，避免 sheet 的拖拽手势竞争延迟反馈。
-            // 业务回调仍由 GestureDetector 处理。
-            child: Listener(
-              behavior: HitTestBehavior.deferToChild,
-              onPointerDown: widget.enabled ? (_) => _setPressed(true) : null,
-              onPointerUp: widget.enabled ? (_) => _setPressed(false) : null,
-              onPointerCancel: widget.enabled
-                  ? (_) => _setPressed(false)
-                  : null,
-              child: AnimatedScale(
-                scale: _pressed ? widget.scale : 1.0,
-                duration: const Duration(milliseconds: 70),
-                curve: Curves.easeOut,
-                child: Material(
-                  color: color,
-                  borderRadius: widget.borderRadius ?? BorderRadius.zero,
-                  clipBehavior: Clip.antiAlias,
-                  child: widget.child,
-                ),
-              ),
-            ),
-          );
+            child: widget.child,
+          ),
+        ),
+      ),
+    );
   }
 }

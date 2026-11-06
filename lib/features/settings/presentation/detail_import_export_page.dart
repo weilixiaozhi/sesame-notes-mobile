@@ -126,11 +126,6 @@ class _DetailImportExportPageState
                             leading: AppIcons.fileDownload,
                             title: l10n.detailImportExportExportTitle,
                             subtitle: l10n.detailImportExportExportSubtitle,
-                            trailing: Icon(
-                              AppIcons.chevronRight,
-                              color: AppTokens.iconTertiary(context),
-                              size: AppDimens.icon20,
-                            ),
                             onTap: () => context.pushNamed(Routes.detailExport),
                           ),
                           AppTokens.cardDivider(context),
@@ -151,11 +146,7 @@ class _DetailImportExportPageState
                                       ).colorScheme.primary,
                                     ),
                                   )
-                                : Icon(
-                                    AppIcons.chevronRight,
-                                    color: AppTokens.iconTertiary(context),
-                                    size: AppDimens.icon20,
-                                  ),
+                                : null,
                             onTap: _reading ? null : _pickAndImport,
                           ),
                         ],

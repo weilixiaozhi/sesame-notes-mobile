@@ -201,19 +201,15 @@ class DetailListIcon extends StatelessWidget {
 
 /// 明细次要内容统一与主标题的距离、字号和颜色。
 class DetailListSubtitle extends StatelessWidget {
-  final bool compact;
-  const DetailListSubtitle({
-    super.key,
-    required this.child,
-    this.compact = false,
-  });
+  /// 次行与标题保留统一间距，业务只提供文本或组合内容。
+  const DetailListSubtitle({super.key, required this.child});
 
   final Widget child;
 
   /// 文本和协作信息沿用同一基线，自定义业务强调色可由子组件覆盖。
   @override
   Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(top: compact ? 0 : AppDimens.p4),
+    padding: const EdgeInsets.only(top: AppDimens.p4),
     child: DefaultTextStyle(
       style: AppTextTokens.caption(
         context,

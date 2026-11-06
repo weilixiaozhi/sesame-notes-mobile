@@ -6,13 +6,12 @@ import 'package:sesame_notes/theme/colors.dart';
 
 /// 循环记账和纪念日共用日期输入行，标签在输入框内静态排列。
 class AppDateField extends StatelessWidget {
-  /// 日期文字与尾部操作由业务提供，输入框和点击区域统一呈现。
+  /// 日期文字和点击动作由业务提供，输入框和标签布局统一呈现。
   const AppDateField({
     super.key,
     required this.label,
     required this.valueText,
     required this.onTap,
-    this.suffix,
     this.enabled = true,
     this.stacked = false,
   });
@@ -20,11 +19,10 @@ class AppDateField extends StatelessWidget {
   final String label;
   final String valueText;
   final VoidCallback? onTap;
-  final Widget? suffix;
   final bool enabled;
   final bool stacked;
 
-  /// 日期行保留主题填充及圆角，尾部可放清除按钮或历法胶囊。
+  /// 日期与标签按横排或上下排列，填充、圆角和禁用颜色来自主题。
   @override
   Widget build(BuildContext context) => AppInputSurface(
     enabled: enabled,
@@ -55,7 +53,6 @@ class AppDateField extends StatelessWidget {
                       ),
                     ),
                   ),
-                  ?suffix,
                 ],
               ),
             ],
@@ -84,10 +81,6 @@ class AppDateField extends StatelessWidget {
                   ),
                 ),
               ),
-              if (suffix != null) ...[
-                const SizedBox(width: AppDimens.p8),
-                Flexible(child: suffix!),
-              ],
             ],
           ),
   );

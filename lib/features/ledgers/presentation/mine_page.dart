@@ -56,11 +56,6 @@ class MinePage extends StatelessWidget {
                 AppListTile(
                   leading: AppIcons.notifications,
                   title: l10n.mineReminderSettings,
-                  trailing: Icon(
-                    AppIcons.chevronRight,
-                    color: AppTokens.iconTertiary(context),
-                    size: AppDimens.icon20,
-                  ),
                   onTap: () => context.pushNamed(Routes.reminderSettings),
                 ),
                 AppTokens.cardDivider(context),
@@ -75,11 +70,6 @@ class MinePage extends StatelessWidget {
                 AppListTile(
                   leading: AppIcons.lock,
                   title: l10n.appLockTitle,
-                  trailing: Icon(
-                    AppIcons.chevronRight,
-                    color: AppTokens.iconTertiary(context),
-                    size: AppDimens.icon20,
-                  ),
                   onTap: () => context.pushNamed(Routes.appLockSettings),
                 ),
                 AppTokens.cardDivider(context),
@@ -87,11 +77,6 @@ class MinePage extends StatelessWidget {
                 AppListTile(
                   leading: AppIcons.driveFileMove,
                   title: l10n.detailImportExportTitle,
-                  trailing: Icon(
-                    AppIcons.chevronRight,
-                    color: AppTokens.iconTertiary(context),
-                    size: AppDimens.icon20,
-                  ),
                   onTap: () => context.pushNamed(Routes.detailImportExport),
                 ),
                 AppTokens.cardDivider(context),
@@ -128,11 +113,6 @@ class MinePage extends StatelessWidget {
                     child: Icon(AppIcons.category),
                   ),
                   title: l10n.mineCategoryManagement,
-                  trailing: Icon(
-                    AppIcons.chevronRight,
-                    color: AppTokens.iconTertiary(context),
-                    size: AppDimens.icon20,
-                  ),
                   // 按路由名跳转分类管理页，由 go_router 统一解析
                   onTap: () => context.pushNamed(Routes.categoryManage),
                 ),
@@ -141,11 +121,6 @@ class MinePage extends StatelessWidget {
                 AppListTile(
                   leading: AppIcons.currencyExchange,
                   title: l10n.exchangeRatePageTitle,
-                  trailing: Icon(
-                    AppIcons.chevronRight,
-                    color: AppTokens.iconTertiary(context),
-                    size: AppDimens.icon20,
-                  ),
                   onTap: () => context.pushNamed(Routes.exchangeRate),
                 ),
               ],

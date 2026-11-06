@@ -12,7 +12,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/features/settings/application/cloud_backup_actions.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/widgets/app_list_tile.dart';
-import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
@@ -69,11 +68,6 @@ class CloudServiceEntryTile extends ConsumerWidget {
     return AppListTile(
       leading: icon,
       title: l10n.mineCloudService,
-      trailing: Icon(
-        AppIcons.chevronRight,
-        color: AppTokens.iconTertiary(context),
-        size: AppDimens.icon20,
-      ),
       onTap: onTap,
     );
   }

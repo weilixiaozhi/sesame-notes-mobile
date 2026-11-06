@@ -61,14 +61,12 @@ class AppSelectionField extends StatelessWidget {
     this.enabled = true,
     this.onTap,
     this.isPlaceholder = false,
-    this.suffix,
   }) : assert((title == null) != (child == null));
 
   final String? title;
   final Widget? child;
   final String? subtitle;
   final bool isPlaceholder;
-  final Widget? suffix;
   final bool enabled;
   final VoidCallback? onTap;
 
@@ -111,8 +109,7 @@ class AppSelectionField extends StatelessWidget {
                 ],
               ),
         ),
-        ?suffix,
-        if (suffix == null && enabled && onTap != null) ...[
+        if (enabled && onTap != null) ...[
           const SizedBox(width: AppDimens.p8),
           Icon(
             AppIcons.chevronRight,

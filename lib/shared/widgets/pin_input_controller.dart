@@ -4,6 +4,9 @@ import 'package:sesame_notes/core/logging/logger_service.dart';
 
 /// 管理四位 PIN 草稿、提交互斥与错误反馈，认证和设置流程由调用页面负责。
 class PinInputController extends ChangeNotifier {
+  /// 输入与圆点展示使用同一固定长度。
+  static const int pinLength = 4;
+
   String _digits = '';
   bool _submitting = false;
   bool _hasError = false;
@@ -23,7 +26,7 @@ class PinInputController extends ChangeNotifier {
     _hasError = false;
     _digits += digit;
     String? completed;
-    if (_digits.length == 4) {
+    if (_digits.length == pinLength) {
       completed = _digits;
       _digits = '';
       // 在页面开始异步认证前取得提交所有权，连点不能生成第二份 PIN。
