@@ -20,6 +20,7 @@ import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';
 import 'package:sesame_notes/shared/widgets/aa_participant_avatar.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/features/transactions/presentation/widgets/transaction/transaction_list_item.dart';
+import 'widgets/aa_summary_metric.dart';
 
 /// AA 分摊统计页。
 ///
@@ -326,31 +327,40 @@ class AaStatisticsPage extends ConsumerWidget {
             // 第二行:总付 / 分摊实付 / 应摊 / 差额(应收绿、应付红)四列居中。
             Row(
               children: [
-                _buildMemberMetric(
-                  context,
-                  l10n.aaStatisticsPaidAll,
-                  formatMoneyWithCurrency(
-                    totalPaidAllOf[p.participantId] ?? 0,
-                    currencyCode: currencyCode ?? '',
+                Expanded(
+                  child: AaSummaryMetric(
+                    label: l10n.aaStatisticsPaidAll,
+                    value: formatMoneyWithCurrency(
+                      totalPaidAllOf[p.participantId] ?? 0,
+                      currencyCode: currencyCode ?? '',
+                    ),
                   ),
                 ),
-                _buildMemberMetric(
-                  context,
-                  l10n.aaStatisticsPaid,
-                  formatMoneyWithCurrency(
-                    p.totalPaid,
-                    currencyCode: currencyCode ?? '',
+                Expanded(
+                  child: AaSummaryMetric(
+                    label: l10n.aaStatisticsPaid,
+                    value: formatMoneyWithCurrency(
+                      p.totalPaid,
+                      currencyCode: currencyCode ?? '',
+                    ),
                   ),
                 ),
-                _buildMemberMetric(
-                  context,
-                  l10n.aaStatisticsShare,
-                  formatMoneyWithCurrency(
-                    p.totalShouldPay,
-                    currencyCode: currencyCode ?? '',
+                Expanded(
+                  child: AaSummaryMetric(
+                    label: l10n.aaStatisticsShare,
+                    value: formatMoneyWithCurrency(
+                      p.totalShouldPay,
+                      currencyCode: currencyCode ?? '',
+                    ),
                   ),
                 ),
-                _buildMemberMetric(context, netHeader, netLabel, netColor),
+                Expanded(
+                  child: AaSummaryMetric(
+                    label: netHeader,
+                    value: netLabel,
+                    valueColor: netColor,
+                  ),
+                ),
               ],
             ),
           ],
@@ -381,41 +391,6 @@ class AaStatisticsPage extends ConsumerWidget {
           ),
           const SizedBox(width: AppDimens.p4),
           Icon(AppIcons.chevronRight, size: AppDimens.icon12, color: primary),
-        ],
-      ),
-    );
-  }
-
-  /// 成员模块三列指标：标签（次色小字）在上、数值（主色小号加粗）在下。
-  ///
-  /// 金额超宽时等比缩小字号而非省略/换行，保证金额完整可见。
-  Widget _buildMemberMetric(
-    BuildContext context,
-    String label,
-    String value, [
-    Color? valueColor,
-  ]) {
-    return Expanded(
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: AppTextTokens.caption(
-              context,
-            ).copyWith(color: AppTokens.textTertiary(context)),
-          ),
-          const SizedBox(height: AppDimens.p4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              maxLines: 1,
-              style: AppTextTokens.label(context).copyWith(
-                fontWeight: FontWeight.w600,
-                color: valueColor ?? AppTokens.textPrimary(context),
-              ),
-            ),
-          ),
         ],
       ),
     );

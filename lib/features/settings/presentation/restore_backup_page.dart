@@ -18,8 +18,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
-import 'package:sesame_notes/shared/widgets/currency_flag.dart';
-import 'package:sesame_notes/shared/widgets/format_money.dart';
 import 'package:sesame_notes/shared/widgets/section_title.dart';
 import 'package:sesame_notes/shared/widgets/book_overview_card.dart';
 import 'package:sesame_notes/shared/widgets/day_book_counts.dart';
@@ -428,7 +426,7 @@ class _RestoreBackupPageState extends ConsumerState<RestoreBackupPage> {
   }
 }
 
-/// 恢复预览账本卡片：复刻账本管理页 LedgerCard 布局（无编辑入口），
+/// 恢复预览账本卡片：共用账本概览和统计内容，保留备份状态与恢复提示，
 /// 点击切换勾选（选中 = 恢复，未选中 = 暂不处理）。
 class _RestoreLedgerCard extends StatelessWidget {
   const _RestoreLedgerCard({
@@ -491,41 +489,10 @@ class _RestoreLedgerCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 统计字段（与账本管理页卡片同口径）：币种 / 笔数 / 支出
-            Row(
-              children: [
-                Text(
-                  '${l10n.ledgersCurrency}：',
-                  style: AppTextTokens.body(
-                    context,
-                  ).copyWith(color: AppTokens.textSecondary(context)),
-                ),
-                currencyFlagLabel(
-                  item.currency,
-                  textStyle: AppTextTokens.body(
-                    context,
-                  ).copyWith(color: AppTokens.textSecondary(context)),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppDimens.p4),
-            Text(
-              l10n.ledgersRecords(item.transactionCount.toString()),
-              style: AppTextTokens.body(
-                context,
-              ).copyWith(color: AppTokens.textSecondary(context)),
-            ),
-            const SizedBox(height: AppDimens.p4),
-            Text(
-              l10n.ledgersExpense(
-                formatMoneyWithCurrency(
-                  item.expenseTotal,
-                  currencyCode: item.currency,
-                ),
-              ),
-              style: AppTextTokens.body(
-                context,
-              ).copyWith(color: AppTokens.textSecondary(context)),
+            LedgerOverviewStats(
+              currency: item.currency,
+              transactionCount: item.transactionCount,
+              expenseTotal: item.expenseTotal,
             ),
             // 成员数仅云端账本展示（本地账本无成员概念）
             if (isCloud) ...[

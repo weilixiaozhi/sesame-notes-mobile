@@ -24,7 +24,6 @@ import 'package:sesame_notes/shared/presentation/minimum_refresh_duration.dart';
 import 'package:sesame_notes/shared/widgets/app_dialog.dart';
 import 'package:sesame_notes/shared/widgets/app_list_tile.dart';
 import 'package:sesame_notes/shared/widgets/section_card.dart';
-import 'package:sesame_notes/shared/widgets/app_sheet.dart';
 import 'package:sesame_notes/shared/widgets/primary_header.dart';
 import 'package:sesame_notes/shared/widgets/toast.dart';
 import 'package:sesame_notes/theme/colors.dart';
@@ -315,13 +314,11 @@ class _CloudServicePageState extends ConsumerState<CloudServicePage> {
     }
     if (!mounted) return;
 
-    final result = await showAppSheetTop<dynamic>(
+    final result = await showCloudBackendConfigDialog(
       context: context,
-      child: CloudBackendConfigDialog(
-        backend: backend,
-        initialSettings: existing,
-        canDelete: existing != null || backend.isConfigured,
-      ),
+      backend: backend,
+      initialSettings: existing,
+      canDelete: existing != null || backend.isConfigured,
     );
     if (!mounted) return;
 

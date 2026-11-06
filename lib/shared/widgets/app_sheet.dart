@@ -84,7 +84,7 @@ class AppSheet extends StatelessWidget {
   final EdgeInsetsGeometry footerPadding;
 
   /// 标题栏右侧操作位(可选),如删除/关闭图标。
-  /// 在 [pinnedHeader]=true 时常驻可见,即便内容滚动也不会被挤出可视区。
+  /// 标题栏常驻可见，即便内容滚动也不会被挤出可视区。
   /// 例:云同步配置弹窗把「清除配置」图标放在这里。
   final Widget? trailing;
 
@@ -97,10 +97,7 @@ class AppSheet extends StatelessWidget {
   /// 是否显示顶部拖拽条。默认 true。
   final bool showGrabHandle;
 
-  /// 标题区是否吸顶(固定不随内容滚动)。
-  /// 默认 true:标题常驻,内容区独立滚动,长内容也能看到标题。
-  final bool pinnedHeader;
-
+  /// 标题和底部操作固定在弹层内，业务内容负责自身滚动方式。
   const AppSheet({
     super.key,
     this.header,
@@ -124,9 +121,9 @@ class AppSheet extends StatelessWidget {
       AppDimens.p16,
     ),
     this.showGrabHandle = true,
-    this.pinnedHeader = true,
   });
 
+  /// 使用统一标题、内容留白和底部安全布局组装弹层。
   @override
   Widget build(BuildContext context) {
     final header =
@@ -146,7 +143,7 @@ class AppSheet extends StatelessWidget {
                 child: _CenteredSheetHeader(
                   trailing: trailing,
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 32),
+                    constraints: const BoxConstraints(minHeight: AppDimens.p32),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
@@ -197,32 +194,17 @@ class AppSheet extends StatelessWidget {
         ? const SheetGrabHandle()
         : const SizedBox.shrink();
 
-    // 标题吸顶:用 Column 包裹(grab + header 固定),内容区 Flexible 自适应滚动。
-    // 标题不吸顶(pinnedHeader=false):整体交给外层滚动,本组件不做滚动容器。
-    if (pinnedHeader) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          grab,
-          header,
-          Flexible(
-            child: Padding(padding: contentPadding, child: child),
-          ),
-          if (footer != null) Padding(padding: footerPadding, child: footer),
-        ],
-      );
-    }
-    return Padding(
-      padding: EdgeInsets.zero,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          grab,
-          header,
-          Padding(padding: contentPadding, child: child),
-          if (footer != null) Padding(padding: footerPadding, child: footer),
-        ],
-      ),
+    // 标题和底部操作保持可见，内容区只占用两者之间的剩余空间。
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        grab,
+        header,
+        Flexible(
+          child: Padding(padding: contentPadding, child: child),
+        ),
+        if (footer != null) Padding(padding: footerPadding, child: footer),
+      ],
     );
   }
 }
@@ -448,81 +430,6 @@ class _AppSheetRoute<T> extends ModalBottomSheetRoute<T> {
     Theme.of(context);
     return super.buildPage(context, animation, secondaryAnimation);
   }
-}
-
-/// 顶部贴边弹层，无转场动画；键盘高度变化时立即调整可用高度。
-/// 避免 AnimatedPadding 随焦点切换反复动画，使多输入框表单上下弹跳。
-/// [heightFactor] 限制最大屏占比，返回子组件 pop 的结果。
-Future<T?> showAppSheetTop<T>({
-  required BuildContext context,
-  required Widget child,
-  double heightFactor = 0.9,
-}) {
-  // 当前屏幕和键盘高度通过 pageBuilder 内 MediaQuery.of
-  // 实时读取,因该 context 为路由构建上下文,读取后即注册为 MediaQuery 依赖,
-  // 键盘起伏时路由会自动 rebuild 并重新计算高度(无动画 → 瞬变,不弹跳)。
-  return Navigator.of(context).push<T>(
-    PageRouteBuilder<T>(
-      // 零动画:瞬显瞬隐,无转场效果。
-      transitionDuration: Duration.zero,
-      reverseTransitionDuration: Duration.zero,
-      barrierColor: AppTokens.overlay(context),
-      // 关闭遮罩点击退出:barrierDismissible=false,点击半透明遮罩不自动 pop 退出弹窗。
-      // 系统返回仍由路由处理，遮罩不会提交或取消正在编辑的内容。
-      // 收起键盘/退出光标由 Flutter 默认 onTapOutside 及各处的显式
-      // FocusManager.unfocus() 处理。
-      barrierDismissible: false,
-      opaque: false,
-      pageBuilder: (ctx, animation, secondaryAnimation) {
-        final mq = MediaQuery.of(ctx);
-        // 顶部贴边:Align(topCenter) 将弹层锚定在屏幕顶部(y=0 起铺满),
-        // 不使用 SafeArea,由下方内边距补偿状态栏,使弹层上沿与屏幕顶边融合。
-        return Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            // 关键约束:最大高度 = 屏高比例 - 键盘高。普通约束(非 AnimatedPadding),
-            // 键盘变化时高度即时收缩到键盘上方,保存/取消必在键盘之上、永不被遮挡。
-            constraints: BoxConstraints(
-              maxHeight: (mq.size.height * heightFactor - mq.viewInsets.bottom)
-                  .clamp(0.0, mq.size.height)
-                  .toDouble(),
-            ),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                boxShadow: AppTokens.sheetShadow(ctx),
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(AppTokens.sheetRadius(ctx)),
-                ),
-              ),
-              child: Material(
-                color: AppTokens.surfaceSheet(ctx),
-                // 仅底部圆角、顶部直角:上沿融进屏幕顶边(消除顶部圆角处的遮罩三角),
-                // 仅弹层下方保留遮罩,视觉等同「底部弹层」的镜像。
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(AppTokens.sheetRadius(ctx)),
-                  bottomRight: Radius.circular(AppTokens.sheetRadius(ctx)),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Padding(
-                  // 弹层背景仍从 y=0 起铺满屏幕顶边实现「头部与背景融合」;
-                  // 内容顶部内缩一个状态栏高度,保证标题/删除按钮不被状态栏图标压住。
-                  padding: EdgeInsets.only(top: mq.padding.top),
-                  child: MediaQuery.removeViewInsets(
-                    context: ctx,
-                    removeBottom: true,
-                    child: child,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-      // 无转场动画(直接返回子组件)。
-      transitionsBuilder: (ctx, animation, secondaryAnimation, routeChild) =>
-          routeChild,
-    ),
-  );
 }
 
 /// 先测量边缘操作，再对称预留其宽度；标题始终相对整个弹层居中。

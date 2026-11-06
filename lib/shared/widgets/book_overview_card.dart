@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sesame_notes/l10n/app_localizations.dart';
+import 'package:sesame_notes/shared/widgets/currency_flag.dart';
+import 'package:sesame_notes/shared/widgets/format_money.dart';
 import 'package:sesame_notes/shared/widgets/selectable_card.dart';
 import 'package:sesame_notes/shared/widgets/section_title.dart';
 import 'package:sesame_notes/theme/colors.dart';
@@ -6,6 +9,50 @@ import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'section_card.dart';
 import 'package:sesame_notes/theme/typography.dart';
+
+/// 账本列表与恢复预览共用币种、记录笔数和累计支出摘要。
+class LedgerOverviewStats extends StatelessWidget {
+  /// 摘要只接收展示值，当前账本与备份快照各自负责提供统计结果。
+  const LedgerOverviewStats({
+    super.key,
+    required this.currency,
+    required this.transactionCount,
+    required this.expenseTotal,
+  });
+
+  final String currency;
+  final int transactionCount;
+  final double expenseTotal;
+
+  /// 三行统计共用次要正文样式，金额始终按账本币种格式化。
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final style = AppTextTokens.body(
+      context,
+    ).copyWith(color: AppTokens.textSecondary(context));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('${l10n.ledgersCurrency}：', style: style),
+            currencyFlagLabel(currency, textStyle: style),
+          ],
+        ),
+        const SizedBox(height: AppDimens.p4),
+        Text(l10n.ledgersRecords(transactionCount.toString()), style: style),
+        const SizedBox(height: AppDimens.p4),
+        Text(
+          l10n.ledgersExpense(
+            formatMoneyWithCurrency(expenseTotal, currencyCode: currency),
+          ),
+          style: style,
+        ),
+      ],
+    );
+  }
+}
 
 /// 本列表的存储分区标题，与本概览卡片保持同一横向边距。
 class BookSectionTitle extends StatelessWidget {

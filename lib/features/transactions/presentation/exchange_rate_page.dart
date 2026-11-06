@@ -120,7 +120,9 @@ class _ExchangeRatePageState extends ConsumerState<ExchangeRatePage> {
                 child: SizedBox(
                   width: 24.0,
                   height: 24.0,
-                  child: CircularProgressIndicator(strokeWidth: 2.0),
+                  child: CircularProgressIndicator(
+                    strokeWidth: AppDimens.progressStrokeWidth,
+                  ),
                 ),
               ),
             )

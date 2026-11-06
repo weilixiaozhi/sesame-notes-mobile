@@ -5,7 +5,7 @@
 ///
 /// 弹窗返回值约定：
 /// - `Map<String, dynamic>`：用户提交的设置（键与 adapter 声明一致）；
-/// - '__DELETE__'：用户点击标题栏清除图标（仅 [canDelete] 时出现）；
+/// - '__DELETE__'：用户点击标题栏清除图标；
 /// - null：取消。
 library;
 
@@ -16,6 +16,7 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/widgets/app_sheet.dart';
 import 'package:sesame_notes/shared/widgets/app_list_tile.dart';
 import 'package:sesame_notes/shared/widgets/app_primary_button.dart';
+import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
@@ -44,8 +45,88 @@ String cloudBackupFieldLabel(AppLocalizations l10n, String labelKey) =>
       _ => labelKey,
     };
 
+/// 云备份配置从顶部打开，保留表单草稿并在键盘变化时立即调整高度。
+/// 避免 AnimatedPadding 随焦点切换反复动画，使多输入框表单上下弹跳。
+/// 保存返回配置映射，清除返回删除标记，取消返回 null。
+Future<Object?> showCloudBackendConfigDialog({
+  required BuildContext context,
+  required CloudBackupBackendDisplay backend,
+  Map<String, dynamic>? initialSettings,
+  required bool canDelete,
+}) {
+  // 当前屏幕和键盘高度通过 pageBuilder 内 MediaQuery.of
+  // 实时读取,因该 context 为路由构建上下文,读取后即注册为 MediaQuery 依赖,
+  // 键盘起伏时路由会自动 rebuild 并重新计算高度(无动画 → 瞬变,不弹跳)。
+  return Navigator.of(context).push<Object>(
+    PageRouteBuilder<Object>(
+      // 零动画:瞬显瞬隐,无转场效果。
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+      barrierColor: AppTokens.overlay(context),
+      // 关闭遮罩点击退出:barrierDismissible=false,点击半透明遮罩不自动 pop 退出弹窗。
+      // 系统返回仍由路由处理，遮罩不会提交或取消正在编辑的内容。
+      // 收起键盘/退出光标由 Flutter 默认 onTapOutside 及各处的显式
+      // FocusManager.unfocus() 处理。
+      barrierDismissible: false,
+      opaque: false,
+      pageBuilder: (ctx, animation, secondaryAnimation) {
+        final mq = MediaQuery.of(ctx);
+        // 顶部贴边:Align(topCenter) 将弹层锚定在屏幕顶部(y=0 起铺满),
+        // 不使用 SafeArea,由下方内边距补偿状态栏,使弹层上沿与屏幕顶边融合。
+        return Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            // 关键约束:最大高度 = 屏高比例 - 键盘高。普通约束(非 AnimatedPadding),
+            // 键盘变化时高度即时收缩到键盘上方,保存/取消必在键盘之上、永不被遮挡。
+            constraints: BoxConstraints(
+              maxHeight: (mq.size.height * 0.9 - mq.viewInsets.bottom)
+                  .clamp(0.0, mq.size.height)
+                  .toDouble(),
+            ),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                boxShadow: AppTokens.sheetShadow(ctx),
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(AppTokens.sheetRadius(ctx)),
+                ),
+              ),
+              child: Material(
+                color: AppTokens.surfaceSheet(ctx),
+                // 仅底部圆角、顶部直角:上沿融进屏幕顶边(消除顶部圆角处的遮罩三角),
+                // 仅弹层下方保留遮罩,视觉等同「底部弹层」的镜像。
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(AppTokens.sheetRadius(ctx)),
+                  bottomRight: Radius.circular(AppTokens.sheetRadius(ctx)),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Padding(
+                  // 弹层背景仍从 y=0 起铺满屏幕顶边实现「头部与背景融合」;
+                  // 内容顶部内缩一个状态栏高度,保证标题/删除按钮不被状态栏图标压住。
+                  padding: EdgeInsets.only(top: mq.padding.top),
+                  child: MediaQuery.removeViewInsets(
+                    context: ctx,
+                    removeBottom: true,
+                    child: _CloudBackendConfigDialog(
+                      backend: backend,
+                      initialSettings: initialSettings,
+                      canDelete: canDelete,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      // 无转场动画(直接返回子组件)。
+      transitionsBuilder: (ctx, animation, secondaryAnimation, routeChild) =>
+          routeChild,
+    ),
+  );
+}
+
 /// 第三方备份配置弹窗：按 [backend] 声明的字段渲染表单。
-class CloudBackendConfigDialog extends StatefulWidget {
+class _CloudBackendConfigDialog extends StatefulWidget {
   final CloudBackupBackendDisplay backend;
 
   /// 已保存配置（回填表单）；null = 新建。
@@ -54,19 +135,20 @@ class CloudBackendConfigDialog extends StatefulWidget {
   /// 已存在配置时标题栏显示清除图标。
   final bool canDelete;
 
-  const CloudBackendConfigDialog({
-    super.key,
+  /// 表单与顶部路由共同归属于云配置入口，外部只提供后端和现有配置。
+  const _CloudBackendConfigDialog({
     required this.backend,
-    this.initialSettings,
-    this.canDelete = false,
+    required this.initialSettings,
+    required this.canDelete,
   });
 
+  /// 每次打开独立维护字段草稿与校验信息。
   @override
-  State<CloudBackendConfigDialog> createState() =>
+  State<_CloudBackendConfigDialog> createState() =>
       _CloudBackendConfigDialogState();
 }
 
-class _CloudBackendConfigDialogState extends State<CloudBackendConfigDialog> {
+class _CloudBackendConfigDialogState extends State<_CloudBackendConfigDialog> {
   /// 文本 / 数字 / 密码字段的编辑控制器（按字段 key 索引）。
   late final Map<String, TextEditingController> _controllers;
 
@@ -173,7 +255,10 @@ class _CloudBackendConfigDialogState extends State<CloudBackendConfigDialog> {
           ? IconButton(
               icon: const Icon(AppIcons.delete, size: AppDimens.icon22),
               tooltip: l10n.cloudClearConfig,
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 32),
+              constraints: const BoxConstraints(
+                minWidth: AppDimens.actionButtonMinHeight,
+                minHeight: AppDimens.p32,
+              ),
               padding: EdgeInsets.zero,
               // 用弹窗自身路由 context 直接 pop 删除哨兵。
               onPressed: () =>

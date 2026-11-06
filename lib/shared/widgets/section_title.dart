@@ -7,7 +7,6 @@ import 'package:sesame_notes/theme/dimens.dart';
 class SectionTitle extends StatelessWidget {
   final String title;
   final TextStyle? textStyle;
-  final Color? accentColor;
   final String? subtitle;
 
   /// 紧邻标题的辅助内容，与行尾操作区分开布局。
@@ -20,7 +19,6 @@ class SectionTitle extends StatelessWidget {
     super.key,
     required this.title,
     this.textStyle,
-    this.accentColor,
     this.subtitle,
     this.titleTrailing,
     this.trailing,
@@ -34,7 +32,7 @@ class SectionTitle extends StatelessWidget {
     // 默认标题与色条同色；强调标题可单独指定文字样式。
     final color = disabled
         ? Theme.of(context).disabledColor
-        : accentColor ?? Theme.of(context).colorScheme.primary;
+        : Theme.of(context).colorScheme.primary;
     final titleText = Text(
       title,
       style:

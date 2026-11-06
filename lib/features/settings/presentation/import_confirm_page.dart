@@ -265,52 +265,28 @@ class _ImportConfirmPageState extends ConsumerState<ImportConfirmPage> {
         ),
         bottomNavigationBar: session == null
             ? null
-            : SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.all(AppDimens.p16),
-                  child: Row(
-                    children: [
-                      if (step > 0) ...[
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: busy
-                                ? null
-                                : () => setState(() {
-                                    step = step == 2 && hasMatching ? 1 : 0;
-                                    error = null;
-                                  }),
-                            child: Text(l10n.importPreviousStep),
-                          ),
-                        ),
-                        const SizedBox(width: AppDimens.p12),
-                      ],
-                      Expanded(
-                        child: AppPrimaryButton(
-                          fullWidth: false,
-                          label: step == 2
-                              ? l10n.importStartImport
-                              : l10n.importNextStep,
-                          busy: busy,
-                          onPressed: busy
-                              ? null
-                              : step == 2
-                              ? session.preview.any(
-                                      (r) =>
-                                          r.selected &&
-                                          r.error == null &&
-                                          !r.duplicate,
-                                    )
-                                    ? _import
-                                    : null
-                              : session.table.records.isEmpty
-                              ? null
-                              : _next,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            : AppEditorFooter(
+                label: step == 2 ? l10n.importStartImport : l10n.importNextStep,
+                busy: busy,
+                onPressed: busy
+                    ? null
+                    : step == 2
+                    ? session.preview.any(
+                            (r) =>
+                                r.selected && r.error == null && !r.duplicate,
+                          )
+                          ? _import
+                          : null
+                    : session.table.records.isEmpty
+                    ? null
+                    : _next,
+                secondaryLabel: step > 0 ? l10n.importPreviousStep : null,
+                onSecondaryPressed: busy
+                    ? null
+                    : () => setState(() {
+                        step = step == 2 && hasMatching ? 1 : 0;
+                        error = null;
+                      }),
               ),
       ),
     );

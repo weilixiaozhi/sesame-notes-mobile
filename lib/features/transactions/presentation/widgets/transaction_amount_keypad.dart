@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/shared/widgets/keypad_constants.dart';
+import 'package:sesame_notes/shared/widgets/number_keypad_grid.dart';
 import 'package:sesame_notes/shared/widgets/press_key.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
@@ -164,93 +164,16 @@ class TransactionAmountKeypad extends StatelessWidget {
 
   /// 三行数字和独立运算列保持等宽，底行是日期、零、小数点与完成。
   @override
-  Widget build(BuildContext context) {
-    final scaler = MediaQuery.textScalerOf(context);
-    return MediaQuery(
-      data: MediaQuery.of(context).copyWith(
-        textScaler: TextScaler.linear(scaler.scale(1).clamp(0.85, 1.0)),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final height = ((constraints.maxHeight - 3 * KeypadLayout.rowGap) / 4)
-              .clamp(0.0, double.infinity);
-          final width = ((constraints.maxWidth - 3 * KeypadLayout.gap) / 4)
-              .clamp(0.0, double.infinity);
-          return Column(
-            children: [
-              SizedBox(
-                key: const ValueKey('keypad_num_grid'),
-                height: 3 * height + 2 * KeypadLayout.rowGap,
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 3 * width + 2 * KeypadLayout.gap,
-                      child: Column(
-                        children: [
-                          for (var row = 0; row < 3; row++) ...[
-                            if (row > 0)
-                              const SizedBox(height: KeypadLayout.rowGap),
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  for (
-                                    var column = 0;
-                                    column < 3;
-                                    column++
-                                  ) ...[
-                                    if (column > 0)
-                                      const SizedBox(width: KeypadLayout.gap),
-                                    SizedBox(
-                                      width: width,
-                                      child: _number(
-                                        context,
-                                        '${row * 3 + column + 1}',
-                                        height,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: KeypadLayout.gap),
-                    SizedBox(width: width, child: _operators(context, height)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: KeypadLayout.rowGap),
-              SizedBox(
-                key: const ValueKey('keypad_bottom_row'),
-                height: height,
-                child: Row(
-                  // 整行按键使用同一高度，日期文字的缩放只影响内容，不改变键位背景。
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(width: width, child: _date(context)),
-                    const SizedBox(width: KeypadLayout.gap),
-                    SizedBox(
-                      width: width,
-                      child: _number(context, '0', height),
-                    ),
-                    const SizedBox(width: KeypadLayout.gap),
-                    SizedBox(
-                      width: width,
-                      child: _number(context, '.', height),
-                    ),
-                    const SizedBox(width: KeypadLayout.gap),
-                    SizedBox(width: width, child: _done(context, height)),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
+  Widget build(BuildContext context) => NumberKeypadGrid(
+    digitBuilder: _number,
+    sideBuilder: _operators,
+    bottomBuilder: (context, height) => (
+      _date(context),
+      _number(context, '0', height),
+      _number(context, '.', height),
+      _done(context, height),
+    ),
+  );
 }
 
 /// 同一次等号手势在面板重建后仍只计算，松手不会误触新的完成保存。

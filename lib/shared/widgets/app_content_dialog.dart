@@ -11,7 +11,6 @@ class AppContentDialog extends StatelessWidget {
     this.icon,
     required this.content,
     required this.actions,
-    this.expandContent = false,
     this.minContentHeight = 0,
   });
 
@@ -19,17 +18,16 @@ class AppContentDialog extends StatelessWidget {
   final IconData? icon;
   final Widget content;
   final List<Widget> actions;
-  final bool expandContent;
   final double minContentHeight;
 
-  /// 按配置选择弹窗的尺寸规范构建可滚动内容区域。
+  /// 内容按自然高度布局，超过可用空间时在标题和操作之间滚动。
   @override
   Widget build(BuildContext context) {
     return Dialog(
       child: SizedBox(
         width: double.infinity,
         child: Column(
-          mainAxisSize: expandContent ? MainAxisSize.max : MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
@@ -54,7 +52,6 @@ class AppContentDialog extends StatelessWidget {
               ),
             ),
             Flexible(
-              fit: expandContent ? FlexFit.tight : FlexFit.loose,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: AppDimens.p16),
                 child: ConstrainedBox(

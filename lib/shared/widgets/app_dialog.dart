@@ -262,7 +262,11 @@ class AppDialog {
               fullWidth: false,
             )
           else
-            OutlinedButton(onPressed: action.onTap, child: Text(action.label)),
+            AppSecondaryButton(
+              label: action.label,
+              onPressed: action.onTap,
+              fullWidth: false,
+            ),
     ],
   );
 }

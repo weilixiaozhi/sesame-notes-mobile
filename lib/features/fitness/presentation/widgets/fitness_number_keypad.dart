@@ -4,7 +4,7 @@ import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
-import 'package:sesame_notes/shared/widgets/keypad_constants.dart';
+import 'package:sesame_notes/shared/widgets/number_keypad_grid.dart';
 import 'package:sesame_notes/shared/widgets/press_key.dart';
 
 /// 训练数字输入使用加组、向上填充、向下填充和下一项四个操作。
@@ -132,92 +132,14 @@ class FitnessNumberKeypad extends StatelessWidget {
 
   /// 四行数字布局保持训练键盘的尺寸、触发时机与底行排列。
   @override
-  Widget build(BuildContext context) {
-    final scaler = MediaQuery.textScalerOf(context);
-    return MediaQuery(
-      data: MediaQuery.of(context).copyWith(
-        textScaler: TextScaler.linear(scaler.scale(1).clamp(0.85, 1.0)),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final height = (constraints.maxHeight - 3 * KeypadLayout.rowGap) / 4;
-          final width = (constraints.maxWidth - 3 * KeypadLayout.gap) / 4;
-          return Column(
-            children: [
-              SizedBox(
-                key: const ValueKey('keypad_num_grid'),
-                height: 3 * height + 2 * KeypadLayout.rowGap,
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 3 * width + 2 * KeypadLayout.gap,
-                      child: Column(
-                        children: [
-                          for (var row = 0; row < 3; row++) ...[
-                            if (row > 0)
-                              const SizedBox(height: KeypadLayout.rowGap),
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  for (
-                                    var column = 0;
-                                    column < 3;
-                                    column++
-                                  ) ...[
-                                    if (column > 0)
-                                      const SizedBox(width: KeypadLayout.gap),
-                                    SizedBox(
-                                      width: width,
-                                      child: _number(
-                                        context,
-                                        '${row * 3 + column + 1}',
-                                        height,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: KeypadLayout.gap),
-                    SizedBox(width: width, child: _actions(context)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: KeypadLayout.rowGap),
-              SizedBox(
-                key: const ValueKey('keypad_bottom_row'),
-                height: height,
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: width,
-                      child: _number(
-                        context,
-                        '.',
-                        height,
-                        enabled: allowDecimal,
-                      ),
-                    ),
-                    const SizedBox(width: KeypadLayout.gap),
-                    SizedBox(
-                      width: width,
-                      child: _number(context, '0', height),
-                    ),
-                    const SizedBox(width: KeypadLayout.gap),
-                    SizedBox(width: width, child: _delete(context)),
-                    const SizedBox(width: KeypadLayout.gap),
-                    SizedBox(width: width, child: _done(context, height)),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
+  Widget build(BuildContext context) => NumberKeypadGrid(
+    digitBuilder: _number,
+    sideBuilder: (context, _) => _actions(context),
+    bottomBuilder: (context, height) => (
+      _number(context, '.', height, enabled: allowDecimal),
+      _number(context, '0', height),
+      _delete(context),
+      _done(context, height),
+    ),
+  );
 }

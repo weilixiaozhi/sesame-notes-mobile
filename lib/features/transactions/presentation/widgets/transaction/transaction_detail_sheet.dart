@@ -330,29 +330,15 @@ class _TransactionDetailBodyState
       // 不用 AppSheet.trailing,避免 trailing 单独成行撑高 header、
       // 与分类标题错位。
       footer: aaOn
-          ? Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () async {
-                      Navigator.pop(context);
-                      await widget.onEditAa?.call();
-                    },
-
-                    child: Text(l10n.aaEditSplitButton),
-                  ),
-                ),
-                const SizedBox(width: AppDimens.p12),
-                Expanded(
-                  child: AppPrimaryButton(
-                    onPressed: _editTransaction,
-                    label: l10n.homeDetailEditButton,
-                  ),
-                ),
-              ],
+          ? AppPairedActions(
+              primaryLabel: l10n.homeDetailEditButton,
+              onPrimaryPressed: _editTransaction,
+              secondaryLabel: l10n.aaEditSplitButton,
+              onSecondaryPressed: () async {
+                Navigator.pop(context);
+                await widget.onEditAa?.call();
+              },
             )
-          // 未开启分摊时仅剩「编辑记账」一个按钮,需占满整行宽度,与
-          // 开启分摊时的双按钮布局(两个 Expanded)在视觉宽度上保持一致。
           : AppPrimaryButton(
               onPressed: _editTransaction,
               label: l10n.homeDetailEditButton,

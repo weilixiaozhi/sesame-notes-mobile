@@ -15,6 +15,7 @@ import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/shared/widgets/aa_participant_avatar.dart';
 import 'package:sesame_notes/shared/widgets/detail_list_item.dart';
+import 'widgets/aa_summary_metric.dart';
 
 /// 成员账单详情页（按支出人维度汇总）。
 ///
@@ -249,30 +250,27 @@ class AaMemberDetailPage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: _buildSummaryMetric(
-                  context,
-                  l10n.aaStatisticsPaidAll,
-                  formatMoneyWithCurrency(
+                child: AaSummaryMetric(
+                  label: l10n.aaStatisticsPaidAll,
+                  value: formatMoneyWithCurrency(
                     totalAmount,
                     currencyCode: currencyCode ?? '',
                   ),
                 ),
               ),
               Expanded(
-                child: _buildSummaryMetric(
-                  context,
-                  l10n.aaStatisticsPaid,
-                  formatMoneyWithCurrency(
+                child: AaSummaryMetric(
+                  label: l10n.aaStatisticsPaid,
+                  value: formatMoneyWithCurrency(
                     data.member.totalPaid,
                     currencyCode: currencyCode ?? '',
                   ),
                 ),
               ),
               Expanded(
-                child: _buildSummaryMetric(
-                  context,
-                  l10n.aaStatisticsShare,
-                  formatMoneyWithCurrency(
+                child: AaSummaryMetric(
+                  label: l10n.aaStatisticsShare,
+                  value: formatMoneyWithCurrency(
                     data.member.totalShouldPay,
                     currencyCode: currencyCode ?? '',
                   ),
@@ -311,33 +309,6 @@ class AaMemberDetailPage extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-
-  /// 汇总卡指标列：标签在上、数值在下，二者均水平居中。
-  /// 标签与分摊详情表一致用 11px 三级色，数值统一用 12px 主色加粗。
-  Widget _buildSummaryMetric(BuildContext context, String label, String value) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: AppTextTokens.caption(
-            context,
-          ).copyWith(color: AppTokens.textTertiary(context)),
-        ),
-        const SizedBox(height: AppDimens.p4),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            value,
-            maxLines: 1,
-            style: AppTextTokens.label(context).copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppTokens.textPrimary(context),
-            ),
-          ),
-        ),
-      ],
     );
   }
 

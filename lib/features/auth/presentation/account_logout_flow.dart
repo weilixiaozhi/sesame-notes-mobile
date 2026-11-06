@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sesame_notes/shared/widgets/app_content_dialog.dart';
 import 'package:sesame_notes/shared/widgets/app_dialog.dart';
+import 'package:sesame_notes/shared/widgets/toast.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sesame_notes/core/logging/logger_service.dart';
@@ -40,27 +41,25 @@ Future<bool> confirmAccountLogout(BuildContext context, WidgetRef ref) async {
         context: context,
         builder: (dialogContext) => AppContentDialog(
           title: l10n.profileLogoutPendingTitle,
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.profileLogoutPendingMessage),
-                Text(
-                  l10n.syncCenterPending(
-                    issues.fold(0, (total, issue) => total + issue.count),
-                  ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.profileLogoutPendingMessage),
+              Text(
+                l10n.syncCenterPending(
+                  issues.fold(0, (total, issue) => total + issue.count),
                 ),
-                for (final title
-                    in issues
-                        .map((issue) => issue.title)
-                        .where((title) => title.isNotEmpty)
-                        .toSet()) ...[
-                  const SizedBox(height: AppDimens.p8),
-                  Text(title),
-                ],
+              ),
+              for (final title
+                  in issues
+                      .map((issue) => issue.title)
+                      .where((title) => title.isNotEmpty)
+                      .toSet()) ...[
+                const SizedBox(height: AppDimens.p8),
+                Text(title),
               ],
-            ),
+            ],
           ),
           actions: [
             TextButton(
@@ -91,9 +90,7 @@ Future<bool> confirmAccountLogout(BuildContext context, WidgetRef ref) async {
   } catch (error, stackTrace) {
     logger.error('AccountLogoutFlow', '退出账号失败', error, stackTrace);
     if (context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.commonOperationFailed)));
+      showToast(context, l10n.commonOperationFailed);
     }
     return false;
   }

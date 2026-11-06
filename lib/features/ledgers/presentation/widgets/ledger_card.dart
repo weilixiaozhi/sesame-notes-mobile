@@ -11,8 +11,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/data/models.dart';
 import 'package:sesame_notes/shared/formatting/format_utils.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
-import 'package:sesame_notes/shared/widgets/currency_flag.dart';
-import 'package:sesame_notes/shared/widgets/format_money.dart';
 import 'package:sesame_notes/shared/widgets/book_overview_card.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/theme/colors.dart';
@@ -90,46 +88,10 @@ class LedgerCard extends ConsumerWidget {
               ).copyWith(color: Theme.of(context).colorScheme.error),
             )
           : null,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 币种和累计金额沿用统一格式化入口。
-          Row(
-            children: [
-              Text(
-                '${l10n.ledgersCurrency}：',
-                style: AppTextTokens.body(
-                  context,
-                ).copyWith(color: AppTokens.textSecondary(context)),
-              ),
-              currencyFlagLabel(
-                ledger.currency,
-                textStyle: AppTextTokens.body(
-                  context,
-                ).copyWith(color: AppTokens.textSecondary(context)),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimens.p4),
-          Text(
-            l10n.ledgersRecords('${ledger.transactionCount}'),
-            style: AppTextTokens.body(
-              context,
-            ).copyWith(color: AppTokens.textSecondary(context)),
-          ),
-          const SizedBox(height: AppDimens.p4),
-          Text(
-            l10n.ledgersExpense(
-              formatMoneyWithCurrency(
-                ledger.expenseTotal,
-                currencyCode: ledger.currency,
-              ),
-            ),
-            style: AppTextTokens.body(
-              context,
-            ).copyWith(color: AppTokens.textSecondary(context)),
-          ),
-        ],
+      child: LedgerOverviewStats(
+        currency: ledger.currency,
+        transactionCount: ledger.transactionCount,
+        expenseTotal: ledger.expenseTotal,
       ),
     );
   }
