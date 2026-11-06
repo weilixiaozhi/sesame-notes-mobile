@@ -332,6 +332,11 @@ class CloudBackupCleanupStorage implements BackupCleanupStorage {
     await requireCurrent();
     final files = await storage.list(path: '$prefix/');
     await requireCurrent();
+    // 发布标记按云端原始路径精确匹配，同名子目录和大小写不同的对象保持独立。
+    final pendingPaths = {
+      for (final file in files)
+        if (file.path.endsWith('.pending')) file.path,
+    };
     final result = <BackupCleanupObject>[];
     for (final file in files) {
       if (!_safe(file.path)) continue;
@@ -344,10 +349,7 @@ class CloudBackupCleanupStorage implements BackupCleanupStorage {
               ?.toString(),
           pending:
               file.path.endsWith('.pending') ||
-              files.any(
-                (other) =>
-                    other.path == '${_publicationBase(file.path)}.pending',
-              ),
+              pendingPaths.contains('${_publicationBase(file.path)}.pending'),
           inUse: BackupFileAccess.isInUse(cloudBackupFileKey(scope, file.path)),
         ),
       );

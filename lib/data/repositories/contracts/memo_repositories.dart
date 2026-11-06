@@ -79,6 +79,9 @@ abstract interface class MemoEntryRepository {
   /// 在固定目标内读取条目并复核身份。
   Future<MemoEntry?> getEntry(String id, PrivateBookTarget target);
 
+  /// 按全局条目标识定位当前会话可见的父本，再以固定目标读取完整正文。
+  Future<MemoEntry?> findEntry(String id);
+
   /// 在同一快照内批量读取所选完整条目，去重并按本内顺序返回；缺失条目不返回。
   Future<List<MemoEntry>> getEntriesByIds(
     Iterable<String> ids,

@@ -335,6 +335,41 @@ class MemoRepository
     return row == null ? null : memoEntryFromRow(row);
   }
 
+  /// 主键定位只读取可见父本标识，完整性与绑定复核通过后才读取正文。
+  @override
+  Future<MemoEntry?> findEntry(String id) async {
+    final account = accountIdGetter(), generation = generationGetter();
+    try {
+      _check(account, generation);
+      final parent = await db
+          .customSelect(
+            'SELECT m.memo_book_id FROM memo_entries m '
+            'JOIN memo_books b ON b.id=m.memo_book_id '
+            'WHERE m.id=? AND m.deleted_at IS NULL AND $_visible',
+            variables: [d.Variable(id), d.Variable(account ?? '')],
+            readsFrom: {db.memoEntries, db.memoBooks},
+          )
+          .getSingleOrNull();
+      _check(account, generation);
+      if (parent == null) return null;
+      // 失效或尚未完整下载的目标沿用既有拒绝语义，无关父本不参与本次查找。
+      final fixed = await target(parent.read<String>('memo_book_id'));
+      _check(account, generation);
+      final entry = await getEntry(id, fixed);
+      _check(account, generation);
+      return entry;
+    } catch (error, stackTrace) {
+      // 不记录条目正文、密码字段或数据库绑定参数。
+      logger.error(
+        'MemoRepository',
+        '定位笔记条目失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      rethrow;
+    }
+  }
+
   /// 所选条目共用目标复核和读取事务，只加载指定本子中仍有效的正文。
   @override
   Future<List<MemoEntry>> getEntriesByIds(

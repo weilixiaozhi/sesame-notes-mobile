@@ -101,15 +101,7 @@ class MemoActions {
 
   /// 同步中心按当前账号查找条目，跨本搜索不放在页面中执行。
   Future<MemoEntry?> findEntry(String id) =>
-      _query(_repository.accountIdGetter(), () async {
-        final account = _repository.accountIdGetter();
-        for (final book in await _repository.getBooks(accountId: account)) {
-          final target = await _repository.target(book.id);
-          final entry = await _repository.getEntry(id, target);
-          if (entry != null) return entry;
-        }
-        return null;
-      });
+      _query(_repository.accountIdGetter(), () => _repository.findEntry(id));
 
   /// 刷新本地列表与当前筛选结果，不把数据库流或仓储交给页面。
   Future<void> refreshLocalSnapshot({

@@ -700,6 +700,53 @@ void main() {
     );
   });
 
+  test('云端发布标记保护同路径快照和辅助文件，其他目录及大小写不同的对象保持独立', () async {
+    final key = '$_prefix/$_a';
+    final nested = '$_prefix/11111111-1111-4111-8111-111111111111/$_a';
+    final differentCase = '$_prefix/${_a.toUpperCase()}';
+    final protectedKeys = [key, '$key.metadata.json', '$key.tmp', '$key.old'];
+    final cloud = _Cloud()
+      ..objects.addAll({
+        for (final path in protectedKeys) path: currentA,
+        '$key.pending': Uint8List(0),
+        nested: currentA,
+        differentCase: currentA,
+      });
+    final manager = cloudManager(cloud);
+    var preview = await manager.preview('webdav');
+    for (final path in [...protectedKeys, '$key.pending']) {
+      final entry = preview.entries.singleWhere((entry) => entry.key == path);
+      expect(entry.status, BackupCleanupStatus.pending);
+      expect(entry.canInspect, isFalse);
+      expect(entry.canDelete, isFalse);
+    }
+    for (final path in [nested, differentCase]) {
+      expect(
+        preview.entries.singleWhere((entry) => entry.key == path).status,
+        BackupCleanupStatus.unverified,
+      );
+    }
+    await expectLater(
+      manager.inspect(preview, key),
+      throwsA(
+        isA<BackupCleanupException>().having(
+          (error) => error.reason,
+          '发布中保护',
+          BackupCleanupFailure.unverified,
+        ),
+      ),
+    );
+    expect(cloud.objects[key], currentA);
+    cloud.objects.remove('$key.pending');
+    preview = await manager.preview('webdav');
+    for (final path in protectedKeys) {
+      expect(
+        preview.entries.singleWhere((entry) => entry.key == path).status,
+        BackupCleanupStatus.unverified,
+      );
+    }
+  });
+
   test('同key同元数据但raw重新编码后拒删，不只比较解码后的内容', () async {
     final encoded = base64Encode(historical);
     Uint8List representation(int offset) => Uint8List.fromList(

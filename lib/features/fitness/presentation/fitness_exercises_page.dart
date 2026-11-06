@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -29,10 +30,13 @@ class FitnessExercisesPage extends ConsumerStatefulWidget {
 
 class _FitnessExercisesPageState extends ConsumerState<FitnessExercisesPage> {
   String _search = '', _part = '', _equipment = '', _shortcut = '';
-  final _selected = <String>{};
+  final _selected = ValueNotifier<Set<String>>(const <String>{});
   final _scroll = ScrollController();
+
+  /// 页面结束时释放局部选择通知和滚动状态。
   @override
   void dispose() {
+    _selected.dispose();
     _scroll.dispose();
     super.dispose();
   }
@@ -52,12 +56,15 @@ class _FitnessExercisesPageState extends ConsumerState<FitnessExercisesPage> {
           : SafeArea(
               top: false,
               minimum: const EdgeInsets.all(AppDimens.p16),
-              child: AppPrimaryButton(
-                fullWidth: false,
-                label: '${l.commonConfirm} (${_selected.length})',
-                onPressed: _selected.isEmpty
-                    ? null
-                    : () => Navigator.pop(context, _selected.toList()),
+              child: ValueListenableBuilder<Set<String>>(
+                valueListenable: _selected,
+                builder: (context, selected, _) => AppPrimaryButton(
+                  fullWidth: false,
+                  label: '${l.commonConfirm} (${selected.length})',
+                  onPressed: selected.isEmpty
+                      ? null
+                      : () => Navigator.pop(context, _selected.value.toList()),
+                ),
               ),
             ),
       body: Column(
@@ -417,41 +424,51 @@ class _FitnessExercisesPageState extends ConsumerState<FitnessExercisesPage> {
                                     Expanded(
                                       child: found.isEmpty
                                           ? AppEmpty(text: l.fitnessNoExercises)
-                                          : GridView.builder(
-                                              controller: _scroll,
-                                              padding: const EdgeInsets.all(
-                                                AppDimens.p8,
-                                              ),
-                                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                                crossAxisCount:
-                                                    ((contentWidth -
-                                                                AppDimens.p8) /
-                                                            (textScaler.scale(
+                                          : ValueListenableBuilder<Set<String>>(
+                                              valueListenable: _selected,
+                                              // 勾选仅更新可见卡片，完整目录筛选和排序由外层数据变化驱动。
+                                              builder: (context, selected, _) => GridView.builder(
+                                                controller: _scroll,
+                                                padding: const EdgeInsets.all(
+                                                  AppDimens.p8,
+                                                ),
+                                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                                  crossAxisCount:
+                                                      ((contentWidth -
                                                                   AppDimens
-                                                                      .exerciseCardMinWidth,
-                                                                ) +
-                                                                AppDimens.p8))
-                                                        .floor()
-                                                        .clamp(1, 3),
-                                                mainAxisSpacing: AppDimens.p8,
-                                                crossAxisSpacing: AppDimens.p8,
-                                                mainAxisExtent:
-                                                    AppDimens
-                                                        .exerciseCardMinHeight +
-                                                    textScaler.scale(
+                                                                      .p8) /
+                                                              (textScaler.scale(
+                                                                    AppDimens
+                                                                        .exerciseCardMinWidth,
+                                                                  ) +
+                                                                  AppDimens.p8))
+                                                          .floor()
+                                                          .clamp(1, 3),
+                                                  mainAxisSpacing: AppDimens.p8,
+                                                  crossAxisSpacing:
+                                                      AppDimens.p8,
+                                                  mainAxisExtent:
                                                       AppDimens
-                                                          .exerciseCardTextHeight,
+                                                          .exerciseCardMinHeight +
+                                                      textScaler.scale(
+                                                        AppDimens
+                                                            .exerciseCardTextHeight,
+                                                      ),
+                                                ),
+                                                itemCount: found.length,
+                                                itemBuilder: (context, index) =>
+                                                    _card(
+                                                      context,
+                                                      found[index],
+                                                      pinned.contains(
+                                                        found[index].id,
+                                                      ),
+                                                      selected: selected
+                                                          .contains(
+                                                            found[index].id,
+                                                          ),
                                                     ),
                                               ),
-                                              itemCount: found.length,
-                                              itemBuilder: (context, index) =>
-                                                  _card(
-                                                    context,
-                                                    found[index],
-                                                    pinned.contains(
-                                                      found[index].id,
-                                                    ),
-                                                  ),
                                             ),
                                     ),
                                   ],
@@ -506,27 +523,33 @@ class _FitnessExercisesPageState extends ConsumerState<FitnessExercisesPage> {
     );
   }
 
+  /// 可见动作卡接收当前选择状态，激活时从通知器读取最新集合。
   Widget _card(
     BuildContext context,
     FitnessExerciseDefinition def,
-    bool pinned,
-  ) {
+    bool pinned, {
+    required bool selected,
+  }) {
     final l = AppLocalizations.of(context);
     final name = fitnessExerciseName(context, def);
-    final selected = _selected.contains(def.id);
-    void activate() {
-      if (widget.mode == 'browse') {
-        context.pushNamed(Routes.fitnessExerciseDetail, extra: def.id);
-        return;
-      }
-      setState(() {
-        if (selected) {
-          _selected.remove(def.id);
+
+    /// 浏览打开详情，选择仅发布当前集合，替换模式始终保留至多一个动作。
+    Future<void> activate() async {
+      try {
+        if (widget.mode == 'browse') {
+          await context.pushNamed(Routes.fitnessExerciseDetail, extra: def.id);
           return;
         }
-        if (widget.mode == 'replace') _selected.clear();
-        _selected.add(def.id);
-      });
+        final next = {..._selected.value};
+        if (!next.remove(def.id)) {
+          if (widget.mode == 'replace') next.clear();
+          next.add(def.id);
+        }
+        _selected.value = next;
+      } catch (error, stackTrace) {
+        logger.error('FitnessExercises', '处理动作选择失败', error, stackTrace);
+        if (context.mounted) showToast(context, l.commonOperationFailed);
+      }
     }
 
     return Semantics(
