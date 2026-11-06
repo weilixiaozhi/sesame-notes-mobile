@@ -335,6 +335,61 @@ class MemoRepository
     return row == null ? null : memoEntryFromRow(row);
   }
 
+  /// 所选条目共用目标复核和读取事务，只加载指定本子中仍有效的正文。
+  @override
+  Future<List<MemoEntry>> getEntriesByIds(
+    Iterable<String> ids,
+    PrivateBookTarget target,
+  ) async {
+    try {
+      // 固定调用方的选择，去重后分块避免 SQLite 绑定参数数量限制。
+      final selected = ids.toSet().toList(growable: false);
+      return await db.transaction(() async {
+        final book = await requireTarget(target);
+        final rows = <MemoEntryRow>[];
+        const chunkSize = 500;
+        for (var offset = 0; offset < selected.length; offset += chunkSize) {
+          final end = offset + chunkSize < selected.length
+              ? offset + chunkSize
+              : selected.length;
+          rows.addAll(
+            await (db.select(db.memoEntries)..where(
+                  (entry) =>
+                      entry.memoBookId.equals(target.bookId) &
+                      entry.deletedAt.isNull() &
+                      entry.id.isIn(selected.sublist(offset, end)),
+                ))
+                .get(),
+          );
+        }
+        await requireTarget(target);
+        // 分块后统一恢复本内顺序；手动排序的空顺序值遵循 SQLite ASC 规则。
+        rows.sort((left, right) {
+          final int primary;
+          if (book.type == memoBookTypeCredentials) {
+            final leftOrder = left.orderKey, rightOrder = right.orderKey;
+            primary = leftOrder == null
+                ? (rightOrder == null ? 0 : -1)
+                : (rightOrder == null ? 1 : leftOrder.compareTo(rightOrder));
+          } else {
+            primary = right.updatedAt.compareTo(left.updatedAt);
+          }
+          return primary != 0 ? primary : left.id.compareTo(right.id);
+        });
+        return rows.map(memoEntryFromRow).toList(growable: false);
+      });
+    } catch (error, stackTrace) {
+      // 只记录错误类型和堆栈，数据库异常可能包含账号卡片字段或正文。
+      logger.error(
+        'MemoRepository',
+        '读取所选笔记失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      rethrow;
+    }
+  }
+
   /// 月历统计仅查询更新时间，普通笔记和账号密码沿用同一权限与本地日期边界。
   @override
   Stream<Map<DateTime, int>> watchCalendarCounts(

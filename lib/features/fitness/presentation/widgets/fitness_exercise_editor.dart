@@ -65,6 +65,9 @@ class _FitnessExerciseEditorState extends State<FitnessExerciseEditor> {
   /// 输入会话固定同动作口径，清空最后一个重量字段时保持焦点与输入框。
   final _editingWeightModes = <String, bool>{};
 
+  /// 只为当前目录快照建立索引，动作输入和保存回执共用同一份定义引用。
+  Map<String, FitnessExerciseDefinition>? _catalogById;
+
   /// 模板首次展示首个动作，训练单动作时直接展开，后续沿用用户的展开选择。
   @override
   void initState() {
@@ -77,9 +80,14 @@ class _FitnessExerciseEditorState extends State<FitnessExerciseEditor> {
     widget.keyboard?.addListener(_keyboardChanged);
   }
 
+  /// 目录替换释放索引，键盘订阅与首个动作展开状态随当前输入更新。
   @override
   void didUpdateWidget(FitnessExerciseEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.catalog, widget.catalog)) {
+      // 目录替换时立即释放旧定义，首次实际读取再建立当前索引。
+      _catalogById = null;
+    }
     if (oldWidget.keyboard != widget.keyboard) {
       oldWidget.keyboard?.removeListener(_keyboardChanged);
       widget.keyboard?.addListener(_keyboardChanged);
@@ -106,6 +114,19 @@ class _FitnessExerciseEditorState extends State<FitnessExerciseEditor> {
   /// 点击动作标题展开或收起；展开另一个动作时上一个自动收起。
   void _toggle(String id) =>
       setState(() => _expandedId = _expandedId == id ? null : id);
+
+  /// 名称、媒体和重量口径按同一个动作身份读取，重复标识保持首条定义语义。
+  FitnessExerciseDefinition? _definition(String exerciseId) {
+    var indexed = _catalogById;
+    if (indexed == null) {
+      indexed = <String, FitnessExerciseDefinition>{};
+      for (final definition in widget.catalog) {
+        indexed.putIfAbsent(definition.id, () => definition);
+      }
+      _catalogById = indexed;
+    }
+    return indexed[exerciseId];
+  }
 
   void _update(int index, FitnessExercise exercise) {
     final next = [...widget.exercises];
@@ -188,10 +209,11 @@ class _FitnessExerciseEditorState extends State<FitnessExerciseEditor> {
     );
   }
 
+  /// 动作卡共用当前目录定义呈现名称、媒体和重量口径。
   Widget _card(BuildContext context, int index) {
     final l = AppLocalizations.of(context);
     final e = widget.exercises[index];
-    final def = widget.catalog.where((d) => d.id == e.exerciseId).firstOrNull;
+    final def = _definition(e.exerciseId);
     final sideWeight = _sideWeight(e);
     final name = def == null ? e.exerciseId : fitnessExerciseName(context, def);
     return SectionCard(
@@ -360,10 +382,7 @@ class _FitnessExerciseEditorState extends State<FitnessExerciseEditor> {
   bool _sideWeight(FitnessExercise exercise) => fitnessUsesSideWeight(
     widget.preferences,
     exerciseId: exercise.exerciseId,
-    equipment: widget.catalog
-        .where((d) => d.id == exercise.exerciseId)
-        .firstOrNull
-        ?.equipment,
+    equipment: _definition(exercise.exerciseId)?.equipment,
     dataUsesSideWeight:
         fitnessSideWeightFromSets(
           widget.exercises

@@ -165,32 +165,39 @@ class SyncPushCoordinator {
     Set<String>? ownedLedgerIds,
   }) {
     if (blockedCategoryIds.isEmpty) return;
-    var expanded = true;
-    while (expanded) {
-      expanded = false;
-      for (final entry in categoryParents.entries) {
-        if (entry.value.any(blockedCategoryIds.contains) &&
-            blockedCategoryIds.add(entry.key)) {
-          expanded = true;
-        }
+    final childrenByParent = <String, Set<String>>{};
+    for (final entry in categoryParents.entries) {
+      for (final parent in entry.value) {
+        (childrenByParent[parent] ??= {}).add(entry.key);
       }
-      for (final change in pending) {
-        // 删除记录只解除引用，不依赖被引用分类的创建或冲突处理结果。
-        if (change.action == 'delete') continue;
-        if ((change.entityType == 'transaction' ||
-                change.entityType == 'recurring_transaction') &&
-            ownedLedgerIds != null &&
-            !ownedLedgerIds.contains(change.ledgerId)) {
-          continue;
-        }
-        if (!blockedCategoryIds.contains(categoryDependencyId(change))) {
-          continue;
-        }
+    }
+    final references = <String, List<SyncChange>>{};
+    for (final change in pending) {
+      // 删除只解除引用；协作者镜像由其所有者维护，不能沿本账号分类拦截。
+      if (change.action == 'delete') continue;
+      if ((change.entityType == 'transaction' ||
+              change.entityType == 'recurring_transaction') &&
+          ownedLedgerIds != null &&
+          !ownedLedgerIds.contains(change.ledgerId)) {
+        continue;
+      }
+      final dependency = categoryDependencyId(change);
+      if (dependency != null) {
+        (references[dependency] ??= []).add(change);
+      }
+    }
+    // 正文仅在建立引用索引时解析一次，随后沿依赖边传播，每个分类只入队一次。
+    final queue = blockedCategoryIds.toList();
+    for (var index = 0; index < queue.length; index++) {
+      final categoryId = queue[index];
+      for (final child in childrenByParent[categoryId] ?? const <String>{}) {
+        if (blockedCategoryIds.add(child)) queue.add(child);
+      }
+      for (final change in references[categoryId] ?? const <SyncChange>[]) {
         blocked.add((change.entityType, change.entityId));
-        // 子分类受阻后继续展开其引用方，队列中的排列顺序不会影响依赖判断。
         if (change.entityType == 'category' &&
             blockedCategoryIds.add(change.entityId)) {
-          expanded = true;
+          queue.add(change.entityId);
         }
       }
     }
@@ -325,6 +332,14 @@ class SyncPushCoordinator {
       final headPlan = _pendingEntityHeads(pending);
       pending = headPlan.heads;
       final confirmations = headPlan.confirmations;
+      final categoryLevels = <int, int>{};
+
+      /// 排序只读取本轮不可变队列快照，每条分类层级按需解析一次。
+      int levelOf(SyncChange change) => categoryLevels.putIfAbsent(
+        change.id,
+        () => _ports.payloadCategoryLevelOf(change.payload),
+      );
+
       pending.sort((a, b) {
         // 分类创建先于引用，分类删除晚于交易迁移或删除，子级删除先于父级。
         final aRemoval = a.entityType == 'category' && a.action == 'delete';
@@ -334,9 +349,7 @@ class SyncPushCoordinator {
         final bCategory = b.entityType == 'category';
         if (aCategory != bCategory) return aCategory ? -1 : 1;
         if (aCategory && bCategory) {
-          final level = _ports
-              .payloadCategoryLevelOf(a.payload)
-              .compareTo(_ports.payloadCategoryLevelOf(b.payload));
+          final level = levelOf(a).compareTo(levelOf(b));
           if (level != 0) {
             return aRemoval && bRemoval ? -level : level;
           }
@@ -454,6 +467,7 @@ class SyncPushCoordinator {
             final result = await _pushBatch(batch, account);
             // 同轮后续作用域必须使用刚收到的拒绝或冲突结果，不能等下一轮读库。
             final byMutation = {for (final c in batch) c.mutationId: c};
+            var categoryBlockChanged = false;
             for (final outcome in result) {
               if (outcome.status !=
                       PostSyncPush200ResponseOutcomesInnerStatusEnum.invalid &&
@@ -464,17 +478,20 @@ class SyncPushCoordinator {
               final change = byMutation[outcome.mutationId];
               if (change == null) continue;
               blocked.add((change.entityType, change.entityId));
-              if (change.entityType == 'category') {
-                blockedCategoryIds.add(change.entityId);
+              if (change.entityType == 'category' &&
+                  blockedCategoryIds.add(change.entityId)) {
+                categoryBlockChanged = true;
               }
             }
-            blockCategoryDependents(
-              pending,
-              blockedCategoryIds,
-              blocked,
-              categoryParents: categoryPlan.categoryParents,
-              ownedLedgerIds: ownedLedgerIds,
-            );
+            if (categoryBlockChanged) {
+              blockCategoryDependents(
+                pending,
+                blockedCategoryIds,
+                blocked,
+                categoryParents: categoryPlan.categoryParents,
+                ownedLedgerIds: ownedLedgerIds,
+              );
+            }
             progressed = true;
             if (!categoryRemoval) referencesProgressed = true;
           } catch (error, stack) {

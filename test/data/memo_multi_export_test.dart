@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:archive/archive.dart';
+import 'package:drift/drift.dart' as d;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,6 +15,39 @@ import 'package:sesame_notes/features/memos/application/memo_providers.dart';
 import 'package:sesame_notes/features/memos/infrastructure/memo_document.dart';
 import 'package:sesame_notes/features/memos/infrastructure/memo_image.dart';
 import 'package:sesame_notes/shared/providers/memo_repository_provider.dart';
+import 'package:sesame_notes/core/logging/logger_service.dart';
+
+/// 在完整条目读取返回前改变会话，用真实仓储验证读取后的身份复核。
+class _EntryReadHook extends d.QueryInterceptor {
+  void Function()? afterEntries;
+
+  /// 目标父本查询保持原样，钩子只作用于一次所选条目读取。
+  @override
+  Future<List<Map<String, Object?>>> runSelect(
+    d.QueryExecutor executor,
+    String statement,
+    List<Object?> args,
+  ) async {
+    try {
+      final rows = await executor.runSelect(statement, args);
+      if (statement.contains('FROM "memo_entries"') &&
+          !statement.contains('JOIN')) {
+        final callback = afterEntries;
+        afterEntries = null;
+        callback?.call();
+      }
+      return rows;
+    } catch (error, stackTrace) {
+      logger.error(
+        'MemoExportTest',
+        '导出身份边界夹具读取失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      rethrow;
+    }
+  }
+}
 
 /// 固定快照、完整字段与图片边界覆盖真实仓储及文档生成器。
 void main() {
@@ -26,10 +60,14 @@ void main() {
   late ProviderContainer container;
   late MemoDocumentActions actions;
   late MemoBook book;
+  late _EntryReadHook readHook;
   var identityGeneration = 0;
 
   setUp(() async {
-    db = SesameDatabase.withExecutor(NativeDatabase.memory());
+    readHook = _EntryReadHook();
+    db = SesameDatabase.withExecutor(
+      d.ApplyInterceptor(NativeDatabase.memory()).interceptWith(readHook),
+    );
     identityGeneration = 0;
     repo = MemoRepository(db, generationGetter: () => identityGeneration);
     book = await repo.createBook(
@@ -250,6 +288,161 @@ void main() {
     identityGeneration++;
     await expectLater(actions.validate(job), throwsStateError);
   });
+
+  test('读取所选正文期间会话变化时拒绝捕获，不交付旧账号快照', () async {
+    try {
+      readHook.afterEntries = () => identityGeneration++;
+      await expectLater(
+        actions.captureCredentials(
+          bookId,
+          {firstId, secondId},
+          MemoDocumentFormat.md,
+          countLabel: '2',
+        ),
+        throwsStateError,
+      );
+    } catch (error, stackTrace) {
+      logger.error('MemoExportTest', '读取期间身份复核验证失败', error, stackTrace);
+      rethrow;
+    }
+  });
+
+  test('所选账号跨查询块后仍按本内顺序完整导出并忽略重复标识', () async {
+    try {
+      final date = DateTime.utc(2026);
+      final ids = [
+        for (var i = 0; i < 501; i++)
+          'dddddddd-dddd-4ddd-8ddd-${i.toString().padLeft(12, '0')}',
+      ];
+      await db.batch(
+        (batch) => batch.insertAll(db.memoEntries, [
+          for (var i = 0; i < ids.length; i++)
+            MemoEntriesCompanion.insert(
+              id: ids[i],
+              memoBookId: bookId,
+              bookType: 'credentials',
+              title: '所选账号$i',
+              bodyFormat: const d.Value('fields_v1'),
+              body: d.Value(
+                encodeMemoFields([MemoField(label: '账号', value: 'demo-$i')]),
+              ),
+              orderKey: d.Value(i + 2),
+              createdAt: date,
+              updatedAt: date,
+            ),
+        ]),
+      );
+      final selected = await repo.getEntriesByIds([
+        ...ids.reversed,
+        firstId,
+        ids.first,
+        secondId,
+      ], await repo.target(bookId));
+      expect(selected.map((entry) => entry.id), [firstId, secondId, ...ids]);
+      expect(selected.last.fields.single.value, 'demo-500');
+      final job = await actions.captureCredentials(
+        bookId,
+        ids.reversed.toSet(),
+        MemoDocumentFormat.md,
+        countLabel: '501',
+      );
+      expect(job.entries.map((entry) => entry.id), ids);
+      expect(job.entries.every((entry) => entry.bodyJson != null), isTrue);
+    } catch (error, stackTrace) {
+      logger.error('MemoExportTest', '批量导出顺序与完整性验证失败', error, stackTrace);
+      rethrow;
+    }
+  });
+
+  test('勾选其他本的条目时拒绝捕获，不把跨本正文混入文档', () async {
+    try {
+      const other = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+      const foreign = 'ffffffff-ffff-4fff-8fff-ffffffffffff';
+      await repo.createBook(id: other, name: '其他账号本', type: 'credentials');
+      final date = DateTime.utc(2026);
+      await repo.saveEntry(
+        MemoEntry(
+          id: foreign,
+          memoBookId: other,
+          bookType: 'credentials',
+          title: '另一份账号',
+          bodyJson: encodeMemoFields(const [
+            MemoField(label: '账号', value: 'foreign'),
+          ]),
+          createdAt: date,
+          updatedAt: date,
+        ),
+        await repo.target(other),
+      );
+      final selected = await repo.getEntriesByIds([
+        firstId,
+        foreign,
+      ], await repo.target(bookId));
+      expect(selected.map((entry) => entry.id), [firstId]);
+      await expectLater(
+        actions.captureCredentials(
+          bookId,
+          {firstId, foreign},
+          MemoDocumentFormat.md,
+          countLabel: '2',
+        ),
+        throwsStateError,
+      );
+    } catch (error, stackTrace) {
+      logger.error('MemoExportTest', '跨本导出隔离验证失败', error, stackTrace);
+      rethrow;
+    }
+  });
+
+  for (final mutation in ['body', 'order', 'softDelete']) {
+    test('所选记录$mutation变化即使时钟未变也拒绝交付旧文档', () async {
+      try {
+        final job = await actions.captureCredentials(
+          bookId,
+          {firstId},
+          MemoDocumentFormat.md,
+          countLabel: '1',
+        );
+        switch (mutation) {
+          case 'body':
+            await db.customStatement(
+              'UPDATE memo_entries SET body=? WHERE id=?',
+              [
+                encodeMemoFields(const [
+                  MemoField(label: '账号', value: 'changed'),
+                ]),
+                firstId,
+              ],
+            );
+          case 'order':
+            await db.customStatement(
+              'UPDATE memo_entries SET order_key=? WHERE id=?',
+              [99, firstId],
+            );
+          case 'softDelete':
+            await db.customStatement(
+              'UPDATE memo_entries SET deleted_at=? WHERE id=?',
+              [DateTime.utc(2026).millisecondsSinceEpoch, firstId],
+            );
+        }
+        await expectLater(actions.validate(job), throwsStateError);
+        if (mutation == 'softDelete') {
+          await expectLater(
+            actions.captureCredentials(
+              bookId,
+              {firstId, secondId},
+              MemoDocumentFormat.md,
+              countLabel: '2',
+            ),
+            throwsStateError,
+          );
+        }
+      } catch (error, stackTrace) {
+        logger.error('MemoExportTest', '导出快照版本保护验证失败', error, stackTrace);
+        rethrow;
+      }
+    });
+  }
 
   testWidgets('PNG生成过程中取消任务会停止交付且不创建临时目录', (tester) async {
     await tester.runAsync(() async {

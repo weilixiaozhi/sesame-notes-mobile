@@ -76,11 +76,14 @@ abstract interface class MemoEntryRepository {
   /// 重新验证固定目标仍属于当前会话。
   Future<MemoBook> requireTarget(PrivateBookTarget target);
 
-  /// 读取完整条目；账号卡片按手动顺序，普通笔记按最近编辑排列。
-  Future<List<MemoEntry>> getEntries(String id, {String? accountId});
-
   /// 在固定目标内读取条目并复核身份。
   Future<MemoEntry?> getEntry(String id, PrivateBookTarget target);
+
+  /// 在同一快照内批量读取所选完整条目，去重并按本内顺序返回；缺失条目不返回。
+  Future<List<MemoEntry>> getEntriesByIds(
+    Iterable<String> ids,
+    PrivateBookTarget target,
+  );
 
   /// 提供当前用例所需的 watchEntries 能力，身份与事务由实现维护。
   Stream<List<MemoEntry>> watchEntries(

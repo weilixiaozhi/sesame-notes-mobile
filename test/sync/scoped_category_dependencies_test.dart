@@ -676,4 +676,59 @@ void main() {
     expect(pending.pushedAt, isNull);
     expect(pending.frozenRequest, isNull);
   });
+
+  dependencyTest('分类祖先和待推引用共同传播阻断，环不影响删除及协作者边界', () async {
+    const bridge = '1527ffc3-6087-5b6b-99c6-c6837a5db1b9';
+    const deletionId = '3c0d0f14-04aa-4c11-bbf8-f0358ab1b9d9';
+    const recurringId = '3c0d0f14-04aa-4c11-bbf8-f0358ab1b9da';
+    await change('category', childId, {'parent_id': bridge});
+    await change(
+      'transaction',
+      transactionId,
+      transactionPayload(childId),
+      ledger: ledgerId,
+    );
+    await change('recurring_transaction', recurringId, {
+      'category_id': childId,
+    }, ledger: ledgerId);
+    await change(
+      'transaction',
+      deletionId,
+      transactionPayload(childId),
+      ledger: ledgerId,
+      action: 'delete',
+    );
+    await change(
+      'transaction',
+      otherTransactionId,
+      transactionPayload(childId),
+      ledger: otherLedgerId,
+    );
+    final pending = await db.select(db.syncChanges).get();
+    final blockedCategories = {parentId};
+    final blocked = <(String, String)>{('category', parentId)};
+    service.pushCoordinator.blockCategoryDependents(
+      pending.reversed.toList(),
+      blockedCategories,
+      blocked,
+      categoryParents: {
+        bridge: {parentId, childId},
+      },
+      ownedLedgerIds: {ledgerId},
+    );
+    expect(blockedCategories, {parentId, bridge, childId});
+    expect(blocked, {
+      ('category', parentId),
+      ('category', childId),
+      ('transaction', transactionId),
+      ('recurring_transaction', recurringId),
+    });
+    expect(
+      (await db.select(db.syncChanges).get()).every(
+        (row) => row.frozenRequest == null && row.pushedAt == null,
+      ),
+      isTrue,
+      reason: '依赖判定不修改原始待推意图',
+    );
+  });
 }

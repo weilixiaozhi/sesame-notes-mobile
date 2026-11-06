@@ -95,7 +95,7 @@ class MemoDocumentActions {
         throw StateError('MEMO_DOCUMENT_UNAVAILABLE');
       }
       final job = MemoDocumentJob(target, book, entry, format, generation);
-      await validate(job);
+      _checkSelection(job);
       return job;
     });
   }
@@ -107,7 +107,8 @@ class MemoDocumentActions {
     MemoDocumentFormat format, {
     required String countLabel,
   }) async {
-    if (ids.isEmpty ||
+    final selectedIds = Set<String>.of(ids);
+    if (selectedIds.isEmpty ||
         ref.read(currentCredentialBookIdProvider).value != bookId) {
       throw StateError('MEMO_TARGET_CHANGED');
     }
@@ -121,11 +122,8 @@ class MemoDocumentActions {
           book.isStale) {
         throw StateError('MEMO_DOCUMENT_UNAVAILABLE');
       }
-      final entries = (await repo.getEntries(
-        bookId,
-        accountId: target.accountId,
-      )).where((entry) => ids.contains(entry.id)).toList();
-      if (entries.length != ids.length) {
+      final entries = await repo.getEntriesByIds(selectedIds, target);
+      if (entries.length != selectedIds.length) {
         throw StateError('MEMO_DOCUMENT_UNAVAILABLE');
       }
       final job = MemoDocumentJob(
@@ -138,42 +136,60 @@ class MemoDocumentActions {
         credentials: true,
         countLabel: countLabel,
       );
-      await validate(job);
+      _checkSelection(job);
       return job;
     });
   }
 
-  /// 逐条验证所选内容和身份，任何变化都拒绝交付旧快照。
-  Future<void> validate(MemoDocumentJob job) async {
-    void check() {
-      if (job.cancelled ||
-          job.selectionGeneration !=
-              (job.credentials ? credentialGeneration : selectionGeneration) ||
-          (job.credentials
-                  ? ref.read(currentCredentialBookIdProvider).value
-                  : ref.read(currentMemoBookIdProvider).value) !=
-              job.book.id) {
-        throw StateError('MEMO_EXPORT_CANCELLED');
-      }
+  /// 选择和取消状态在读取前后核对，跨越异步边界时不能交付旧任务。
+  void _checkSelection(MemoDocumentJob job) {
+    if (job.cancelled ||
+        job.selectionGeneration !=
+            (job.credentials ? credentialGeneration : selectionGeneration) ||
+        (job.credentials
+                ? ref.read(currentCredentialBookIdProvider).value
+                : ref.read(currentMemoBookIdProvider).value) !=
+            job.book.id) {
+      throw StateError('MEMO_EXPORT_CANCELLED');
     }
+  }
 
-    check();
-    final repo = ref.read(memoEntryRepositoryProvider);
-    final book = await repo.requireTarget(job.target);
-    if (!book.isComplete || book.isStale || book.name != job.book.name) {
-      throw StateError('MEMO_EXPORT_VERSION_CHANGED');
+  /// 在同一数据库快照中批量验证所选内容和身份，任何变化都拒绝交付旧快照。
+  Future<void> validate(MemoDocumentJob job) async {
+    try {
+      _checkSelection(job);
+      final repo = ref.read(memoEntryRepositoryProvider);
+      await repo.runInTransaction(() async {
+        final book = await repo.requireTarget(job.target);
+        if (!book.isComplete || book.isStale || book.name != job.book.name) {
+          throw StateError('MEMO_EXPORT_VERSION_CHANGED');
+        }
+        final entries = await repo.getEntriesByIds(
+          job.entries.map((entry) => entry.id),
+          job.target,
+        );
+        final byId = {for (final entry in entries) entry.id: entry};
+        for (final snapshot in job.entries) {
+          final entry = byId[snapshot.id];
+          if (entry == null ||
+              entry.updatedAt != snapshot.updatedAt ||
+              entry.bodyJson != snapshot.bodyJson ||
+              entry.title != snapshot.title ||
+              entry.orderKey != snapshot.orderKey) {
+            throw StateError('MEMO_EXPORT_VERSION_CHANGED');
+          }
+        }
+        _checkSelection(job);
+      });
+    } catch (error, stackTrace) {
+      logger.error(
+        'MemoExport',
+        '复核导出快照失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      rethrow;
     }
-    for (final snapshot in job.entries) {
-      final entry = await repo.getEntry(snapshot.id, job.target);
-      if (entry == null ||
-          entry.updatedAt != snapshot.updatedAt ||
-          entry.bodyJson != snapshot.bodyJson ||
-          entry.title != snapshot.title ||
-          entry.orderKey != snapshot.orderKey) {
-        throw StateError('MEMO_EXPORT_VERSION_CHANGED');
-      }
-    }
-    check();
   }
 
   /// PNG 在主隔离区使用引擎排版，文档格式在后台生成；写盘前后复核快照。

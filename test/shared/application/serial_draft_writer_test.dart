@@ -91,4 +91,108 @@ void main() {
     expect(notifications, beforeDispose);
     expect(published, isEmpty);
   });
+
+  test('等待保存期间收到更新输入，业务动作等最新内容落盘后才继续', () async {
+    final first = Completer<void>();
+    final finalWrite = Completer<void>();
+    final finalStarted = Completer<void>();
+    var persisted = '';
+    var actionStarted = false;
+    final writer = SerialDraftWriter<String>(
+      save: (draft) async {
+        if (draft == 'first') await first.future;
+        if (draft == 'final') {
+          finalStarted.complete();
+          await finalWrite.future;
+        }
+        persisted = draft;
+        return draft;
+      },
+      onSaved: (_) {},
+      onChanged: () {},
+    );
+    writer.submit('first');
+    final leaving = writer.flush().then((ok) {
+      actionStarted = ok;
+      return ok;
+    });
+    writer.submit('intermediate');
+    writer.submit('final');
+    first.complete();
+    await finalStarted.future;
+    expect(actionStarted, isFalse);
+    finalWrite.complete();
+    expect(await leaving, isTrue);
+    expect(actionStarted, isTrue);
+    expect(persisted, 'final');
+    writer.dispose();
+  });
+
+  test('旧写入失败后已接收的最新草稿仍在页面释放后保存', () async {
+    final releaseFirst = Completer<void>();
+    var persisted = '';
+    final published = <String>[];
+    final writer = SerialDraftWriter<String>(
+      save: (draft) async {
+        if (draft == 'old') {
+          await releaseFirst.future;
+          throw StateError('old failed');
+        }
+        persisted = draft;
+        return draft;
+      },
+      onSaved: published.add,
+      onChanged: () {},
+    );
+    writer.submit('old');
+    writer.submit('intermediate');
+    writer.submit('final');
+    writer.dispose();
+    releaseFirst.complete();
+    expect(await writer.flush(), isTrue);
+    expect(persisted, 'final');
+    expect(writer.failed, isFalse);
+    expect(published, isEmpty);
+  });
+
+  for (final source in ['saved', 'changed']) {
+    test('$source 回调提交的新草稿也在离开前落盘', () async {
+      final finalStarted = Completer<void>();
+      final finish = Completer<void>();
+      var persisted = '';
+      var left = false;
+      late final SerialDraftWriter<String> writer;
+      writer = SerialDraftWriter<String>(
+        save: (draft) async {
+          if (draft == 'final') {
+            finalStarted.complete();
+            await finish.future;
+          }
+          persisted = draft;
+          return draft;
+        },
+        onSaved: (saved) {
+          if (source == 'saved' && saved == 'initial') writer.submit('final');
+        },
+        onChanged: () {
+          if (source == 'changed' &&
+              writer.pending == 0 &&
+              persisted == 'initial') {
+            writer.submit('final');
+          }
+        },
+      );
+      writer.submit('initial');
+      final leaving = writer.flush().then((ok) {
+        left = ok;
+        return ok;
+      });
+      await finalStarted.future;
+      expect(left, isFalse);
+      finish.complete();
+      expect(await leaving, isTrue);
+      expect(persisted, 'final');
+      writer.dispose();
+    });
+  }
 }
