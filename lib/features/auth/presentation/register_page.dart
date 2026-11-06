@@ -12,7 +12,6 @@ import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/utils/text_validation.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
-import 'package:sesame_notes/theme/shadows.dart';
 import 'package:sesame_notes/theme/typography.dart';
 
 /// 注册页：区号 + 手机号 + 密码 + 确认密码。
@@ -137,21 +136,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // 注册页与登录页共用品牌 Logo，避免把账号头像当作品牌标识。
-                  Center(
-                    child: Container(
-                      width: AppDimens.authLogoSize,
-                      height: AppDimens.authLogoSize,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(AppDimens.radius16),
-                        boxShadow: AppTokens.isDark(context)
-                            ? null
-                            : AppShadows.card,
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: const AppLogo(size: AppDimens.authLogoSize),
-                    ),
-                  ),
+                  const AuthBrandLogo(),
                   const SizedBox(height: AppDimens.p32),
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -170,20 +155,21 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         setState(() => _region = region),
                   ),
                   const SizedBox(height: AppDimens.p16),
-                  _passwordField(
+                  AuthPasswordField(
                     controller: pwdCtrl,
                     label: l10n.authPassword,
                     hint: l10n.authRegisterPasswordHint,
                     show: _showPwd,
-                    onToggle: (v) => setState(() => _showPwd = v),
+                    onToggle: () => setState(() => _showPwd = !_showPwd),
                   ),
                   const SizedBox(height: AppDimens.p16),
-                  _passwordField(
+                  AuthPasswordField(
                     controller: confirmCtrl,
                     label: l10n.authConfirmPassword,
                     hint: l10n.authConfirmPasswordHint,
                     show: _showConfirm,
-                    onToggle: (v) => setState(() => _showConfirm = v),
+                    onToggle: () =>
+                        setState(() => _showConfirm = !_showConfirm),
                   ),
                   if (errorText != null) ...[
                     const SizedBox(height: AppDimens.p12),
@@ -211,39 +197,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           ),
         ),
       ),
-    );
-  }
-
-  /// 构建带外置标签的密码输入框，使标签和占位文案职责清晰。
-  Widget _passwordField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required bool show,
-    required ValueChanged<bool> onToggle,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppDimens.p4),
-          child: Text(label, style: AppTextTokens.label(context)),
-        ),
-        const SizedBox(height: AppDimens.p8),
-        SizedBox(
-          height: AppDimens.authFieldHeight,
-          child: TextField(
-            controller: controller,
-            obscureText: !show,
-            decoration: authPasswordDecoration(
-              context,
-              hint: hint,
-              show: show,
-              onToggle: () => onToggle(!show),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

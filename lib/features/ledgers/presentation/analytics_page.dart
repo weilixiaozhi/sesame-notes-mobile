@@ -29,6 +29,7 @@ import 'package:sesame_notes/shared/presentation/analytics_summary.dart';
 import 'package:sesame_notes/shared/formatting/format_utils.dart';
 import 'package:sesame_notes/shared/presentation/minimum_refresh_duration.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
+import 'widgets/category_rank_row.dart';
 
 /// 账单统计页：底部切换周期，金额、趋势与分类采用独立卡片。
 class AnalyticsPage extends ConsumerStatefulWidget {

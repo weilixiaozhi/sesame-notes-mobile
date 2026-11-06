@@ -11,10 +11,8 @@ import 'package:sesame_notes/features/auth/presentation/phone_region_sheet.dart'
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/navigation/route_consts.dart';
 import 'package:sesame_notes/utils/text_validation.dart';
-import 'package:sesame_notes/shared/widgets/app_logo.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
-import 'package:sesame_notes/theme/shadows.dart';
 import 'package:sesame_notes/theme/typography.dart';
 
 /// 登录页：手机号 + 密码，区号选择器对齐 UI 稿。
@@ -137,21 +135,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // 登录页使用品牌 Logo 资源，避免与账号头像或通用登录图标混淆。
-                  Center(
-                    child: Container(
-                      width: AppDimens.authLogoSize,
-                      height: AppDimens.authLogoSize,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(AppDimens.radius16),
-                        boxShadow: AppTokens.isDark(context)
-                            ? null
-                            : AppShadows.card,
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: const AppLogo(size: AppDimens.authLogoSize),
-                    ),
-                  ),
+                  const AuthBrandLogo(),
                   const SizedBox(height: AppDimens.p20),
                   Text(
                     l10n.authWelcomeBack,
@@ -184,28 +168,12 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                         setState(() => _region = region),
                   ),
                   const SizedBox(height: AppDimens.p16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimens.p4,
-                    ),
-                    child: Text(
-                      l10n.authPassword,
-                      style: AppTextTokens.label(context),
-                    ),
-                  ),
-                  const SizedBox(height: AppDimens.p8),
-                  SizedBox(
-                    height: AppDimens.authFieldHeight,
-                    child: TextField(
-                      controller: pwdCtrl,
-                      obscureText: !_showPwd,
-                      decoration: authPasswordDecoration(
-                        context,
-                        hint: l10n.authPasswordHint,
-                        show: _showPwd,
-                        onToggle: () => setState(() => _showPwd = !_showPwd),
-                      ),
-                    ),
+                  AuthPasswordField(
+                    controller: pwdCtrl,
+                    label: l10n.authPassword,
+                    hint: l10n.authPasswordHint,
+                    show: _showPwd,
+                    onToggle: () => setState(() => _showPwd = !_showPwd),
                   ),
                   if (errorText != null) ...[
                     const SizedBox(height: AppDimens.p12),

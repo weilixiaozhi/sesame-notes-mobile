@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sesame_notes/data/models/fitness.dart';
 import 'package:sesame_notes/domain/fitness/fitness_rules.dart';
 import 'package:sesame_notes/l10n/app_localizations.dart';
-import 'package:sesame_notes/shared/widgets/amount_keypad.dart';
+import 'fitness_number_keypad.dart';
 import 'package:sesame_notes/shared/widgets/keypad_constants.dart';
 import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/theme/colors.dart';
@@ -264,7 +264,7 @@ class FitnessSetKeyboard extends StatelessWidget {
                 height:
                     AppDimens.actionButtonMinHeight * 4 +
                     KeypadLayout.rowGap * 3,
-                child: AmountKeypad(
+                child: FitnessNumberKeypad(
                   onAppend: controller.append,
                   onBackspace: controller.backspace,
                   onClear: controller.clear,

@@ -10,7 +10,7 @@ import 'package:sesame_notes/navigation/route_consts.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/typography.dart';
-import 'package:sesame_notes/shared/widgets/category_grid_item.dart';
+import 'category_grid_item.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/shared/widgets/app_empty.dart';

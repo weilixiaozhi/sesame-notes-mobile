@@ -4,13 +4,13 @@ import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
-import 'keypad_constants.dart';
-import 'press_key.dart';
+import 'package:sesame_notes/shared/widgets/keypad_constants.dart';
+import 'package:sesame_notes/shared/widgets/press_key.dart';
 
-/// 训练等专用数字输入使用四个业务操作，独立于记账计算键盘。
-class AmountKeypad extends StatelessWidget {
+/// 训练数字输入使用加组、向上填充、向下填充和下一项四个操作。
+class FitnessNumberKeypad extends StatelessWidget {
   /// 数字与退格按下生效，滑出回滚；确认只在松手时执行。
-  const AmountKeypad({
+  const FitnessNumberKeypad({
     super.key,
     required this.onAppend,
     required this.onSubmit,

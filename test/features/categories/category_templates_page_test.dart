@@ -16,7 +16,7 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/accounting_repositories.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/theme/app_theme.dart';
-import 'package:sesame_notes/shared/widgets/category_grid_item.dart';
+import 'package:sesame_notes/features/categories/presentation/widgets/category_grid_item.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/features/categories/presentation/widgets/category_grid_selector.dart';
 import '../../helpers/test_isolation.dart';

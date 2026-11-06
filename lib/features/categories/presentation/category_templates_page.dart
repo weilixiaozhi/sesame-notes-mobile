@@ -14,7 +14,6 @@ import 'package:sesame_notes/shared/widgets/widgets.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/typography.dart';
-import 'category_template_widgets.dart';
 import 'widgets/category_selector_dialog.dart';
 import 'widgets/compact_category_tile.dart';
 
@@ -159,7 +158,7 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
               ),
             SafeArea(
               top: false,
-              child: TemplateBottomBar(
+              child: _TemplateBottomBar(
                 selectedCount: selected.length,
                 allSelected: selected.length == allKeys.length,
                 isAdding: _busy,
@@ -212,12 +211,13 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
               itemCount: items.length,
               itemBuilder: (context, index) {
                 final item = items[index];
-                return TemplateItemTile(
+                return CompactCategoryTile(
                   key: ValueKey('template-flat-${item.key}'),
-                  item: item,
+                  name: item.name,
+                  iconName: item.iconName,
                   selected: _selected.contains(item.key),
                   enabled: !_locked,
-                  onToggle: () => setState(
+                  onTap: () => setState(
                     () => _selected = toggleTemplateSelection(
                       _selected,
                       item.key,
@@ -305,15 +305,13 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
     final childCount = group.children
         .where((child) => _selected.contains(child.key))
         .length;
-    return Container(
+    return SectionCard(
       key: ValueKey('template-children-${group.parent.key}'),
+      color: AppTokens.surface(context),
       margin: const EdgeInsets.only(top: AppDimens.p8),
       padding: const EdgeInsets.all(AppDimens.p8),
-      decoration: BoxDecoration(
-        color: AppTokens.surface(context),
-        border: Border.fromBorderSide(AppTokens.cardBorder(context)),
-        borderRadius: BorderRadius.circular(AppTokens.cardRadius(context)),
-      ),
+      showShadow: false,
+      textured: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -347,12 +345,13 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
             itemCount: group.children.length,
             itemBuilder: (context, index) {
               final child = group.children[index];
-              return TemplateItemTile(
+              return CompactCategoryTile(
                 key: ValueKey('template-child-${child.key}'),
-                item: child,
+                name: child.name,
+                iconName: child.iconName,
                 selected: _selected.contains(child.key),
                 enabled: !_locked,
-                onToggle: () => setState(
+                onTap: () => setState(
                   () =>
                       _selected = toggleTemplateSelection(_selected, child.key),
                 ),
@@ -466,5 +465,103 @@ class _CategoryTemplatesPageState extends ConsumerState<CategoryTemplatesPage> {
             : l.commonOperationFailed,
       );
     }
+  }
+}
+
+/// 模板页底部常驻操作栏
+///
+/// 左侧"本次已勾选 N 项"；右侧"全选/取消全选"文字链 + 添加按钮
+/// （未勾选时添加按钮为禁用态）。
+class _TemplateBottomBar extends StatelessWidget {
+  /// 本次实际创建的分类数量，包含自动带入的父项。
+  final int selectedCount;
+
+  /// 是否已全选（决定文字链显示"全选"还是"取消全选"）
+  final bool allSelected;
+
+  /// 是否正在执行写入
+  final bool isAdding;
+
+  /// 只有实际写入期间显示进度；确认框等待期间仅禁用重复提交。
+  final bool isWriting;
+  final bool selectionLocked;
+  final bool canSubmit;
+  final String? addLabel;
+
+  final VoidCallback onToggleSelectAll;
+  final VoidCallback onAdd;
+
+  /// 展示当前选择数量和本页提交状态，操作由模板页面负责。
+  const _TemplateBottomBar({
+    required this.selectedCount,
+    required this.allSelected,
+    required this.isAdding,
+    this.isWriting = false,
+    this.selectionLocked = false,
+    this.canSubmit = true,
+    this.addLabel,
+    required this.onToggleSelectAll,
+    required this.onAdd,
+  });
+
+  /// 选择与写入状态分别控制批量选择入口和添加按钮。
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final canAdd = selectedCount > 0 && !isAdding && canSubmit;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(
+        AppDimens.p16,
+        AppDimens.p8,
+        AppDimens.p16,
+        AppDimens.p8,
+      ),
+      decoration: BoxDecoration(
+        color: AppTokens.surface(context),
+        border: Border(top: BorderSide(color: AppTokens.borderStrong(context))),
+      ),
+      child: Row(
+        children: [
+          // 左：本次已勾选计数
+          Expanded(
+            child: Text(
+              l10n.categoryTemplateCompactSelectedCount(selectedCount),
+              style: AppTextTokens.label(
+                context,
+              ).copyWith(color: AppTokens.textSecondary(context)),
+            ),
+          ),
+          // 全选与取消全选共用文字按钮，按当前选择数量决定动作。
+          TextButton(
+            onPressed: selectionLocked ? null : onToggleSelectAll,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimens.p8,
+                vertical: AppDimens.p8,
+              ),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              allSelected
+                  ? l10n.categoryTemplateDeselectAll
+                  : l10n.categoryTemplateSelectAll,
+              style: AppTextTokens.label(
+                context,
+              ).copyWith(color: AppTokens.textLink(context)),
+            ),
+          ),
+          const SizedBox(width: AppDimens.p8),
+          // 右：添加按钮（未勾选时禁用）
+          AppPrimaryButton(
+            fullWidth: false,
+            label: addLabel ?? l10n.commonAdd,
+            busy: isWriting,
+            onPressed: canAdd ? onAdd : null,
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -8,7 +8,6 @@ export 'app_sheet.dart' show AppSheet, showAppSheet;
 export 'app_dialog.dart' show AppDialog;
 export 'app_route.dart' show appPageRoute;
 export 'day_section_header.dart';
-export 'entry_bar_button.dart';
 export 'primary_header.dart';
 export 'section_card.dart';
 export 'section_title.dart';
@@ -39,7 +38,6 @@ export 'currency_flag.dart' show currencyFlagLabel, currencySymbolColumn;
 // ===== 统计图表 =====
 export 'line_chart.dart';
 export 'category_donut_chart.dart';
-export 'category_rank_row.dart';
 
 // ===== 账号 / 登录 / 安全 =====
 export 'member_avatar.dart' show SelfAvatar;

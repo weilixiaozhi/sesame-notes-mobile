@@ -3,12 +3,13 @@ import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 import 'package:sesame_notes/theme/typography.dart';
-import 'category_icon.dart';
-import 'detail_list_item.dart';
-import 'amount_text.dart';
+import 'package:sesame_notes/shared/widgets/category_icon.dart';
+import 'package:sesame_notes/shared/widgets/detail_list_item.dart';
+import 'package:sesame_notes/shared/widgets/amount_text.dart';
 import 'package:sesame_notes/shared/formatting/category_utils.dart';
 import 'package:sesame_notes/data/models.dart' as db;
 
+/// 账本分类排行展示父子支出占比，并区分展开与详情入口。
 class CategoryRankRow extends StatefulWidget {
   final String? categoryId; // 分类ID
   final db.CategoryDisplay? category; // 分类对象（用于显示图标）
@@ -25,6 +26,7 @@ class CategoryRankRow extends StatefulWidget {
   >?
   subCategories; // 预计算的子分类明细
 
+  /// 分类数据由分析页提供，行内维护子项的展开状态。
   const CategoryRankRow({
     super.key,
     this.categoryId,
@@ -37,6 +39,7 @@ class CategoryRankRow extends StatefulWidget {
     this.subCategories,
   });
 
+  /// 为当前父分类维护独立展开状态。
   @override
   State<CategoryRankRow> createState() => _CategoryRankRowState();
 }

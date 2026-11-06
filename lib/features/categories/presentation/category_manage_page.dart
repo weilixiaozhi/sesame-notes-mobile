@@ -229,8 +229,8 @@ class _CategoryManagePageState extends ConsumerState<CategoryManagePage>
         AppDimens.p16,
         0,
       ),
-      child: EntryBarButton(
-        onTap: () => context.pushNamed(Routes.categoryTemplates),
+      child: AppSecondaryButton(
+        onPressed: () => context.pushNamed(Routes.categoryTemplates),
         icon: AppIcons.checklist,
         label: l10n.categoryTemplateLibraryTitle,
       ),

@@ -90,7 +90,7 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
     }
   }
 
-  /// 构建带外置标签和文字显隐按钮的密码输入框。
+  /// 为共用密码输入设置改密长度限制、键盘动作和错误清理行为。
   Widget _field({
     required TextEditingController controller,
     required String label,
@@ -99,33 +99,17 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
     required ValueChanged<bool> onToggle,
     TextInputAction? textInputAction,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppDimens.p4),
-          child: Text(label, style: AppTextTokens.label(context)),
-        ),
-        const SizedBox(height: AppDimens.p8),
-        SizedBox(
-          height: AppDimens.authFieldHeight,
-          child: TextField(
-            controller: controller,
-            obscureText: !show,
-            maxLength: maxPasswordLength,
-            textInputAction: textInputAction,
-            onChanged: (_) {
-              if (errorText != null) setState(() => errorText = null);
-            },
-            decoration: authPasswordDecoration(
-              context,
-              hint: hint,
-              show: show,
-              onToggle: busy ? null : () => onToggle(!show),
-            ),
-          ),
-        ),
-      ],
+    return AuthPasswordField(
+      controller: controller,
+      label: label,
+      hint: hint,
+      show: show,
+      maxLength: maxPasswordLength,
+      textInputAction: textInputAction,
+      onChanged: (_) {
+        if (errorText != null) setState(() => errorText = null);
+      },
+      onToggle: busy ? null : () => onToggle(!show),
     );
   }
 

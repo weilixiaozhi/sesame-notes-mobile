@@ -5,7 +5,7 @@ import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
 import 'package:sesame_notes/theme/typography.dart';
 import 'package:sesame_notes/shared/formatting/category_utils.dart';
-import 'category_icon.dart';
+import 'package:sesame_notes/shared/widgets/category_icon.dart';
 import 'package:sesame_notes/theme/icons/app_icons.dart';
 
 /// 分类与管理入口共用的图标/标签格；手势确认后才选择，横滑不会提前改变分类。
