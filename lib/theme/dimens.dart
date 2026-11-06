@@ -105,8 +105,9 @@ class AppDimens {
   static const double exerciseThumbnailSize = 64;
   static const double exerciseDetailMediaSize = 180;
 
-  /// 训练组的数值与完成框共用目标宽度，窄屏按可用空间等比收窄。
-  static const double fitnessSetFieldWidth = 55;
+  /// 训练字段以 360dp 页面中的 55dp 为基准，随页面宽度同比缩放。
+  static const double fitnessSetReferencePageWidth = 360;
+  static const double fitnessSetReferenceFieldWidth = 55;
   // 悬浮休息按钮的圆环外径：比内部两行文字大一档，文字不贴描边。
   static const double restCountdownCompactSize = 48;
   static const double calendarWeekdayHeight = 30;

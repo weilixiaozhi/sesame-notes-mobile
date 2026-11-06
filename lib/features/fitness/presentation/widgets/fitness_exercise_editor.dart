@@ -644,14 +644,19 @@ class _FitnessExerciseEditorState extends State<FitnessExerciseEditor> {
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // 数值与完成框以统一目标宽度左对齐，空间不足时按可见框数等比分配。
+                // 以页面宽度同比换算字段宽度，360dp 页面对应 55dp，框间距保持固定。
+                final targetWidth =
+                    MediaQuery.sizeOf(context).width /
+                    AppDimens.fitnessSetReferencePageWidth *
+                    AppDimens.fitnessSetReferenceFieldWidth;
+                // 保留组号和间距后按可见框数限制宽度，确保窄屏和左右重量模式能完整排下。
                 final fieldCount = fields.length - 1;
                 final cellWidth =
                     ((constraints.maxWidth -
                                 kindWidth -
                                 _fieldGap * fieldCount) /
                             fieldCount)
-                        .clamp(0.0, AppDimens.fitnessSetFieldWidth)
+                        .clamp(0.0, targetWidth)
                         .toDouble();
                 // 各格宽度确定后按最高内容测量行高，再拉伸所有格子以统一外框高度。
                 return IntrinsicHeight(
