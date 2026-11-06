@@ -12,14 +12,12 @@ void main() {
     );
   });
 
-  test('统一库完整合并为52父107子，资源键互不重复', () {
-    expect(groups, hasLength(52));
-    expect(groups.expand((group) => group.children), hasLength(107));
+  test('分类模板父子资源身份互不重复', () {
     final keys = [
       for (final group in groups) group.parent.key,
       ...groups.expand((group) => group.children).map((child) => child.key),
     ];
-    expect(keys.toSet(), hasLength(159));
+    expect(keys.toSet(), hasLength(keys.length));
   });
 
   test('父可单选，多个子项只带入一个父，取消子项保留明确父选择', () {

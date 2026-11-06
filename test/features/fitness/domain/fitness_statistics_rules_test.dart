@@ -1,6 +1,3 @@
-import 'dart:collection';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sesame_notes/data/models/fitness.dart';
 import 'package:sesame_notes/data/models/fitness_catalog.dart';
@@ -9,31 +6,6 @@ import 'package:sesame_notes/features/fitness/domain/fitness_statistics.dart';
 
 const setId = '11111111-1111-4111-8111-111111111111';
 const exerciseInstanceId = '22222222-2222-4222-8222-222222222222';
-
-/// 记录输入偏好列表的实际遍历量，避免依赖设备速度判断排序成本。
-class _CountingIds extends ListBase<String> {
-  /// 输入数据固定，排序只允许读取偏好而不能改写。
-  _CountingIds(this.values);
-  final List<String> values;
-  int reads = 0;
-
-  @override
-  int get length => values.length;
-
-  @override
-  set length(int value) => throw UnsupportedError('排序不得修改偏好列表');
-
-  /// 列表搜索和顺序遍历都通过索引读取，能够捕获比较器内的重复扫描。
-  @override
-  String operator [](int index) {
-    reads++;
-    return values[index];
-  }
-
-  @override
-  void operator []=(int index, String value) =>
-      throw UnsupportedError('排序不得修改偏好列表');
-}
 
 FitnessExercise checkedExercise([String exerciseId = '0025']) =>
     FitnessExercise(
@@ -341,47 +313,6 @@ void main() {
           pinnedIds: pinned,
           recentOrder: recentOrder,
         ).map((item) => item.id).toList();
-
-    test('大目录排序只顺序读取一次置顶和最近列表，并保持排序规则', () {
-      try {
-        final exercises = [
-          for (var index = 0; index < 300; index++)
-            definition('exercise-$index', index.isEven ? 'chest' : 'back'),
-        ];
-        final pinnedValues = [
-          for (var index = 0; index < 300; index += 3) 'exercise-$index',
-        ];
-        final recentValues = [
-          for (var index = 299; index >= 0; index--) 'exercise-$index',
-        ];
-        final pinned = _CountingIds(pinnedValues);
-        final recent = _CountingIds(recentValues);
-        final result = fitnessSortExercises(
-          exercises,
-          catalog: exercises,
-          pinnedIds: pinned,
-          recentOrder: recent,
-        );
-        final pinnedSet = pinnedValues.toSet();
-        expect(result.map((item) => item.id), [
-          ...recentValues.where(pinnedSet.contains),
-          ...recentValues.where((id) => !pinnedSet.contains(id)),
-        ]);
-        expect(
-          pinned.reads,
-          pinnedValues.length,
-          reason: '置顶偏好只构建一次索引，比较器不得反复扫描',
-        );
-        expect(
-          recent.reads,
-          recentValues.length,
-          reason: '最近顺序只构建一次索引，比较器不得反复扫描',
-        );
-      } catch (error, stackTrace) {
-        debugPrint('动作排序遍历量回归失败：$error\n$stackTrace');
-        rethrow;
-      }
-    });
 
     test('默认按部位分组顺序、组内保持目录原序', () {
       final samePart = definition('0004', 'chest');

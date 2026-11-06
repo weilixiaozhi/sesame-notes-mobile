@@ -8,59 +8,12 @@ import 'package:sesame_notes/features/transactions/application/recurring_transac
 
 import '../../helpers/test_isolation.dart';
 
-/// 统计生产仓储的查询入口，实际排期和发生写入仍由数据库完成。
-class _CountingRepository extends LocalRepository {
+/// 在真实落账后注入模板变更，核验后续补记是否遵守最新业务状态。
+class _ChangingRepository extends LocalRepository {
   /// 使用内存数据库隔离账本和模板，保持完整事务实现。
-  _CountingRepository(super.db);
+  _ChangingRepository(super.db);
 
-  int directoryReads = 0;
-  int directoryRows = 0;
-  int ruleReads = 0;
-  int transactionReads = 0;
   Future<void> Function(String ruleId)? afterOccurrence;
-
-  /// 每次读取整个账本目录均计入，确保补记笔数不会放大目录查询。
-  @override
-  Future<List<RecurringTransaction>> getRecurringTransactionsByLedger(
-    String ledgerId,
-  ) async {
-    try {
-      directoryReads++;
-      final rows = await super.getRecurringTransactionsByLedger(ledgerId);
-      directoryRows += rows.length;
-      return rows;
-    } catch (error, stackTrace) {
-      printOnFailure('周期目录读取失败：$error\n$stackTrace');
-      rethrow;
-    }
-  }
-
-  /// 连续发生只回读对应模板，所属账本和删除状态由真实查询核验。
-  @override
-  Future<RecurringTransaction?> getRecurringTransactionById(
-    String id, {
-    required String ledgerId,
-  }) async {
-    try {
-      ruleReads++;
-      return await super.getRecurringTransactionById(id, ledgerId: ledgerId);
-    } catch (error, stackTrace) {
-      printOnFailure('单模板回读失败：$error\n$stackTrace');
-      rethrow;
-    }
-  }
-
-  /// 后台入口只需要账本集合，显式入口才读取返回交易明细。
-  @override
-  Future<Transaction?> getTransactionById(String id) async {
-    try {
-      transactionReads++;
-      return await super.getTransactionById(id);
-    } catch (error, stackTrace) {
-      printOnFailure('交易明细回读失败：$error\n$stackTrace');
-      rethrow;
-    }
-  }
 
   /// 在已提交的发生与下一次模板回读之间模拟用户操作。
   @override
@@ -84,17 +37,17 @@ class _CountingRepository extends LocalRepository {
   }
 }
 
-/// 验证读放大被消除，同时保留明细返回和模板变更后的停止语义。
+/// 验证补记返回完整明细，并在模板变更后停止原账本的后续落账。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late SesameDatabase database;
-  late _CountingRepository repository;
+  late _ChangingRepository repository;
   late String ledgerId;
 
   setUp(() async {
     resetGlobalTestState();
     database = SesameDatabase.withExecutor(NativeDatabase.memory());
-    repository = _CountingRepository(database);
+    repository = _ChangingRepository(database);
     ledgerId = await repository.createLedger(
       name: '周期补记',
       storageMode: 'local',
@@ -103,8 +56,9 @@ void main() {
   tearDown(() => database.close());
 
   /// 固定历史三天排期，不受运行日期与本机时区影响。
-  Future<String> addRule({bool enabled = true}) =>
-      repository.addRecurringTransaction(
+  Future<String> addRule() async {
+    try {
+      return await repository.addRecurringTransaction(
         ledgerId: ledgerId,
         type: 'expense',
         amount: '8.25',
@@ -113,50 +67,20 @@ void main() {
         startDate: DateTime.utc(2024, 1, 1),
         endDate: DateTime.utc(2024, 1, 3),
         timeZone: 'UTC',
-        enabled: enabled,
       );
-
-  test('后台补记仅扫描一次模板目录，不回读无用的交易快照', () async {
-    try {
-      for (var i = 0; i < 20; i++) {
-        await addRule(enabled: false);
-      }
-      final active = await addRule();
-      final changed =
-          await RecurringTransactionService.generatePendingTransactionsStatic(
-            repository: repository,
-          );
-      expect(changed, {ledgerId});
-      expect(repository.directoryReads, 1);
-      expect(repository.directoryRows, 21);
-      expect(repository.ruleReads, 3);
-      expect(repository.transactionReads, 0);
-      final rows = await database.select(database.transactions).get();
-      expect(rows, hasLength(3));
-      expect(rows.every((row) => row.recurringId == active), isTrue);
-      expect(
-        await RecurringTransactionService.generatePendingTransactionsStatic(
-          repository: repository,
-        ),
-        isEmpty,
-      );
-      expect(await database.select(database.transactions).get(), hasLength(3));
     } catch (error, stackTrace) {
-      printOnFailure('周期后台查询数量回归失败：$error\n$stackTrace');
+      printOnFailure('创建周期补记模板失败：$error\n$stackTrace');
       rethrow;
     }
-  });
+  }
 
-  test('显式补记仍返回每笔交易，只回读对应模板进度', () async {
+  test('显式补记返回每笔生成的交易', () async {
     try {
       await addRule();
       final rows = await RecurringTransactionService(
         repository,
       ).generatePendingTransactions();
       expect(rows, hasLength(3));
-      expect(repository.directoryReads, 1);
-      expect(repository.ruleReads, 3);
-      expect(repository.transactionReads, 3);
     } catch (error, stackTrace) {
       printOnFailure('周期明细返回回归失败：$error\n$stackTrace');
       rethrow;

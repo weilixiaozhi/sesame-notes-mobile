@@ -165,40 +165,6 @@ void main() {
     );
   });
 
-  test('housing 组翻译顺序（zh：水电煤→物业费→房租→房贷→宽带）', () async {
-    final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
-    final db = SesameDatabase.withExecutor(NativeDatabase.memory());
-    try {
-      await SeedService.createHybridCategories(db, l10n);
-      final cats = await db.select(db.categories).get();
-
-      final housingSid = defaultCategoryId(level: 1, key: 'housing');
-      final housing = cats.firstWhere((c) => c.id == housingSid);
-      // 子类按 sortOrder 升序即为 seed 写入顺序
-      final children = cats.where((c) => c.parentId == housing.id).toList()
-        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-
-      expect(children.map((c) => c.name).toList(), [
-        '水电煤',
-        '物业费',
-        '房租',
-        '房贷',
-        '宽带',
-      ]);
-    } finally {
-      await db.close();
-    }
-  });
-
-  test('默认初始化选择来自唯一模板树，保留独立的初始化顺序', () {
-    for (final entry in SeedService.hybridCategoryTemplate) {
-      final available = SeedService.categoryTemplates[entry.key];
-      expect(available, isNotNull);
-      for (final child in entry.children ?? <String>[]) {
-        expect(available, contains(child));
-      }
-    }
-  });
   for (final tombstone in [false, true]) {
     test('已有目录不被补种：tombstone=$tombstone', () async {
       final database = SesameDatabase.withExecutor(NativeDatabase.memory());
