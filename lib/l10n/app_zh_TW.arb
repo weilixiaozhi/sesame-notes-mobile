@@ -1608,8 +1608,6 @@
   "memoLoadFailed": "載入失敗，請重試",
   "memoUnavailable": "本子或帳號已變更，請返回重新開啟；未儲存輸入仍按原帳號保留",
   "memoDownloadRequired": "內容尚未完整下載，請連線補全",
-  "memoEditing": "編輯中",
-  "memoSaving": "儲存中",
   "memoSaveFailed": "儲存失敗，輸入已保留，請重試",
   "memoDeleteEntry": "刪除這條記錄？",
   "memoDeleteEntryMessage": "刪除後無法復原。",

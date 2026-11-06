@@ -1,4 +1,5 @@
 import '../../../shared/providers/current_private_book_provider.dart';
+import '../../../shared/providers/read_provider_future.dart';
 import '../../../data/models/private_book.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/memo.dart';
@@ -80,22 +81,23 @@ abstract class CurrentMemoBookNotifierBase extends CurrentPrivateBookNotifier {
   /// 只在本类型内选本：普通笔记与账号密码卡片不会互相抢占当前本。
   String get bookType;
 
+  /// 两类笔记读取各自类型的最新目录，依赖身份与实际选择保持一致。
   @override
-  void watchDirectory() {
+  List<MemoBook> watchDirectory() {
     ref.watch(
       memoBooksByTypeProvider(
         bookType,
       ).select((value) => privateBookIds(value.value)),
     );
+    return ref.read(memoBooksByTypeProvider(bookType)).requireValue;
   }
 
+  /// 两类笔记选本等待同一个目录流首帧，类型筛选由既有目录 Provider 完成。
   @override
-  Future<List<MemoBook>> loadBooks(String? account) async =>
-      (await ref
-              .watch(memoQueryRepositoryProvider)
-              .getBooks(accountId: account))
-          .where((book) => book.type == bookType)
-          .toList();
+  Future<void> waitForDirectory() async {
+    await readProviderFutureFromRef(ref, memoBooksProvider.future);
+  }
+
   @override
   Future<PrivateBookTarget> target(String id) =>
       ref.read(memoQueryRepositoryProvider).target(id);

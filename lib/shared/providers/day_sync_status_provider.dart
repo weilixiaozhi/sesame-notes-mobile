@@ -14,7 +14,7 @@ final daySyncStatusProvider = FutureProvider<List<DayBookSyncStatus>>((
 ) async {
   final accountId = ref.watch(currentAccountIdProvider);
   if (accountId == null) return const [];
-  ref.watch(dataChangeSignalProvider);
+  ref.watch(dayDataChangeSignalProvider);
   ref.watch(syncRunTickProvider);
   final db = ref.watch(databaseProvider);
   try {
@@ -26,40 +26,60 @@ final daySyncStatusProvider = FutureProvider<List<DayBookSyncStatus>>((
                     b.storageMode.equals('cloud'),
               ))
               .get();
+      final changes = db.syncChanges;
+      final pendingCount = changes.id.count();
+      final rejectedCount = changes.rejectionReason.count();
+      // 仅传回按本聚合的数字，长正文与冻结请求不进入状态对象。
       final pending =
-          await (db.select(db.syncChanges)..where(
-                (c) =>
-                    c.accountId.equals(accountId) &
-                    c.dayBookId.isNotNull() &
-                    c.pushedAt.isNull(),
-              ))
+          await (db.selectOnly(changes)
+                ..addColumns([changes.dayBookId, pendingCount, rejectedCount])
+                ..where(
+                  changes.accountId.equals(accountId) &
+                      changes.dayBookId.isNotNull() &
+                      changes.pushedAt.isNull(),
+                )
+                ..groupBy([changes.dayBookId]))
               .get();
+      final conflictTable = db.syncConflicts;
+      final conflictCount = conflictTable.id.count();
       final conflicts =
-          await (db.select(db.syncConflicts)..where(
-                (c) =>
-                    c.accountId.equals(accountId) &
-                    c.dayBookId.isNotNull() &
-                    c.status.equals('OPEN'),
-              ))
+          await (db.selectOnly(conflictTable)
+                ..addColumns([conflictTable.dayBookId, conflictCount])
+                ..where(
+                  conflictTable.accountId.equals(accountId) &
+                      conflictTable.dayBookId.isNotNull() &
+                      conflictTable.status.equals('OPEN'),
+                )
+                ..groupBy([conflictTable.dayBookId]))
               .get();
+      // 每组结果只遍历一次，多个本子不会重复扫描全部待推记录。
+      final booksById = {
+        for (final book in books) book.id: dayBookFromRow(book),
+      };
+      final pendingById = {
+        for (final row in pending)
+          row.read(changes.dayBookId)!: (
+            count: row.read(pendingCount) ?? 0,
+            rejected: row.read(rejectedCount) ?? 0,
+          ),
+      };
+      final conflictsById = {
+        for (final row in conflicts)
+          row.read(conflictTable.dayBookId)!: row.read(conflictCount) ?? 0,
+      };
       final ids = {
-        ...books.map((b) => b.id),
-        ...pending.map((c) => c.dayBookId!),
-        ...conflicts.map((c) => c.dayBookId!),
+        ...booksById.keys,
+        ...pendingById.keys,
+        ...conflictsById.keys,
       };
       return [
         for (final id in ids)
           DayBookSyncStatus(
             dayBookId: id,
-            book: books
-                .where((b) => b.id == id)
-                .map(dayBookFromRow)
-                .firstOrNull,
-            pendingCount: pending.where((c) => c.dayBookId == id).length,
-            rejectedCount: pending
-                .where((c) => c.dayBookId == id && c.rejectionReason != null)
-                .length,
-            conflictCount: conflicts.where((c) => c.dayBookId == id).length,
+            book: booksById[id],
+            pendingCount: pendingById[id]?.count ?? 0,
+            rejectedCount: pendingById[id]?.rejected ?? 0,
+            conflictCount: conflictsById[id] ?? 0,
           ),
       ];
     });

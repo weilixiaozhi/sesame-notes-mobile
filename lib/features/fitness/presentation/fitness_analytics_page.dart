@@ -52,6 +52,14 @@ class _FitnessAnalyticsPageState extends ConsumerState<FitnessAnalyticsPage> {
   DateTimeRange get _range => _naturalRange(_selectedDate, _period.name);
   String? _part;
   bool _retrying = false;
+  ({
+    String spaceId,
+    List<FitnessWorkout> workouts,
+    List<FitnessExerciseDefinition> catalog,
+    FitnessWorkoutRange range,
+    FitnessStatistics value,
+  })?
+  _statisticsSnapshot;
 
   DateTimeRange _naturalRange(DateTime anchor, String period) {
     final range = fitnessDateRange(anchor, period);
@@ -141,6 +149,26 @@ class _FitnessAnalyticsPageState extends ConsumerState<FitnessAnalyticsPage> {
     final sync = available
         ? ref.watch(fitnessSyncStatusProvider)
         : const AsyncData(FitnessSyncStatus(isComplete: false));
+    final cached = _statisticsSnapshot;
+    if (cached != null &&
+        (_retrying ||
+            !available ||
+            cached.spaceId != space.value?.id ||
+            space.value!.isStale ||
+            !space.value!.isComplete ||
+            workouts.isLoading ||
+            workouts.hasError ||
+            catalog.isLoading ||
+            catalog.hasError ||
+            sync.isLoading ||
+            sync.hasError ||
+            sync.asData?.value.isComplete != true ||
+            cached.range != range ||
+            !identical(cached.workouts, workouts.asData?.value) ||
+            !identical(cached.catalog, catalog.asData?.value))) {
+      // 页面常驻时也及时释放失效快照，空空间或加载失败不持有上一空间的大列表。
+      _statisticsSnapshot = null;
+    }
     return Scaffold(
       body: Stack(
         children: [
@@ -251,9 +279,14 @@ class _FitnessAnalyticsPageState extends ConsumerState<FitnessAnalyticsPage> {
       );
     }
     try {
-      return _content(workouts.requireValue, {
-        for (final def in catalog.requireValue) def.id: def,
-      });
+      return _content(
+        _statisticsFor(
+          book.id,
+          workouts.requireValue,
+          catalog.requireValue,
+          range,
+        ),
+      );
     } catch (error, stackTrace) {
       logger.error('FitnessAnalytics', '健身统计数据无效', error, stackTrace);
       return AppLoadError(
@@ -261,6 +294,40 @@ class _FitnessAnalyticsPageState extends ConsumerState<FitnessAnalyticsPage> {
         onRetry: () => _retry(range),
       );
     }
+  }
+
+  /// 聚合只依赖训练快照、动作目录和日期区间，人体筛选复用同一份统计结果。
+  FitnessStatistics _statisticsFor(
+    String spaceId,
+    List<FitnessWorkout> workouts,
+    List<FitnessExerciseDefinition> catalog,
+    FitnessWorkoutRange range,
+  ) {
+    final cached = _statisticsSnapshot;
+    if (cached != null &&
+        cached.spaceId == spaceId &&
+        identical(cached.workouts, workouts) &&
+        identical(cached.catalog, catalog) &&
+        cached.range == range) {
+      return cached.value;
+    }
+    final value = fitnessStatistics(
+      workouts,
+      startDate: fitnessDate(range.start),
+      endDate: fitnessDate(
+        DateTime(range.until.year, range.until.month, range.until.day - 1),
+      ),
+      catalog: {for (final definition in catalog) definition.id: definition},
+    );
+    // 每个页面仅保存当前一次结果，新数据与新区间计算成功后替换旧快照。
+    _statisticsSnapshot = (
+      spaceId: spaceId,
+      workouts: workouts,
+      catalog: catalog,
+      range: range,
+      value: value,
+    );
+    return value;
   }
 
   /// 目录失败重试沿既有同步协调器刷新，其他读取失败只重新加载当前查询。
@@ -337,18 +404,9 @@ class _FitnessAnalyticsPageState extends ConsumerState<FitnessAnalyticsPage> {
     ),
   );
 
-  Widget _content(
-    List<FitnessWorkout> all,
-    Map<String, FitnessExerciseDefinition> catalog,
-  ) {
+  Widget _content(FitnessStatistics stats) {
     final l = AppLocalizations.of(context);
     final taxonomies = ref.watch(fitnessTaxonomiesProvider);
-    final stats = fitnessStatistics(
-      all,
-      startDate: fitnessDate(_range.start),
-      endDate: fitnessDate(_range.end),
-      catalog: catalog,
-    );
     // 点击人体区域后，只显示该区域实际贡献的分类训练量，分类标识不与解剖区域混用。
     final partVolumes = _part == null
         ? stats.bodyPartVolumeKg

@@ -45,7 +45,9 @@ void main() {
           fitnessSpaceRepositoryProvider.overrideWithValue(
             FitnessSpaceRepository(db, accountIdGetter: () => account),
           ),
-          dataChangeSignalProvider.overrideWith((ref) => const Stream.empty()),
+          fitnessDataChangeSignalProvider.overrideWith(
+            (ref) => const Stream.empty(),
+          ),
         ],
       );
       try {

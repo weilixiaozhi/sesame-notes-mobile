@@ -13,6 +13,10 @@ typedef _RecurringOccurrenceResult = ({
 
 /// 提交事实独立于展示快照回读，数据库读取失败不能抹掉已经完成的发生。
 class _RecurringGenerationProgress {
+  /// 仅需要返回交易明细的调用收集展示快照，后台扫描只记录提交身份。
+  _RecurringGenerationProgress({required this.collectTransactions});
+
+  final bool collectTransactions;
   final transactions = <TransactionSnapshot>[];
   final committedLedgerIds = <String>{};
   final committedOccurrenceIds = <String>{};
@@ -56,7 +60,7 @@ class RecurringTransactionService {
     MutationExecutor? mutationExecutor,
     void Function()? verifyScope,
   }) async {
-    final progress = _RecurringGenerationProgress();
+    final progress = _RecurringGenerationProgress(collectTransactions: false);
     try {
       await RecurringTransactionService(
         repository,
@@ -97,7 +101,7 @@ class RecurringTransactionService {
   Future<List<TransactionSnapshot>> generatePendingTransactions({
     List<LedgerSnapshot>? ledgers,
   }) async {
-    final progress = _RecurringGenerationProgress();
+    final progress = _RecurringGenerationProgress(collectTransactions: true);
     await _scan(progress, ledgers: ledgers);
     return progress.transactions;
   }
@@ -171,15 +175,15 @@ class RecurringTransactionService {
       // 生成事务已经完成，后续快照回读失败只停止扫描，不撤销提交事实。
       verifyScope?.call();
       progress.recordCommitted(recurring.ledgerId, id);
-      final transaction = await repository.getTransactionById(id);
-      final updated = await repository.getRecurringTransactionsByLedger(
-        recurring.ledgerId,
+      final transaction = progress.collectTransactions
+          ? await repository.getTransactionById(id)
+          : null;
+      final updated = await repository.getRecurringTransactionById(
+        recurring.id,
+        ledgerId: recurring.ledgerId,
       );
       verifyScope?.call();
-      return (
-        transaction: transaction,
-        recurring: updated.where((row) => row.id == recurring.id).firstOrNull,
-      );
+      return (transaction: transaction, recurring: updated);
     }
 
     verifyScope?.call();

@@ -523,6 +523,12 @@ abstract interface class TransactionRepository {
     String ledgerId,
   );
 
+  /// 读取原账本内仍有效的单个周期模板，删除或移走后返回空值。
+  Future<RecurringTransactionSnapshot?> getRecurringTransactionById(
+    String id, {
+    required String ledgerId,
+  });
+
   /// 记账、周期与汇率所需的getTransactionById能力。
   Future<TransactionSnapshot?> getTransactionById(String id);
 

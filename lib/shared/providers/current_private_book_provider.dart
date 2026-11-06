@@ -12,8 +12,12 @@ abstract class CurrentPrivateBookNotifier extends AsyncNotifier<String?> {
 
   Future<String?> currentSelection() => future;
   String get preferencePrefix;
-  void watchDirectory();
-  Future<List<PrivateBook>> loadBooks(String? account);
+
+  /// 登记目录身份依赖并同步返回同一时刻可用的目录。
+  List<PrivateBook> watchDirectory();
+
+  /// 等待目录首帧就绪，实际选择使用随后同步观察到的最新目录。
+  Future<void> waitForDirectory();
   Future<PrivateBookTarget> target(String id);
   Future<PrivateBook> requireTarget(PrivateBookTarget target);
   String _key(String? account) => '${preferencePrefix}_${account ?? 'local'}';
@@ -26,11 +30,12 @@ abstract class CurrentPrivateBookNotifier extends AsyncNotifier<String?> {
         final buildRef = ref;
         final account = buildRef.watch(currentAccountIdProvider);
         final generation = buildRef.watch(authIdentityGenerationProvider);
-        watchDirectory();
         final prefs = await buildRef.read(sharedPreferencesProvider.future);
         if (!buildRef.mounted) return null;
-        final books = await loadBooks(account);
+        await waitForDirectory();
         if (!buildRef.mounted) return null;
+        // 首帧到位后再登记目录依赖，避免初次加载自身失效使无人监听的读取悬挂。
+        final books = watchDirectory();
 
         final previous = _selection;
         final current =

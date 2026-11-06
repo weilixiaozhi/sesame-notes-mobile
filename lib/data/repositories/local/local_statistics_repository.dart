@@ -132,41 +132,59 @@ class LocalStatisticsRepository {
     }
   }
 
+  /// 趋势只读取日期与金额，按当地日历补齐空白日期。
   Future<List<({DateTime day, double total})>> totalsByDay({
     required String ledgerId,
     required String type,
     required DateTime start,
     required DateTime end,
   }) async {
-    final rows =
-        await (db.select(db.transactions)..where(
-              (t) =>
-                  t.ledgerId.equals(ledgerId) &
-                  t.txType.equals(type) &
-                  t.deletedAt.isNull() &
-                  t.happenedAt.isBiggerOrEqualValue(start) &
-                  t.happenedAt.isSmallerThanValue(end),
-            ))
-            .get();
-    final map = <DateTime, Decimal>{};
-    for (final t in rows) {
-      final dt = t.happenedAt.toLocal();
-      final day = DateTime(dt.year, dt.month, dt.day);
-      final v = Decimal.tryParse(t.nativeAmount) ?? Decimal.tryParse(t.amount);
-      if (v != null) {
-        map.update(day, (acc) => acc + v, ifAbsent: () => v);
+    try {
+      final table = db.transactions;
+      final rows =
+          await (db.selectOnly(table)
+                ..addColumns([
+                  table.happenedAt,
+                  table.nativeAmount,
+                  table.amount,
+                ])
+                ..where(
+                  table.ledgerId.equals(ledgerId) &
+                      table.txType.equals(type) &
+                      table.deletedAt.isNull() &
+                      table.happenedAt.isBiggerOrEqualValue(start) &
+                      table.happenedAt.isSmallerThanValue(end),
+                ))
+              .get();
+      final map = <DateTime, Decimal>{};
+      for (final row in rows) {
+        final dt = row.read(table.happenedAt)!.toLocal();
+        final day = DateTime(dt.year, dt.month, dt.day);
+        final amount =
+            Decimal.tryParse(row.read(table.nativeAmount)!) ??
+            Decimal.tryParse(row.read(table.amount)!);
+        if (amount != null) {
+          map.update(day, (value) => value + amount, ifAbsent: () => amount);
+        }
       }
+      // 按当地日历推进，跨夏令时时一天可以不是二十四小时。
+      return [
+        for (
+          var day = DateTime(start.year, start.month, start.day);
+          day.isBefore(end);
+          day = DateTime(day.year, day.month, day.day + 1)
+        )
+          (day: day, total: (map[day] ?? Decimal.zero).toDouble()),
+      ];
+    } catch (error, stackTrace) {
+      logger.error(
+        'Statistics',
+        '读取每日支出趋势失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      rethrow;
     }
-    // 按当地日历补齐每日零点，跨夏令时时一天可以不是二十四小时。
-    final result = <({DateTime day, double total})>[];
-    for (
-      DateTime d = DateTime(start.year, start.month, start.day);
-      d.isBefore(end);
-      d = DateTime(d.year, d.month, d.day + 1)
-    ) {
-      result.add((day: d, total: (map[d] ?? Decimal.zero).toDouble()));
-    }
-    return result;
   }
 
   Future<DateTime?> earliestExpenseDate({required String ledgerId}) async {
@@ -213,24 +231,30 @@ class LocalStatisticsRepository {
     return rows.first.happenedAt.toLocal();
   }
 
+  /// 存在性只读取第一条有效支出的标识，无需统计全部历史账单。
   Future<bool> hasAnyExpenseTx({required String ledgerId}) async {
-    final row = await db
-        .customSelect(
-          'SELECT COUNT(*) AS c FROM transactions '
-          'WHERE ledger_id = ?1 AND tx_type = ?2 '
-          'AND deleted_at IS NULL',
-          variables: [
-            d.Variable.withString(ledgerId),
-            d.Variable<String>('expense'),
-          ],
-          readsFrom: {db.transactions},
-        )
-        .getSingle();
-    final v = row.data['c'];
-    if (v is int) return v > 0;
-    if (v is BigInt) return v > BigInt.zero;
-    if (v is num) return v > 0;
-    return false;
+    try {
+      final table = db.transactions;
+      final row =
+          await (db.selectOnly(table)
+                ..addColumns([table.id])
+                ..where(
+                  table.ledgerId.equals(ledgerId) &
+                      table.txType.equals('expense') &
+                      table.deletedAt.isNull(),
+                )
+                ..limit(1))
+              .getSingleOrNull();
+      return row != null;
+    } catch (error, stackTrace) {
+      logger.error(
+        'Statistics',
+        '检查支出记录失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      rethrow;
+    }
   }
 
   /// 按半开区间读取有效支出，以十进制快照累计后仅在显示边界转为 double。
@@ -239,23 +263,37 @@ class LocalStatisticsRepository {
     required DateTime start,
     required DateTime end,
   }) async {
-    // 金额为十进制文本，使用 Decimal 累加以避免 SQL 浮点转换损失精度。
-    final rows =
-        await (db.select(db.transactions)..where(
-              (t) =>
-                  t.ledgerId.equals(ledgerId) &
-                  t.txType.equals('expense') &
-                  t.deletedAt.isNull() &
-                  t.happenedAt.isBiggerOrEqualValue(start) &
-                  t.happenedAt.isSmallerThanValue(end),
-            ))
-            .get();
-    var total = Decimal.zero;
-    for (final t in rows) {
-      final v = Decimal.tryParse(t.nativeAmount) ?? Decimal.tryParse(t.amount);
-      if (v != null) total += v;
+    try {
+      // 仅读取两个金额快照，长备注和其他交易展示字段不进入汇总结果。
+      final table = db.transactions;
+      final rows =
+          await (db.selectOnly(table)
+                ..addColumns([table.nativeAmount, table.amount])
+                ..where(
+                  table.ledgerId.equals(ledgerId) &
+                      table.txType.equals('expense') &
+                      table.deletedAt.isNull() &
+                      table.happenedAt.isBiggerOrEqualValue(start) &
+                      table.happenedAt.isSmallerThanValue(end),
+                ))
+              .get();
+      var total = Decimal.zero;
+      for (final row in rows) {
+        final amount =
+            Decimal.tryParse(row.read(table.nativeAmount)!) ??
+            Decimal.tryParse(row.read(table.amount)!);
+        if (amount != null) total += amount;
+      }
+      return total.toDouble();
+    } catch (error, stackTrace) {
+      logger.error(
+        'Statistics',
+        '读取区间支出总额失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      rethrow;
     }
-    return total.toDouble();
   }
 
   /// 月账期只负责确定边界，金额与删除过滤复用统一的区间聚合口径。

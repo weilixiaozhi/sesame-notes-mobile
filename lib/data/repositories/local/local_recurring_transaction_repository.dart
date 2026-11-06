@@ -93,6 +93,30 @@ class LocalRecurringTransactionRepository {
     )..where((t) => t.ledgerId.equals(ledgerId) & t.deletedAt.isNull())).get();
   }
 
+  /// 发生提交后只回读对应规则，同时核验账本和墓碑，避免接续已移走或删除的模板。
+  Future<RecurringTransaction?> getRecurringTransactionById(
+    String id, {
+    required String ledgerId,
+  }) async {
+    try {
+      return await (db.select(db.recurringTransactions)..where(
+            (row) =>
+                row.id.equals(id) &
+                row.ledgerId.equals(ledgerId) &
+                row.deletedAt.isNull(),
+          ))
+          .getSingleOrNull();
+    } catch (error, stackTrace) {
+      logger.error(
+        'RecurringTransactions',
+        '读取周期模板进度失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      rethrow;
+    }
+  }
+
   /// 新建周期模板，并固化金额的原记账币种。
   ///
   /// 未指定 [currencyCode] 时取创建时的账本本位币，确保账本以后换币时模板金额

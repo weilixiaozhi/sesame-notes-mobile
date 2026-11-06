@@ -825,31 +825,41 @@ List<FitnessExerciseDefinition> fitnessSortExercises(
   required List<String> pinnedIds,
   List<String>? recentOrder,
 }) {
-  final parts = ['custom', ...catalog.map((e) => e.bodyPart).toSet()];
+  final pinned = pinnedIds.toSet();
+  final partOrder = <String, int>{'custom': 0};
+  for (final exercise in catalog) {
+    partOrder.putIfAbsent(exercise.bodyPart, () => partOrder.length);
+  }
   final catalogOrder = {
     for (var i = 0; i < catalog.length; i++) catalog[i].id: i,
   };
+  final recentIndices = recentOrder == null ? null : <String, int>{};
+  if (recentOrder != null) {
+    for (var index = 0; index < recentOrder.length; index++) {
+      // 同一动作重复出现时，首次位置代表最近使用顺序。
+      recentIndices!.putIfAbsent(recentOrder[index], () => index);
+    }
+  }
   final sorted = exercises.toList();
-  int byPinned(FitnessExerciseDefinition a, FitnessExerciseDefinition b) =>
-      (pinnedIds.contains(b.id) ? 1 : 0).compareTo(
-        pinnedIds.contains(a.id) ? 1 : 0,
-      );
   sorted.sort((a, b) {
-    final pin = byPinned(a, b);
+    // 比较阶段只做索引读取，置顶、最近和目录规则由同一次排序完成。
+    final pin = (pinned.contains(b.id) ? 1 : 0).compareTo(
+      pinned.contains(a.id) ? 1 : 0,
+    );
     if (pin != 0) return pin;
-    final part = parts.indexOf(a.bodyPart).compareTo(parts.indexOf(b.bodyPart));
+    if (recentIndices != null) {
+      final recent = (recentIndices[a.id] ?? -1).compareTo(
+        recentIndices[b.id] ?? -1,
+      );
+      if (recent != 0) return recent;
+    }
+    final part = (partOrder[a.bodyPart] ?? -1).compareTo(
+      partOrder[b.bodyPart] ?? -1,
+    );
     return part != 0
         ? part
         : catalogOrder[a.id]!.compareTo(catalogOrder[b.id]!);
   });
-  if (recentOrder != null) {
-    sorted.sort((a, b) {
-      final pin = byPinned(a, b);
-      return pin != 0
-          ? pin
-          : recentOrder.indexOf(a.id).compareTo(recentOrder.indexOf(b.id));
-    });
-  }
   return sorted;
 }
 

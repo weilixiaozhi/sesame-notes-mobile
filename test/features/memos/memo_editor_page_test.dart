@@ -18,6 +18,7 @@ import 'package:sesame_notes/providers/product_analytics_providers.dart';
 import 'package:sesame_notes/shared/application/product_analytics_controller.dart';
 import 'package:sesame_notes/shared/widgets/primary_header.dart';
 import 'package:sesame_notes/theme/app_theme.dart';
+import 'package:sesame_notes/theme/icons/app_icons.dart';
 
 import '../../helpers/test_isolation.dart';
 
@@ -229,6 +230,88 @@ List<String> _composingText(WidgetTester tester) {
 /// 覆盖只读切编辑、键盘视口变化，以及保存后的再次编辑。
 void main() {
   setUp(resetGlobalTestState);
+
+  testWidgets('连续正文输入复用编辑器外壳，工具栏和页头独立更新', (tester) async {
+    try {
+      final actions = await _openEditor(tester);
+      await _enterEditing(tester);
+      final surface = tester.widget<MemoEditorSurface>(
+        find.byType(MemoEditorSurface),
+      );
+      for (var index = 0; index < 20; index++) {
+        await _typeText(tester, '编辑检查\n连续正文输入$index');
+        expect(
+          tester.widget<MemoEditorSurface>(find.byType(MemoEditorSurface)),
+          same(surface),
+          reason: '正文输入应由Quill自身监听，不能逐字重建页面外壳',
+        );
+      }
+      final controller = _editor(tester).controller;
+      final typed = controller.document.toPlainText();
+      final undo = find.widgetWithIcon(IconButton, AppIcons.undo);
+      final redo = find.widgetWithIcon(IconButton, AppIcons.redo);
+      expect(tester.widget<IconButton>(undo).onPressed, isNotNull);
+      await tester.tap(undo);
+      await tester.pump();
+      expect(controller.document.toPlainText(), isNot(typed));
+      expect(tester.widget<IconButton>(redo).onPressed, isNotNull);
+      await tester.tap(redo);
+      await tester.pump();
+      expect(controller.document.toPlainText(), typed);
+
+      final bold = find.byWidgetPredicate(
+        (widget) =>
+            widget is QuillToolbarToggleStyleButton &&
+            widget.attribute == Attribute.bold,
+      );
+      controller.updateSelection(
+        const TextSelection(baseOffset: 5, extentOffset: 8),
+        ChangeSource.local,
+      );
+      await tester.pump();
+      expect(
+        tester.state<QuillToolbarToggleStyleButtonState>(bold).currentValue,
+        isFalse,
+      );
+      await tester.tap(bold);
+      await tester.pump();
+      expect(
+        tester.state<QuillToolbarToggleStyleButtonState>(bold).currentValue,
+        isTrue,
+      );
+      controller.updateSelection(
+        const TextSelection.collapsed(offset: 0),
+        ChangeSource.local,
+      );
+      await tester.pump();
+      expect(
+        tester.state<QuillToolbarToggleStyleButtonState>(bold).currentValue,
+        isFalse,
+        reason: '选区变化应更新格式按钮，无需页面整体重建',
+      );
+      expect(
+        tester.widget<MemoEditorSurface>(find.byType(MemoEditorSurface)),
+        same(surface),
+      );
+      controller.replaceText(
+        0,
+        4,
+        '新标题',
+        const TextSelection.collapsed(offset: 3),
+      );
+      await tester.pump();
+      expect(
+        tester.widget<PrimaryHeader>(find.byType(PrimaryHeader)).title,
+        '新标题',
+      );
+      await tester.pump(const Duration(milliseconds: 450));
+      expect(actions.saved, isNotEmpty);
+      expect(_savedText(actions.saved.last), controller.document.toPlainText());
+    } catch (error, stackTrace) {
+      debugPrint('备忘输入局部刷新回归失败：$error\n$stackTrace');
+      rethrow;
+    }
+  });
 
   testWidgets('点击正文进入编辑保留选区，保存后可以再次连接键盘输入', (tester) async {
     final actions = await _openEditor(tester);

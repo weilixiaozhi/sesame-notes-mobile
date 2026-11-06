@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -19,10 +20,14 @@ class FitnessMediaRepository {
     AssetBundle? assetBundle,
     this.cacheLimitBytes = 256 * 1024 * 1024,
     this.requestTimeout = const Duration(seconds: 20),
+    this.maxConcurrentLoads = 4,
   }) : directory = directory ?? getApplicationSupportDirectory,
        assetBundle = assetBundle ?? rootBundle {
     if (requestTimeout <= Duration.zero) {
       throw ArgumentError.value(requestTimeout, 'requestTimeout');
+    }
+    if (maxConcurrentLoads <= 0) {
+      throw ArgumentError.value(maxConcurrentLoads, 'maxConcurrentLoads');
     }
   }
   final Dio dio;
@@ -30,6 +35,7 @@ class FitnessMediaRepository {
   final AssetBundle assetBundle;
   final Duration requestTimeout;
   final int cacheLimitBytes;
+  final int maxConcurrentLoads;
   late final _cache = FitnessMediaCache(
     directory: _cacheDirectory,
     reclaimableKeys: _reclaimableKeys,
@@ -37,7 +43,11 @@ class FitnessMediaRepository {
     maxBytes: cacheLimitBytes,
   );
   Future<Map<String, String>>? _builtinAssets;
-  final Map<String, Future<Uint8List?>> _inFlight = {};
+  final Map<String, _MediaLoad> _inFlight = {};
+  final _waiting = Queue<_MediaLoad>();
+  final _cancellations = <CancelToken>{};
+  var _activeLoads = 0;
+  var _disposed = false;
   static final _path = RegExp(
     r'^/api/v1/fitness/media/(builtin-[0-9]{4}|[0-9a-f]{64})$',
   );
@@ -109,18 +119,76 @@ class FitnessMediaRepository {
     return await sha256.bind(file.openRead()).first == sha256.convert(bytes);
   }
 
-  /// 同一媒体并发请求共用一次下载，失败留给界面使用随包图片。
+  /// 相同媒体共用结果，不同媒体按容量排队，完整图片字节只由有限个读取任务持有。
   Future<Uint8List?> load(String path) {
     // 无内容服务器时立即交给图片组件读取内置素材，不访问网络或缓存目录。
-    if (dio.options.baseUrl.isEmpty || !_path.hasMatch(path)) {
+    if (_disposed || dio.options.baseUrl.isEmpty || !_path.hasMatch(path)) {
       return Future.value(null);
     }
-    return _inFlight.putIfAbsent(
-      path,
-      () => _load(path).whenComplete(() {
-        _inFlight.remove(path);
-      }),
-    );
+    final existing = _inFlight[path];
+    if (existing != null) return existing.result.future;
+    final request = _MediaLoad(path);
+    _inFlight[path] = request;
+    _waiting.add(request);
+    _drain();
+    return request.result.future;
+  }
+
+  /// 网络、校验与串行落盘共用并发额度，避免已下载的大图片堆在磁盘写入队列中。
+  void _drain() {
+    while (!_disposed &&
+        _activeLoads < maxConcurrentLoads &&
+        _waiting.isNotEmpty) {
+      final request = _waiting.removeFirst();
+      _activeLoads++;
+      unawaited(_run(request));
+    }
+  }
+
+  /// 每项任务无论成功、失败或取消都归还额度；已释放的所有者不再派发后续请求。
+  Future<void> _run(_MediaLoad request) async {
+    try {
+      final bytes = await _load(request.path);
+      if (!request.result.isCompleted) {
+        request.result.complete(_disposed ? null : bytes);
+      }
+    } catch (error, stackTrace) {
+      logger.error(
+        'FitnessMedia',
+        '动作图片读取失败，继续使用内置素材',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      if (!request.result.isCompleted) request.result.complete(null);
+    } finally {
+      _inFlight.remove(request.path);
+      _activeLoads--;
+      _drain();
+    }
+  }
+
+  /// 仅取消本仓储的媒体传输，其他业务仍可使用共享网络客户端。
+  void dispose() {
+    if (_disposed) return;
+    _disposed = true;
+    for (final request in _inFlight.values) {
+      if (!request.result.isCompleted) request.result.complete(null);
+    }
+    _inFlight.clear();
+    _waiting.clear();
+    for (final cancellation in _cancellations.toList()) {
+      try {
+        cancellation.cancel('动作图片读取已结束');
+      } catch (error, stackTrace) {
+        logger.error(
+          'FitnessMedia',
+          '释放动作图片请求失败',
+          safeErrorSummary(error),
+          stackTrace,
+        );
+      }
+    }
+    _cancellations.clear();
   }
 
   /// GIF 头、大小与上传内容摘要同时校验，缓存损坏时重新获取。
@@ -134,19 +202,24 @@ class FitnessMediaRepository {
 
   /// 禁止重定向和外部源；完整校验后原子写入，离线优先读取已有 GIF。
   Future<Uint8List?> _load(String path) async {
+    CancelToken? cancel;
     try {
+      if (_disposed) return null;
       final key = _cacheKey(path);
       final cached = await _cache.read(
         key,
         maxFileBytes: _maxBytes,
         valid: (bytes) => _valid(bytes, path),
       );
+      if (_disposed) return null;
       if (cached != null) return cached;
-      final cancel = CancelToken();
+      cancel = CancelToken();
+      _cancellations.add(cancel);
+      final cancellation = cancel;
       final response = await dio
           .get<List<int>>(
             path,
-            cancelToken: cancel,
+            cancelToken: cancellation,
             options: Options(
               responseType: ResponseType.bytes,
               followRedirects: false,
@@ -154,21 +227,25 @@ class FitnessMediaRepository {
             ),
             onReceiveProgress: (count, total) {
               if (count > _maxBytes || total > _maxBytes) {
-                cancel.cancel('动作媒体超过大小限制');
+                cancellation.cancel('动作媒体超过大小限制');
               }
             },
           )
           .timeout(
             requestTimeout,
             onTimeout: () {
-              cancel.cancel('动作媒体请求超时');
+              cancellation.cancel('动作媒体请求超时');
               throw TimeoutException(
                 'FITNESS_MEDIA_REQUEST_TIMEOUT',
                 requestTimeout,
               );
             },
           );
-      final bytes = Uint8List.fromList(response.data ?? const []);
+      if (_disposed) return null;
+      final data = response.data;
+      final bytes = data is Uint8List
+          ? data
+          : Uint8List.fromList(data ?? const []);
       if (!_valid(bytes, path)) {
         throw const FormatException('FITNESS_MEDIA_INVALID');
       }
@@ -176,6 +253,10 @@ class FitnessMediaRepository {
       await _cache.write(key, bytes);
       return bytes;
     } catch (error, stackTrace) {
+      // 所有者主动结束属于资源回收，交由界面继续使用已有图片或内置素材。
+      if (_disposed && error is DioException && CancelToken.isCancel(error)) {
+        return null;
+      }
       logger.error(
         'FitnessMedia',
         '官方动作图片暂不可用，继续使用内置素材',
@@ -183,6 +264,16 @@ class FitnessMediaRepository {
         stackTrace,
       );
       return null;
+    } finally {
+      if (cancel != null) _cancellations.remove(cancel);
     }
   }
+}
+
+/// 排队项只保留受控路径与结果出口，尚未启动时不分配媒体字节或网络资源。
+class _MediaLoad {
+  /// 每个媒体身份在排队和执行期间共用一个结果。
+  _MediaLoad(this.path);
+  final String path;
+  final result = Completer<Uint8List?>();
 }

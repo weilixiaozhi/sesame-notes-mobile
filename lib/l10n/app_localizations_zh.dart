@@ -3190,12 +3190,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get memoDownloadRequired => '内容尚未完整下载，请联网补全';
 
   @override
-  String get memoEditing => '编辑中';
-
-  @override
-  String get memoSaving => '保存中';
-
-  @override
   String get memoSaveFailed => '保存失败，输入已保留，请重试';
 
   @override
@@ -8702,12 +8696,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get memoDownloadRequired => '內容尚未完整下載，請連線補全';
-
-  @override
-  String get memoEditing => '編輯中';
-
-  @override
-  String get memoSaving => '儲存中';
 
   @override
   String get memoSaveFailed => '儲存失敗，輸入已保留，請重試';

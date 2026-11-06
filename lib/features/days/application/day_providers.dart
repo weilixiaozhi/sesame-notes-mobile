@@ -7,6 +7,7 @@ import 'package:sesame_notes/data/models/day_event.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/day_repository_provider.dart';
 import 'package:sesame_notes/shared/providers/sync_providers.dart';
+import 'package:sesame_notes/shared/providers/read_provider_future.dart';
 
 /// 日期派生统一依赖当地今天，系统时区变化会使展示重新计算。
 final dayTodayProvider = Provider<DateOnly>(
@@ -39,14 +40,20 @@ final currentDayBookIdProvider =
 class CurrentDayBookNotifier extends CurrentPrivateBookNotifier {
   @override
   String get preferencePrefix => 'current_day_book_id';
+
+  /// 身份依赖与选择读取同一目录版本，等待期间的新帧不能被旧快照覆盖。
   @override
-  void watchDirectory() {
+  List<DayBook> watchDirectory() {
     ref.watch(dayBooksProvider.select((value) => privateBookIds(value.value)));
+    return ref.read(dayBooksProvider).requireValue;
   }
 
+  /// 选本复用目录流首帧，账号隔离由目录 Provider 的依赖维护。
   @override
-  Future<List<DayBook>> loadBooks(String? account) =>
-      ref.watch(dayQueryRepositoryProvider).getBooks(accountId: account);
+  Future<void> waitForDirectory() async {
+    await readProviderFutureFromRef(ref, dayBooksProvider.future);
+  }
+
   @override
   Future<PrivateBookTarget> target(String id) =>
       ref.read(dayQueryRepositoryProvider).target(id);

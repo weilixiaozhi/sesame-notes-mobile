@@ -1608,8 +1608,6 @@
   "memoLoadFailed": "加载失败，请重试",
   "memoUnavailable": "本子或账号已变化，请返回重新打开；未保存输入仍按原账号保留",
   "memoDownloadRequired": "内容尚未完整下载，请联网补全",
-  "memoEditing": "编辑中",
-  "memoSaving": "保存中",
   "memoSaveFailed": "保存失败，输入已保留，请重试",
   "memoDeleteEntry": "删除这条记录？",
   "memoDeleteEntryMessage": "删除后无法恢复。",

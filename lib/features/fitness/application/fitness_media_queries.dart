@@ -7,11 +7,13 @@ import '../../../data/repositories/fitness_media_repository.dart';
 import '../../../infrastructure/api/api_client_provider.dart';
 
 /// 官方媒体查询随当前 API 实例更新，仓储和持久缓存仅由应用层持有。
-final fitnessMediaQueriesProvider = Provider<FitnessMediaQueries>(
-  (ref) => FitnessMediaQueries(
-    FitnessMediaRepository(dio: ref.watch(apiClientProvider).dio),
-  ),
-);
+final fitnessMediaQueriesProvider = Provider<FitnessMediaQueries>((ref) {
+  final repository = FitnessMediaRepository(
+    dio: ref.watch(apiClientProvider).dio,
+  );
+  ref.onDispose(repository.dispose);
+  return FitnessMediaQueries(repository);
+});
 
 /// 向展示层提供可解码的媒体字节，隐藏网络和磁盘缓存实现。
 class FitnessMediaQueries {

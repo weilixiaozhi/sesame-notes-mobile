@@ -15,6 +15,13 @@ mixin LocalRecurringOperations on LocalAccountingContext {
     String ledgerId,
   ) => recurringStore.getRecurringTransactionsByLedger(ledgerId);
 
+  /// 按模板主键回读发生游标，所属账本变化时停止原账本的补记。
+  @override
+  Future<RecurringTransaction?> getRecurringTransactionById(
+    String id, {
+    required String ledgerId,
+  }) => recurringStore.getRecurringTransactionById(id, ledgerId: ledgerId);
+
   /// 提供 addRecurringTransaction 对应的持久化能力。
   @override
   Future<String> addRecurringTransaction({

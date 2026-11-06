@@ -3267,12 +3267,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get memoDownloadRequired => 'Connect to finish downloading this book';
 
   @override
-  String get memoEditing => 'Editing';
-
-  @override
-  String get memoSaving => 'Saving';
-
-  @override
   String get memoSaveFailed => 'Save failed. Your input is kept; please retry.';
 
   @override

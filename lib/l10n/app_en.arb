@@ -1608,8 +1608,6 @@
   "memoLoadFailed": "Could not load data. Please try again.",
   "memoUnavailable": "The book or account changed. Reopen it to continue; unsaved input is kept for the original account.",
   "memoDownloadRequired": "Connect to finish downloading this book",
-  "memoEditing": "Editing",
-  "memoSaving": "Saving",
   "memoSaveFailed": "Save failed. Your input is kept; please retry.",
   "memoDeleteEntry": "Delete this record?",
   "memoDeleteEntryMessage": "This cannot be undone.",

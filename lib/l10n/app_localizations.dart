@@ -6056,18 +6056,6 @@ abstract class AppLocalizations {
   /// **'Connect to finish downloading this book'**
   String get memoDownloadRequired;
 
-  /// No description provided for @memoEditing.
-  ///
-  /// In en, this message translates to:
-  /// **'Editing'**
-  String get memoEditing;
-
-  /// No description provided for @memoSaving.
-  ///
-  /// In en, this message translates to:
-  /// **'Saving'**
-  String get memoSaving;
-
   /// No description provided for @memoSaveFailed.
   ///
   /// In en, this message translates to:

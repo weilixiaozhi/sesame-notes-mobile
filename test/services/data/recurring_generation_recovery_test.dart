@@ -15,6 +15,7 @@ class _FailingRecurringRepository extends LocalRepository {
 
   String? failedRuleId;
   String? failedReadRuleId;
+  String? failedCursorReadRuleId;
   String? _failedReadTransactionId;
   final attemptedRules = <String>[];
 
@@ -49,6 +50,23 @@ class _FailingRecurringRepository extends LocalRepository {
       return await super.getTransactionById(id);
     } catch (error, stackTrace) {
       printOnFailure('受控提交后回读失败：$error\n$stackTrace');
+      rethrow;
+    }
+  }
+
+  /// 规则游标是继续补记所需的事实，提交后的读取失败必须停止本轮扫描。
+  @override
+  Future<RecurringTransaction?> getRecurringTransactionById(
+    String id, {
+    required String ledgerId,
+  }) async {
+    try {
+      if (id == failedCursorReadRuleId) {
+        throw StateError('提交后的周期游标暂时不可读');
+      }
+      return await super.getRecurringTransactionById(id, ledgerId: ledgerId);
+    } catch (error, stackTrace) {
+      printOnFailure('受控提交后游标回读失败：$error\n$stackTrace');
       rethrow;
     }
   }
@@ -153,10 +171,10 @@ void main() {
     );
   });
 
-  test('首笔提交后回读失败仍保留已完成账本集合，后续发生不执行', () async {
+  test('首笔提交后游标回读失败仍保留已完成账本集合，后续发生不执行', () async {
     final committed = await addRule();
     final pending = await addRule();
-    repository.failedReadRuleId = committed;
+    repository.failedCursorReadRuleId = committed;
     final generated =
         await RecurringTransactionService.generatePendingTransactionsStatic(
           repository: repository,

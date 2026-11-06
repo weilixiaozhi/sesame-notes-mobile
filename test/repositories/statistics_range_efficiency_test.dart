@@ -10,6 +10,7 @@ import 'package:sesame_notes/data/repositories/local/local_transaction_repositor
 class _TransactionReads extends d.QueryInterceptor {
   final statements = <String>[];
   final rowCounts = <int>[];
+  final resultColumns = <Set<String>>[];
 
   /// 在数据库结果边界计数，能够识别先读取全账本再内存筛选的实现。
   @override
@@ -26,6 +27,7 @@ class _TransactionReads extends d.QueryInterceptor {
       ).hasMatch(statement)) {
         statements.add(statement);
         rowCounts.add(rows.length);
+        resultColumns.add(rows.firstOrNull?.keys.toSet() ?? const {});
       }
       return rows;
     } catch (error, stackTrace) {
@@ -69,6 +71,7 @@ void main() {
     String ledger = 'ledger',
     String member = 'member',
     bool deleted = false,
+    String? note,
   }) async {
     try {
       await db
@@ -82,6 +85,7 @@ void main() {
               nativeAmount: amount,
               currencyCode: 'CNY',
               happenedAt: date,
+              note: d.Value(note),
               createdAt: DateTime.utc(2026),
               updatedAt: DateTime.utc(2026),
               payerMemberId: d.Value(member),
@@ -156,6 +160,71 @@ void main() {
       expect(reads.rowCounts, [2], reason: '空成员身份不应读取无归属账单');
     } catch (error, stackTrace) {
       logger.error('StatisticsRangeTest', '成员账单过滤规模验证失败', error, stackTrace);
+      rethrow;
+    }
+  });
+
+  test('首页合计和每日趋势只读取金额及日期，不搬运长备注', () async {
+    try {
+      await add('a', DateTime(2026, 10, 1), '0.1', note: '备注' * 4096);
+      await add('b', DateTime(2026, 10, 2), '0.2', note: '备注' * 4096);
+      final statistics = LocalStatisticsRepository(db);
+      reads.resultColumns.clear();
+      expect(
+        await statistics.totalsInRange(
+          ledgerId: 'ledger',
+          start: DateTime(2026, 10),
+          end: DateTime(2026, 11),
+        ),
+        0.3,
+      );
+      expect(reads.resultColumns.single, hasLength(2));
+
+      reads.resultColumns.clear();
+      expect(
+        await statistics.totalsByDay(
+          ledgerId: 'ledger',
+          type: 'expense',
+          start: DateTime(2026, 10, 1),
+          end: DateTime(2026, 10, 3),
+        ),
+        [
+          (day: DateTime(2026, 10, 1), total: 0.1),
+          (day: DateTime(2026, 10, 2), total: 0.2),
+        ],
+      );
+      expect(reads.resultColumns.single, hasLength(3));
+      expect(
+        reads.resultColumns.single.any((name) => name.contains('note')),
+        isFalse,
+      );
+    } catch (error, stackTrace) {
+      logger.error('StatisticsRangeTest', '首页查询字段与精度验证失败', error, stackTrace);
+      rethrow;
+    }
+  });
+
+  test('支出存在性只返回首条标识，空账本和墓碑均不产生结果行', () async {
+    try {
+      for (var index = 0; index < 20; index++) {
+        await add('row-$index', DateTime(2026, 10, 1), '1', note: '备注' * 4096);
+      }
+      await add(
+        'deleted-other',
+        DateTime(2026, 10, 1),
+        '1',
+        ledger: 'other',
+        deleted: true,
+      );
+      reads.rowCounts.clear();
+      reads.resultColumns.clear();
+      final statistics = LocalStatisticsRepository(db);
+      expect(await statistics.hasAnyExpenseTx(ledgerId: 'ledger'), isTrue);
+      expect(await statistics.hasAnyExpenseTx(ledgerId: 'other'), isFalse);
+      expect(reads.rowCounts, [1, 0]);
+      expect(reads.resultColumns.first, hasLength(1));
+    } catch (error, stackTrace) {
+      logger.error('StatisticsRangeTest', '支出存在性读取规模验证失败', error, stackTrace);
       rethrow;
     }
   });

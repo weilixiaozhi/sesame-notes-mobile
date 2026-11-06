@@ -8,11 +8,11 @@ import 'refresh_ticks.dart';
 // 数据库Provider
 /// 统一业务数据变更信号：任何业务表发生写入（插入/更新/删除）都会发射一次。
 ///
-/// 所有汇总/统计 provider 只依赖这一个信号，保证「无论从哪条路径写库都会
-/// 自动刷新」。只订阅业务表，排除同步簿记表（sync_changes / sync_state /
+/// 跨业务视图使用完整业务信号，各域汇总使用对应的专属信号。只订阅业务表，
+/// 排除同步簿记表（sync_changes / sync_state /
 /// sync_pull_errors / backup_state）与编辑历史表。
 final dataChangeSignalProvider = StreamProvider<Set<TableUpdate>>((ref) {
-  // 手动刷新只重建这一个数据依赖源，所有派生 provider 会随之重算。
+  // 手动刷新重建业务信号，依赖它的跨域视图随之重算。
   final manualRefreshRevision = ref.watch(manualDataRefreshProvider);
   final db = ref.watch(databaseProvider);
   return _watchBusinessDataChanges(
@@ -40,6 +40,36 @@ final accountingDataChangeSignalProvider = StreamProvider<Set<TableUpdate>>((
       db.sharedLedgerCategories,
       db.exchangeRates,
       db.exchangeRateOverrides,
+    ]),
+  );
+});
+
+/// 日子同步状态仅响应本域数据与冲突变化，回执另由同步轮次通知。
+final dayDataChangeSignalProvider = StreamProvider<Set<TableUpdate>>((ref) {
+  final revision = ref.watch(manualDataRefreshProvider);
+  final db = ref.watch(databaseProvider);
+  return _watchBusinessDataChanges(
+    db,
+    emitManualRefresh: revision > 0,
+    query: TableUpdateQuery.onAllTables([
+      db.dayBooks,
+      db.dayEvents,
+      db.syncConflicts,
+    ]),
+  );
+});
+
+/// 训练同步状态不因财务和笔记保存而重新读取队列或解码冲突正文。
+final fitnessDataChangeSignalProvider = StreamProvider<Set<TableUpdate>>((ref) {
+  final revision = ref.watch(manualDataRefreshProvider);
+  final db = ref.watch(databaseProvider);
+  return _watchBusinessDataChanges(
+    db,
+    emitManualRefresh: revision > 0,
+    query: TableUpdateQuery.onAllTables([
+      db.fitnessSpaces,
+      db.fitnessEntities,
+      db.syncConflicts,
     ]),
   );
 });

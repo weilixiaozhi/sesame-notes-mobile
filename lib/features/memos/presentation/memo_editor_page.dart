@@ -35,6 +35,7 @@ import '../application/memo_providers.dart';
 import 'memo_editor_document.dart';
 import 'memo_editor_styles.dart';
 import 'memo_editor_surface.dart';
+import 'widgets/memo_history_buttons.dart';
 
 /// 页面固定一个本子与 UUID；路由返回与后台保存共用同一个 flush。
 class MemoEditorPage extends ConsumerStatefulWidget {
@@ -85,6 +86,8 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
   bool _newCard = false;
   bool _creationRecorded = false;
   bool _explicitSaving = false;
+  String _displayedNoteTitle = '';
+  bool _saveFailed = false;
   late final ProductAnalyticsContext _analyticsContext;
   late final ProductAnalyticsPageState _analyticsPages;
   String? _analyticsRouteKey;
@@ -152,6 +155,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
         ),
       ),
     );
+    _displayedNoteTitle = _readNoteTitle();
     final repository = ref.read(memoActionsProvider);
     _draft = MemoDraft(
       automatic: !_card,
@@ -262,14 +266,42 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
     WidgetsBinding.instance.addPostFrameCallback((_) => row.dispose());
   }
 
+  /// 正文由编辑器自行监听，只在页头标题或失败提示变化时刷新页面外壳。
   void _saveChanged() {
-    if (mounted) setState(() {});
-    if (!_draft.dirty) {
-      final drafts = {...ref.read(memoProtectedDraftsProvider)}
-        ..remove(_draftKey);
-      ref.read(memoProtectedDraftsProvider.notifier).set(drafts);
+    try {
+      final title = _readNoteTitle();
+      final failed = _draft.state == MemoSaveState.failed;
+      if (mounted && (title != _displayedNoteTitle || failed != _saveFailed)) {
+        setState(() {
+          _displayedNoteTitle = title;
+          _saveFailed = failed;
+        });
+      }
+      if (!_draft.dirty) {
+        final drafts = {...ref.read(memoProtectedDraftsProvider)}
+          ..remove(_draftKey);
+        ref.read(memoProtectedDraftsProvider.notifier).set(drafts);
+      }
+    } catch (error, stackTrace) {
+      logger.error(
+        'MemoEditor',
+        '更新备忘保存状态失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      _showEditError();
     }
   }
+
+  /// 页头只需要首段摘要，卡片使用固定页面名称而不读取正文。
+  String _readNoteTitle() => _card
+      ? ''
+      : _quill.document
+            .getPlainText(0, _quill.document.length.clamp(0, 256))
+            .trimLeft()
+            .split('\n')
+            .first
+            .trim();
 
   void _changed() {
     if (!_identityValid || _readOnly) return;
@@ -564,19 +596,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
     ref.watch(currentAccountIdProvider);
     ref.watch(authIdentityGenerationProvider);
     final valid = _identityValid;
-    final noteTitle = _quill.document
-        .getPlainText(0, _quill.document.length.clamp(0, 256))
-        .trimLeft()
-        .split('\n')
-        .first
-        .trim();
-    final status = switch (_draft.state) {
-      MemoSaveState.unchanged => '',
-      MemoSaveState.editing => l.memoEditing,
-      MemoSaveState.saving => l.memoSaving,
-      MemoSaveState.saved => '',
-      MemoSaveState.failed => l.memoSaveFailed,
-    };
+    final status = _saveFailed ? l.memoSaveFailed : '';
     final saveButton = AppPrimaryButton(
       busy: _busy,
       onPressed: () async {
@@ -623,8 +643,8 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
                       ),
                     ]
                   : null,
-              title: noteTitle.isNotEmpty
-                  ? noteTitle
+              title: _displayedNoteTitle.isNotEmpty
+                  ? _displayedNoteTitle
                   : (_readOnly || widget.entry != null
                         ? l.memoUntitled
                         : l.memoNewNote),
@@ -652,7 +672,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (_draft.state == MemoSaveState.failed)
+                    if (_saveFailed)
                       Semantics(liveRegion: true, child: Text(status)),
                     Padding(
                       padding: const EdgeInsets.all(AppDimens.p8),
@@ -771,7 +791,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
           label: Text(l.memoAddField),
         ),
       ),
-      if (_draft.state == MemoSaveState.failed)
+      if (_saveFailed)
         Semantics(
           liveRegion: true,
           child: Text(status, style: AppTextTokens.label(context)),
@@ -783,22 +803,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
     scrollDirection: Axis.horizontal,
     child: Row(
       children: [
-        QuillToolbarHistoryButton(
-          controller: _quill,
-          isUndo: true,
-          baseOptions: memoToolbarButtonOptions,
-          options: const QuillToolbarHistoryButtonOptions(
-            iconData: AppIcons.undo,
-          ),
-        ),
-        QuillToolbarHistoryButton(
-          controller: _quill,
-          isUndo: false,
-          baseOptions: memoToolbarButtonOptions,
-          options: const QuillToolbarHistoryButtonOptions(
-            iconData: AppIcons.redo,
-          ),
-        ),
+        MemoHistoryButtons(controller: _quill),
         QuillToolbarToggleStyleButton(
           controller: _quill,
           attribute: Attribute.bold,

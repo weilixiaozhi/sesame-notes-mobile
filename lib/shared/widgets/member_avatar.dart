@@ -6,12 +6,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/avatar_providers.dart'
     show memberAvatarPathProvider;
+import 'avatar_image.dart';
 
 /// 全局默认头像资产(随客户端包分发的静态图片)。
 ///
 /// 所有无头像场景(虚拟用户 / 未上传头像 / 缓存加载中或失败)统一回退此图,
 /// 保持各业务默认头像的视觉一致。
 const String kDefaultAvatarAsset = 'assets/Default avatar.png';
+
+/// 按头像实际像素范围解码，保留原始长宽比，再由圆形区域执行原有裁切。
+ImageProvider<Object> _avatarImage(
+  BuildContext context,
+  ImageProvider<Object> source,
+  double size,
+) {
+  final pixels = (size * MediaQuery.devicePixelRatioOf(context)).ceil().clamp(
+    1,
+    1 << 30,
+  );
+  return AvatarImage(source, pixels: pixels);
+}
 
 /// 全局默认头像:ClipOval + assets 图片,按 [size] 方形裁切。
 class _DefaultAvatar extends StatelessWidget {
@@ -20,11 +34,16 @@ class _DefaultAvatar extends StatelessWidget {
   /// 圆形直径。
   final double size;
 
+  /// 默认素材只解码当前头像所需像素，各相同尺寸的实例共享框架缓存。
   @override
   Widget build(BuildContext context) {
     return ClipOval(
-      child: Image.asset(
-        kDefaultAvatarAsset,
+      child: Image(
+        image: _avatarImage(
+          context,
+          const AssetImage(kDefaultAvatarAsset),
+          size,
+        ),
         width: size,
         height: size,
         fit: BoxFit.cover,
@@ -55,6 +74,7 @@ class MemberAvatar extends ConsumerWidget {
   /// 圆形直径。
   final double size;
 
+  /// 本地文件按显示尺寸解码，避免小头像持有原始照片的完整像素缓冲。
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final uid = userId;
@@ -76,8 +96,8 @@ class MemberAvatar extends ConsumerWidget {
     }
 
     return ClipOval(
-      child: Image.file(
-        File(path),
+      child: Image(
+        image: _avatarImage(context, FileImage(File(path)), size),
         width: size,
         height: size,
         fit: BoxFit.cover,
