@@ -15,6 +15,7 @@ extension RecordEditHistoryDisplayMapper on RecordEditHistorySnapshot {
     version: version,
     operatorMemberId: operatorMemberId,
     summary: summary,
+    isCloud: false,
     createdAt: createdAt,
   );
 }

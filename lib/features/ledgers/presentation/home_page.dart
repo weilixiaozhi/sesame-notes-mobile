@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:sesame_notes/providers/product_analytics_providers.dart';
 import 'package:sesame_notes/domain/analytics/product_analytics_actions.dart';
 import 'package:sesame_notes/domain/analytics/product_analytics_context.dart';
@@ -15,6 +17,7 @@ import 'package:sesame_notes/features/ledgers/application/ledger_actions.dart';
 import 'package:sesame_notes/shared/providers/theme_providers.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';
+import 'package:sesame_notes/features/statistics/application/cloud_record_history.dart';
 import 'package:sesame_notes/features/statistics/application/statistics_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/shared/providers/ui_state_providers.dart';
@@ -625,6 +628,9 @@ class _MonthPageState extends ConsumerState<_MonthPage> {
   // 否则 StreamBuilder 重新订阅时 snapshot.data 会短暂为 null → 渲染 DetailListSkeleton（灰色长方块）。
   // 流引用固定后，成员/账本 provider 变化触发的普通 rebuild 不会重新订阅，从而避免灰屏。
   Stream<List<({TransactionDisplay t, CategoryDisplay? category})>>? _txStream;
+  // 当前已触发静默补拉的交易快照；流重新发射新列表时才再次检查缓存水位。
+  List<({TransactionDisplay t, CategoryDisplay? category})>?
+  _prefetchedHistories;
 
   @override
   void initState() {
@@ -663,6 +669,26 @@ class _MonthPageState extends ConsumerState<_MonthPage> {
   void dispose() {
     _listCtrl.dispose();
     super.dispose();
+  }
+
+  /// 进入首页或交易流更新后静默补齐云端历史缓存。
+  ///
+  /// 只在数据身份变化时调度一次，实际请求由应用层做冷却和在途去重；
+  /// 本页不读取补拉结果，也不展示任何加载或失败状态。
+  void _scheduleHistoryPrefetch(
+    List<({TransactionDisplay t, CategoryDisplay? category})> all,
+  ) {
+    if (all.isEmpty || identical(all, _prefetchedHistories)) return;
+    _prefetchedHistories = all;
+    final container = ProviderScope.containerOf(context, listen: false);
+    final ledgerId = widget.ledgerId;
+    final transactions = all.map((item) => item.t).toList(growable: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(
+        refreshCloudRecordEditHistories(container, ledgerId, transactions),
+      );
+    });
   }
 
   @override
@@ -713,6 +739,7 @@ class _MonthPageState extends ConsumerState<_MonthPage> {
         }
 
         final all = snapshot.data ?? const [];
+        _scheduleHistoryPrefetch(all);
 
         // 数据流尚未发射时显示骨架屏占位：切月后重新订阅流，
         // 首帧无数据 → 骨架屏，避免空状态闪烁；数据到达后自动替换为真实列表。

@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/data/models/accounting_records.dart';
 import 'package:sesame_notes/data/models/expense_type.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/repositories/support/change_recorder.dart';
@@ -28,9 +29,12 @@ Future<int> deleteTransactionsWithEditHistories(
   final ids = transactionIds.toList();
   if (ids.isEmpty) return 0;
 
-  // 先清编辑历史，再删交易主表；顺序保证即使外键未开启也不会残留孤儿历史。
+  // 先清本机与云端缓存历史，再删交易主表；顺序保证即使外键未开启也不会残留孤儿历史。
   await (db.delete(
     db.recordEditHistories,
+  )..where((h) => h.recordId.isIn(ids))).go();
+  await (db.delete(
+    db.cloudRecordEditHistories,
   )..where((h) => h.recordId.isIn(ids))).go();
   // 周期来源的墓碑是去重事实；清空和单笔删除都不能释放发生身份。
   final now = DateTime.now().toUtc();
@@ -669,6 +673,45 @@ class LocalTransactionRepository implements CurrencyTransactionRepository {
             summary: summary,
           ),
         );
+  }
+
+  /// 按服务端历史行主键幂等写入缓存，分页结果可以逐页落库而不必整批驻留内存。
+  Future<void> upsertCloudEditHistories(
+    List<CloudRecordEditHistorySnapshot> rows,
+  ) async {
+    if (rows.isEmpty) return;
+    // 交易可能在补拉期间被删除或按其他设备删除；只缓存仍存在且未墓碑的交易。
+    final recordIds = rows.map((row) => row.recordId).toSet().toList();
+    final table = db.transactions;
+    final existingRows =
+        await (db.selectOnly(table)
+              ..addColumns([table.id])
+              ..where(table.id.isIn(recordIds) & table.deletedAt.isNull()))
+            .get();
+    final existing = {for (final row in existingRows) row.read(table.id)};
+    final effective = rows
+        .where((row) => existing.contains(row.recordId))
+        .toList(growable: false);
+    if (effective.isEmpty) return;
+    await db.batch((batch) {
+      batch.insertAll(
+        db.cloudRecordEditHistories,
+        effective
+            .map(
+              (row) => CloudRecordEditHistoriesCompanion.insert(
+                id: row.id,
+                recordId: row.recordId,
+                version: row.version,
+                operatorMemberId: d.Value(row.operatorMemberId),
+                operatorDisplayName: d.Value(row.operatorDisplayName),
+                changesJson: row.changesJson,
+                createdAt: row.createdAt,
+              ),
+            )
+            .toList(growable: false),
+        mode: d.InsertMode.insertOrReplace,
+      );
+    });
   }
 
   @override

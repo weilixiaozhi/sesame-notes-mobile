@@ -24,23 +24,30 @@ const _schema11RemovedColumns = <String, List<_RetiredColumn>>{
   ],
 };
 
+/// 结构 13 新增的云端历史缓存表；所有历史来源都不存在此表。
+const _cloudHistoryCacheTable = 'cloud_record_edit_histories';
+
 /// 活动库使用单一受支持的结构升级入口，备份读取独立禁止迁移。
-extension _Schema12DatabaseUpgrade on SesameDatabase {
-  /// 来源校验、删列和版本提交共用事务，任何失败都恢复原结构和所有记录。
-  Future<void> _upgradeDatabase(Migrator _, int from, int to) async {
+extension _Schema13DatabaseUpgrade on SesameDatabase {
+  /// 来源校验、删列、缓存表创建和版本提交共用事务，任何失败都恢复原结构和所有记录。
+  Future<void> _upgradeDatabase(Migrator migrator, int from, int to) async {
     try {
-      if ((from != 10 && from != 11) ||
-          to != 12 ||
+      if ((from != 10 && from != 11 && from != 12) ||
           to != currentSchemaVersion) {
         throw StateError('本机数据库版本不受支持，请保留原文件并使用受支持的版本处理；当前数据未修改。');
       }
       final hasRecoveryLogs = from == 10;
       final retiredColumns = [
         if (from == 10) _schema10RemovedColumns,
-        _schema11RemovedColumns,
+        if (from == 10 || from == 11) _schema11RemovedColumns,
       ];
       await transaction(() async {
-        await _requireColumnCleanupStructure(retiredColumns, hasRecoveryLogs);
+        // 来源校验先按“缓存表尚未创建”核对，避免合法旧库被新增缓存表误判为缺表。
+        await _requireColumnCleanupStructure(
+          retiredColumns,
+          hasRecoveryLogs,
+          absentTables: const {_cloudHistoryCacheTable},
+        );
         await _requireColumnCleanupIntegrity();
 
         // 原生 DROP COLUMN 保留行身份、其余字段、索引及触发器；依赖目标列的未知对象使事务失败。
@@ -54,6 +61,14 @@ extension _Schema12DatabaseUpgrade on SesameDatabase {
           }
         }
         if (hasRecoveryLogs) await customStatement('DROP TABLE recovery_logs');
+
+        // 缓存表只承载可重新获取的云端历史，不影响任何既有业务行。
+        await migrator.createTable(cloudRecordEditHistories);
+        await customStatement(
+          'CREATE INDEX idx_cloud_record_edit_histories_record_id '
+          'ON cloud_record_edit_histories (record_id)',
+        );
+
         await customStatement('PRAGMA user_version=$to');
         await _requireColumnCleanupStructure(const [], false);
         await _requireColumnCleanupIntegrity();
@@ -65,7 +80,7 @@ extension _Schema12DatabaseUpgrade on SesameDatabase {
     } catch (error, stack) {
       logger.error(
         'Database',
-        '本机数据库字段清理失败：来源版本=$from，目标版本=$to',
+        '本机数据库结构升级失败：来源版本=$from，目标版本=$to',
         safeErrorSummary(error),
         stack,
       );
@@ -73,11 +88,12 @@ extension _Schema12DatabaseUpgrade on SesameDatabase {
     }
   }
 
-  /// 核验全部表、列类型、空值、默认值和主键；来源只接受声明的待删列与表。
+  /// 核验全部表、列类型、空值、默认值和主键；来源只接受声明的待删列、待删表和待建缓存表。
   Future<void> _requireColumnCleanupStructure(
     List<Map<String, List<_RetiredColumn>>> retiredColumns,
-    bool hasRecoveryLogs,
-  ) async {
+    bool hasRecoveryLogs, {
+    Set<String> absentTables = const {},
+  }) async {
     try {
       final tables = (await customSelect(
         "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
@@ -86,12 +102,15 @@ extension _Schema12DatabaseUpgrade on SesameDatabase {
           .map((table) => table.actualTableName)
           .toSet();
       if (hasRecoveryLogs) expectedTables.add('recovery_logs');
+      expectedTables.removeAll(absentTables);
       if (tables.length != expectedTables.length ||
           !tables.containsAll(expectedTables)) {
         throw StateError(incompleteSchemaMessage);
       }
       for (final table in allTables) {
         final name = table.actualTableName;
+        // 待建缓存表在升级前不存在，跳过列核验；其余表必须逐列匹配。
+        if (absentTables.contains(name)) continue;
         final columns = await customSelect('PRAGMA table_info("$name")').get();
         final actual = {
           for (final column in columns) column.read<String>('name'): column,
@@ -147,12 +166,7 @@ extension _Schema12DatabaseUpgrade on SesameDatabase {
       }
       if (hasRecoveryLogs) await _requireRetiredRecoveryTable();
     } catch (error, stack) {
-      logger.error(
-        'Database',
-        '本机数据库字段清理结构核验失败',
-        safeErrorSummary(error),
-        stack,
-      );
+      logger.error('Database', '本机数据库结构核验失败', safeErrorSummary(error), stack);
       rethrow;
     }
   }
@@ -219,7 +233,7 @@ extension _Schema12DatabaseUpgrade on SesameDatabase {
     }
   }
 
-  /// 删列前后均验收数据库页与外键，损坏或悬空引用不得进入已完成状态。
+  /// 升级前后均验收数据库页与外键，损坏或悬空引用不得进入已完成状态。
   Future<void> _requireColumnCleanupIntegrity() async {
     try {
       final rows = await customSelect('PRAGMA quick_check').get();
@@ -229,12 +243,7 @@ extension _Schema12DatabaseUpgrade on SesameDatabase {
         throw StateError(incompleteSchemaMessage);
       }
     } catch (error, stack) {
-      logger.error(
-        'Database',
-        '本机数据库字段清理完整性核验失败',
-        safeErrorSummary(error),
-        stack,
-      );
+      logger.error('Database', '本机数据库完整性核验失败', safeErrorSummary(error), stack);
       rethrow;
     }
   }

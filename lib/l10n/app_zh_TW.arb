@@ -2362,8 +2362,6 @@
   "backupCleanupPending": "正在寫入 · 保留",
   "backupCleanupInUse": "正在使用 · 保留",
   "backupCleanupReadOnlyHint": "此來源或檔案暫不支援安全刪除。仍可在此檢查備份，刪除請使用對應雲端儲存管理器。",
-  "recordHistoryLoadMore": "載入更多",
-  "recordHistoryLoadFailed": "暫時無法讀取歷史，請重試。",
   "recordHistoryUpdated": "已記錄一次編輯",
   "recordHistoryDeleted": "刪除記錄",
   "recordHistoryCategoryMoved": "調整分類",

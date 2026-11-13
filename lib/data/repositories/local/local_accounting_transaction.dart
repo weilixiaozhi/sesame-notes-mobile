@@ -1,3 +1,4 @@
+import 'package:sesame_notes/data/models/accounting_records.dart';
 import 'package:sesame_notes/data/models/transaction_split_input.dart';
 import 'package:drift/drift.dart' as d;
 import 'package:sesame_notes/data/db.dart';
@@ -133,6 +134,12 @@ mixin LocalTransactionOperations on LocalAccountingContext {
     operatorMemberId: operatorMemberId,
     summary: summary,
   );
+
+  /// 幂等写入云端历史缓存，写库失败由调用方静默忽略并在下轮重试。
+  @override
+  Future<void> upsertCloudEditHistories(
+    List<CloudRecordEditHistorySnapshot> rows,
+  ) => transactionStore.upsertCloudEditHistories(rows);
 
   /// 提供 getTransactionById 对应的持久化能力。
   @override

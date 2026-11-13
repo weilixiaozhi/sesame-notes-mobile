@@ -10,6 +10,7 @@ import 'package:sqlite3/sqlite3.dart' show sqlite3;
 import 'package:sesame_notes/data/db.dart';
 import 'package:sesame_notes/features/settings/domain/backup_manifest.dart';
 import 'package:sesame_notes/features/settings/infrastructure/backup_import_service.dart';
+import 'package:sesame_notes/features/settings/infrastructure/backup_schema.dart';
 
 import '../../helpers/test_isolation.dart';
 
@@ -19,6 +20,7 @@ final _sourceVersionTime = DateTime.utc(2026, 10, 10, 12, 0, 0, 947);
 Future<({File sqlite, File backup, BackupManifest manifest})> _backupFixture(
   Directory workspace, {
   bool includeAccountingRequests = false,
+  int dbSchemaVersion = currentSchemaVersion,
 }) async {
   try {
     final file = File(p.join(workspace.path, 'source.sqlite'));
@@ -70,6 +72,18 @@ Future<({File sqlite, File backup, BackupManifest manifest})> _backupFixture(
     }
     final raw = sqlite3.open(file.path);
     try {
+      // 结构 13 相对 12 只新增缓存表；移除该表即可生成上一版结构的真实备份夹具。
+      if (dbSchemaVersion < currentSchemaVersion) {
+        if (dbSchemaVersion != 12) {
+          throw ArgumentError.value(
+            dbSchemaVersion,
+            'dbSchemaVersion',
+            '无对应的备份夹具',
+          );
+        }
+        raw.execute('DROP TABLE cloud_record_edit_histories');
+        raw.execute('PRAGMA user_version=$dbSchemaVersion');
+      }
       if (includeAccountingRequests) {
         raw.execute(
           'INSERT INTO transactions(id,ledger_id,tx_type,amount,happened_at,currency_code,native_amount,created_at,updated_at,note) '
@@ -97,7 +111,7 @@ Future<({File sqlite, File backup, BackupManifest manifest})> _backupFixture(
     }
     final manifest = BackupManifest(
       formatVersion: backupFormatVersion,
-      dbSchemaVersion: currentSchemaVersion,
+      dbSchemaVersion: dbSchemaVersion,
       createdAt: DateTime.utc(2026, 10, 10),
       deviceId: 'backup-device',
       ledgers: const [
@@ -246,6 +260,34 @@ void main() {
       expect((await live.select(live.ledgers).getSingle()).name, '当前账本');
       expect(await fixture.backup.readAsBytes(), original);
       expect(await fixture.sqlite.readAsBytes(), rawOriginal);
+    } finally {
+      await session.close();
+    }
+  });
+
+  test('上一版结构备份可打开并恢复业务数据，缺缓存表不影响现有字段', () async {
+    final fixture = await _backupFixture(
+      workspace,
+      includeAccountingRequests: true,
+      dbSchemaVersion: 12,
+    );
+    final importer = BackupImportService(tempDirOverride: workspace);
+    final session = await importer.openBackup(backupFile: fixture.backup);
+    try {
+      expect(session.manifest.dbSchemaVersion, 12);
+      final preview = await importer.listRecoveryItems(session);
+      expect(preview.single.transactionCount, 1);
+      expect(preview.single.expenseTotal, 12.34);
+      session.decisions['source-ledger'] = RecoveryDecision.restoreLocal;
+      final report = await importer.apply(
+        session: session,
+        liveDb: live,
+        localSelfId: 'self-live',
+      );
+      expect(report.entries.single.success, isTrue);
+      final restored = await live.select(live.transactions).getSingle();
+      expect((restored.amount, restored.note), ('12.34', '早餐'));
+      expect(await live.select(live.cloudRecordEditHistories).get(), isEmpty);
     } finally {
       await session.close();
     }
@@ -421,7 +463,7 @@ void main() {
     final fixture = await _backupFixture(workspace);
     final rawOriginal = await fixture.sqlite.readAsBytes();
     for (final version in [
-      ...List.generate(currentSchemaVersion, (version) => version),
+      ...List.generate(minimumRestorableBackupSchema, (version) => version),
       currentSchemaVersion + 1,
       99,
     ]) {

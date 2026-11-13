@@ -9902,18 +9902,6 @@ abstract class AppLocalizations {
   /// **'This storage or file cannot provide verified safe deletion. You can still check files here; use the cloud storage manager to delete them.'**
   String get backupCleanupReadOnlyHint;
 
-  /// No description provided for @recordHistoryLoadMore.
-  ///
-  /// In en, this message translates to:
-  /// **'Load more'**
-  String get recordHistoryLoadMore;
-
-  /// No description provided for @recordHistoryLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'History is temporarily unavailable. Try again.'**
-  String get recordHistoryLoadFailed;
-
   /// No description provided for @recordHistoryUpdated.
   ///
   /// In en, this message translates to:

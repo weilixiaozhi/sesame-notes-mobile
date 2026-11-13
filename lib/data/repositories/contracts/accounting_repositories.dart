@@ -367,6 +367,23 @@ abstract interface class StatisticsRepository {
   /// 统计与分摊查询所需的getEditHistories能力。
   Future<List<RecordEditHistorySnapshot>> getEditHistories(String recordId);
 
+  /// 同时订阅本机与云端缓存历史，任一表变化都会重新组合。
+  Stream<
+    ({
+      List<RecordEditHistorySnapshot> local,
+      List<CloudRecordEditHistorySnapshot> cloud,
+    })
+  >
+  watchEditHistories(String recordId);
+
+  /// 批量读取每笔交易已缓存的云端历史版本水位与行数。
+  ///
+  /// 服务端每产生一次编辑就写入一行版本 2..revision 的历史，
+  /// 因此只有 `maxVersion >= serverRevision && count >= serverRevision - 1`
+  /// 才能确认缓存完整；仅看最高版本会让中断的批量补拉误判为已完成。
+  Future<Map<String, ({int maxVersion, int count})>>
+  cloudEditHistoryCacheStates(Iterable<String> recordIds);
+
   /// 统计与分摊查询所需的getLedgerById能力。
   Future<LedgerSnapshot?> getLedgerById(String id);
 
@@ -484,6 +501,11 @@ abstract interface class TransactionRepository {
     String? operatorMemberId,
     required String summary,
   });
+
+  /// 按服务端历史行主键幂等写入云端历史缓存，支持分页逐批落库。
+  Future<void> upsertCloudEditHistories(
+    List<CloudRecordEditHistorySnapshot> rows,
+  );
 
   /// 记账、周期与汇率所需的countForeignCurrencyTx能力。
   Future<int> countForeignCurrencyTx(String ledgerId);

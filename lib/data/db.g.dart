@@ -10618,6 +10618,519 @@ class RecordEditHistoriesCompanion extends UpdateCompanion<RecordEditHistory> {
   }
 }
 
+class $CloudRecordEditHistoriesTable extends CloudRecordEditHistories
+    with TableInfo<$CloudRecordEditHistoriesTable, CloudRecordEditHistory> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CloudRecordEditHistoriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recordIdMeta = const VerificationMeta(
+    'recordId',
+  );
+  @override
+  late final GeneratedColumn<String> recordId = GeneratedColumn<String>(
+    'record_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES transactions (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _operatorMemberIdMeta = const VerificationMeta(
+    'operatorMemberId',
+  );
+  @override
+  late final GeneratedColumn<String> operatorMemberId = GeneratedColumn<String>(
+    'operator_member_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _operatorDisplayNameMeta =
+      const VerificationMeta('operatorDisplayName');
+  @override
+  late final GeneratedColumn<String> operatorDisplayName =
+      GeneratedColumn<String>(
+        'operator_display_name',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _changesJsonMeta = const VerificationMeta(
+    'changesJson',
+  );
+  @override
+  late final GeneratedColumn<String> changesJson = GeneratedColumn<String>(
+    'changes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    recordId,
+    version,
+    operatorMemberId,
+    operatorDisplayName,
+    changesJson,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cloud_record_edit_histories';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CloudRecordEditHistory> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('record_id')) {
+      context.handle(
+        _recordIdMeta,
+        recordId.isAcceptableOrUnknown(data['record_id']!, _recordIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_recordIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_versionMeta);
+    }
+    if (data.containsKey('operator_member_id')) {
+      context.handle(
+        _operatorMemberIdMeta,
+        operatorMemberId.isAcceptableOrUnknown(
+          data['operator_member_id']!,
+          _operatorMemberIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('operator_display_name')) {
+      context.handle(
+        _operatorDisplayNameMeta,
+        operatorDisplayName.isAcceptableOrUnknown(
+          data['operator_display_name']!,
+          _operatorDisplayNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('changes')) {
+      context.handle(
+        _changesJsonMeta,
+        changesJson.isAcceptableOrUnknown(data['changes']!, _changesJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_changesJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {recordId, version},
+  ];
+  @override
+  CloudRecordEditHistory map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CloudRecordEditHistory(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      recordId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}record_id'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      operatorMemberId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}operator_member_id'],
+      ),
+      operatorDisplayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}operator_display_name'],
+      ),
+      changesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}changes'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CloudRecordEditHistoriesTable createAlias(String alias) {
+    return $CloudRecordEditHistoriesTable(attachedDatabase, alias);
+  }
+}
+
+class CloudRecordEditHistory extends DataClass
+    implements
+        Insertable<CloudRecordEditHistory>,
+        CloudRecordEditHistorySnapshot {
+  /// 服务端历史 UUID，跨设备稳定，作为缓存行主键。
+  final String id;
+
+  /// 所属交易；交易删除时级联清理缓存。
+  final String recordId;
+
+  /// 服务端交易修订号，与本地编辑序号分开保存。
+  final int version;
+
+  /// 操作者成员 id：引用 ledger_members。
+  final String? operatorMemberId;
+
+  /// 服务端历史发生时的成员显示名，避免本地成员目录缺失时退化为未知用户。
+  final String? operatorDisplayName;
+
+  /// 服务端变更正文的原始 JSON，展示时再按当前语言描述。
+  final String changesJson;
+
+  /// 服务端历史发生时间。
+  final DateTime createdAt;
+  const CloudRecordEditHistory({
+    required this.id,
+    required this.recordId,
+    required this.version,
+    this.operatorMemberId,
+    this.operatorDisplayName,
+    required this.changesJson,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['record_id'] = Variable<String>(recordId);
+    map['version'] = Variable<int>(version);
+    if (!nullToAbsent || operatorMemberId != null) {
+      map['operator_member_id'] = Variable<String>(operatorMemberId);
+    }
+    if (!nullToAbsent || operatorDisplayName != null) {
+      map['operator_display_name'] = Variable<String>(operatorDisplayName);
+    }
+    map['changes'] = Variable<String>(changesJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  CloudRecordEditHistoriesCompanion toCompanion(bool nullToAbsent) {
+    return CloudRecordEditHistoriesCompanion(
+      id: Value(id),
+      recordId: Value(recordId),
+      version: Value(version),
+      operatorMemberId: operatorMemberId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(operatorMemberId),
+      operatorDisplayName: operatorDisplayName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(operatorDisplayName),
+      changesJson: Value(changesJson),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory CloudRecordEditHistory.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CloudRecordEditHistory(
+      id: serializer.fromJson<String>(json['id']),
+      recordId: serializer.fromJson<String>(json['recordId']),
+      version: serializer.fromJson<int>(json['version']),
+      operatorMemberId: serializer.fromJson<String?>(json['operatorMemberId']),
+      operatorDisplayName: serializer.fromJson<String?>(
+        json['operatorDisplayName'],
+      ),
+      changesJson: serializer.fromJson<String>(json['changesJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'recordId': serializer.toJson<String>(recordId),
+      'version': serializer.toJson<int>(version),
+      'operatorMemberId': serializer.toJson<String?>(operatorMemberId),
+      'operatorDisplayName': serializer.toJson<String?>(operatorDisplayName),
+      'changesJson': serializer.toJson<String>(changesJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  CloudRecordEditHistory copyWith({
+    String? id,
+    String? recordId,
+    int? version,
+    Value<String?> operatorMemberId = const Value.absent(),
+    Value<String?> operatorDisplayName = const Value.absent(),
+    String? changesJson,
+    DateTime? createdAt,
+  }) => CloudRecordEditHistory(
+    id: id ?? this.id,
+    recordId: recordId ?? this.recordId,
+    version: version ?? this.version,
+    operatorMemberId: operatorMemberId.present
+        ? operatorMemberId.value
+        : this.operatorMemberId,
+    operatorDisplayName: operatorDisplayName.present
+        ? operatorDisplayName.value
+        : this.operatorDisplayName,
+    changesJson: changesJson ?? this.changesJson,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  CloudRecordEditHistory copyWithCompanion(
+    CloudRecordEditHistoriesCompanion data,
+  ) {
+    return CloudRecordEditHistory(
+      id: data.id.present ? data.id.value : this.id,
+      recordId: data.recordId.present ? data.recordId.value : this.recordId,
+      version: data.version.present ? data.version.value : this.version,
+      operatorMemberId: data.operatorMemberId.present
+          ? data.operatorMemberId.value
+          : this.operatorMemberId,
+      operatorDisplayName: data.operatorDisplayName.present
+          ? data.operatorDisplayName.value
+          : this.operatorDisplayName,
+      changesJson: data.changesJson.present
+          ? data.changesJson.value
+          : this.changesJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CloudRecordEditHistory(')
+          ..write('id: $id, ')
+          ..write('recordId: $recordId, ')
+          ..write('version: $version, ')
+          ..write('operatorMemberId: $operatorMemberId, ')
+          ..write('operatorDisplayName: $operatorDisplayName, ')
+          ..write('changesJson: $changesJson, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    recordId,
+    version,
+    operatorMemberId,
+    operatorDisplayName,
+    changesJson,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CloudRecordEditHistory &&
+          other.id == this.id &&
+          other.recordId == this.recordId &&
+          other.version == this.version &&
+          other.operatorMemberId == this.operatorMemberId &&
+          other.operatorDisplayName == this.operatorDisplayName &&
+          other.changesJson == this.changesJson &&
+          other.createdAt == this.createdAt);
+}
+
+class CloudRecordEditHistoriesCompanion
+    extends UpdateCompanion<CloudRecordEditHistory> {
+  final Value<String> id;
+  final Value<String> recordId;
+  final Value<int> version;
+  final Value<String?> operatorMemberId;
+  final Value<String?> operatorDisplayName;
+  final Value<String> changesJson;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const CloudRecordEditHistoriesCompanion({
+    this.id = const Value.absent(),
+    this.recordId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.operatorMemberId = const Value.absent(),
+    this.operatorDisplayName = const Value.absent(),
+    this.changesJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CloudRecordEditHistoriesCompanion.insert({
+    required String id,
+    required String recordId,
+    required int version,
+    this.operatorMemberId = const Value.absent(),
+    this.operatorDisplayName = const Value.absent(),
+    required String changesJson,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       recordId = Value(recordId),
+       version = Value(version),
+       changesJson = Value(changesJson),
+       createdAt = Value(createdAt);
+  static Insertable<CloudRecordEditHistory> custom({
+    Expression<String>? id,
+    Expression<String>? recordId,
+    Expression<int>? version,
+    Expression<String>? operatorMemberId,
+    Expression<String>? operatorDisplayName,
+    Expression<String>? changesJson,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (recordId != null) 'record_id': recordId,
+      if (version != null) 'version': version,
+      if (operatorMemberId != null) 'operator_member_id': operatorMemberId,
+      if (operatorDisplayName != null)
+        'operator_display_name': operatorDisplayName,
+      if (changesJson != null) 'changes': changesJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CloudRecordEditHistoriesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? recordId,
+    Value<int>? version,
+    Value<String?>? operatorMemberId,
+    Value<String?>? operatorDisplayName,
+    Value<String>? changesJson,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return CloudRecordEditHistoriesCompanion(
+      id: id ?? this.id,
+      recordId: recordId ?? this.recordId,
+      version: version ?? this.version,
+      operatorMemberId: operatorMemberId ?? this.operatorMemberId,
+      operatorDisplayName: operatorDisplayName ?? this.operatorDisplayName,
+      changesJson: changesJson ?? this.changesJson,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (recordId.present) {
+      map['record_id'] = Variable<String>(recordId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (operatorMemberId.present) {
+      map['operator_member_id'] = Variable<String>(operatorMemberId.value);
+    }
+    if (operatorDisplayName.present) {
+      map['operator_display_name'] = Variable<String>(
+        operatorDisplayName.value,
+      );
+    }
+    if (changesJson.present) {
+      map['changes'] = Variable<String>(changesJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CloudRecordEditHistoriesCompanion(')
+          ..write('id: $id, ')
+          ..write('recordId: $recordId, ')
+          ..write('version: $version, ')
+          ..write('operatorMemberId: $operatorMemberId, ')
+          ..write('operatorDisplayName: $operatorDisplayName, ')
+          ..write('changesJson: $changesJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $RecurringTransactionsTable extends RecurringTransactions
     with TableInfo<$RecurringTransactionsTable, RecurringTransaction> {
   @override
@@ -19168,6 +19681,8 @@ abstract class _$SesameDatabase extends GeneratedDatabase {
       $TransactionSplitsTable(this);
   late final $RecordEditHistoriesTable recordEditHistories =
       $RecordEditHistoriesTable(this);
+  late final $CloudRecordEditHistoriesTable cloudRecordEditHistories =
+      $CloudRecordEditHistoriesTable(this);
   late final $RecurringTransactionsTable recurringTransactions =
       $RecurringTransactionsTable(this);
   late final $ExchangeRatesTable exchangeRates = $ExchangeRatesTable(this);
@@ -19203,6 +19718,7 @@ abstract class _$SesameDatabase extends GeneratedDatabase {
     transactions,
     transactionSplits,
     recordEditHistories,
+    cloudRecordEditHistories,
     recurringTransactions,
     exchangeRates,
     exchangeRateOverrides,
@@ -19266,6 +19782,15 @@ abstract class _$SesameDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('record_edit_histories', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'transactions',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate('cloud_record_edit_histories', kind: UpdateKind.delete),
+      ],
     ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
@@ -24357,6 +24882,31 @@ final class $$TransactionsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<
+    $CloudRecordEditHistoriesTable,
+    List<CloudRecordEditHistory>
+  >
+  _cloudRecordEditHistoriesRefsTable(_$SesameDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.cloudRecordEditHistories,
+        aliasName: 'transactions__id__cloud_record_edit_histories__record_id',
+      );
+
+  $$CloudRecordEditHistoriesTableProcessedTableManager
+  get cloudRecordEditHistoriesRefs {
+    final manager = $$CloudRecordEditHistoriesTableTableManager(
+      $_db,
+      $_db.cloudRecordEditHistories,
+    ).filter((f) => f.recordId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _cloudRecordEditHistoriesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$TransactionsTableFilterComposer
@@ -24538,6 +25088,33 @@ class $$TransactionsTableFilterComposer
                 $removeJoinBuilderFromRootComposer,
           ),
     );
+    return f(composer);
+  }
+
+  Expression<bool> cloudRecordEditHistoriesRefs(
+    Expression<bool> Function($$CloudRecordEditHistoriesTableFilterComposer f)
+    f,
+  ) {
+    final $$CloudRecordEditHistoriesTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.cloudRecordEditHistories,
+          getReferencedColumn: (t) => t.recordId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CloudRecordEditHistoriesTableFilterComposer(
+                $db: $db,
+                $table: $db.cloudRecordEditHistories,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -24840,6 +25417,33 @@ class $$TransactionsTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> cloudRecordEditHistoriesRefs<T extends Object>(
+    Expression<T> Function($$CloudRecordEditHistoriesTableAnnotationComposer a)
+    f,
+  ) {
+    final $$CloudRecordEditHistoriesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.cloudRecordEditHistories,
+          getReferencedColumn: (t) => t.recordId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CloudRecordEditHistoriesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.cloudRecordEditHistories,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$TransactionsTableTableManager
@@ -24859,6 +25463,7 @@ class $$TransactionsTableTableManager
             bool ledgerId,
             bool transactionSplitsRefs,
             bool recordEditHistoriesRefs,
+            bool cloudRecordEditHistoriesRefs,
           })
         > {
   $$TransactionsTableTableManager(_$SesameDatabase db, $TransactionsTable table)
@@ -24981,12 +25586,15 @@ class $$TransactionsTableTableManager
                 ledgerId = false,
                 transactionSplitsRefs = false,
                 recordEditHistoriesRefs = false,
+                cloudRecordEditHistoriesRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (transactionSplitsRefs) db.transactionSplits,
                     if (recordEditHistoriesRefs) db.recordEditHistories,
+                    if (cloudRecordEditHistoriesRefs)
+                      db.cloudRecordEditHistories,
                   ],
                   addJoins:
                       <
@@ -25066,6 +25674,27 @@ class $$TransactionsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (cloudRecordEditHistoriesRefs)
+                        await $_getPrefetchedData<
+                          Transaction,
+                          $TransactionsTable,
+                          CloudRecordEditHistory
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TransactionsTableReferences
+                              ._cloudRecordEditHistoriesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TransactionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).cloudRecordEditHistoriesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.recordId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -25090,6 +25719,7 @@ typedef $$TransactionsTableProcessedTableManager =
         bool ledgerId,
         bool transactionSplitsRefs,
         bool recordEditHistoriesRefs,
+        bool cloudRecordEditHistoriesRefs,
       })
     >;
 typedef $$TransactionSplitsTableCreateCompanionBuilder =
@@ -25751,6 +26381,390 @@ typedef $$RecordEditHistoriesTableProcessedTableManager =
       $$RecordEditHistoriesTableUpdateCompanionBuilder,
       (RecordEditHistory, $$RecordEditHistoriesTableReferences),
       RecordEditHistory,
+      PrefetchHooks Function({bool recordId})
+    >;
+typedef $$CloudRecordEditHistoriesTableCreateCompanionBuilder =
+    CloudRecordEditHistoriesCompanion Function({
+      required String id,
+      required String recordId,
+      required int version,
+      Value<String?> operatorMemberId,
+      Value<String?> operatorDisplayName,
+      required String changesJson,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$CloudRecordEditHistoriesTableUpdateCompanionBuilder =
+    CloudRecordEditHistoriesCompanion Function({
+      Value<String> id,
+      Value<String> recordId,
+      Value<int> version,
+      Value<String?> operatorMemberId,
+      Value<String?> operatorDisplayName,
+      Value<String> changesJson,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$CloudRecordEditHistoriesTableReferences
+    extends
+        BaseReferences<
+          _$SesameDatabase,
+          $CloudRecordEditHistoriesTable,
+          CloudRecordEditHistory
+        > {
+  $$CloudRecordEditHistoriesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TransactionsTable _recordIdTable(_$SesameDatabase db) => db
+      .transactions
+      .createAlias('cloud_record_edit_histories__record_id__transactions__id');
+
+  $$TransactionsTableProcessedTableManager get recordId {
+    final $_column = $_itemColumn<String>('record_id')!;
+
+    final manager = $$TransactionsTableTableManager(
+      $_db,
+      $_db.transactions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_recordIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CloudRecordEditHistoriesTableFilterComposer
+    extends Composer<_$SesameDatabase, $CloudRecordEditHistoriesTable> {
+  $$CloudRecordEditHistoriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get operatorMemberId => $composableBuilder(
+    column: $table.operatorMemberId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get operatorDisplayName => $composableBuilder(
+    column: $table.operatorDisplayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get changesJson => $composableBuilder(
+    column: $table.changesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TransactionsTableFilterComposer get recordId {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recordId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CloudRecordEditHistoriesTableOrderingComposer
+    extends Composer<_$SesameDatabase, $CloudRecordEditHistoriesTable> {
+  $$CloudRecordEditHistoriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get operatorMemberId => $composableBuilder(
+    column: $table.operatorMemberId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get operatorDisplayName => $composableBuilder(
+    column: $table.operatorDisplayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get changesJson => $composableBuilder(
+    column: $table.changesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TransactionsTableOrderingComposer get recordId {
+    final $$TransactionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recordId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CloudRecordEditHistoriesTableAnnotationComposer
+    extends Composer<_$SesameDatabase, $CloudRecordEditHistoriesTable> {
+  $$CloudRecordEditHistoriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get operatorMemberId => $composableBuilder(
+    column: $table.operatorMemberId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get operatorDisplayName => $composableBuilder(
+    column: $table.operatorDisplayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get changesJson => $composableBuilder(
+    column: $table.changesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$TransactionsTableAnnotationComposer get recordId {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recordId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CloudRecordEditHistoriesTableTableManager
+    extends
+        RootTableManager<
+          _$SesameDatabase,
+          $CloudRecordEditHistoriesTable,
+          CloudRecordEditHistory,
+          $$CloudRecordEditHistoriesTableFilterComposer,
+          $$CloudRecordEditHistoriesTableOrderingComposer,
+          $$CloudRecordEditHistoriesTableAnnotationComposer,
+          $$CloudRecordEditHistoriesTableCreateCompanionBuilder,
+          $$CloudRecordEditHistoriesTableUpdateCompanionBuilder,
+          (CloudRecordEditHistory, $$CloudRecordEditHistoriesTableReferences),
+          CloudRecordEditHistory,
+          PrefetchHooks Function({bool recordId})
+        > {
+  $$CloudRecordEditHistoriesTableTableManager(
+    _$SesameDatabase db,
+    $CloudRecordEditHistoriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CloudRecordEditHistoriesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$CloudRecordEditHistoriesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$CloudRecordEditHistoriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> recordId = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<String?> operatorMemberId = const Value.absent(),
+                Value<String?> operatorDisplayName = const Value.absent(),
+                Value<String> changesJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CloudRecordEditHistoriesCompanion(
+                id: id,
+                recordId: recordId,
+                version: version,
+                operatorMemberId: operatorMemberId,
+                operatorDisplayName: operatorDisplayName,
+                changesJson: changesJson,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String recordId,
+                required int version,
+                Value<String?> operatorMemberId = const Value.absent(),
+                Value<String?> operatorDisplayName = const Value.absent(),
+                required String changesJson,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => CloudRecordEditHistoriesCompanion.insert(
+                id: id,
+                recordId: recordId,
+                version: version,
+                operatorMemberId: operatorMemberId,
+                operatorDisplayName: operatorDisplayName,
+                changesJson: changesJson,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CloudRecordEditHistoriesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({recordId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (recordId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.recordId,
+                                referencedTable:
+                                    $$CloudRecordEditHistoriesTableReferences
+                                        ._recordIdTable(db),
+                                referencedColumn:
+                                    $$CloudRecordEditHistoriesTableReferences
+                                        ._recordIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CloudRecordEditHistoriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$SesameDatabase,
+      $CloudRecordEditHistoriesTable,
+      CloudRecordEditHistory,
+      $$CloudRecordEditHistoriesTableFilterComposer,
+      $$CloudRecordEditHistoriesTableOrderingComposer,
+      $$CloudRecordEditHistoriesTableAnnotationComposer,
+      $$CloudRecordEditHistoriesTableCreateCompanionBuilder,
+      $$CloudRecordEditHistoriesTableUpdateCompanionBuilder,
+      (CloudRecordEditHistory, $$CloudRecordEditHistoriesTableReferences),
+      CloudRecordEditHistory,
       PrefetchHooks Function({bool recordId})
     >;
 typedef $$RecurringTransactionsTableCreateCompanionBuilder =
@@ -30426,6 +31440,11 @@ class $SesameDatabaseManager {
       $$TransactionSplitsTableTableManager(_db, _db.transactionSplits);
   $$RecordEditHistoriesTableTableManager get recordEditHistories =>
       $$RecordEditHistoriesTableTableManager(_db, _db.recordEditHistories);
+  $$CloudRecordEditHistoriesTableTableManager get cloudRecordEditHistories =>
+      $$CloudRecordEditHistoriesTableTableManager(
+        _db,
+        _db.cloudRecordEditHistories,
+      );
   $$RecurringTransactionsTableTableManager get recurringTransactions =>
       $$RecurringTransactionsTableTableManager(_db, _db.recurringTransactions);
   $$ExchangeRatesTableTableManager get exchangeRates =>

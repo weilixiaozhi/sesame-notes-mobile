@@ -5271,12 +5271,6 @@ class AppLocalizationsZh extends AppLocalizations {
       '此来源或文件暂不支持安全删除。仍可在此检查备份，删除请使用对应云存储管理器。';
 
   @override
-  String get recordHistoryLoadMore => '加载更多';
-
-  @override
-  String get recordHistoryLoadFailed => '暂时无法读取历史，请重试。';
-
-  @override
   String get recordHistoryUpdated => '已记录一次编辑';
 
   @override
@@ -10777,12 +10771,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   @override
   String get backupCleanupReadOnlyHint =>
       '此來源或檔案暫不支援安全刪除。仍可在此檢查備份，刪除請使用對應雲端儲存管理器。';
-
-  @override
-  String get recordHistoryLoadMore => '載入更多';
-
-  @override
-  String get recordHistoryLoadFailed => '暫時無法讀取歷史，請重試。';
 
   @override
   String get recordHistoryUpdated => '已記錄一次編輯';

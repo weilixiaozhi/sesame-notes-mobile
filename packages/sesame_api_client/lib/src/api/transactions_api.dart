@@ -683,6 +683,112 @@ class TransactionsApi {
     );
   }
 
+  /// getTransactionsEditHistory
+  /// 按事务编号批量读取账本内交易的服务端编辑历史，按发生时间倒序分页；changes 为当次提交的字段或动作。
+  ///
+  /// Parameters:
+  /// * [transactionIds]
+  /// * [ledgerId]
+  /// * [limit]
+  /// * [cursor]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [GetTransactionEditHistory200Response] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<GetTransactionEditHistory200Response>>
+      getTransactionsEditHistory({
+    required String transactionIds,
+    required String ledgerId,
+    int? limit,
+    String? cursor,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/v1/ledgers/{ledger_id}/transactions/history'
+        .replaceAll(
+            '{' r'ledger_id' '}',
+            encodeQueryParameter(_serializers, ledgerId, const FullType(String))
+                .toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'transaction_ids': encodeQueryParameter(
+          _serializers, transactionIds, const FullType(String)),
+      if (limit != null)
+        r'limit':
+            encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (cursor != null)
+        r'cursor':
+            encodeQueryParameter(_serializers, cursor, const FullType(String)),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    GetTransactionEditHistory200Response? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType:
+                  const FullType(GetTransactionEditHistory200Response),
+            ) as GetTransactionEditHistory200Response;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<GetTransactionEditHistory200Response>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// patchLedgersByLedgerIdTransactionsByTransactionId
   ///
   ///

@@ -2483,8 +2483,6 @@
     }
   },
   "backupCleanupReadOnlyHint": "This storage or file cannot provide verified safe deletion. You can still check files here; use the cloud storage manager to delete them.",
-  "recordHistoryLoadMore": "Load more",
-  "recordHistoryLoadFailed": "History is temporarily unavailable. Try again.",
   "recordHistoryUpdated": "Edit recorded",
   "recordHistoryDeleted": "Record deleted",
   "recordHistoryCategoryMoved": "Category changed",

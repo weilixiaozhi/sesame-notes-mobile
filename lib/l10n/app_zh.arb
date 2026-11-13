@@ -2383,8 +2383,6 @@
   "backupCleanupPending": "正在写入 · 保留",
   "backupCleanupInUse": "正在使用 · 保留",
   "backupCleanupReadOnlyHint": "此来源或文件暂不支持安全删除。仍可在此检查备份，删除请使用对应云存储管理器。",
-  "recordHistoryLoadMore": "加载更多",
-  "recordHistoryLoadFailed": "暂时无法读取历史，请重试。",
   "recordHistoryUpdated": "已记录一次编辑",
   "recordHistoryDeleted": "删除记录",
   "recordHistoryCategoryMoved": "调整分类",

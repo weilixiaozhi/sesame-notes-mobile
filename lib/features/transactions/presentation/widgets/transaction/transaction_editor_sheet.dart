@@ -21,7 +21,6 @@ import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';
 import 'package:sesame_notes/shared/providers/account_state_provider.dart';
 import 'package:sesame_notes/infrastructure/api/api_client_provider.dart';
-import 'package:sesame_notes/features/statistics/application/record_history_providers.dart';
 import 'package:sesame_notes/features/statistics/application/aa_statistics_providers.dart';
 import 'package:sesame_notes/shared/providers/ledger_identity_providers.dart';
 import 'package:sesame_notes/navigation/route_consts.dart';
@@ -397,9 +396,7 @@ class _TransactionEditorSheetState
       );
       if (_validateContext(expectedCurrency: ledgerBase) == null) return;
 
-      String transactionId;
       if (widget.editingTransactionId != null) {
-        transactionId = widget.editingTransactionId!;
         // 分类名、金额与发生时间构成本地历史快照，与交易一次提交。
         final summary =
             '${c.name} · $amountStr · '
@@ -422,13 +419,10 @@ class _TransactionEditorSheetState
           operatorMemberId: operatorMemberId,
           historySummary: summary,
         );
-        // 主动失效编辑历史缓存：若详情 sheet 仍在 widget tree 上，
-        // 下次读取会重查，立即看到刚写入的历史行。
-        if (mounted) ref.invalidate(recordEditHistoryProvider(transactionId));
       } else {
         // 创建人 + 编辑人（同一个成员）随交易落库；
         // payerMemberId 为空时以操作者兜底,已显式写入的值(指定分摊)不覆盖。
-        transactionId = await actions.add(
+        await actions.add(
           ledgerId: _ledgerId,
           type: 'expense',
           amount: amountStr,

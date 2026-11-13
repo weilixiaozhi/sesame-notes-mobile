@@ -12,6 +12,7 @@ import '../domain/backup_cleanup.dart';
 import '../domain/backup_manifest.dart';
 import 'backup_file_io.dart';
 import 'backup_import_service.dart';
+import 'backup_schema.dart';
 import 'local_backup_service.dart';
 
 /// 识别结果绑定原始文件摘要；云端解码只用于检查，不改变待删除的原始 key。
@@ -200,7 +201,9 @@ class BackupCleanupInspector {
           await _sqliteVersion(body, frame.sqliteOffset) != schema) {
         throw const FormatException('备份结构版本无法确认');
       }
-      if (schema == currentSchemaVersion) {
+      // 当前结构与上一版结构都能进入恢复流程；只有更早结构走历史文件核验。
+      final restorable = supportsBackupSchema(schema);
+      if (restorable) {
         await _validateCurrent(body);
       } else {
         await _validateHistoricalSqlite(body, frame);
@@ -208,7 +211,7 @@ class BackupCleanupInspector {
       return BackupCleanupInspection(
         isLocal && isTemporaryArtifact(fileName)
             ? BackupCleanupStatus.auxiliary
-            : schema == currentSchemaVersion
+            : restorable
             ? BackupCleanupStatus.current
             : BackupCleanupStatus.unsupported,
         await digest(raw),

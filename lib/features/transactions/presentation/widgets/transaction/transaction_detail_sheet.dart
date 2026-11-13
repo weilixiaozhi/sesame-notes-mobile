@@ -447,9 +447,7 @@ class _TransactionDetailBodyState
           ),
         ),
         TransactionHistorySection(
-          ledgerId: t.ledgerId,
           recordId: t.id,
-          isCloud: ledger?.storageMode == 'cloud',
           displayNameOf: resolver.resolve,
         ),
         const SizedBox(height: AppDimens.p16),

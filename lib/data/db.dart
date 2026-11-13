@@ -10,7 +10,7 @@ import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/models/day_event.dart' show DayLimits;
 
 part 'db.g.dart';
-part 'database_schema12_upgrade.dart';
+part 'database_schema13_upgrade.dart';
 
 /// 同步版本及其墓碑以 UTC 毫秒存储，保留权威时间在持久化往返中的精度。
 class MillisecondTimestampConverter extends TypeConverter<DateTime, int> {
@@ -392,6 +392,45 @@ class RecordEditHistories extends Table {
   TextColumn get summary => text()();
 
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
+/// 云端编辑历史的本机缓存。只保存服务端已确认历史，不参与同步上报。
+///
+/// 详情页与本地编辑历史一起读取，断网时仍能展示上次成功获取的云端条目。
+@DataClassName(
+  'CloudRecordEditHistory',
+  implementing: [CloudRecordEditHistorySnapshot],
+)
+class CloudRecordEditHistories extends Table {
+  /// 服务端历史 UUID，跨设备稳定，作为缓存行主键。
+  TextColumn get id => text()();
+
+  /// 所属交易；交易删除时级联清理缓存。
+  TextColumn get recordId =>
+      text().references(Transactions, #id, onDelete: KeyAction.cascade)();
+
+  /// 服务端交易修订号，与本地编辑序号分开保存。
+  IntColumn get version => integer()();
+
+  /// 操作者成员 id：引用 ledger_members。
+  TextColumn get operatorMemberId => text().nullable()();
+
+  /// 服务端历史发生时的成员显示名，避免本地成员目录缺失时退化为未知用户。
+  TextColumn get operatorDisplayName => text().nullable()();
+
+  /// 服务端变更正文的原始 JSON，展示时再按当前语言描述。
+  TextColumn get changesJson => text().named('changes')();
+
+  /// 服务端历史发生时间。
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+    {recordId, version},
+  ];
 }
 
 @DataClassName(
@@ -1012,7 +1051,7 @@ class BackupState extends Table {
 }
 
 /// 活动数据库升级目标与备份恢复使用的结构版本。
-const currentSchemaVersion = 12;
+const currentSchemaVersion = 13;
 
 /// 结构不完整的数据库拒绝打开，原文件和业务内容保持不变。
 const incompleteSchemaMessage = '本机数据库结构不完整，请先保留原文件并从备份恢复；当前数据未修改。';
@@ -1031,6 +1070,7 @@ const incompleteSchemaMessage = '本机数据库结构不完整，请先保留�
     Transactions,
     TransactionSplits,
     RecordEditHistories,
+    CloudRecordEditHistories,
     RecurringTransactions,
     ExchangeRates,
     ExchangeRateOverrides,
@@ -1181,6 +1221,10 @@ class SesameDatabase extends _$SesameDatabase {
     await customStatement(
       'CREATE INDEX idx_record_edit_histories_record_id '
       'ON record_edit_histories (record_id);',
+    );
+    await customStatement(
+      'CREATE INDEX idx_cloud_record_edit_histories_record_id '
+      'ON cloud_record_edit_histories (record_id);',
     );
     await customStatement(
       'CREATE INDEX idx_recurring_transactions_ledger_id '

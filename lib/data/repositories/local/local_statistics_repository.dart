@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' as d;
 import 'package:decimal/decimal.dart';
 
 import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/data/models/accounting_records.dart';
 import 'package:sesame_notes/data/models/statistics_range_totals.dart';
 import 'package:sesame_notes/data/repositories/support/ledger_lookup.dart';
 import 'package:sesame_notes/data/repositories/support/ledger_category_catalog.dart';
@@ -9,6 +12,12 @@ import 'package:sesame_notes/data/repositories/support/category_scope.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/utils/date/month_range.dart';
 import 'package:sesame_notes/utils/date/week_math.dart';
+
+/// 详情页一次订阅所需的本机历史与云端缓存历史。
+typedef EditHistoryRows = ({
+  List<RecordEditHistorySnapshot> local,
+  List<CloudRecordEditHistorySnapshot> cloud,
+});
 
 /// 本地统计Repository实现
 /// 基于 Drift 数据库实现
@@ -107,6 +116,107 @@ class LocalStatisticsRepository {
       );
       rethrow;
     }
+  }
+
+  /// 同时订阅本机历史与云端缓存历史，任一表变化都会重新组合并推送。
+  ///
+  /// 两条 Drift 查询各自首次发射后，仅当两边都已就绪才发布结果，
+  /// 避免详情页先闪现半份历史再被第二次发射覆盖。
+  Stream<EditHistoryRows> watchEditHistories(String recordId) {
+    late final StreamController<EditHistoryRows> controller;
+    StreamSubscription<List<RecordEditHistory>>? localSubscription;
+    StreamSubscription<List<CloudRecordEditHistory>>? cloudSubscription;
+    var local = <RecordEditHistorySnapshot>[];
+    var cloud = <CloudRecordEditHistorySnapshot>[];
+    var localReady = false;
+    var cloudReady = false;
+
+    void publish() {
+      if (!localReady || !cloudReady || controller.isClosed) return;
+      controller.add((local: local, cloud: cloud));
+    }
+
+    controller = StreamController<EditHistoryRows>(
+      onListen: () {
+        localSubscription =
+            (db.select(db.recordEditHistories)
+                  ..where((row) => row.recordId.equals(recordId))
+                  ..orderBy([
+                    (row) => d.OrderingTerm(
+                      expression: row.version,
+                      mode: d.OrderingMode.desc,
+                    ),
+                  ]))
+                .watch()
+                .listen(
+                  (rows) {
+                    local = rows;
+                    localReady = true;
+                    publish();
+                  },
+                  onError: (Object error, StackTrace stack) {
+                    if (!controller.isClosed) {
+                      controller.addError(error, stack);
+                    }
+                  },
+                );
+        cloudSubscription =
+            (db.select(db.cloudRecordEditHistories)
+                  ..where((row) => row.recordId.equals(recordId))
+                  ..orderBy([
+                    (row) => d.OrderingTerm(
+                      expression: row.version,
+                      mode: d.OrderingMode.desc,
+                    ),
+                  ]))
+                .watch()
+                .listen(
+                  (rows) {
+                    cloud = rows;
+                    cloudReady = true;
+                    publish();
+                  },
+                  onError: (Object error, StackTrace stack) {
+                    if (!controller.isClosed) {
+                      controller.addError(error, stack);
+                    }
+                  },
+                );
+      },
+      onCancel: () async {
+        await localSubscription?.cancel();
+        await cloudSubscription?.cancel();
+      },
+    );
+    return controller.stream;
+  }
+
+  /// 批量读取每笔交易缓存到的最高版本与行数；空结果表示尚未缓存。
+  Future<Map<String, ({int maxVersion, int count})>>
+  cloudEditHistoryCacheStates(Iterable<String> recordIds) async {
+    final ids = recordIds.toSet().toList(growable: false);
+    if (ids.isEmpty) return const {};
+    final result = <String, ({int maxVersion, int count})>{};
+    const batchSize = 500;
+    for (var offset = 0; offset < ids.length; offset += batchSize) {
+      final end = (offset + batchSize).clamp(0, ids.length);
+      final table = db.cloudRecordEditHistories;
+      final maxVersion = table.version.max();
+      final count = table.version.count();
+      final query = db.selectOnly(table)
+        ..addColumns([table.recordId, maxVersion, count])
+        ..where(table.recordId.isIn(ids.sublist(offset, end)))
+        ..groupBy([table.recordId]);
+      for (final row in await query.get()) {
+        final recordId = row.read(table.recordId);
+        final version = row.read(maxVersion);
+        final rowCount = row.read(count);
+        if (recordId != null && version != null && rowCount != null) {
+          result[recordId] = (maxVersion: version, count: rowCount);
+        }
+      }
+    }
+    return result;
   }
 
   /// 协作者统计使用当前账本的所有者镜像，其他账本返回空镜像目录。

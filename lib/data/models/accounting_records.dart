@@ -299,3 +299,25 @@ class RecordEditHistorySnapshot {
     required this.createdAt,
   });
 }
+
+/// 云端编辑历史缓存行的不可变快照；变更正文保留服务端 JSON 原文。
+class CloudRecordEditHistorySnapshot {
+  final String id;
+  final String recordId;
+  final int version;
+  final String? operatorMemberId;
+  final String? operatorDisplayName;
+  final String changesJson;
+  final DateTime createdAt;
+
+  /// 使用显式业务字段构造快照，测试无需初始化数据库。
+  const CloudRecordEditHistorySnapshot({
+    required this.id,
+    required this.recordId,
+    required this.version,
+    this.operatorMemberId,
+    this.operatorDisplayName,
+    required this.changesJson,
+    required this.createdAt,
+  });
+}

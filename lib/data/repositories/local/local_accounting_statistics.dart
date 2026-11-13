@@ -1,4 +1,5 @@
 import 'package:sesame_notes/data/db.dart';
+import 'package:sesame_notes/data/models/accounting_records.dart';
 import 'package:sesame_notes/data/models/statistics_range_totals.dart';
 
 import 'local_accounting_context.dart';
@@ -88,4 +89,21 @@ mixin LocalStatisticsOperations on LocalAccountingContext {
   Future<Map<String, Category>> getSharedSyntheticCategoriesForLedger(
     String ledgerId,
   ) => statisticsStore.getSharedSyntheticCategoriesForLedger(ledgerId);
+
+  /// 同时读取本机编辑历史与云端历史缓存，供详情页一次订阅。
+  @override
+  Stream<
+    ({
+      List<RecordEditHistorySnapshot> local,
+      List<CloudRecordEditHistorySnapshot> cloud,
+    })
+  >
+  watchEditHistories(String recordId) =>
+      statisticsStore.watchEditHistories(recordId);
+
+  /// 批量读取云端历史缓存水位，静默补拉只处理缺失或未完整的交易。
+  @override
+  Future<Map<String, ({int maxVersion, int count})>>
+  cloudEditHistoryCacheStates(Iterable<String> recordIds) =>
+      statisticsStore.cloudEditHistoryCacheStates(recordIds);
 }

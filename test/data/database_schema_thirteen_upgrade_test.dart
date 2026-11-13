@@ -20,13 +20,15 @@ SesameDatabase _database(sql.Database raw) => SesameDatabase.withExecutor(
 String _preservedObjects(sql.Database raw) => jsonEncode({
   'objects': [
     for (final row in raw.select(
-      "SELECT type,name,tbl_name,sql FROM sqlite_master WHERE type IN ('index','trigger') ORDER BY type,name",
+      "SELECT type,name,tbl_name,sql FROM sqlite_master WHERE type IN ('index','trigger') "
+      "AND tbl_name != 'cloud_record_edit_histories' ORDER BY type,name",
     ))
       Map<String, Object?>.from(row),
   ],
   'foreign_keys': {
     for (final row in raw.select(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name!='recovery_logs' ORDER BY name",
+      "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' "
+      "AND name NOT IN ('recovery_logs','cloud_record_edit_histories') ORDER BY name",
     ))
       row['name'] as String: [
         for (final foreignKey in raw.select(
@@ -55,13 +57,13 @@ void main() {
       }
       await directory.delete(recursive: true);
     } catch (error, stack) {
-      logger.error('SchemaTwelveTest', '清理测试独占目录失败', error, stack);
+      logger.error('SchemaThirteenTest', '清理测试独占目录失败', error, stack);
       rethrow;
     }
   });
 
-  for (final version in [10, 11]) {
-    test('结构$version升级到12，所有非目标数据和结构对象原样保留', () async {
+  for (final version in [10, 11, 12]) {
+    test('结构$version升级到13，所有非目标数据和结构对象原样保留', () async {
       final file = File(p.join(directory.path, 'source.sqlite'));
       await createSchemaUpgradeDatabaseFixture(file, version);
       final raw = sql.sqlite3.open(file.path);
@@ -88,22 +90,25 @@ void main() {
           expect(before['sync_pull_errors']!.single['error_message'], '保留拉取错误');
           expect(before['recovery_logs'], isNotEmpty);
         }
-        expect(
-          before['ledger_members']!.every(
-            (row) => row['origin_account_id'] != null,
-          ),
-          isTrue,
-        );
         final errorBefore = before['sync_pull_errors']!.single;
-        expect(errorBefore['attempt_count'], 4);
-        expect(
-          errorBefore['first_seen_at'],
-          lessThan(errorBefore['last_attempt_at'] as int),
-        );
+        if (version != 12) {
+          // 版本 12 已移除成员来源缓存和拉取错误的展示字段。
+          expect(
+            before['ledger_members']!.every(
+              (row) => row['origin_account_id'] != null,
+            ),
+            isTrue,
+          );
+          expect(errorBefore['attempt_count'], 4);
+          expect(
+            errorBefore['first_seen_at'],
+            lessThan(errorBefore['last_attempt_at'] as int),
+          );
+        }
 
         await db.customSelect('SELECT 1').get();
 
-        expect(raw.userVersion, 12);
+        expect(raw.userVersion, 13);
         expect(databaseRows(raw), expectedUpgradedRows(before));
         expect(_preservedObjects(raw), objects);
         final failure = await db.select(db.syncPullErrors).getSingle();
@@ -134,7 +139,7 @@ void main() {
           schemaTenFrozen,
         );
       } catch (error, stack) {
-        logger.error('SchemaTwelveTest', '完整结构清理数据保留验证失败', error, stack);
+        logger.error('SchemaThirteenTest', '完整结构清理数据保留验证失败', error, stack);
         rethrow;
       } finally {
         await db.close();
@@ -175,10 +180,48 @@ void main() {
         }
       }
     } catch (error, stack) {
-      logger.error('SchemaTwelveTest', 'WAL与重复启动保留验证失败', error, stack);
+      logger.error('SchemaThirteenTest', 'WAL与重复启动保留验证失败', error, stack);
       rethrow;
     } finally {
       raw.close();
+    }
+  });
+
+  test('结构12升级新增的缓存表与新建库结构完全一致', () async {
+    final file = File(p.join(directory.path, 'cache-schema.sqlite'));
+    await createSchemaUpgradeDatabaseFixture(file, 12);
+    final raw = sql.sqlite3.open(file.path);
+    final db = _database(raw);
+    final freshRaw = sql.sqlite3.openInMemory();
+    final freshDb = _database(freshRaw);
+    try {
+      await db.customSelect('SELECT 1').get();
+      await freshDb.customSelect('SELECT 1').get();
+      for (final type in ['table', 'index']) {
+        final migrated = raw
+            .select(
+              "SELECT name,sql FROM sqlite_master WHERE type=? AND tbl_name='cloud_record_edit_histories' ORDER BY name",
+              [type],
+            )
+            .map((row) => Map<String, Object?>.from(row))
+            .toList();
+        final created = freshRaw
+            .select(
+              "SELECT name,sql FROM sqlite_master WHERE type=? AND tbl_name='cloud_record_edit_histories' ORDER BY name",
+              [type],
+            )
+            .map((row) => Map<String, Object?>.from(row))
+            .toList();
+        expect(migrated, created, reason: '迁移与新建的$type定义必须一致');
+      }
+    } catch (error, stack) {
+      logger.error('SchemaThirteenTest', '缓存表结构一致性验证失败', error, stack);
+      rethrow;
+    } finally {
+      await db.close();
+      raw.close();
+      await freshDb.close();
+      freshRaw.close();
     }
   });
 
@@ -203,7 +246,7 @@ void main() {
         );
         expect(databaseSnapshot(raw), before);
       } catch (error, stack) {
-        logger.error('SchemaTwelveTest', '中途删列失败回滚验证失败', error, stack);
+        logger.error('SchemaThirteenTest', '中途删列失败回滚验证失败', error, stack);
         rethrow;
       } finally {
         await db.close();
@@ -222,7 +265,7 @@ void main() {
     ('外键悬空', "UPDATE transaction_splits SET transaction_id='missing'"),
     ('来源版本6', 'PRAGMA user_version=6'),
     ('来源版本9', 'PRAGMA user_version=9'),
-    ('未来版本', 'PRAGMA user_version=13'),
+    ('未来版本', 'PRAGMA user_version=14'),
   ]) {
     test('$name拒绝打开并完整保留原结构和数据', () async {
       final file = File(p.join(directory.path, 'invalid.sqlite'));
@@ -238,7 +281,7 @@ void main() {
         );
         expect(databaseSnapshot(raw), before);
       } catch (error, stack) {
-        logger.error('SchemaTwelveTest', '无损拒绝验证失败：$name', error, stack);
+        logger.error('SchemaThirteenTest', '无损拒绝验证失败：$name', error, stack);
         rethrow;
       } finally {
         await db.close();

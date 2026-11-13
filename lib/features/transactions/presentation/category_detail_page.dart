@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:sesame_notes/providers/product_analytics_providers.dart';
 import 'package:sesame_notes/domain/analytics/product_analytics_actions.dart';
 import 'package:sesame_notes/domain/analytics/product_analytics_context.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/shared/providers/simple_state_notifier.dart';
+import 'package:sesame_notes/features/statistics/application/cloud_record_history.dart';
 import 'package:sesame_notes/features/transactions/application/transaction_actions.dart';
 import 'package:sesame_notes/shared/providers/ledger_selection_providers.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
@@ -67,12 +70,32 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
   /// 删除进行中标记:防止详情 sheet 与行内删除入口连点重复执行。
   bool _deleting = false;
   late final String _ledgerId;
+  // 当前已触发静默补拉的分类交易快照，数据流更新后才重新检查缓存水位。
+  List<db.TransactionDisplay>? _prefetchedHistories;
 
   /// 明细固定使用打开时的账本身份，其他页面切换账本不会改变该分类的所有者。
   @override
   void initState() {
     super.initState();
     _ledgerId = widget.ledgerId ?? ref.read(currentLedgerIdProvider);
+  }
+
+  /// 分类明细进入或交易更新后静默补齐云端历史缓存。
+  ///
+  /// 请求失败只留在应用层日志里，详情页仍只读本机缓存并立即展示。
+  void _scheduleHistoryPrefetch(List<db.TransactionDisplay> transactions) {
+    if (transactions.isEmpty || identical(transactions, _prefetchedHistories)) {
+      return;
+    }
+    _prefetchedHistories = transactions;
+    final container = ProviderScope.containerOf(context, listen: false);
+    final ledgerId = _ledgerId;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(
+        refreshCloudRecordEditHistories(container, ledgerId, transactions),
+      );
+    });
   }
 
   @override
@@ -175,6 +198,7 @@ class _CategoryDetailPageState extends ConsumerState<CategoryDetailPage> {
                       );
                     },
                     data: (transactions) {
+                      _scheduleHistoryPrefetch(transactions);
                       // 分类映射未就绪:交易先到也不能静默跳过分类组,
                       // 先展示加载态,避免整组交易消失。
                       if (categoryMapAsync.isLoading) {

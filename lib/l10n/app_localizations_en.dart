@@ -5426,13 +5426,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'This storage or file cannot provide verified safe deletion. You can still check files here; use the cloud storage manager to delete them.';
 
   @override
-  String get recordHistoryLoadMore => 'Load more';
-
-  @override
-  String get recordHistoryLoadFailed =>
-      'History is temporarily unavailable. Try again.';
-
-  @override
   String get recordHistoryUpdated => 'Edit recorded';
 
   @override

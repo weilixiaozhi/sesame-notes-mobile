@@ -17,7 +17,7 @@ const schemaTenFrozen =
 Future<void> createSchemaUpgradeDatabaseFixture(File file, int version) async {
   sql.Database? raw;
   try {
-    if (version != 10 && version != 11) {
+    if (version != 10 && version != 11 && version != 12) {
       throw ArgumentError.value(version, 'version', '无对应的数据库测试夹具');
     }
     final fixture =
@@ -50,7 +50,7 @@ Future<void> createSchemaUpgradeDatabaseFixture(File file, int version) async {
         );
       }
       raw.execute('UPDATE ledger_members SET updated_at=updated_at*1000');
-      if (version == 11) {
+      if (version == 11 || version == 12) {
         // 用固定 DDL 构造已发布的版本 11，测试来源独立于当前迁移代码。
         for (final statement in [
           'ALTER TABLE ledgers DROP COLUMN origin_last_revision',
@@ -59,6 +59,17 @@ Future<void> createSchemaUpgradeDatabaseFixture(File file, int version) async {
           'ALTER TABLE sync_pull_errors DROP COLUMN user_action',
           'ALTER TABLE sync_pull_errors DROP COLUMN error_message',
           'DROP TABLE recovery_logs',
+        ]) {
+          raw.execute(statement);
+        }
+      }
+      if (version == 12) {
+        // 版本 12 继续移除成员来源缓存和拉取错误的展示字段。
+        for (final statement in [
+          'ALTER TABLE ledger_members DROP COLUMN origin_account_id',
+          'ALTER TABLE sync_pull_errors DROP COLUMN first_seen_at',
+          'ALTER TABLE sync_pull_errors DROP COLUMN last_attempt_at',
+          'ALTER TABLE sync_pull_errors DROP COLUMN attempt_count',
         ]) {
           raw.execute(statement);
         }
@@ -421,5 +432,7 @@ Map<String, List<Map<String, Object?>>> expectedUpgradedRows(
                     field.key: field.value,
               },
         ],
+    // 结构 13 新增的云端历史缓存表在升级后存在且为空。
+    'cloud_record_edit_histories': <Map<String, Object?>>[],
   };
 }
