@@ -2677,5 +2677,12 @@
   "fitnessPlanCreatedTitle": "Creation complete",
   "fitnessPlanConfirmSave": "Confirm save",
   "fitnessPlanNextConfirmSave": "Next: Confirm save",
-  "fitnessPlanEditStartChoice": "Plan enabled status"
+  "fitnessPlanEditStartChoice": "Plan enabled status",
+  "memoInsertImage": "Insert image",
+  "memoImageLabel": "Image",
+  "memoImageUnavailable": "Image unavailable",
+  "memoImageTooLarge": "Image too large, choose a smaller one",
+  "memoImageInsertFailed": "Could not insert the image, try again",
+  "memoImageLimitReached": "Up to 20 images per note",
+  "memoMarkdownNoImages": "Markdown export does not include images; a [图片] placeholder is kept in the text."
 }

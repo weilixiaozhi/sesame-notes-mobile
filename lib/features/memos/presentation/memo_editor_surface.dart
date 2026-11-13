@@ -36,6 +36,7 @@ class MemoEditorSurface extends StatefulWidget {
     required this.onTapUp,
     required this.contextMenuBuilder,
     required this.onEditError,
+    required this.embedBuilders,
   });
 
   final QuillController controller;
@@ -44,6 +45,9 @@ class MemoEditorSurface extends StatefulWidget {
   final bool Function(TapUpDetails, TextPosition Function(Offset)) onTapUp;
   final Widget Function(BuildContext, QuillRawEditorState) contextMenuBuilder;
   final VoidCallback onEditError;
+
+  /// 正文自定义嵌入（图片）的渲染器；只读与编辑实例共用同一组。
+  final Iterable<EmbedBuilder> embedBuilders;
 
   /// 焦点节点与实际编辑器状态具有相同生命周期。
   @override
@@ -158,6 +162,7 @@ class _MemoEditorSurfaceState extends State<MemoEditorSurface> {
       customStyles: memoEditorStyles(context),
       contextMenuBuilder: widget.contextMenuBuilder,
       onTapUp: widget.onTapUp,
+      embedBuilders: widget.embedBuilders,
     ),
   );
 }

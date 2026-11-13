@@ -5667,4 +5667,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fitnessPlanEditStartChoice => 'Plan enabled status';
+
+  @override
+  String get memoInsertImage => 'Insert image';
+
+  @override
+  String get memoImageLabel => 'Image';
+
+  @override
+  String get memoImageUnavailable => 'Image unavailable';
+
+  @override
+  String get memoImageTooLarge => 'Image too large, choose a smaller one';
+
+  @override
+  String get memoImageInsertFailed => 'Could not insert the image, try again';
+
+  @override
+  String get memoImageLimitReached => 'Up to 20 images per note';
+
+  @override
+  String get memoMarkdownNoImages =>
+      'Markdown export does not include images; a [图片] placeholder is kept in the text.';
 }

@@ -21,14 +21,14 @@ String _preservedObjects(sql.Database raw) => jsonEncode({
   'objects': [
     for (final row in raw.select(
       "SELECT type,name,tbl_name,sql FROM sqlite_master WHERE type IN ('index','trigger') "
-      "AND tbl_name != 'cloud_record_edit_histories' ORDER BY type,name",
+      "AND tbl_name NOT IN ('cloud_record_edit_histories','memo_media') ORDER BY type,name",
     ))
       Map<String, Object?>.from(row),
   ],
   'foreign_keys': {
     for (final row in raw.select(
       "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' "
-      "AND name NOT IN ('recovery_logs','cloud_record_edit_histories') ORDER BY name",
+      "AND name NOT IN ('recovery_logs','cloud_record_edit_histories','memo_media') ORDER BY name",
     ))
       row['name'] as String: [
         for (final foreignKey in raw.select(
@@ -45,7 +45,7 @@ void main() {
   late Directory directory;
   setUp(() async {
     resetGlobalTestState();
-    directory = await createTestTempDirectory('schema-twelve-upgrade-');
+    directory = await createTestTempDirectory('schema-fourteen-upgrade-');
   });
   tearDown(() async {
     try {
@@ -57,13 +57,13 @@ void main() {
       }
       await directory.delete(recursive: true);
     } catch (error, stack) {
-      logger.error('SchemaThirteenTest', '清理测试独占目录失败', error, stack);
+      logger.error('SchemaFourteenTest', '清理测试独占目录失败', error, stack);
       rethrow;
     }
   });
 
-  for (final version in [10, 11, 12]) {
-    test('结构$version升级到13，所有非目标数据和结构对象原样保留', () async {
+  for (final version in [10, 11, 12, 13]) {
+    test('结构$version升级到14，所有非目标数据和结构对象原样保留', () async {
       final file = File(p.join(directory.path, 'source.sqlite'));
       await createSchemaUpgradeDatabaseFixture(file, version);
       final raw = sql.sqlite3.open(file.path);
@@ -91,7 +91,7 @@ void main() {
           expect(before['recovery_logs'], isNotEmpty);
         }
         final errorBefore = before['sync_pull_errors']!.single;
-        if (version != 12) {
+        if (version < 12) {
           // 版本 12 已移除成员来源缓存和拉取错误的展示字段。
           expect(
             before['ledger_members']!.every(
@@ -108,7 +108,7 @@ void main() {
 
         await db.customSelect('SELECT 1').get();
 
-        expect(raw.userVersion, 13);
+        expect(raw.userVersion, 14);
         expect(databaseRows(raw), expectedUpgradedRows(before));
         expect(_preservedObjects(raw), objects);
         final failure = await db.select(db.syncPullErrors).getSingle();
@@ -139,7 +139,7 @@ void main() {
           schemaTenFrozen,
         );
       } catch (error, stack) {
-        logger.error('SchemaThirteenTest', '完整结构清理数据保留验证失败', error, stack);
+        logger.error('SchemaFourteenTest', '完整结构清理数据保留验证失败', error, stack);
         rethrow;
       } finally {
         await db.close();
@@ -180,7 +180,7 @@ void main() {
         }
       }
     } catch (error, stack) {
-      logger.error('SchemaThirteenTest', 'WAL与重复启动保留验证失败', error, stack);
+      logger.error('SchemaFourteenTest', 'WAL与重复启动保留验证失败', error, stack);
       rethrow;
     } finally {
       raw.close();
@@ -215,7 +215,46 @@ void main() {
         expect(migrated, created, reason: '迁移与新建的$type定义必须一致');
       }
     } catch (error, stack) {
-      logger.error('SchemaThirteenTest', '缓存表结构一致性验证失败', error, stack);
+      logger.error('SchemaFourteenTest', '缓存表结构一致性验证失败', error, stack);
+      rethrow;
+    } finally {
+      await db.close();
+      raw.close();
+      await freshDb.close();
+      freshRaw.close();
+    }
+  });
+
+  test('结构13升级新增的图片表与新建库结构完全一致', () async {
+    final file = File(p.join(directory.path, 'media-schema.sqlite'));
+    await createSchemaUpgradeDatabaseFixture(file, 13);
+    final raw = sql.sqlite3.open(file.path);
+    final db = _database(raw);
+    final freshRaw = sql.sqlite3.openInMemory();
+    final freshDb = _database(freshRaw);
+    try {
+      await db.customSelect('SELECT 1').get();
+      await freshDb.customSelect('SELECT 1').get();
+      for (final type in ['table', 'index', 'trigger']) {
+        final migrated = raw
+            .select(
+              "SELECT name,sql FROM sqlite_master WHERE type=? AND tbl_name='memo_media' ORDER BY name",
+              [type],
+            )
+            .map((row) => Map<String, Object?>.from(row))
+            .toList();
+        final created = freshRaw
+            .select(
+              "SELECT name,sql FROM sqlite_master WHERE type=? AND tbl_name='memo_media' ORDER BY name",
+              [type],
+            )
+            .map((row) => Map<String, Object?>.from(row))
+            .toList();
+        expect(migrated, created, reason: '迁移与新建的$type定义必须一致');
+      }
+      expect((await db.select(db.memoMedia).get()), isEmpty);
+    } catch (error, stack) {
+      logger.error('SchemaFourteenTest', '图片表结构一致性验证失败', error, stack);
       rethrow;
     } finally {
       await db.close();
@@ -246,7 +285,7 @@ void main() {
         );
         expect(databaseSnapshot(raw), before);
       } catch (error, stack) {
-        logger.error('SchemaThirteenTest', '中途删列失败回滚验证失败', error, stack);
+        logger.error('SchemaFourteenTest', '中途删列失败回滚验证失败', error, stack);
         rethrow;
       } finally {
         await db.close();
@@ -265,7 +304,7 @@ void main() {
     ('外键悬空', "UPDATE transaction_splits SET transaction_id='missing'"),
     ('来源版本6', 'PRAGMA user_version=6'),
     ('来源版本9', 'PRAGMA user_version=9'),
-    ('未来版本', 'PRAGMA user_version=14'),
+    ('未来版本', 'PRAGMA user_version=15'),
   ]) {
     test('$name拒绝打开并完整保留原结构和数据', () async {
       final file = File(p.join(directory.path, 'invalid.sqlite'));
@@ -281,7 +320,7 @@ void main() {
         );
         expect(databaseSnapshot(raw), before);
       } catch (error, stack) {
-        logger.error('SchemaThirteenTest', '无损拒绝验证失败：$name', error, stack);
+        logger.error('SchemaFourteenTest', '无损拒绝验证失败：$name', error, stack);
         rethrow;
       } finally {
         await db.close();

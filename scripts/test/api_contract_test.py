@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 ARTIFACT = ROOT / "api/openapi/sesame-notes-api-v1.0.0.json"
-EXPECTED_SHA256 = "C34BF95613109C6DE9DC16DE51A210646A027B338C8BF3019C1D379D235A4B41"
+EXPECTED_SHA256 = "3F399887ED6B9D4FDAFAFE89EFFED80F190586DBC7F897600DAA50866CF30AF6"
 HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
 ERROR_STATUSES = {"400", "401", "403", "404", "409", "500"}
 

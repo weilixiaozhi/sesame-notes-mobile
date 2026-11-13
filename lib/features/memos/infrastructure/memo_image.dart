@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
+import 'package:sesame_notes/data/models/memo_delta.dart';
 import 'memo_document.dart';
 import 'memo_document_style.dart';
 
@@ -37,12 +38,28 @@ abstract final class MemoImage {
     }
   }
 
+  /// 图片按正文宽度等比缩放，解码后不再保留原始大图。
+  static Future<ui.Image?> _decode(Uint8List bytes) async {
+    try {
+      final codec = await ui.instantiateImageCodec(
+        bytes,
+        targetWidth: ((width - MemoDocumentStyle.pageMargin * 2) * scale)
+            .round(),
+      );
+      final frame = await codec.getNextFrame();
+      return frame.image;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// 分批测量后再分配整图；取消可以在排版批次和异步绘图边界结束后续工作。
   static Future<Uint8List> render(
     MemoDocument document, {
     bool Function()? isCancelled,
   }) async {
     final painters = <({TextPainter painter, double x, double y})>[];
+    final images = <ui.Image>[];
     ui.PictureRecorder? recorder;
     ui.Picture? picture;
     ui.Image? image;
@@ -52,11 +69,26 @@ abstract final class MemoImage {
       if (isCancelled?.call() ?? false) throw const MemoImageCancelled();
     }
 
+    /// 图片缺失或解码失败时绘制与 DOCX/PDF 一致的占位文字。
+    TextPainter placeholder(double fontSize) => TextPainter(
+      textDirection: TextDirection.ltr,
+      text: TextSpan(
+        text: '[图片不可用]',
+        style: TextStyle(
+          color: const Color(0xff666666),
+          fontFamily: MemoDocumentStyle.fontFamily,
+          fontSize: fontSize,
+          height: MemoDocumentStyle.lineHeight,
+        ),
+      ),
+    );
+
     try {
       checkCancelled();
       await (_fonts ??= _loadFonts());
       checkCancelled();
       const margin = MemoDocumentStyle.pageMargin * scale;
+      const contentWidth = (width - MemoDocumentStyle.pageMargin * 2) * scale;
       var y = margin;
       final counters = List.filled(6, 0);
       final slice = Stopwatch()..start();
@@ -75,39 +107,65 @@ abstract final class MemoImage {
           counters[i] = 0;
         }
         final x = margin + paragraph.indent * MemoDocumentStyle.indent * scale;
-        final painter = TextPainter(
-          textDirection: TextDirection.ltr,
-          text: TextSpan(
-            style: TextStyle(
-              color: const Color(0xff000000),
-              fontFamily: MemoDocumentStyle.fontFamily,
-              fontFamilyFallback: const ['MemoExportEmoji'],
-              fontSize:
-                  scale *
-                  (paragraph.header == null
-                      ? MemoDocumentStyle.bodySize
-                      : MemoDocumentStyle.headingSizes[paragraph.header! - 1]),
-              height: MemoDocumentStyle.lineHeight,
-              fontWeight: paragraph.header == null
-                  ? FontWeight.normal
-                  : FontWeight.bold,
+        final fontSize =
+            scale *
+            (paragraph.header == null
+                ? MemoDocumentStyle.bodySize
+                : MemoDocumentStyle.headingSizes[paragraph.header! - 1]);
+        // 图片段落通常没有文字；有文字时先排版文字，再按块输出图片。
+        if (paragraph.text.isNotEmpty || paragraph.imageIds.isEmpty) {
+          final painter = TextPainter(
+            textDirection: TextDirection.ltr,
+            text: TextSpan(
+              style: TextStyle(
+                color: const Color(0xff000000),
+                fontFamily: MemoDocumentStyle.fontFamily,
+                fontFamilyFallback: const ['MemoExportEmoji'],
+                fontSize: fontSize,
+                height: MemoDocumentStyle.lineHeight,
+                fontWeight: paragraph.header == null
+                    ? FontWeight.normal
+                    : FontWeight.bold,
+              ),
+              children: [
+                TextSpan(text: prefix),
+                for (final run in paragraph.runs.whereType<MemoTextRun>())
+                  TextSpan(
+                    text: run.text,
+                    style: run.bold
+                        ? const TextStyle(fontWeight: FontWeight.bold)
+                        : null,
+                  ),
+                if (paragraph.runs.whereType<MemoTextRun>().isEmpty)
+                  const TextSpan(text: ' '),
+              ],
             ),
-            children: [
-              TextSpan(text: prefix),
-              for (final run in paragraph.runs)
-                TextSpan(
-                  text: run.text,
-                  style: run.bold
-                      ? const TextStyle(fontWeight: FontWeight.bold)
-                      : null,
-                ),
-              if (paragraph.runs.isEmpty) const TextSpan(text: ' '),
-            ],
-          ),
-        );
-        painters.add((painter: painter, x: x, y: y));
-        painter.layout(maxWidth: width - margin - x);
-        y += painter.height + MemoDocumentStyle.paragraphSpacing * scale;
+          );
+          painters.add((painter: painter, x: x, y: y));
+          painter.layout(maxWidth: width - margin - x);
+          y += painter.height + MemoDocumentStyle.paragraphSpacing * scale;
+        }
+        for (final mediaId in paragraph.imageIds) {
+          final media = document.media[mediaId];
+          final decoded = media == null ? null : await _decode(media.bytes);
+          if (decoded == null) {
+            final painter = placeholder(fontSize);
+            painter.layout(maxWidth: contentWidth);
+            painters.add((painter: painter, x: margin, y: y));
+            y += painter.height + MemoDocumentStyle.paragraphSpacing * scale;
+            continue;
+          }
+          // 等比缩放后居中绘制，超长图片整体按行高推进，不裁切。
+          final drawWidth = contentWidth.toDouble();
+          final drawHeight = drawWidth * decoded.height / decoded.width;
+          images.add(decoded);
+          painters.add((
+            painter: _ImagePainter(decoded, Size(drawWidth, drawHeight)),
+            x: margin,
+            y: y,
+          ));
+          y += drawHeight + MemoDocumentStyle.paragraphSpacing * scale;
+        }
         if (y + margin > maxHeight || width * (y + margin) > maxPixels) {
           throw const MemoImageTooLarge();
         }
@@ -139,6 +197,9 @@ abstract final class MemoImage {
     } finally {
       image?.dispose();
       picture?.dispose();
+      for (final decoded in images) {
+        decoded.dispose();
+      }
       // 绘制中异常时也结束尚未交付的录制，释放已记录的文字与绘图命令。
       if (recorder?.isRecording ?? false) recorder!.endRecording().dispose();
       for (final row in painters) {
@@ -146,4 +207,25 @@ abstract final class MemoImage {
       }
     }
   }
+}
+
+/// 图片绘制器沿用 TextPainter 的位置记录，取消与释放路径保持同一集合。
+class _ImagePainter extends TextPainter {
+  _ImagePainter(this.image, this.drawSize)
+    : super(textDirection: TextDirection.ltr);
+  final ui.Image image;
+  final Size drawSize;
+
+  @override
+  void paint(Canvas canvas, Offset offset) {
+    canvas.drawImageRect(
+      image,
+      Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+      offset & drawSize,
+      Paint()..filterQuality = FilterQuality.medium,
+    );
+  }
+
+  @override
+  double get height => drawSize.height;
 }

@@ -5506,6 +5506,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fitnessPlanEditStartChoice => '计划启用状态';
+
+  @override
+  String get memoInsertImage => '插入图片';
+
+  @override
+  String get memoImageLabel => '图片';
+
+  @override
+  String get memoImageUnavailable => '图片不可用';
+
+  @override
+  String get memoImageTooLarge => '图片过大，请选择较小的图片';
+
+  @override
+  String get memoImageInsertFailed => '插入图片失败，请稍后重试';
+
+  @override
+  String get memoImageLimitReached => '单篇笔记最多插入 20 张图片';
+
+  @override
+  String get memoMarkdownNoImages => 'Markdown 导出不包含图片，正文以 [图片] 占位。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -11008,4 +11029,25 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get fitnessPlanEditStartChoice => '計畫啟用狀態';
+
+  @override
+  String get memoInsertImage => '插入圖片';
+
+  @override
+  String get memoImageLabel => '圖片';
+
+  @override
+  String get memoImageUnavailable => '圖片無法顯示';
+
+  @override
+  String get memoImageTooLarge => '圖片過大，請選擇較小的圖片';
+
+  @override
+  String get memoImageInsertFailed => '插入圖片失敗，請稍後再試';
+
+  @override
+  String get memoImageLimitReached => '單篇筆記最多插入 20 張圖片';
+
+  @override
+  String get memoMarkdownNoImages => 'Markdown 匯出不包含圖片，正文以 [圖片] 佔位。';
 }

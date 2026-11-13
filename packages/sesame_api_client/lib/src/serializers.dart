@@ -347,6 +347,7 @@ import 'package:sesame_api_client/src/model/put_admin_groups_by_group_id_permiss
 import 'package:sesame_api_client/src/model/put_admin_users_by_user_id_avatar200_response.dart';
 import 'package:sesame_api_client/src/model/put_admin_users_by_user_id_avatar_request.dart';
 import 'package:sesame_api_client/src/model/put_admin_users_by_user_id_phone_request.dart';
+import 'package:sesame_api_client/src/model/put_memo_media_by_media_id200_response.dart';
 import 'package:sesame_api_client/src/model/put_profile_avatar_request.dart';
 import 'package:sesame_api_client/src/model/recurring_transaction.dart';
 import 'package:sesame_api_client/src/model/transaction.dart';
@@ -694,6 +695,7 @@ part 'serializers.g.dart';
   PutAdminUsersByUserIdAvatar200Response,
   PutAdminUsersByUserIdAvatarRequest,
   PutAdminUsersByUserIdPhoneRequest,
+  PutMemoMediaByMediaId200Response,
   PutProfileAvatarRequest,
   RecurringTransaction,
   Transaction,

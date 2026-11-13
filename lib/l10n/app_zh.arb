@@ -2577,5 +2577,12 @@
   "fitnessPlanCreatedTitle": "创建完成",
   "fitnessPlanConfirmSave": "确认保存",
   "fitnessPlanNextConfirmSave": "下一步：确认保存",
-  "fitnessPlanEditStartChoice": "计划启用状态"
+  "fitnessPlanEditStartChoice": "计划启用状态",
+  "memoInsertImage": "插入图片",
+  "memoImageLabel": "图片",
+  "memoImageUnavailable": "图片不可用",
+  "memoImageTooLarge": "图片过大，请选择较小的图片",
+  "memoImageInsertFailed": "插入图片失败，请稍后重试",
+  "memoImageLimitReached": "单篇笔记最多插入 20 张图片",
+  "memoMarkdownNoImages": "Markdown 导出不包含图片，正文以 [图片] 占位。"
 }

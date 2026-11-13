@@ -10315,6 +10315,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Plan enabled status'**
   String get fitnessPlanEditStartChoice;
+
+  /// No description provided for @memoInsertImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert image'**
+  String get memoInsertImage;
+
+  /// No description provided for @memoImageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get memoImageLabel;
+
+  /// No description provided for @memoImageUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Image unavailable'**
+  String get memoImageUnavailable;
+
+  /// No description provided for @memoImageTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Image too large, choose a smaller one'**
+  String get memoImageTooLarge;
+
+  /// No description provided for @memoImageInsertFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not insert the image, try again'**
+  String get memoImageInsertFailed;
+
+  /// No description provided for @memoImageLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to 20 images per note'**
+  String get memoImageLimitReached;
+
+  /// No description provided for @memoMarkdownNoImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Markdown export does not include images; a [图片] placeholder is kept in the text.'**
+  String get memoMarkdownNoImages;
 }
 
 class _AppLocalizationsDelegate

@@ -648,6 +648,7 @@ class BackupImportService {
               book.id,
               includeDeleted: true,
             ),
+            media: session.recoveryRepository.listMemoMedia(book.id),
             receipts: session.recoveryRepository.listMemoReceipts(book.id),
             forceCopy: decision == RecoveryDecision.forkCloudToLocal,
             cloud: decision == RecoveryDecision.reconnect,

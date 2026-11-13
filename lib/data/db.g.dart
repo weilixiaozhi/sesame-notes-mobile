@@ -6499,6 +6499,584 @@ class MemoEntriesCompanion extends UpdateCompanion<MemoEntryRow> {
   }
 }
 
+class $MemoMediaTable extends MemoMedia
+    with TableInfo<$MemoMediaTable, MemoMediaRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MemoMediaTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _scopeAccountIdMeta = const VerificationMeta(
+    'scopeAccountId',
+  );
+  @override
+  late final GeneratedColumn<String> scopeAccountId = GeneratedColumn<String>(
+    'scope_account_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _entryIdMeta = const VerificationMeta(
+    'entryId',
+  );
+  @override
+  late final GeneratedColumn<String> entryId = GeneratedColumn<String>(
+    'entry_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _mimeMeta = const VerificationMeta('mime');
+  @override
+  late final GeneratedColumn<String> mime = GeneratedColumn<String>(
+    'mime',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _byteSizeMeta = const VerificationMeta(
+    'byteSize',
+  );
+  @override
+  late final GeneratedColumn<int> byteSize = GeneratedColumn<int>(
+    'byte_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sha256Meta = const VerificationMeta('sha256');
+  @override
+  late final GeneratedColumn<String> sha256 = GeneratedColumn<String>(
+    'sha256',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bytesMeta = const VerificationMeta('bytes');
+  @override
+  late final GeneratedColumn<Uint8List> bytes = GeneratedColumn<Uint8List>(
+    'bytes',
+    aliasedName,
+    false,
+    type: DriftSqlType.blob,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _uploadStateMeta = const VerificationMeta(
+    'uploadState',
+  );
+  @override
+  late final GeneratedColumn<String> uploadState = GeneratedColumn<String>(
+    'upload_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<DateTime, int> createdAt =
+      GeneratedColumn<int>(
+        'created_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<DateTime>($MemoMediaTable.$convertercreatedAt);
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    scopeAccountId,
+    entryId,
+    mime,
+    byteSize,
+    sha256,
+    bytes,
+    uploadState,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'memo_media';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MemoMediaRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('scope_account_id')) {
+      context.handle(
+        _scopeAccountIdMeta,
+        scopeAccountId.isAcceptableOrUnknown(
+          data['scope_account_id']!,
+          _scopeAccountIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('entry_id')) {
+      context.handle(
+        _entryIdMeta,
+        entryId.isAcceptableOrUnknown(data['entry_id']!, _entryIdMeta),
+      );
+    }
+    if (data.containsKey('mime')) {
+      context.handle(
+        _mimeMeta,
+        mime.isAcceptableOrUnknown(data['mime']!, _mimeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_mimeMeta);
+    }
+    if (data.containsKey('byte_size')) {
+      context.handle(
+        _byteSizeMeta,
+        byteSize.isAcceptableOrUnknown(data['byte_size']!, _byteSizeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_byteSizeMeta);
+    }
+    if (data.containsKey('sha256')) {
+      context.handle(
+        _sha256Meta,
+        sha256.isAcceptableOrUnknown(data['sha256']!, _sha256Meta),
+      );
+    } else if (isInserting) {
+      context.missing(_sha256Meta);
+    }
+    if (data.containsKey('bytes')) {
+      context.handle(
+        _bytesMeta,
+        bytes.isAcceptableOrUnknown(data['bytes']!, _bytesMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bytesMeta);
+    }
+    if (data.containsKey('upload_state')) {
+      context.handle(
+        _uploadStateMeta,
+        uploadState.isAcceptableOrUnknown(
+          data['upload_state']!,
+          _uploadStateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_uploadStateMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MemoMediaRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MemoMediaRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      scopeAccountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scope_account_id'],
+      ),
+      entryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entry_id'],
+      ),
+      mime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mime'],
+      )!,
+      byteSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}byte_size'],
+      )!,
+      sha256: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sha256'],
+      )!,
+      bytes: attachedDatabase.typeMapping.read(
+        DriftSqlType.blob,
+        data['${effectivePrefix}bytes'],
+      )!,
+      uploadState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}upload_state'],
+      )!,
+      createdAt: $MemoMediaTable.$convertercreatedAt.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}created_at'],
+        )!,
+      ),
+    );
+  }
+
+  @override
+  $MemoMediaTable createAlias(String alias) {
+    return $MemoMediaTable(attachedDatabase, alias);
+  }
+
+  static TypeConverter<DateTime, int> $convertercreatedAt =
+      const MillisecondTimestampConverter();
+}
+
+class MemoMediaRow extends DataClass implements Insertable<MemoMediaRow> {
+  /// 客户端生成的图片标识，正文中的图片引用直接使用该值。
+  final String id;
+
+  /// 云端图片的账号域；本机本图片为 null，不参与账号切换清理。
+  final String? scopeAccountId;
+
+  /// 首次插入图片的笔记，用于笔记删除后的孤儿回收。
+  final String? entryId;
+  final String mime;
+  final int byteSize;
+
+  /// 服务端与本地共用的内容摘要，上传幂等与下载校验都依赖它。
+  final String sha256;
+  final Uint8List bytes;
+
+  /// 上传状态只对云端本有意义：本机本固定 local，云端本按上传结果推进。
+  final String uploadState;
+  final DateTime createdAt;
+  const MemoMediaRow({
+    required this.id,
+    this.scopeAccountId,
+    this.entryId,
+    required this.mime,
+    required this.byteSize,
+    required this.sha256,
+    required this.bytes,
+    required this.uploadState,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    if (!nullToAbsent || scopeAccountId != null) {
+      map['scope_account_id'] = Variable<String>(scopeAccountId);
+    }
+    if (!nullToAbsent || entryId != null) {
+      map['entry_id'] = Variable<String>(entryId);
+    }
+    map['mime'] = Variable<String>(mime);
+    map['byte_size'] = Variable<int>(byteSize);
+    map['sha256'] = Variable<String>(sha256);
+    map['bytes'] = Variable<Uint8List>(bytes);
+    map['upload_state'] = Variable<String>(uploadState);
+    {
+      map['created_at'] = Variable<int>(
+        $MemoMediaTable.$convertercreatedAt.toSql(createdAt),
+      );
+    }
+    return map;
+  }
+
+  MemoMediaCompanion toCompanion(bool nullToAbsent) {
+    return MemoMediaCompanion(
+      id: Value(id),
+      scopeAccountId: scopeAccountId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(scopeAccountId),
+      entryId: entryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(entryId),
+      mime: Value(mime),
+      byteSize: Value(byteSize),
+      sha256: Value(sha256),
+      bytes: Value(bytes),
+      uploadState: Value(uploadState),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory MemoMediaRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MemoMediaRow(
+      id: serializer.fromJson<String>(json['id']),
+      scopeAccountId: serializer.fromJson<String?>(json['scopeAccountId']),
+      entryId: serializer.fromJson<String?>(json['entryId']),
+      mime: serializer.fromJson<String>(json['mime']),
+      byteSize: serializer.fromJson<int>(json['byteSize']),
+      sha256: serializer.fromJson<String>(json['sha256']),
+      bytes: serializer.fromJson<Uint8List>(json['bytes']),
+      uploadState: serializer.fromJson<String>(json['uploadState']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'scopeAccountId': serializer.toJson<String?>(scopeAccountId),
+      'entryId': serializer.toJson<String?>(entryId),
+      'mime': serializer.toJson<String>(mime),
+      'byteSize': serializer.toJson<int>(byteSize),
+      'sha256': serializer.toJson<String>(sha256),
+      'bytes': serializer.toJson<Uint8List>(bytes),
+      'uploadState': serializer.toJson<String>(uploadState),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  MemoMediaRow copyWith({
+    String? id,
+    Value<String?> scopeAccountId = const Value.absent(),
+    Value<String?> entryId = const Value.absent(),
+    String? mime,
+    int? byteSize,
+    String? sha256,
+    Uint8List? bytes,
+    String? uploadState,
+    DateTime? createdAt,
+  }) => MemoMediaRow(
+    id: id ?? this.id,
+    scopeAccountId: scopeAccountId.present
+        ? scopeAccountId.value
+        : this.scopeAccountId,
+    entryId: entryId.present ? entryId.value : this.entryId,
+    mime: mime ?? this.mime,
+    byteSize: byteSize ?? this.byteSize,
+    sha256: sha256 ?? this.sha256,
+    bytes: bytes ?? this.bytes,
+    uploadState: uploadState ?? this.uploadState,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  MemoMediaRow copyWithCompanion(MemoMediaCompanion data) {
+    return MemoMediaRow(
+      id: data.id.present ? data.id.value : this.id,
+      scopeAccountId: data.scopeAccountId.present
+          ? data.scopeAccountId.value
+          : this.scopeAccountId,
+      entryId: data.entryId.present ? data.entryId.value : this.entryId,
+      mime: data.mime.present ? data.mime.value : this.mime,
+      byteSize: data.byteSize.present ? data.byteSize.value : this.byteSize,
+      sha256: data.sha256.present ? data.sha256.value : this.sha256,
+      bytes: data.bytes.present ? data.bytes.value : this.bytes,
+      uploadState: data.uploadState.present
+          ? data.uploadState.value
+          : this.uploadState,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MemoMediaRow(')
+          ..write('id: $id, ')
+          ..write('scopeAccountId: $scopeAccountId, ')
+          ..write('entryId: $entryId, ')
+          ..write('mime: $mime, ')
+          ..write('byteSize: $byteSize, ')
+          ..write('sha256: $sha256, ')
+          ..write('bytes: $bytes, ')
+          ..write('uploadState: $uploadState, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    scopeAccountId,
+    entryId,
+    mime,
+    byteSize,
+    sha256,
+    $driftBlobEquality.hash(bytes),
+    uploadState,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MemoMediaRow &&
+          other.id == this.id &&
+          other.scopeAccountId == this.scopeAccountId &&
+          other.entryId == this.entryId &&
+          other.mime == this.mime &&
+          other.byteSize == this.byteSize &&
+          other.sha256 == this.sha256 &&
+          $driftBlobEquality.equals(other.bytes, this.bytes) &&
+          other.uploadState == this.uploadState &&
+          other.createdAt == this.createdAt);
+}
+
+class MemoMediaCompanion extends UpdateCompanion<MemoMediaRow> {
+  final Value<String> id;
+  final Value<String?> scopeAccountId;
+  final Value<String?> entryId;
+  final Value<String> mime;
+  final Value<int> byteSize;
+  final Value<String> sha256;
+  final Value<Uint8List> bytes;
+  final Value<String> uploadState;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const MemoMediaCompanion({
+    this.id = const Value.absent(),
+    this.scopeAccountId = const Value.absent(),
+    this.entryId = const Value.absent(),
+    this.mime = const Value.absent(),
+    this.byteSize = const Value.absent(),
+    this.sha256 = const Value.absent(),
+    this.bytes = const Value.absent(),
+    this.uploadState = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MemoMediaCompanion.insert({
+    required String id,
+    this.scopeAccountId = const Value.absent(),
+    this.entryId = const Value.absent(),
+    required String mime,
+    required int byteSize,
+    required String sha256,
+    required Uint8List bytes,
+    required String uploadState,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       mime = Value(mime),
+       byteSize = Value(byteSize),
+       sha256 = Value(sha256),
+       bytes = Value(bytes),
+       uploadState = Value(uploadState),
+       createdAt = Value(createdAt);
+  static Insertable<MemoMediaRow> custom({
+    Expression<String>? id,
+    Expression<String>? scopeAccountId,
+    Expression<String>? entryId,
+    Expression<String>? mime,
+    Expression<int>? byteSize,
+    Expression<String>? sha256,
+    Expression<Uint8List>? bytes,
+    Expression<String>? uploadState,
+    Expression<int>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (scopeAccountId != null) 'scope_account_id': scopeAccountId,
+      if (entryId != null) 'entry_id': entryId,
+      if (mime != null) 'mime': mime,
+      if (byteSize != null) 'byte_size': byteSize,
+      if (sha256 != null) 'sha256': sha256,
+      if (bytes != null) 'bytes': bytes,
+      if (uploadState != null) 'upload_state': uploadState,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MemoMediaCompanion copyWith({
+    Value<String>? id,
+    Value<String?>? scopeAccountId,
+    Value<String?>? entryId,
+    Value<String>? mime,
+    Value<int>? byteSize,
+    Value<String>? sha256,
+    Value<Uint8List>? bytes,
+    Value<String>? uploadState,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return MemoMediaCompanion(
+      id: id ?? this.id,
+      scopeAccountId: scopeAccountId ?? this.scopeAccountId,
+      entryId: entryId ?? this.entryId,
+      mime: mime ?? this.mime,
+      byteSize: byteSize ?? this.byteSize,
+      sha256: sha256 ?? this.sha256,
+      bytes: bytes ?? this.bytes,
+      uploadState: uploadState ?? this.uploadState,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (scopeAccountId.present) {
+      map['scope_account_id'] = Variable<String>(scopeAccountId.value);
+    }
+    if (entryId.present) {
+      map['entry_id'] = Variable<String>(entryId.value);
+    }
+    if (mime.present) {
+      map['mime'] = Variable<String>(mime.value);
+    }
+    if (byteSize.present) {
+      map['byte_size'] = Variable<int>(byteSize.value);
+    }
+    if (sha256.present) {
+      map['sha256'] = Variable<String>(sha256.value);
+    }
+    if (bytes.present) {
+      map['bytes'] = Variable<Uint8List>(bytes.value);
+    }
+    if (uploadState.present) {
+      map['upload_state'] = Variable<String>(uploadState.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(
+        $MemoMediaTable.$convertercreatedAt.toSql(createdAt.value),
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MemoMediaCompanion(')
+          ..write('id: $id, ')
+          ..write('scopeAccountId: $scopeAccountId, ')
+          ..write('entryId: $entryId, ')
+          ..write('mime: $mime, ')
+          ..write('byteSize: $byteSize, ')
+          ..write('sha256: $sha256, ')
+          ..write('bytes: $bytes, ')
+          ..write('uploadState: $uploadState, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $MemoImportReceiptsTable extends MemoImportReceipts
     with TableInfo<$MemoImportReceiptsTable, MemoImportReceipt> {
   @override
@@ -19672,6 +20250,7 @@ abstract class _$SesameDatabase extends GeneratedDatabase {
       $DayImportReceiptsTable(this);
   late final $MemoBooksTable memoBooks = $MemoBooksTable(this);
   late final $MemoEntriesTable memoEntries = $MemoEntriesTable(this);
+  late final $MemoMediaTable memoMedia = $MemoMediaTable(this);
   late final $MemoImportReceiptsTable memoImportReceipts =
       $MemoImportReceiptsTable(this);
   late final $LedgerMembersTable ledgerMembers = $LedgerMembersTable(this);
@@ -19712,6 +20291,7 @@ abstract class _$SesameDatabase extends GeneratedDatabase {
     dayImportReceipts,
     memoBooks,
     memoEntries,
+    memoMedia,
     memoImportReceipts,
     ledgerMembers,
     categories,
@@ -23518,6 +24098,287 @@ typedef $$MemoEntriesTableProcessedTableManager =
         BaseReferences<_$SesameDatabase, $MemoEntriesTable, MemoEntryRow>,
       ),
       MemoEntryRow,
+      PrefetchHooks Function()
+    >;
+typedef $$MemoMediaTableCreateCompanionBuilder =
+    MemoMediaCompanion Function({
+      required String id,
+      Value<String?> scopeAccountId,
+      Value<String?> entryId,
+      required String mime,
+      required int byteSize,
+      required String sha256,
+      required Uint8List bytes,
+      required String uploadState,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$MemoMediaTableUpdateCompanionBuilder =
+    MemoMediaCompanion Function({
+      Value<String> id,
+      Value<String?> scopeAccountId,
+      Value<String?> entryId,
+      Value<String> mime,
+      Value<int> byteSize,
+      Value<String> sha256,
+      Value<Uint8List> bytes,
+      Value<String> uploadState,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$MemoMediaTableFilterComposer
+    extends Composer<_$SesameDatabase, $MemoMediaTable> {
+  $$MemoMediaTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get scopeAccountId => $composableBuilder(
+    column: $table.scopeAccountId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entryId => $composableBuilder(
+    column: $table.entryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mime => $composableBuilder(
+    column: $table.mime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get byteSize => $composableBuilder(
+    column: $table.byteSize,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sha256 => $composableBuilder(
+    column: $table.sha256,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<Uint8List> get bytes => $composableBuilder(
+    column: $table.bytes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get uploadState => $composableBuilder(
+    column: $table.uploadState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<DateTime, DateTime, int> get createdAt =>
+      $composableBuilder(
+        column: $table.createdAt,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+}
+
+class $$MemoMediaTableOrderingComposer
+    extends Composer<_$SesameDatabase, $MemoMediaTable> {
+  $$MemoMediaTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get scopeAccountId => $composableBuilder(
+    column: $table.scopeAccountId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entryId => $composableBuilder(
+    column: $table.entryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mime => $composableBuilder(
+    column: $table.mime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get byteSize => $composableBuilder(
+    column: $table.byteSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sha256 => $composableBuilder(
+    column: $table.sha256,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<Uint8List> get bytes => $composableBuilder(
+    column: $table.bytes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get uploadState => $composableBuilder(
+    column: $table.uploadState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MemoMediaTableAnnotationComposer
+    extends Composer<_$SesameDatabase, $MemoMediaTable> {
+  $$MemoMediaTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get scopeAccountId => $composableBuilder(
+    column: $table.scopeAccountId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entryId =>
+      $composableBuilder(column: $table.entryId, builder: (column) => column);
+
+  GeneratedColumn<String> get mime =>
+      $composableBuilder(column: $table.mime, builder: (column) => column);
+
+  GeneratedColumn<int> get byteSize =>
+      $composableBuilder(column: $table.byteSize, builder: (column) => column);
+
+  GeneratedColumn<String> get sha256 =>
+      $composableBuilder(column: $table.sha256, builder: (column) => column);
+
+  GeneratedColumn<Uint8List> get bytes =>
+      $composableBuilder(column: $table.bytes, builder: (column) => column);
+
+  GeneratedColumn<String> get uploadState => $composableBuilder(
+    column: $table.uploadState,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<DateTime, int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$MemoMediaTableTableManager
+    extends
+        RootTableManager<
+          _$SesameDatabase,
+          $MemoMediaTable,
+          MemoMediaRow,
+          $$MemoMediaTableFilterComposer,
+          $$MemoMediaTableOrderingComposer,
+          $$MemoMediaTableAnnotationComposer,
+          $$MemoMediaTableCreateCompanionBuilder,
+          $$MemoMediaTableUpdateCompanionBuilder,
+          (
+            MemoMediaRow,
+            BaseReferences<_$SesameDatabase, $MemoMediaTable, MemoMediaRow>,
+          ),
+          MemoMediaRow,
+          PrefetchHooks Function()
+        > {
+  $$MemoMediaTableTableManager(_$SesameDatabase db, $MemoMediaTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MemoMediaTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MemoMediaTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MemoMediaTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String?> scopeAccountId = const Value.absent(),
+                Value<String?> entryId = const Value.absent(),
+                Value<String> mime = const Value.absent(),
+                Value<int> byteSize = const Value.absent(),
+                Value<String> sha256 = const Value.absent(),
+                Value<Uint8List> bytes = const Value.absent(),
+                Value<String> uploadState = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MemoMediaCompanion(
+                id: id,
+                scopeAccountId: scopeAccountId,
+                entryId: entryId,
+                mime: mime,
+                byteSize: byteSize,
+                sha256: sha256,
+                bytes: bytes,
+                uploadState: uploadState,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<String?> scopeAccountId = const Value.absent(),
+                Value<String?> entryId = const Value.absent(),
+                required String mime,
+                required int byteSize,
+                required String sha256,
+                required Uint8List bytes,
+                required String uploadState,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => MemoMediaCompanion.insert(
+                id: id,
+                scopeAccountId: scopeAccountId,
+                entryId: entryId,
+                mime: mime,
+                byteSize: byteSize,
+                sha256: sha256,
+                bytes: bytes,
+                uploadState: uploadState,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MemoMediaTableProcessedTableManager =
+    ProcessedTableManager<
+      _$SesameDatabase,
+      $MemoMediaTable,
+      MemoMediaRow,
+      $$MemoMediaTableFilterComposer,
+      $$MemoMediaTableOrderingComposer,
+      $$MemoMediaTableAnnotationComposer,
+      $$MemoMediaTableCreateCompanionBuilder,
+      $$MemoMediaTableUpdateCompanionBuilder,
+      (
+        MemoMediaRow,
+        BaseReferences<_$SesameDatabase, $MemoMediaTable, MemoMediaRow>,
+      ),
+      MemoMediaRow,
       PrefetchHooks Function()
     >;
 typedef $$MemoImportReceiptsTableCreateCompanionBuilder =
@@ -31428,6 +32289,8 @@ class $SesameDatabaseManager {
       $$MemoBooksTableTableManager(_db, _db.memoBooks);
   $$MemoEntriesTableTableManager get memoEntries =>
       $$MemoEntriesTableTableManager(_db, _db.memoEntries);
+  $$MemoMediaTableTableManager get memoMedia =>
+      $$MemoMediaTableTableManager(_db, _db.memoMedia);
   $$MemoImportReceiptsTableTableManager get memoImportReceipts =>
       $$MemoImportReceiptsTableTableManager(_db, _db.memoImportReceipts);
   $$LedgerMembersTableTableManager get ledgerMembers =>

@@ -19,6 +19,18 @@ extension MemoExchange on MemoRepository {
             0,
           );
         }
+        // 本机图片随本上云后由媒体服务补投，任何设备都能按标识取回字节。
+        if (entries.isNotEmpty) {
+          await (db.update(db.memoMedia)..where(
+                (media) => media.entryId.isIn(entries.map((entry) => entry.id)),
+              ))
+              .write(
+                MemoMediaCompanion(
+                  scopeAccountId: d.Value(accountIdGetter()),
+                  uploadState: d.Value('pending'),
+                ),
+              );
+        }
       });
 
   Future<String> copyToLocalForAccountExit(String id, String operationId) =>
@@ -43,12 +55,21 @@ extension MemoExchange on MemoRepository {
         final entries = await (db.select(
           db.memoEntries,
         )..where((e) => e.memoBookId.equals(id))).get();
+        final media = entries.isEmpty
+            ? <MemoMediaItem>[]
+            : (await (db.select(db.memoMedia)..where(
+                        (m) => m.entryId.isIn(entries.map((entry) => entry.id)),
+                      ))
+                      .get())
+                  .map(memoMediaFromRow)
+                  .toList();
         final receipts = await (db.select(
           db.memoImportReceipts,
         )..where((r) => r.targetMemoBookId.equals(id))).get();
         final copy = await restoreSnapshot(
           book: memoBookFromRow(source),
           entries: entries.map(memoEntryFromRow).toList(),
+          media: media,
           forceCopy: true,
           receipts: [
             for (final r in receipts)
@@ -73,6 +94,7 @@ extension MemoExchange on MemoRepository {
     required MemoBook book,
     required List<MemoEntry> entries,
     required List<Map<String, Object?>> receipts,
+    List<MemoMediaItem> media = const [],
     bool forceCopy = false,
     bool cloud = false,
   }) => _write(accountIdGetter(), generationGetter(), () async {
@@ -147,6 +169,25 @@ extension MemoExchange on MemoRepository {
                 (r['imported_at'] as int) * 1000,
                 isUtc: true,
               ),
+            ),
+          );
+    }
+    // 图片标识直接被正文引用，恢复时必须保留原标识；云端副本等待重新上传。
+    for (final item in media) {
+      final entryId = item.entryId == null ? null : mapping[item.entryId];
+      await db
+          .into(db.memoMedia)
+          .insertOnConflictUpdate(
+            MemoMediaCompanion.insert(
+              id: item.id,
+              scopeAccountId: d.Value(cloud ? accountIdGetter() : null),
+              entryId: d.Value(entryId),
+              mime: item.mime,
+              byteSize: item.bytes.length,
+              sha256: item.sha256,
+              bytes: item.bytes,
+              uploadState: cloud ? 'pending' : 'local',
+              createdAt: item.createdAt,
             ),
           );
     }

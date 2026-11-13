@@ -11,6 +11,8 @@ import '../../../data/models/private_book.dart';
 /// 执行 PRAGMA/迁移等写路径，违背只读隔离区语义）。
 
 import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart' show compute;
 
 import 'package:decimal/decimal.dart';
@@ -20,6 +22,7 @@ import 'package:sesame_notes/data/models/day_book.dart';
 import 'package:sesame_notes/data/models/day_event.dart';
 import 'package:sesame_notes/data/models/memo.dart';
 import 'package:sesame_notes/data/models/memo_json.dart';
+import 'package:sesame_notes/data/models/memo_media_item.dart';
 import 'package:sesame_notes/features/days/domain/day_date_rules.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import '../domain/backup_manifest.dart';
@@ -652,6 +655,32 @@ class BackupRecoveryRepository {
     ))
       Map<String, Object?>.from(r),
   ];
+
+  /// 备份中的图片只随其首次引用的笔记恢复；旧结构备份没有该表时返回空集。
+  List<MemoMediaItem> listMemoMedia(String bookId) {
+    final tables = _db
+        .select("SELECT name FROM sqlite_master WHERE type='table'")
+        .map((row) => row['name'])
+        .toSet();
+    if (!tables.contains('memo_media')) return const [];
+    return [
+      for (final r in _db.select(
+        'SELECT * FROM memo_media WHERE entry_id IN '
+        '(SELECT id FROM memo_entries WHERE memo_book_id=?)',
+        [bookId],
+      ))
+        MemoMediaItem(
+          id: r['id'] as String,
+          entryId: r['entry_id'] as String?,
+          mime: r['mime'] as String,
+          bytes: r['bytes'] as Uint8List,
+          sha256: r['sha256'] as String,
+          uploadState: r['upload_state'] as String,
+          createdAt: _memoTime(r['created_at']),
+        ),
+    ];
+  }
+
   static DateTime _memoTime(Object? v) =>
       DateTime.fromMillisecondsSinceEpoch(v as int, isUtc: true);
   static bool _memoBool(Object? v) {

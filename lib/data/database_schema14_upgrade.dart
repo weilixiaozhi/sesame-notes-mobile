@@ -24,29 +24,35 @@ const _schema11RemovedColumns = <String, List<_RetiredColumn>>{
   ],
 };
 
-/// 结构 13 新增的云端历史缓存表；所有历史来源都不存在此表。
+/// 结构 13 新增的云端历史缓存表；12 及更早来源都不存在此表。
 const _cloudHistoryCacheTable = 'cloud_record_edit_histories';
 
+/// 结构 14 新增的备忘录图片表；13 及更早来源都不存在此表。
+const _memoMediaTable = 'memo_media';
+
 /// 活动库使用单一受支持的结构升级入口，备份读取独立禁止迁移。
-extension _Schema13DatabaseUpgrade on SesameDatabase {
-  /// 来源校验、删列、缓存表创建和版本提交共用事务，任何失败都恢复原结构和所有记录。
+extension _Schema14DatabaseUpgrade on SesameDatabase {
+  /// 来源校验、删列、缓存与图片表创建和版本提交共用事务，任何失败都恢复原结构和所有记录。
   Future<void> _upgradeDatabase(Migrator migrator, int from, int to) async {
     try {
-      if ((from != 10 && from != 11 && from != 12) ||
-          to != currentSchemaVersion) {
+      if (from < 10 || from > 13 || to != currentSchemaVersion) {
         throw StateError('本机数据库版本不受支持，请保留原文件并使用受支持的版本处理；当前数据未修改。');
       }
       final hasRecoveryLogs = from == 10;
+      final createsCloudHistoryCache = from < 13;
       final retiredColumns = [
         if (from == 10) _schema10RemovedColumns,
         if (from == 10 || from == 11) _schema11RemovedColumns,
       ];
       await transaction(() async {
-        // 来源校验先按“缓存表尚未创建”核对，避免合法旧库被新增缓存表误判为缺表。
+        // 来源校验先按“待建表尚未创建”核对，避免合法旧库被新增表误判为缺表。
         await _requireColumnCleanupStructure(
           retiredColumns,
           hasRecoveryLogs,
-          absentTables: const {_cloudHistoryCacheTable},
+          absentTables: {
+            if (createsCloudHistoryCache) _cloudHistoryCacheTable,
+            _memoMediaTable,
+          },
         );
         await _requireColumnCleanupIntegrity();
 
@@ -63,10 +69,21 @@ extension _Schema13DatabaseUpgrade on SesameDatabase {
         if (hasRecoveryLogs) await customStatement('DROP TABLE recovery_logs');
 
         // 缓存表只承载可重新获取的云端历史，不影响任何既有业务行。
-        await migrator.createTable(cloudRecordEditHistories);
+        if (createsCloudHistoryCache) {
+          await migrator.createTable(cloudRecordEditHistories);
+          await customStatement(
+            'CREATE INDEX idx_cloud_record_edit_histories_record_id '
+            'ON cloud_record_edit_histories (record_id)',
+          );
+        }
+
+        // 图片字节随笔记保存在同一数据库，备份、恢复和账号域清理共用既有约束。
+        await migrator.createTable(memoMedia);
         await customStatement(
-          'CREATE INDEX idx_cloud_record_edit_histories_record_id '
-          'ON cloud_record_edit_histories (record_id)',
+          'CREATE INDEX idx_memo_media_scope ON memo_media (scope_account_id,created_at,id)',
+        );
+        await customStatement(
+          'CREATE INDEX idx_memo_media_entry ON memo_media (entry_id)',
         );
 
         await customStatement('PRAGMA user_version=$to');
@@ -88,7 +105,7 @@ extension _Schema13DatabaseUpgrade on SesameDatabase {
     }
   }
 
-  /// 核验全部表、列类型、空值、默认值和主键；来源只接受声明的待删列、待删表和待建缓存表。
+  /// 核验全部表、列类型、空值、默认值和主键；来源只接受声明的待删列、待删表和待建表。
   Future<void> _requireColumnCleanupStructure(
     List<Map<String, List<_RetiredColumn>>> retiredColumns,
     bool hasRecoveryLogs, {
@@ -109,7 +126,7 @@ extension _Schema13DatabaseUpgrade on SesameDatabase {
       }
       for (final table in allTables) {
         final name = table.actualTableName;
-        // 待建缓存表在升级前不存在，跳过列核验；其余表必须逐列匹配。
+        // 待建表在升级前不存在，跳过列核验；其余表必须逐列匹配。
         if (absentTables.contains(name)) continue;
         final columns = await customSelect('PRAGMA table_info("$name")').get();
         final actual = {

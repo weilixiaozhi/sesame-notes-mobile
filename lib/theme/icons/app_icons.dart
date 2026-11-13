@@ -35,6 +35,9 @@ abstract final class AppIcons {
   static const edit = LucideIcons.pencil;
   static const copy = LucideIcons.copy;
   static const share = LucideIcons.share2;
+  // 备忘录正文插图与缺失状态。
+  static const image = LucideIcons.image;
+  static const imageOff = LucideIcons.imageOff;
   static const download = LucideIcons.download;
   static const upload = LucideIcons.upload;
   static const sort = LucideIcons.arrowUpDown;

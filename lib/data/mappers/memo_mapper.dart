@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' as d;
 import '../db.dart';
 import '../models/memo.dart';
+import '../models/memo_media_item.dart';
 
 MemoBook memoBookFromRow(MemoBookRow row, {int count = 0}) => MemoBook(
   id: row.id,
@@ -60,3 +61,14 @@ MemoEntriesCompanion memoEntryToCompanion(MemoEntry entry) =>
       sourceEntryId: d.Value(entry.sourceEntryId),
       sourceConflictId: d.Value(entry.sourceConflictId),
     );
+
+/// 图片行与编辑器、恢复流程共用同一份副本模型。
+MemoMediaItem memoMediaFromRow(MemoMediaRow row) => MemoMediaItem(
+  id: row.id,
+  entryId: row.entryId,
+  mime: row.mime,
+  bytes: row.bytes,
+  sha256: row.sha256,
+  uploadState: row.uploadState,
+  createdAt: row.createdAt.toUtc(),
+);

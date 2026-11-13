@@ -9,6 +9,7 @@ import 'package:drift/drift.dart' as d;
 import 'package:uuid/uuid.dart';
 import '../../db.dart';
 import '../../models/memo.dart';
+import '../../models/memo_media_item.dart';
 import '../../models/memo_order.dart';
 import '../../models/memo_json.dart';
 import '../../mappers/memo_mapper.dart';
@@ -226,7 +227,7 @@ class MemoRepository
         ? 'NULL'
         : "CASE WHEN b.type='credentials' "
               "THEN substr(CAST((SELECT group_concat(json_extract(f.value, '\$.label') || '：' || json_extract(f.value, '\$.value'), char(10)) FROM (SELECT value FROM json_each(m.body, '\$.fields') LIMIT 2) f) AS BLOB),1,2048) "
-              "ELSE substr(CAST((SELECT group_concat(json_extract(value, '\$.insert'), '') FROM json_each(m.body, '\$.ops')) AS BLOB),1,2048) END";
+              "ELSE substr(CAST((SELECT group_concat(json_extract(value, '\$.insert'), '') FROM json_each(m.body, '\$.ops') WHERE json_type(value, '\$.insert')='text') AS BLOB),1,2048) END";
     final variables = <d.Variable>[
       d.Variable(scopeValue),
       d.Variable(accountId ?? ''),

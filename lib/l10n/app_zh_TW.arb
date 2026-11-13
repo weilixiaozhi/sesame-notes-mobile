@@ -2556,5 +2556,12 @@
   "fitnessPlanCreatedTitle": "建立完成",
   "fitnessPlanConfirmSave": "確認儲存",
   "fitnessPlanNextConfirmSave": "下一步：確認儲存",
-  "fitnessPlanEditStartChoice": "計畫啟用狀態"
+  "fitnessPlanEditStartChoice": "計畫啟用狀態",
+  "memoInsertImage": "插入圖片",
+  "memoImageLabel": "圖片",
+  "memoImageUnavailable": "圖片無法顯示",
+  "memoImageTooLarge": "圖片過大，請選擇較小的圖片",
+  "memoImageInsertFailed": "插入圖片失敗，請稍後再試",
+  "memoImageLimitReached": "單篇筆記最多插入 20 張圖片",
+  "memoMarkdownNoImages": "Markdown 匯出不包含圖片，正文以 [圖片] 佔位。"
 }

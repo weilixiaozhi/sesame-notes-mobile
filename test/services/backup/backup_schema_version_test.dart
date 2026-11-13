@@ -72,16 +72,16 @@ Future<({File sqlite, File backup, BackupManifest manifest})> _backupFixture(
     }
     final raw = sqlite3.open(file.path);
     try {
-      // 结构 13 相对 12 只新增缓存表；移除该表即可生成上一版结构的真实备份夹具。
+      // 结构 14 相对 13 只新增图片表；移除该表即可生成上一版结构的真实备份夹具。
       if (dbSchemaVersion < currentSchemaVersion) {
-        if (dbSchemaVersion != 12) {
+        if (dbSchemaVersion != 13) {
           throw ArgumentError.value(
             dbSchemaVersion,
             'dbSchemaVersion',
             '无对应的备份夹具',
           );
         }
-        raw.execute('DROP TABLE cloud_record_edit_histories');
+        raw.execute('DROP TABLE memo_media');
         raw.execute('PRAGMA user_version=$dbSchemaVersion');
       }
       if (includeAccountingRequests) {
@@ -265,16 +265,16 @@ void main() {
     }
   });
 
-  test('上一版结构备份可打开并恢复业务数据，缺缓存表不影响现有字段', () async {
+  test('上一版结构备份可打开并恢复业务数据，缺图片表不影响现有字段', () async {
     final fixture = await _backupFixture(
       workspace,
       includeAccountingRequests: true,
-      dbSchemaVersion: 12,
+      dbSchemaVersion: 13,
     );
     final importer = BackupImportService(tempDirOverride: workspace);
     final session = await importer.openBackup(backupFile: fixture.backup);
     try {
-      expect(session.manifest.dbSchemaVersion, 12);
+      expect(session.manifest.dbSchemaVersion, 13);
       final preview = await importer.listRecoveryItems(session);
       expect(preview.single.transactionCount, 1);
       expect(preview.single.expenseTotal, 12.34);

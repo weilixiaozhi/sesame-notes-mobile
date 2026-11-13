@@ -400,6 +400,9 @@ class _MemoExportSectionState extends ConsumerState<MemoExportSection> {
             onTap: _pickFormat,
           ),
         ),
+        // Markdown 是单文件格式，图片只保留占位；导出前明确告知用户。
+        if (_format == MemoDocumentFormat.md)
+          Text(l.memoMarkdownNoImages, style: AppTextTokens.label(context)),
         AppPrimaryButton(
           fullWidth: false,
           label: l.memoExport,

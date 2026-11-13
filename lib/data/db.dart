@@ -10,7 +10,7 @@ import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'package:sesame_notes/data/models/day_event.dart' show DayLimits;
 
 part 'db.g.dart';
-part 'database_schema13_upgrade.dart';
+part 'database_schema14_upgrade.dart';
 
 /// 同步版本及其墓碑以 UTC 毫秒存储，保留权威时间在持久化往返中的精度。
 class MillisecondTimestampConverter extends TypeConverter<DateTime, int> {
@@ -802,6 +802,48 @@ class MemoEntries extends Table {
   ];
 }
 
+/// 备忘录内联图片：正文只保存标识，字节按账号域隔离保存在本机。
+///
+/// 本机本的图片只有这一份副本，随数据库快照一起备份；
+/// 云端本由服务端保存权威字节，这里的副本可在离线时渲染并在恢复后重新获取。
+@DataClassName('MemoMediaRow')
+class MemoMedia extends Table {
+  /// 客户端生成的图片标识，正文中的图片引用直接使用该值。
+  TextColumn get id => text()();
+
+  /// 云端图片的账号域；本机本图片为 null，不参与账号切换清理。
+  TextColumn get scopeAccountId => text().nullable()();
+
+  /// 首次插入图片的笔记，用于笔记删除后的孤儿回收。
+  TextColumn get entryId => text().nullable()();
+
+  TextColumn get mime => text()();
+
+  IntColumn get byteSize => integer()();
+
+  /// 服务端与本地共用的内容摘要，上传幂等与下载校验都依赖它。
+  TextColumn get sha256 => text()();
+
+  BlobColumn get bytes => blob()();
+
+  /// 上传状态只对云端本有意义：本机本固定 local，云端本按上传结果推进。
+  TextColumn get uploadState => text()();
+
+  IntColumn get createdAt =>
+      integer().map(const MillisecondTimestampConverter())();
+
+  @override
+  Set<Column> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+    "CHECK (mime IN ('image/png','image/jpeg','image/webp'))",
+    'CHECK (byte_size > 0)',
+    'CHECK (length(CAST(sha256 AS BLOB)) = 64)',
+    "CHECK (upload_state IN ('local','pending','uploaded','failed'))",
+  ];
+}
+
 class MemoImportReceipts extends Table {
   TextColumn get targetMemoBookId =>
       text().references(MemoBooks, #id, onDelete: KeyAction.cascade)();
@@ -1051,7 +1093,7 @@ class BackupState extends Table {
 }
 
 /// 活动数据库升级目标与备份恢复使用的结构版本。
-const currentSchemaVersion = 13;
+const currentSchemaVersion = 14;
 
 /// 结构不完整的数据库拒绝打开，原文件和业务内容保持不变。
 const incompleteSchemaMessage = '本机数据库结构不完整，请先保留原文件并从备份恢复；当前数据未修改。';
@@ -1064,6 +1106,7 @@ const incompleteSchemaMessage = '本机数据库结构不完整，请先保留�
     DayImportReceipts,
     MemoBooks,
     MemoEntries,
+    MemoMedia,
     MemoImportReceipts,
     LedgerMembers,
     Categories,
@@ -1193,6 +1236,8 @@ class SesameDatabase extends _$SesameDatabase {
       "CREATE UNIQUE INDEX idx_fitness_preferences ON fitness_entities(fitness_space_id) WHERE entity_type='fitness_preferences' AND deleted_at IS NULL",
       'CREATE INDEX idx_memo_books_scope ON memo_books (scope_account_id,storage_mode,deleted_at,updated_at DESC,id)',
       'CREATE INDEX idx_memo_changes ON sync_changes (account_id,memo_book_id,entity_type,entity_id)',
+      'CREATE INDEX idx_memo_media_scope ON memo_media (scope_account_id,created_at,id)',
+      'CREATE INDEX idx_memo_media_entry ON memo_media (entry_id)',
       "CREATE TRIGGER memo_book_type_immutable BEFORE UPDATE OF type ON memo_books WHEN NEW.type != OLD.type BEGIN SELECT RAISE(ABORT,'MEMO_TYPE_IMMUTABLE'); END",
       ..._memoEntryObjects,
     ]) {

@@ -1,6 +1,7 @@
 import 'package:sesame_notes/data/models/private_book.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,9 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../../data/models/memo.dart';
+import '../../../data/models/memo_delta.dart';
+import '../../../data/repositories/local/memo_media_repository.dart';
+import '../../../shared/providers/memo_media_providers.dart';
 import '../../../shared/providers/memo_repository_provider.dart';
 import '../infrastructure/memo_document.dart';
 import '../infrastructure/memo_document_style.dart';
@@ -192,6 +196,67 @@ class MemoDocumentActions {
     }
   }
 
+  /// 收集正文引用的图片并解码尺寸；下载或解码失败时保留占位，不阻断导出。
+  Future<Map<String, MemoDocumentMedia>> _loadMedia(
+    List<MemoEntry> entries,
+  ) async {
+    final ids = <String>{};
+    for (final entry in entries) {
+      final bodyJson = entry.bodyJson;
+      if (bodyJson == null) continue;
+      try {
+        final body = jsonDecode(bodyJson);
+        if (body is Map && body['ops'] is List) {
+          for (final op in body['ops'] as List) {
+            final id = memoImageIdOf(op);
+            if (id != null) ids.add(id);
+          }
+        }
+      } catch (_) {
+        // 单条正文损坏不阻断其他记录的导出。
+        continue;
+      }
+    }
+    if (ids.isEmpty) return const {};
+    final service = ref.read(memoMediaServiceProvider);
+    final result = <String, MemoDocumentMedia>{};
+    for (final id in ids) {
+      final bytes = await service.bytesOf(id);
+      if (bytes == null) continue;
+      final mime = memoMediaMimeOf(bytes);
+      // Word/PDF 只可靠承载 PNG 与 JPEG，其余格式按占位输出。
+      if (mime == null || mime == 'image/webp') continue;
+      final size = await _imageSize(bytes);
+      if (size == null) continue;
+      result[id] = MemoDocumentMedia(
+        bytes: bytes,
+        width: size.$1,
+        height: size.$2,
+        extension: mime == 'image/png' ? 'png' : 'jpg',
+      );
+    }
+    return result;
+  }
+
+  /// 导出只需要像素尺寸，解码后立即释放位图。
+  Future<(int, int)?> _imageSize(Uint8List bytes) async {
+    try {
+      final codec = await ui.instantiateImageCodec(bytes);
+      try {
+        final frame = await codec.getNextFrame();
+        try {
+          return (frame.image.width, frame.image.height);
+        } finally {
+          frame.image.dispose();
+        }
+      } finally {
+        codec.dispose();
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// PNG 在主隔离区使用引擎排版，文档格式在后台生成；写盘前后复核快照。
   Future<File> generate(MemoDocumentJob job, {required String untitled}) async {
     try {
@@ -202,6 +267,10 @@ class MemoDocumentActions {
       final emoji = job.format == MemoDocumentFormat.pdf
           ? await rootBundle.load(MemoDocumentStyle.emojiAsset)
           : null;
+      // 导出前把正文字节加载到内存：云端图片缺失时会即时下载，失败降级为占位。
+      final media = await _loadMedia(
+        job.credentials ? job.entries : [job.entry],
+      );
       final bytes = job.format == MemoDocumentFormat.png
           ? await MemoImage.render(
               job.credentials
@@ -209,8 +278,9 @@ class MemoDocumentActions {
                       job.book,
                       job.entries,
                       job.countLabel,
+                      media: media,
                     )
-                  : MemoDocument.fromEntry(job.book, job.entry),
+                  : MemoDocument.fromEntry(job.book, job.entry, media: media),
               isCancelled: () => job.cancelled,
             )
           : await compute(_renderMemo, (
@@ -222,6 +292,7 @@ class MemoDocumentActions {
               job.credentials,
               job.entries,
               job.countLabel,
+              media,
             ));
       await validate(job);
       job.directory ??= await Directory(
@@ -288,6 +359,7 @@ Future<Uint8List> _renderMemo(
     bool,
     List<MemoEntry>,
     String,
+    Map<String, MemoDocumentMedia>,
   )
   input,
 ) async {
@@ -300,10 +372,11 @@ Future<Uint8List> _renderMemo(
     credentials,
     entries,
     countLabel,
+    media,
   ) = input;
   final document = credentials
-      ? MemoDocument.fromEntries(book, entries, countLabel)
-      : MemoDocument.fromEntry(book, entry);
+      ? MemoDocument.fromEntries(book, entries, countLabel, media: media)
+      : MemoDocument.fromEntry(book, entry, media: media);
   return switch (format) {
     MemoDocumentFormat.md => Uint8List.fromList(
       utf8.encode(document.markdown()),

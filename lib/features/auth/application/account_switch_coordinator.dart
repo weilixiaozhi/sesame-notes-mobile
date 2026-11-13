@@ -708,6 +708,10 @@ class AccountSwitchCoordinator {
         await (db.delete(
           db.memoBooks,
         )..where((b) => b.scopeAccountId.equals(userId))).go();
+        // 退出前复制出的本机副本已改为本地图片，剩余账号域图片随账号清理。
+        await (db.delete(
+          db.memoMedia,
+        )..where((m) => m.scopeAccountId.equals(userId))).go();
         await (db.delete(
           db.fitnessSpaces,
         )..where((s) => s.scopeAccountId.equals(userId))).go();

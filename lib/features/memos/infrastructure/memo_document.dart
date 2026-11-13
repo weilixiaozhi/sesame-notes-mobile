@@ -18,51 +18,77 @@ import 'package:sesame_notes/data/models/memo_delta.dart';
 import 'package:sesame_notes/data/models/memo.dart';
 import 'memo_document_style.dart';
 
+/// 导出时使用的图片字节与像素尺寸；抓取阶段统一加载，缺失时按占位处理。
+class MemoDocumentMedia {
+  final Uint8List bytes;
+  final int width;
+  final int height;
+  final String extension;
+  const MemoDocumentMedia({
+    required this.bytes,
+    required this.width,
+    required this.height,
+    required this.extension,
+  });
+}
+
 /// 单篇笔记或多条账号记录共用不可变段落模型，交付前由调用方复核账号和目标。
 class MemoDocument {
   final List<MemoParagraph> paragraphs;
+
+  /// 正文引用的图片字节；没有对应项的引用在导出中降级为占位文字。
+  final Map<String, MemoDocumentMedia> media;
 
   /// 将有序账号记录合并为一个文档，各格式使用完全相同的段落集合。
   MemoDocument.fromEntries(
     MemoBook book,
     List<MemoEntry> entries,
-    String countLabel,
-  ) : paragraphs = List.unmodifiable([
-        MemoParagraph([MemoTextRun(book.name)], header: 1),
-        MemoParagraph([MemoTextRun(countLabel)]),
-        for (final entry in entries) ...[
-          MemoParagraph([const MemoTextRun('────────────────')]),
-          ...MemoDocument.fromEntry(book, entry).paragraphs,
-        ],
-      ]);
+    String countLabel, {
+    Map<String, MemoDocumentMedia> media = const {},
+  }) : media = Map.unmodifiable(media),
+       paragraphs = List.unmodifiable([
+         MemoParagraph([MemoTextRun(book.name)], header: 1),
+         MemoParagraph([MemoTextRun(countLabel)]),
+         for (final entry in entries) ...[
+           MemoParagraph([const MemoTextRun('────────────────')]),
+           ...MemoDocument.fromEntry(book, entry).paragraphs,
+         ],
+       ]);
 
-  MemoDocument({required String bookType, required Object body})
-    : paragraphs = memoParagraphs(body) {
+  MemoDocument({
+    required String bookType,
+    required Object body,
+    this.media = const {},
+  }) : paragraphs = memoParagraphs(body) {
     if (!['normal', 'credentials'].contains(bookType)) {
       throw const FormatException('MEMO_DOCUMENT_BOOK_TYPE');
     }
   }
 
   /// 账号卡转成带字段名的普通段落，三种阅读格式共用同一份内容。
-  factory MemoDocument.fromEntry(MemoBook book, MemoEntry entry) =>
-      MemoDocument(
-        bookType: book.type,
-        body: entry.isCard
-            ? {
-                'ops': [
-                  if (entry.title.isNotEmpty) ...[
-                    {'insert': entry.title},
-                    {
-                      'insert': '\n',
-                      'attributes': {'header': 1},
-                    },
-                  ],
-                  for (final field in entry.fields)
-                    {'insert': '${field.label}：${field.value}\n'},
-                ],
-              }
-            : entry.body!,
-      );
+  factory MemoDocument.fromEntry(
+    MemoBook book,
+    MemoEntry entry, {
+    Map<String, MemoDocumentMedia> media = const {},
+  }) => MemoDocument(
+    bookType: book.type,
+    media: media,
+    body: entry.isCard
+        ? {
+            'ops': [
+              if (entry.title.isNotEmpty) ...[
+                {'insert': entry.title},
+                {
+                  'insert': '\n',
+                  'attributes': {'header': 1},
+                },
+              ],
+              for (final field in entry.fields)
+                {'insert': '${field.label}：${field.value}\n'},
+            ],
+          }
+        : entry.body!,
+  );
 
   /// Markdown 源文保留空白；转义原文标点，格式标记仅由 writer 添加。
   String markdown() {
@@ -77,8 +103,15 @@ class MemoDocument {
       if (previousWasList && paragraph.list == null) out.writeln();
       previousWasList = paragraph.list != null;
       var content = paragraph.runs.map((run) {
-        if (!run.bold || run.text.trim().isEmpty) return escape(run.text);
-        final match = RegExp(r'^(\s*)([\s\S]*?)(\s*)$').firstMatch(run.text)!;
+        // Markdown 单文件无法内嵌图片，保留可读占位；导出前由界面提示不包含图片。
+        if (run is MemoImageRun) return '[图片]';
+        final textRun = run as MemoTextRun;
+        if (!textRun.bold || textRun.text.trim().isEmpty) {
+          return escape(textRun.text);
+        }
+        final match = RegExp(
+          r'^(\s*)([\s\S]*?)(\s*)$',
+        ).firstMatch(textRun.text)!;
         return '${match[1]}**${escape(match[2]!)}**${match[3]}';
       }).join();
       final prefix = switch (paragraph.list) {
@@ -102,7 +135,11 @@ class MemoDocument {
           (m) => m[0]!.codeUnits.map((c) => '&#$c;').join(),
         );
       }
-      if (paragraph.text.isEmpty && paragraph.list == null) content = '<br>';
+      if (paragraph.text.isEmpty &&
+          paragraph.imageIds.isEmpty &&
+          paragraph.list == null) {
+        content = '<br>';
+      }
       if (paragraph.list == null && paragraph.indent > 0) {
         out.writeln(
           '<div style="margin-left:${paragraph.indent * MemoDocumentStyle.indentEm}em">\n\n$heading$content\n\n</div>\n',
@@ -120,6 +157,13 @@ class MemoDocument {
   /// 固定 OOXML 容器，文字中的制表符与换行使用 Word 的实际节点。
   Uint8List docx() {
     const ns = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    const drawingNs =
+        'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing';
+    const mainNs = 'http://schemas.openxmlformats.org/drawingml/2006/main';
+    const pictureNs =
+        'http://schemas.openxmlformats.org/drawingml/2006/picture';
+    const officeRelNs =
+        'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
     final xml = XmlBuilder();
     void element(String name, void Function() child) =>
         xml.element('w:$name', nest: child);
@@ -151,6 +195,140 @@ class MemoDocument {
           }
         }
       });
+    }
+
+    // 图片按出现顺序生成固定媒体部件与关系，同一标识复用同一部件。
+    final imageParts = <String, ({String path, String relationship})>{};
+    var nextImage = 1;
+    void imageRun(MemoImageRun image) {
+      final media = this.media[image.mediaId];
+      // 字节缺失或格式 Word 不支持时保留可读占位，不生成损坏的图片关系。
+      if (media == null || !['png', 'jpg'].contains(media.extension)) {
+        run(const MemoTextRun('[图片]'));
+        return;
+      }
+      final part = imageParts.putIfAbsent(image.mediaId, () {
+        final index = nextImage++;
+        return (
+          path: 'word/media/image$index.${media.extension}',
+          relationship: 'rIdImage$index',
+        );
+      });
+      final naturalWidth = media.width * 9525.0;
+      final naturalHeight = media.height * 9525.0;
+      final contentWidth =
+          (PdfPageFormat.a4.width - MemoDocumentStyle.pageMargin * 2) * 12700;
+      final contentHeight =
+          (PdfPageFormat.a4.height - MemoDocumentStyle.pageMargin * 2) * 12700;
+      final scale = <double>[
+        1,
+        contentWidth / naturalWidth,
+        contentHeight / naturalHeight,
+      ].reduce((a, b) => a < b ? a : b);
+      final width = (naturalWidth * scale).round();
+      final height = (naturalHeight * scale).round();
+      final docPrId = nextImage;
+      xml.element(
+        'w:r',
+        nest: () {
+          xml.element(
+            'w:drawing',
+            nest: () {
+              xml.element(
+                'wp:inline',
+                namespaces: {'wp': drawingNs, 'a': mainNs, 'pic': pictureNs},
+                nest: () {
+                  xml.element(
+                    'wp:extent',
+                    attributes: {'cx': '$width', 'cy': '$height'},
+                  );
+                  xml.element(
+                    'wp:docPr',
+                    attributes: {'id': '$docPrId', 'name': '图片 $docPrId'},
+                  );
+                  xml.element(
+                    'a:graphic',
+                    nest: () {
+                      xml.element(
+                        'a:graphicData',
+                        attributes: {
+                          'uri':
+                              'http://schemas.openxmlformats.org/drawingml/2006/picture',
+                        },
+                        nest: () {
+                          xml.element(
+                            'pic:pic',
+                            nest: () {
+                              xml.element(
+                                'pic:nvPicPr',
+                                nest: () {
+                                  xml.element(
+                                    'pic:cNvPr',
+                                    attributes: {
+                                      'id': '$docPrId',
+                                      'name':
+                                          'image$docPrId.${media.extension}',
+                                    },
+                                  );
+                                  xml.element('pic:cNvPicPr');
+                                },
+                              );
+                              xml.element(
+                                'pic:blipFill',
+                                nest: () {
+                                  xml.element(
+                                    'a:blip',
+                                    attributes: {'r:embed': part.relationship},
+                                    namespaces: {'r': officeRelNs},
+                                  );
+                                  xml.element(
+                                    'a:stretch',
+                                    nest: () {
+                                      xml.element('a:fillRect');
+                                    },
+                                  );
+                                },
+                              );
+                              xml.element(
+                                'pic:spPr',
+                                nest: () {
+                                  xml.element(
+                                    'a:xfrm',
+                                    nest: () {
+                                      xml.element(
+                                        'a:off',
+                                        attributes: {'x': '0', 'y': '0'},
+                                      );
+                                      xml.element(
+                                        'a:ext',
+                                        attributes: {
+                                          'cx': '$width',
+                                          'cy': '$height',
+                                        },
+                                      );
+                                    },
+                                  );
+                                  xml.element(
+                                    'a:prstGeom',
+                                    attributes: {'prst': 'rect'},
+                                    nest: () {
+                                      xml.element('a:avLst');
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          );
+        },
+      );
     }
 
     final orderedIds = List<int?>.filled(6, null);
@@ -201,14 +379,24 @@ class MemoDocument {
           run(MemoTextRun(p.list == 'checked' ? '[x] ' : '[ ] '));
         }
         for (final r in p.runs) {
-          run(r);
+          if (r is MemoTextRun) {
+            run(r);
+          } else if (r is MemoImageRun) {
+            imageRun(r);
+          }
         }
       });
     }
 
     xml.element(
       'w:document',
-      namespaces: {ns: 'w'},
+      namespaces: {
+        ns: 'w',
+        officeRelNs: 'r',
+        drawingNs: 'wp',
+        mainNs: 'a',
+        pictureNs: 'pic',
+      },
       nest: () => element('body', () {
         for (final p in paragraphs) {
           paragraph(p);
@@ -314,11 +502,22 @@ class MemoDocument {
     final archive = Archive();
     final parts = <String, String>{
       '[Content_Types].xml':
-          '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/></Types>',
+          '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+          '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+          '<Default Extension="xml" ContentType="application/xml"/>'
+          '${['png', if (imageParts.values.any((part) => part.path.endsWith('.jpg'))) 'jpg'].map((ext) => '<Default Extension="$ext" ContentType="image/${ext == 'jpg' ? 'jpeg' : ext}"/>').join()}'
+          '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
+          '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'
+          '<Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/>'
+          '</Types>',
       '_rels/.rels':
           '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>',
       'word/_rels/document.xml.rels':
-          '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/></Relationships>',
+          '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+          '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+          '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>'
+          '${imageParts.values.map((part) => '<Relationship Id="${part.relationship}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${part.path.split('/').last}"/>').join()}'
+          '</Relationships>',
       'word/document.xml': xml.buildDocument().toXmlString(),
       'word/styles.xml': styles,
       'word/numbering.xml': numbering.buildDocument().toXmlString(),
@@ -327,6 +526,12 @@ class MemoDocument {
       // ZIP 长度按 UTF-8 字节计，archive 3 的 string 构造器会截断多字节正文。
       final bytes = utf8.encode(part.value);
       archive.addFile(ArchiveFile(part.key, bytes.length, bytes));
+    }
+    for (final entry in imageParts.entries) {
+      final media = this.media[entry.key]!;
+      archive.addFile(
+        ArchiveFile(entry.value.path, media.bytes.length, media.bytes),
+      );
     }
     return Uint8List.fromList(ZipEncoder().encode(archive)!);
   }
@@ -337,6 +542,8 @@ class MemoDocument {
     final normal = _MemoPdfFont(document, normalData);
     final emoji = _MemoPdfFont(document, emojiData);
     final fonts = [normal, emoji];
+    // 同一图片在整篇中只嵌入一次，重复引用复用同一对象。
+    final images = <String, PdfImage>{};
     final textColor = PdfColor.fromHex(MemoDocumentStyle.textColor);
     var page = PdfPage(document, pageFormat: PdfPageFormat.a4);
     var canvas = page.getGraphics();
@@ -371,12 +578,61 @@ class MemoDocument {
       for (var depth = p.indent + 1; depth < counters.length; depth++) {
         counters[depth] = 0;
       }
-      for (final run in [
+      for (final run in <MemoRun>[
         MemoTextRun(prefix),
         ...p.runs,
         const MemoTextRun('\n'),
       ]) {
-        for (final cluster in run.text.characters) {
+        if (run is MemoImageRun) {
+          final media = this.media[run.mediaId];
+          // 字节缺失或格式不受支持时按与 DOCX 一致的占位文字绘制。
+          if (media == null || !['png', 'jpg'].contains(media.extension)) {
+            for (final cluster in '[图片]'.characters) {
+              final width = normal.stringMetrics(cluster).advanceWidth * size;
+              if (x + width >
+                      PdfPageFormat.a4.width - MemoDocumentStyle.pageMargin &&
+                  x > left) {
+                nextLine();
+              }
+              canvas.setColor(textColor);
+              canvas.drawString(normal, size, cluster, x, y);
+              x += width;
+            }
+            continue;
+          }
+          final maxWidth =
+              PdfPageFormat.a4.width - left - MemoDocumentStyle.pageMargin;
+          final sizeScale = media.width * 1.0 > maxWidth
+              ? maxWidth / media.width
+              : 1.0;
+          final width = media.width * sizeScale;
+          final height = media.height * sizeScale;
+          // 图片整体放不下时先换页，避免跨页裁切。
+          if (y - height < MemoDocumentStyle.pageMargin + lineHeight) {
+            page = PdfPage(document, pageFormat: PdfPageFormat.a4);
+            canvas = page.getGraphics();
+            y = PdfPageFormat.a4.height - MemoDocumentStyle.pageMargin;
+            x = left;
+          }
+          try {
+            final image = images.putIfAbsent(
+              run.mediaId,
+              () => PdfImage.file(document, bytes: media.bytes),
+            );
+            canvas.drawImage(image, x, y - height, width, height);
+          } catch (_) {
+            // 图片解码失败不阻断整篇导出，正文与占位继续输出。
+            for (final cluster in '[图片]'.characters) {
+              final width = normal.stringMetrics(cluster).advanceWidth * size;
+              canvas.setColor(textColor);
+              canvas.drawString(normal, size, cluster, x, y);
+              x += width;
+            }
+          }
+          y -= height;
+          continue;
+        }
+        for (final cluster in (run as MemoTextRun).text.characters) {
           final font = fonts.firstWhere(
             (f) => cluster.runes.every(f.font.charToGlyphIndexMap.containsKey),
             orElse: () => normal,

@@ -17,7 +17,7 @@ const schemaTenFrozen =
 Future<void> createSchemaUpgradeDatabaseFixture(File file, int version) async {
   sql.Database? raw;
   try {
-    if (version != 10 && version != 11 && version != 12) {
+    if (version != 10 && version != 11 && version != 12 && version != 13) {
       throw ArgumentError.value(version, 'version', '无对应的数据库测试夹具');
     }
     final fixture =
@@ -50,7 +50,7 @@ Future<void> createSchemaUpgradeDatabaseFixture(File file, int version) async {
         );
       }
       raw.execute('UPDATE ledger_members SET updated_at=updated_at*1000');
-      if (version == 11 || version == 12) {
+      if (version == 11 || version == 12 || version == 13) {
         // 用固定 DDL 构造已发布的版本 11，测试来源独立于当前迁移代码。
         for (final statement in [
           'ALTER TABLE ledgers DROP COLUMN origin_last_revision',
@@ -63,7 +63,7 @@ Future<void> createSchemaUpgradeDatabaseFixture(File file, int version) async {
           raw.execute(statement);
         }
       }
-      if (version == 12) {
+      if (version >= 12) {
         // 版本 12 继续移除成员来源缓存和拉取错误的展示字段。
         for (final statement in [
           'ALTER TABLE ledger_members DROP COLUMN origin_account_id',
@@ -73,6 +73,26 @@ Future<void> createSchemaUpgradeDatabaseFixture(File file, int version) async {
         ]) {
           raw.execute(statement);
         }
+      }
+      if (version == 13) {
+        // 版本 13 新增可重建的云端历史缓存表。
+        raw.execute(
+          'CREATE TABLE cloud_record_edit_histories('
+          'id TEXT NOT NULL,'
+          'record_id TEXT NOT NULL,'
+          'version INTEGER NOT NULL,'
+          'operator_member_id TEXT NULL,'
+          'operator_display_name TEXT NULL,'
+          'changes TEXT NOT NULL,'
+          'created_at INTEGER NOT NULL,'
+          'PRIMARY KEY(id),'
+          'UNIQUE(record_id,version),'
+          'FOREIGN KEY(record_id) REFERENCES transactions(id) ON DELETE CASCADE)',
+        );
+        raw.execute(
+          'CREATE INDEX idx_cloud_record_edit_histories_record_id '
+          'ON cloud_record_edit_histories(record_id)',
+        );
       }
       raw.execute('PRAGMA user_version=$version');
       if (raw.select('PRAGMA foreign_key_check').isNotEmpty) {
@@ -432,7 +452,8 @@ Map<String, List<Map<String, Object?>>> expectedUpgradedRows(
                     field.key: field.value,
               },
         ],
-    // 结构 13 新增的云端历史缓存表在升级后存在且为空。
+    // 结构 13 新增的云端历史缓存表在升级后存在且为空；结构 14 新增图片表。
     'cloud_record_edit_histories': <Map<String, Object?>>[],
+    'memo_media': <Map<String, Object?>>[],
   };
 }

@@ -142,6 +142,7 @@ class BackupSnapshotProcessor {
     for (final table in [
       'day_books',
       'memo_books',
+      'memo_media',
       'ledgers',
       'exchange_rate_overrides',
       'fitness_spaces',

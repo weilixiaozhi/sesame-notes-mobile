@@ -9,17 +9,23 @@ import 'package:sesame_notes/utils/text_validation.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:sesame_notes/infrastructure/api/api_client_provider.dart';
 import '../../../data/models/memo.dart';
+import '../../../data/models/memo_delta.dart';
 import '../../../data/models/memo_fields.dart';
+import '../../../data/repositories/local/memo_media_repository.dart';
+import '../../../data/services/memo_media_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/providers/account_state_provider.dart';
+import '../../../shared/providers/memo_media_providers.dart';
 import '../../../shared/widgets/app_sheet.dart';
 import '../../../shared/widgets/app_primary_button.dart';
 import '../../../shared/widgets/app_form_section.dart';
@@ -35,6 +41,7 @@ import '../application/memo_providers.dart';
 import 'memo_editor_document.dart';
 import 'memo_editor_styles.dart';
 import 'memo_editor_surface.dart';
+import 'memo_image_embed.dart';
 import 'widgets/memo_history_buttons.dart';
 
 /// 页面固定一个本子与 UUID；路由返回与后台保存共用同一个 flush。
@@ -79,6 +86,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
   final _editorViewport = GlobalKey();
   late final QuillController _quill;
   late final MemoDraft _draft;
+  late final MemoMediaService _media;
   late final Set<Future<bool> Function()> _leaveGuards;
   StreamSubscription<DocChange>? _changes;
   bool _busy = false;
@@ -156,6 +164,8 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
       ),
     );
     _displayedNoteTitle = _readNoteTitle();
+    _media = ref.read(memoMediaServiceProvider);
+    unawaited(_media.prepareEntry(widget.entryId, entry?.bodyJson));
     final repository = ref.read(memoActionsProvider);
     _draft = MemoDraft(
       automatic: !_card,
@@ -169,6 +179,10 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
               context: analyticsContext,
             );
         await repository.saveEntry(entry, widget.target);
+        // 正文已经持久化，随后回收不再被引用的图片，失败不影响保存结果。
+        unawaited(
+          _media.cleanupAfterSave(widget.entryId, entry.bodyJson ?? ''),
+        );
         // 自动保存与显式保存共用持久化边界，新建只统计首个成功写入。
         final created = widget.entry == null && !_creationRecorded;
         if (!created && !explicitSave) return;
@@ -298,6 +312,8 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
       ? ''
       : _quill.document
             .getPlainText(0, _quill.document.length.clamp(0, 256))
+            // 图片占位符不进入标题，避免页头出现无意义符号。
+            .replaceAll('\uFFFC', '')
             .trimLeft()
             .split('\n')
             .first
@@ -382,6 +398,112 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
     }
   }
 
+  /// 正文已引用的图片数量，与服务端一致的单篇上限。
+  int get _imageCount => _quill.document
+      .toDelta()
+      .toJson()
+      .where((op) => memoImageIdOf(op) != null)
+      .length;
+
+  /// 从相册选择图片：压缩后落库并插入正文，云端本由媒体服务异步上传。
+  Future<void> _insertImage() async {
+    if (_readOnly || _busy || !_identityValid) return;
+    final l = AppLocalizations.of(context);
+    if (_imageCount >= memoImageLimit) {
+      showToast(context, l.memoImageLimitReached);
+      return;
+    }
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 2048,
+        maxHeight: 2048,
+        imageQuality: 85,
+      );
+      if (picked == null || !mounted) return;
+      final bytes = await picked.readAsBytes();
+      if (bytes.length > 8 * 1024 * 1024) {
+        if (mounted) showToast(context, l.memoImageTooLarge);
+        return;
+      }
+      final normalized = await _normalizeImage(bytes);
+      final item = await _media.add(
+        entryId: widget.entryId,
+        bytes: normalized,
+        cloud: widget.book.isCloud,
+      );
+      if (!mounted || !_identityValid) return;
+      _insertImageEmbed(item.id);
+    } catch (error, stackTrace) {
+      logger.error(
+        'MemoEditor',
+        '插入备忘录图片失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      if (mounted && _identityValid) {
+        showToast(context, l.memoImageInsertFailed);
+      }
+    }
+  }
+
+  /// 正文只保存可被 PDF/Word 承载的格式：WebP 首次插入时转为 PNG。
+  Future<Uint8List> _normalizeImage(Uint8List bytes) async {
+    final mime = memoMediaMimeOf(bytes);
+    if (mime == null) throw const FormatException('MEMO_MEDIA_FORMAT');
+    if (mime != 'image/webp') return bytes;
+    final codec = await ui.instantiateImageCodec(bytes);
+    try {
+      final frame = await codec.getNextFrame();
+      try {
+        final data = await frame.image.toByteData(
+          format: ui.ImageByteFormat.png,
+        );
+        if (data == null) throw StateError('MEMO_IMAGE_ENCODE_FAILED');
+        return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      } finally {
+        frame.image.dispose();
+      }
+    } finally {
+      codec.dispose();
+    }
+  }
+
+  /// 图片独占一段：两侧补换行，保证段落模型与三种文件导出都能稳定排版。
+  void _insertImageEmbed(String mediaId) {
+    try {
+      final document = _quill.document;
+      final text = document.toPlainText();
+      final selection = _quill.selection;
+      final index = selection.isValid
+          ? selection.start.clamp(0, document.length - 1)
+          : document.length - 1;
+      final length = selection.isValid ? selection.end - selection.start : 0;
+      final before = index > 0 ? text.substring(index - 1, index) : '\n';
+      final after = index < text.length
+          ? text.substring(index, index + 1)
+          : '\n';
+      final change = Delta();
+      if (before != '\n') change.insert('\n');
+      change.insert({'memo_image': mediaId});
+      if (after != '\n') change.insert('\n');
+      _quill.replaceText(
+        index,
+        length,
+        change,
+        TextSelection.collapsed(offset: index + change.length),
+      );
+    } catch (error, stackTrace) {
+      logger.error(
+        'MemoEditor',
+        '写入备忘录图片引用失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      _showEditError();
+    }
+  }
+
   /// 清空正文后恢复新建笔记的默认首行标题，手写首行与新建笔记保持一致。
   void _restoreBlankTitle() {
     if (_readOnly || !_blankNote) return;
@@ -400,6 +522,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
           ? _title.text
           : _quill.document
                 .toPlainText()
+                .replaceAll('\uFFFC', '')
                 .trimLeft()
                 .split('\n')
                 .first
@@ -662,6 +785,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
                         contextMenuBuilder: _selectionMenu,
                         onTapUp: _beginEditing,
                         onEditError: _showEditError,
+                        embedBuilders: const [MemoImageEmbedBuilder()],
                       ),
                     ),
             ),
@@ -850,6 +974,11 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
           options: const QuillToolbarToggleCheckListButtonOptions(
             iconData: AppIcons.checklist,
           ),
+        ),
+        IconButton(
+          tooltip: l.memoInsertImage,
+          icon: const Icon(AppIcons.image, size: AppDimens.icon20),
+          onPressed: _busy ? null : _insertImage,
         ),
         IconButton(
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
