@@ -29,7 +29,7 @@ void main() {
     }
     expect(embed, isNotNull);
     expect(memoImageEmbedIndex(document, embed!), '标题\n'.length);
-    expect(memoImageRefOf(embed!.value.data)?.percent, 100);
+    expect(memoImageRefOf(embed.value.data)?.percent, 100);
   });
 
   test('替换图片比例时写入嵌入对象而不是原始 Map', () {
