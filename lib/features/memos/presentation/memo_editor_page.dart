@@ -9,6 +9,7 @@ import 'package:sesame_notes/utils/text_validation.dart';
 import 'package:sesame_notes/core/logging/logger_service.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +18,10 @@ import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:sesame_notes/infrastructure/api/api_client_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../data/models/memo.dart';
 import '../../../data/models/memo_delta.dart';
 import '../../../data/models/memo_fields.dart';
@@ -77,6 +81,9 @@ class _CardFieldRow {
   }
 }
 
+/// 图片弹层的操作类型；比例值只在 resize 时携带。
+enum _MemoImageAction { resize, save, cut, delete }
+
 class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
     with WidgetsBindingObserver {
   final _title = TextEditingController();
@@ -87,6 +94,9 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
   late final QuillController _quill;
   late final MemoDraft _draft;
   late final MemoMediaService _media;
+
+  /// 被剪切、等待移动到新光标位置的图片引用。
+  String? _pendingImageValue;
   late final Set<Future<bool> Function()> _leaveGuards;
   StreamSubscription<DocChange>? _changes;
   bool _busy = false;
@@ -433,7 +443,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
         cloud: widget.book.isCloud,
       );
       if (!mounted || !_identityValid) return;
-      _insertImageEmbed(item.id);
+      _insertImageValue(memoImageValue(item.id, 100));
     } catch (error, stackTrace) {
       logger.error(
         'MemoEditor',
@@ -470,7 +480,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
   }
 
   /// 图片独占一段：两侧补换行，保证段落模型与三种文件导出都能稳定排版。
-  void _insertImageEmbed(String mediaId) {
+  void _insertImageValue(String value) {
     try {
       final document = _quill.document;
       final text = document.toPlainText();
@@ -485,7 +495,7 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
           : '\n';
       final change = Delta();
       if (before != '\n') change.insert('\n');
-      change.insert({'memo_image': mediaId});
+      change.insert({'memo_image': value});
       if (after != '\n') change.insert('\n');
       _quill.replaceText(
         index,
@@ -502,6 +512,176 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
       );
       _showEditError();
     }
+  }
+
+  /// 点击图片后的操作：调整显示比例、保存、剪切到新位置或删除。
+  Future<void> _handleImageTap(
+    MemoImageRef image,
+    Embed node,
+    QuillController controller,
+  ) async {
+    final index = memoImageEmbedIndex(controller.document, node);
+    if (index == null) return;
+    final l = AppLocalizations.of(context);
+    final action = await showAppSheet<({_MemoImageAction kind, int? percent})>(
+      context: context,
+      heightFactor: 0.6,
+      child: AppSheet(
+        title: l.memoImageActionsTitle,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppDimens.p16),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  l.memoImageSize,
+                  style: AppTextTokens.label(context),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimens.p16,
+                vertical: AppDimens.p8,
+              ),
+              child: Wrap(
+                spacing: AppDimens.p8,
+                children: [
+                  for (final percent in const [25, 50, 75, 100])
+                    ChoiceChip(
+                      label: Text('$percent%'),
+                      selected: image.percent == percent,
+                      onSelected: (_) => Navigator.pop(context, (
+                        kind: _MemoImageAction.resize,
+                        percent: percent,
+                      )),
+                    ),
+                ],
+              ),
+            ),
+            const Divider(height: AppDimens.p16),
+            ListTile(
+              leading: const Icon(AppIcons.download),
+              title: Text(l.memoImageSave),
+              onTap: () => Navigator.pop(context, (
+                kind: _MemoImageAction.save,
+                percent: null,
+              )),
+            ),
+            if (!_readOnly)
+              ListTile(
+                leading: const Icon(AppIcons.copy),
+                title: Text(l.memoImageCut),
+                onTap: () => Navigator.pop(context, (
+                  kind: _MemoImageAction.cut,
+                  percent: null,
+                )),
+              ),
+            if (!_readOnly)
+              ListTile(
+                leading: const Icon(AppIcons.delete),
+                title: Text(l.memoImageDelete),
+                onTap: () => Navigator.pop(context, (
+                  kind: _MemoImageAction.delete,
+                  percent: null,
+                )),
+              ),
+            const SizedBox(height: AppDimens.p8),
+          ],
+        ),
+      ),
+    );
+    if (action == null || !mounted) return;
+    switch (action.kind) {
+      case _MemoImageAction.resize:
+        _replaceImageValue(
+          controller,
+          index,
+          memoImageValue(image.id, action.percent!),
+        );
+      case _MemoImageAction.save:
+        await _saveMemoImage(image.id);
+      case _MemoImageAction.cut:
+        setState(() => _pendingImageValue = image.value);
+        _deleteImageAt(controller, index);
+        showToast(context, l.memoImageCutHint);
+      case _MemoImageAction.delete:
+        _deleteImageAt(controller, index);
+    }
+  }
+
+  /// 只替换嵌入节点的数据，保留图片在正文中的位置与撤销历史。
+  void _replaceImageValue(QuillController controller, int index, String value) {
+    controller.replaceText(index, 1, {
+      'memo_image': value,
+    }, TextSelection.collapsed(offset: index + 1));
+  }
+
+  void _deleteImageAt(QuillController controller, int index) {
+    controller.replaceText(
+      index,
+      1,
+      '',
+      TextSelection.collapsed(offset: index),
+    );
+  }
+
+  /// 把图片字节写入临时文件后交由系统分享面板保存或发送。
+  Future<void> _saveMemoImage(String mediaId) async {
+    final l = AppLocalizations.of(context);
+    try {
+      final bytes = await _media.bytesOf(mediaId);
+      if (bytes == null) {
+        if (mounted) showToast(context, l.memoImageUnavailable);
+        return;
+      }
+      final mime = memoMediaMimeOf(bytes);
+      if (mime == null) {
+        if (mounted) showToast(context, l.memoImageUnavailable);
+        return;
+      }
+      final extension = mime == 'image/png'
+          ? 'png'
+          : mime == 'image/jpeg'
+          ? 'jpg'
+          : 'webp';
+      final directory = await getTemporaryDirectory();
+      final file = File(p.join(directory.path, 'memo_$mediaId.$extension'));
+      await file.writeAsBytes(bytes, flush: true);
+      if (!mounted) return;
+      final box = context.findRenderObject() as RenderBox?;
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path, mimeType: mime)],
+          sharePositionOrigin: box == null
+              ? null
+              : box.localToGlobal(Offset.zero) & box.size,
+        ),
+      );
+      try {
+        await file.delete();
+      } catch (_) {
+        // 分享面板可能仍在读取该文件，删除失败留给临时目录自行回收。
+      }
+    } catch (error, stackTrace) {
+      logger.error(
+        'MemoEditor',
+        '保存备忘录图片失败',
+        safeErrorSummary(error),
+        stackTrace,
+      );
+      if (mounted) showToast(context, l.memoImageSaveFailed);
+    }
+  }
+
+  /// 把剪切暂存的图片插入到当前光标位置。
+  void _pastePendingImage() {
+    final value = _pendingImageValue;
+    if (value == null) return;
+    _insertImageValue(value);
+    setState(() => _pendingImageValue = null);
   }
 
   /// 清空正文后恢复新建笔记的默认首行标题，手写首行与新建笔记保持一致。
@@ -785,7 +965,9 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
                         contextMenuBuilder: _selectionMenu,
                         onTapUp: _beginEditing,
                         onEditError: _showEditError,
-                        embedBuilders: const [MemoImageEmbedBuilder()],
+                        embedBuilders: [
+                          MemoImageEmbedBuilder(onTap: _handleImageTap),
+                        ],
                       ),
                     ),
             ),
@@ -980,6 +1162,12 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
           icon: const Icon(AppIcons.image, size: AppDimens.icon20),
           onPressed: _busy ? null : _insertImage,
         ),
+        if (_pendingImageValue != null)
+          IconButton(
+            tooltip: l.memoImagePaste,
+            icon: const Icon(AppIcons.paste, size: AppDimens.icon20),
+            onPressed: _busy ? null : _pastePendingImage,
+          ),
         IconButton(
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
           icon: const Icon(AppIcons.indentDecrease, size: AppDimens.icon20),

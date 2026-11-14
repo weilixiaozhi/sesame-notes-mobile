@@ -2563,5 +2563,13 @@
   "memoImageTooLarge": "圖片過大，請選擇較小的圖片",
   "memoImageInsertFailed": "插入圖片失敗，請稍後再試",
   "memoImageLimitReached": "單篇筆記最多插入 20 張圖片",
-  "memoMarkdownNoImages": "Markdown 匯出不包含圖片，正文以 [圖片] 佔位。"
+  "memoMarkdownNoImages": "Markdown 匯出不包含圖片，正文以 [圖片] 佔位。",
+  "memoImageActionsTitle": "圖片",
+  "memoImageSize": "顯示尺寸",
+  "memoImageSave": "儲存或分享圖片",
+  "memoImageCut": "剪下圖片",
+  "memoImageDelete": "刪除圖片",
+  "memoImagePaste": "貼上圖片",
+  "memoImageCutHint": "已剪下圖片，移動游標後點擊工具列的貼上圖片。",
+  "memoImageSaveFailed": "儲存圖片失敗，請稍後再試"
 }

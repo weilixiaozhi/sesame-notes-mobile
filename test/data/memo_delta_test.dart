@@ -37,4 +37,14 @@ void main() {
       );
     });
   }
+
+  test('图片引用解析显示比例并按 100% 写回纯标识', () {
+    const id = '9f8e7d6c-5b4a-4392-8171-60514f3e2d1c';
+    expect(memoImageRefOf(id)?.percent, 100);
+    expect(memoImageRefOf('$id|50')?.percent, 50);
+    expect(memoImageRefOf('$id|0'), isNull);
+    expect(memoImageRefOf('$id|101'), isNull);
+    expect(memoImageValue(id, 100), id);
+    expect(memoImageValue(id, 50), '$id|50');
+  });
 }

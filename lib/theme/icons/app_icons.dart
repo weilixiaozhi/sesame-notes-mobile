@@ -38,6 +38,7 @@ abstract final class AppIcons {
   // 备忘录正文插图与缺失状态。
   static const image = LucideIcons.image;
   static const imageOff = LucideIcons.imageOff;
+  static const paste = LucideIcons.clipboardPaste;
   static const download = LucideIcons.download;
   static const upload = LucideIcons.upload;
   static const sort = LucideIcons.arrowUpDown;

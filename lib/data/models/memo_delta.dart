@@ -3,10 +3,33 @@ import 'package:sesame_notes/utils/text_validation.dart';
 /// 单篇笔记允许的内联图片数量，与服务端上限一致。
 const memoImageLimit = 20;
 
-/// 图片引用的媒体标识只接受 UUID 形状，不接受地址或字节。
-final _memoImageId = RegExp(
-  r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+/// 图片引用只接受 UUID 媒体标识与可选显示比例，不接受地址或字节；
+/// 显示比例是正文可用宽度的百分比，缺省表示占满正文宽度。
+final _memoImageValue = RegExp(
+  r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:\|(?:[1-9][0-9]|100))?$',
 );
+
+/// 图片引用与显示宽度：宽度是正文可用宽度的百分比，跨设备按屏宽等比展示。
+class MemoImageRef {
+  final String id;
+  final int percent;
+  const MemoImageRef(this.id, this.percent);
+
+  /// 写回正文的引用值；100% 保持与旧数据一致的纯标识格式。
+  String get value => percent == 100 ? id : '$id|$percent';
+}
+
+/// 解析图片引用；格式非法时返回 null，由校验边界统一拒绝。
+MemoImageRef? memoImageRefOf(Object? value) {
+  if (value is! String || !_memoImageValue.hasMatch(value)) return null;
+  final parts = value.split('|');
+  final percent = parts.length == 1 ? 100 : int.parse(parts[1]);
+  return MemoImageRef(parts[0], percent);
+}
+
+/// 生成写入正文的图片引用；100% 保持与旧数据一致的纯标识格式。
+String memoImageValue(String id, int percent) =>
+    percent == 100 ? id : '$id|$percent';
 
 /// delta_v1 的纯校验边界；异常不携带正文，供本地写入、同步及恢复共用。
 void validateMemoDelta(Object? value) {
@@ -22,10 +45,9 @@ void validateMemoDelta(Object? value) {
     }
     final insert = op['insert'];
     if (insert is Map) {
-      // 图片引用只保存媒体标识：不承载字节、地址或额外排版信息。
+      // 图片引用只保存媒体标识与显示比例：不承载字节、地址或额外排版信息。
       if (insert.length != 1 ||
-          insert['memo_image'] is! String ||
-          !_memoImageId.hasMatch(insert['memo_image'] as String) ||
+          memoImageRefOf(insert['memo_image']) == null ||
           op.containsKey('attributes')) {
         fail();
       }
@@ -87,8 +109,7 @@ String? memoImageIdOf(Object? op) {
   if (op is! Map) return null;
   final insert = op['insert'];
   if (insert is! Map) return null;
-  final id = insert['memo_image'];
-  return id is String ? id : null;
+  return memoImageRefOf(insert['memo_image'])?.id;
 }
 
 /// 三种文档输出共用文字段和段落语义，终止换行不额外产生空段落。

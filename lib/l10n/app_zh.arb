@@ -2584,5 +2584,13 @@
   "memoImageTooLarge": "图片过大，请选择较小的图片",
   "memoImageInsertFailed": "插入图片失败，请稍后重试",
   "memoImageLimitReached": "单篇笔记最多插入 20 张图片",
-  "memoMarkdownNoImages": "Markdown 导出不包含图片，正文以 [图片] 占位。"
+  "memoMarkdownNoImages": "Markdown 导出不包含图片，正文以 [图片] 占位。",
+  "memoImageActionsTitle": "图片",
+  "memoImageSize": "显示尺寸",
+  "memoImageSave": "保存或分享图片",
+  "memoImageCut": "剪切图片",
+  "memoImageDelete": "删除图片",
+  "memoImagePaste": "粘贴图片",
+  "memoImageCutHint": "已剪切图片，移动光标后点击工具栏的粘贴图片。",
+  "memoImageSaveFailed": "保存图片失败，请稍后重试"
 }

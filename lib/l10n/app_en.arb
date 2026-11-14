@@ -2684,5 +2684,13 @@
   "memoImageTooLarge": "Image too large, choose a smaller one",
   "memoImageInsertFailed": "Could not insert the image, try again",
   "memoImageLimitReached": "Up to 20 images per note",
-  "memoMarkdownNoImages": "Markdown export does not include images; a [图片] placeholder is kept in the text."
+  "memoMarkdownNoImages": "Markdown export does not include images; a [图片] placeholder is kept in the text.",
+  "memoImageActionsTitle": "Image",
+  "memoImageSize": "Display size",
+  "memoImageSave": "Save or share image",
+  "memoImageCut": "Cut image",
+  "memoImageDelete": "Delete image",
+  "memoImagePaste": "Paste image",
+  "memoImageCutHint": "Image cut. Move the cursor and tap Paste image.",
+  "memoImageSaveFailed": "Could not save the image, try again"
 }

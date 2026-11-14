@@ -10357,6 +10357,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Markdown export does not include images; a [图片] placeholder is kept in the text.'**
   String get memoMarkdownNoImages;
+
+  /// No description provided for @memoImageActionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get memoImageActionsTitle;
+
+  /// No description provided for @memoImageSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Display size'**
+  String get memoImageSize;
+
+  /// No description provided for @memoImageSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save or share image'**
+  String get memoImageSave;
+
+  /// No description provided for @memoImageCut.
+  ///
+  /// In en, this message translates to:
+  /// **'Cut image'**
+  String get memoImageCut;
+
+  /// No description provided for @memoImageDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete image'**
+  String get memoImageDelete;
+
+  /// No description provided for @memoImagePaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste image'**
+  String get memoImagePaste;
+
+  /// No description provided for @memoImageCutHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Image cut. Move the cursor and tap Paste image.'**
+  String get memoImageCutHint;
+
+  /// No description provided for @memoImageSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the image, try again'**
+  String get memoImageSaveFailed;
 }
 
 class _AppLocalizationsDelegate

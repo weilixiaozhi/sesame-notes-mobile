@@ -5527,6 +5527,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get memoMarkdownNoImages => 'Markdown 导出不包含图片，正文以 [图片] 占位。';
+
+  @override
+  String get memoImageActionsTitle => '图片';
+
+  @override
+  String get memoImageSize => '显示尺寸';
+
+  @override
+  String get memoImageSave => '保存或分享图片';
+
+  @override
+  String get memoImageCut => '剪切图片';
+
+  @override
+  String get memoImageDelete => '删除图片';
+
+  @override
+  String get memoImagePaste => '粘贴图片';
+
+  @override
+  String get memoImageCutHint => '已剪切图片，移动光标后点击工具栏的粘贴图片。';
+
+  @override
+  String get memoImageSaveFailed => '保存图片失败，请稍后重试';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -11050,4 +11074,28 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get memoMarkdownNoImages => 'Markdown 匯出不包含圖片，正文以 [圖片] 佔位。';
+
+  @override
+  String get memoImageActionsTitle => '圖片';
+
+  @override
+  String get memoImageSize => '顯示尺寸';
+
+  @override
+  String get memoImageSave => '儲存或分享圖片';
+
+  @override
+  String get memoImageCut => '剪下圖片';
+
+  @override
+  String get memoImageDelete => '刪除圖片';
+
+  @override
+  String get memoImagePaste => '貼上圖片';
+
+  @override
+  String get memoImageCutHint => '已剪下圖片，移動游標後點擊工具列的貼上圖片。';
+
+  @override
+  String get memoImageSaveFailed => '儲存圖片失敗，請稍後再試';
 }

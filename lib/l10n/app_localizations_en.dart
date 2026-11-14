@@ -5689,4 +5689,29 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get memoMarkdownNoImages =>
       'Markdown export does not include images; a [图片] placeholder is kept in the text.';
+
+  @override
+  String get memoImageActionsTitle => 'Image';
+
+  @override
+  String get memoImageSize => 'Display size';
+
+  @override
+  String get memoImageSave => 'Save or share image';
+
+  @override
+  String get memoImageCut => 'Cut image';
+
+  @override
+  String get memoImageDelete => 'Delete image';
+
+  @override
+  String get memoImagePaste => 'Paste image';
+
+  @override
+  String get memoImageCutHint =>
+      'Image cut. Move the cursor and tap Paste image.';
+
+  @override
+  String get memoImageSaveFailed => 'Could not save the image, try again';
 }
