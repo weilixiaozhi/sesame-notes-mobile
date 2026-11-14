@@ -614,9 +614,12 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
 
   /// 只替换嵌入节点的数据，保留图片在正文中的位置与撤销历史。
   void _replaceImageValue(QuillController controller, int index, String value) {
-    controller.replaceText(index, 1, {
-      'memo_image': value,
-    }, TextSelection.collapsed(offset: index + 1));
+    controller.replaceText(
+      index,
+      1,
+      BlockEmbed('memo_image', value),
+      TextSelection.collapsed(offset: index + 1),
+    );
   }
 
   void _deleteImageAt(QuillController controller, int index) {
