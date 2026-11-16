@@ -1113,6 +1113,17 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
     child: Row(
       children: [
         MemoHistoryButtons(controller: _quill),
+        IconButton(
+          tooltip: l.memoInsertImage,
+          icon: const Icon(AppIcons.image, size: AppDimens.icon20),
+          onPressed: _busy ? null : _insertImage,
+        ),
+        if (_pendingImageValue != null)
+          IconButton(
+            tooltip: l.memoImagePaste,
+            icon: const Icon(AppIcons.paste, size: AppDimens.icon20),
+            onPressed: _busy ? null : _pastePendingImage,
+          ),
         QuillToolbarToggleStyleButton(
           controller: _quill,
           attribute: Attribute.bold,
@@ -1160,17 +1171,6 @@ class _MemoEditorPageState extends ConsumerState<MemoEditorPage>
             iconData: AppIcons.checklist,
           ),
         ),
-        IconButton(
-          tooltip: l.memoInsertImage,
-          icon: const Icon(AppIcons.image, size: AppDimens.icon20),
-          onPressed: _busy ? null : _insertImage,
-        ),
-        if (_pendingImageValue != null)
-          IconButton(
-            tooltip: l.memoImagePaste,
-            icon: const Icon(AppIcons.paste, size: AppDimens.icon20),
-            onPressed: _busy ? null : _pastePendingImage,
-          ),
         IconButton(
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
           icon: const Icon(AppIcons.indentDecrease, size: AppDimens.icon20),
