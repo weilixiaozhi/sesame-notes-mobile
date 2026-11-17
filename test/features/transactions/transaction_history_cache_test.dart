@@ -133,7 +133,7 @@ void main() {
     expect(await db.select(db.cloudRecordEditHistories).get(), isEmpty);
   });
 
-  test('详情历史 Provider 在云端历史写入后自动更新且不访问网络', () async {
+  test('云端未完整时保留两类历史，并在云端写入后自动更新且不访问网络', () async {
     final db = SesameDatabase.withExecutor(NativeDatabase.memory());
     addTearDown(db.close);
     final fixture = await _createCloudTransaction(db);
@@ -174,6 +174,116 @@ void main() {
     await repo.upsertCloudEditHistories([_cached(recordId, 3)]);
     await pumpEventQueue();
     expect(values.last.map((item) => item.isCloud), [isTrue, isFalse]);
+  });
+
+  test('云端完整后隐藏同一编辑的本机副本，只保留云端行', () async {
+    final db = SesameDatabase.withExecutor(NativeDatabase.memory());
+    addTearDown(db.close);
+    final fixture = await _createCloudTransaction(db, revision: 3);
+    final repo = fixture.repo;
+    final recordId = fixture.transactionId;
+    await repo.appendEditHistory(
+      recordId: recordId,
+      version: 2,
+      operatorMemberId: 'member',
+      summary: '本地摘要2',
+    );
+    await repo.appendEditHistory(
+      recordId: recordId,
+      version: 3,
+      operatorMemberId: 'member',
+      summary: '本地摘要3',
+    );
+    await repo.upsertCloudEditHistories([
+      _cached(recordId, 2),
+      _cached(recordId, 3),
+    ]);
+    final container = _container(
+      db: db,
+      repo: repo,
+      ledgerId: fixture.ledgerId,
+    );
+    addTearDown(container.dispose);
+
+    final values = <List<RecordEditHistoryDisplayShim>>[];
+    final subscription = container.listen(recordEditHistoryProvider(recordId), (
+      previous,
+      next,
+    ) {
+      final list = next.value;
+      if (list == null) return;
+      values.add([
+        for (final item in list)
+          RecordEditHistoryDisplayShim(
+            version: item.version,
+            isCloud: item.isCloud,
+          ),
+      ]);
+    }, fireImmediately: true);
+    addTearDown(subscription.close);
+    await pumpEventQueue();
+
+    expect(values.last.map((item) => item.isCloud), [isTrue, isTrue]);
+    expect(values.last.map((item) => item.version), [3, 2]);
+  });
+
+  test('云端完整后仍显示未上传的本机版本，同版本云端优先', () async {
+    final db = SesameDatabase.withExecutor(NativeDatabase.memory());
+    addTearDown(db.close);
+    final fixture = await _createCloudTransaction(db, revision: 4);
+    final repo = fixture.repo;
+    final recordId = fixture.transactionId;
+    // 版本 3 两端都有，只保留云端；版本 5 只有本机，属于待同步。
+    await repo.appendEditHistory(
+      recordId: recordId,
+      version: 3,
+      operatorMemberId: 'member',
+      summary: '本地摘要3',
+    );
+    await repo.appendEditHistory(
+      recordId: recordId,
+      version: 5,
+      operatorMemberId: 'member',
+      summary: '本地待同步5',
+    );
+    await repo.upsertCloudEditHistories([
+      _cached(recordId, 2),
+      _cached(recordId, 3),
+      _cached(recordId, 4),
+    ]);
+    final container = _container(
+      db: db,
+      repo: repo,
+      ledgerId: fixture.ledgerId,
+    );
+    addTearDown(container.dispose);
+
+    final values = <List<RecordEditHistoryDisplayShim>>[];
+    final subscription = container.listen(recordEditHistoryProvider(recordId), (
+      previous,
+      next,
+    ) {
+      final list = next.value;
+      if (list == null) return;
+      values.add([
+        for (final item in list)
+          RecordEditHistoryDisplayShim(
+            version: item.version,
+            isCloud: item.isCloud,
+          ),
+      ]);
+    }, fireImmediately: true);
+    addTearDown(subscription.close);
+    await pumpEventQueue();
+
+    // 云端已覆盖 revision 4，隐藏本机版本 3；版本 5 尚未上传，仍需展示。
+    expect(values.last.map((item) => item.isCloud), [
+      isTrue,
+      isTrue,
+      isTrue,
+      isFalse,
+    ]);
+    expect(values.last.map((item) => item.version), [4, 3, 2, 5]);
   });
 
   test('批量分页逐页写入缓存，缓存完整后不再请求', () async {

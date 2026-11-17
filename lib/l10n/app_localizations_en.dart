@@ -5438,7 +5438,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recordHistoryCurrencyChanged => 'Ledger currency changed';
 
   @override
-  String get recordHistorySharingValues => 'Split information';
+  String get recordHistoryNoteUpdated => 'Note updated';
+
+  @override
+  String get recordHistorySharingUpdated => 'Split adjusted';
 
   @override
   String get recordHistoryContextChanged =>

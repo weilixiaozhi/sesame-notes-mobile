@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sesame_notes/data/models/transaction_metadata_display.dart';
@@ -5,7 +6,6 @@ import 'package:sesame_notes/features/statistics/application/record_history_prov
 import 'package:sesame_notes/l10n/app_localizations.dart';
 import 'package:sesame_notes/theme/colors.dart';
 import 'package:sesame_notes/theme/dimens.dart';
-import 'package:sesame_notes/shared/widgets/detail_list_item.dart';
 import 'package:sesame_notes/theme/typography.dart';
 
 /// 已缓存的编辑历史按记录时间统一展示。
@@ -17,9 +17,17 @@ class TransactionHistorySection extends ConsumerWidget {
     super.key,
     required this.recordId,
     required this.displayNameOf,
+    this.fallbackCategoryName,
+    this.fallbackAmount,
+    this.fallbackHappenedAt,
   });
   final String recordId;
   final String Function(String?) displayNameOf;
+
+  /// 老云端历史缺少展示快照时，用当前交易/分类补足旧格式摘要。
+  final String? fallbackCategoryName;
+  final String? fallbackAmount;
+  final DateTime? fallbackHappenedAt;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,7 +43,6 @@ class TransactionHistorySection extends ConsumerWidget {
       children: [
         for (final item in items)
           _HistoryRow(
-            version: item.version,
             operatorName: _operatorName(item),
             summary: _summary(item, l10n),
             createdAt: item.createdAt,
@@ -51,11 +58,81 @@ class TransactionHistorySection extends ConsumerWidget {
     return item.operatorDisplayName?.trim() ?? '';
   }
 
-  /// 本机历史保存的是已生成摘要，云端历史保留原始变更正文。
+  /// 本机历史保存的是已生成摘要，云端历史使用服务端展示快照。
   String _summary(RecordEditHistoryDisplay item, AppLocalizations l10n) {
-    if (item.isCloud) return describeCloudHistoryChanges(item.changes, l10n);
+    if (item.isCloud) return _cloudSummary(item.changes, l10n);
     final summary = item.summary?.trim() ?? '';
     return summary.isEmpty ? l10n.recordHistoryUpdated : summary;
+  }
+
+  /// 云端历史统一显示旧格式：分类 · 金额 · 发生时间，必要时追加变化提示。
+  String _cloudSummary(Object? changes, AppLocalizations l10n) {
+    if (changes is! Map) return l10n.recordHistoryUpdated;
+    final display = changes['display'];
+    final source = display is Map ? display : changes;
+    final action =
+        source['action'] ??
+        (changes['operation'] == 'change-ledger-currency'
+            ? 'ledger-currency'
+            : null);
+    if (action == 'delete') return l10n.recordHistoryDeleted;
+    if (action == 'category-migration') {
+      return l10n.recordHistoryCategoryMoved;
+    }
+    if (action == 'ledger-currency') {
+      return l10n.recordHistoryCurrencyChanged;
+    }
+
+    final category =
+        _nonEmpty(source['category_name']) ??
+        _nonEmpty(changes['category_name']) ??
+        _nonEmpty(fallbackCategoryName) ??
+        l10n.commonUncategorized;
+    final amount =
+        _amountText(source['amount'] ?? changes['amount']) ??
+        _amountText(fallbackAmount);
+    final happenedAt =
+        _dateTime(source['happened_at'] ?? changes['happened_at']) ??
+        fallbackHappenedAt;
+    // 旧数据缺金额和发生时间时无法组成旧格式，退回明确的安全文案。
+    if (amount == null && happenedAt == null) {
+      return l10n.recordHistoryUpdated;
+    }
+    var summary = [
+      category,
+      ?amount,
+      if (happenedAt != null) _historyDate(happenedAt),
+    ].join(' · ');
+    if (display is Map) {
+      if (display['note_changed'] == true) {
+        summary = '$summary · ${l10n.recordHistoryNoteUpdated}';
+      }
+      if (display['sharing_changed'] == true) {
+        summary = '$summary · ${l10n.recordHistorySharingUpdated}';
+      }
+    }
+    return summary;
+  }
+
+  /// 旧历史只保留金额文本；统一按两位小数展示，避免暴露数据库精度。
+  String? _amountText(Object? value) {
+    if (value == null) return null;
+    final text = value.toString().trim();
+    if (text.isEmpty) return null;
+    final amount = Decimal.tryParse(text);
+    return amount == null ? text : amount.toStringAsFixed(2);
+  }
+
+  /// 历史时间只接受可解析的服务端 ISO 文本，损坏时退回当前交易时间。
+  DateTime? _dateTime(Object? value) {
+    if (value is! String) return null;
+    return DateTime.tryParse(value);
+  }
+
+  /// 空字符串不能作为分类名或操作者名展示。
+  String? _nonEmpty(Object? value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
   }
 
   /// 说明不包含服务器原始错误或账号标识。
@@ -70,54 +147,6 @@ class TransactionHistorySection extends ConsumerWidget {
   );
 }
 
-/// 按服务端实际保存的字段显示记录内容，不推测未提供的修改前值。
-String describeCloudHistoryChanges(Object? changes, AppLocalizations l10n) {
-  if (changes is! Map) return l10n.recordHistoryUpdated;
-  if (changes['action'] == 'delete') return l10n.recordHistoryDeleted;
-  if (changes['action'] == 'category-migration') {
-    return l10n.recordHistoryCategoryMoved;
-  }
-  final values = <String>[];
-  if (changes['operation'] == 'change-ledger-currency') {
-    values.add(l10n.recordHistoryCurrencyChanged);
-  }
-  for (final (key, label) in [
-    ('amount', l10n.homeDetailAmount),
-    ('currency_code', l10n.homeDetailCurrency),
-    ('native_amount', l10n.homeDetailNativeAmount),
-    ('note', l10n.importFieldNote),
-    ('category_name', l10n.homeDetailCategory),
-  ]) {
-    if (!changes.containsKey(key)) continue;
-    final value = changes[key];
-    // 金额和汇率不经过 double；直接保留服务端记录的十进制文本。
-    if (value is String || value is num) {
-      values.add('$label: ${value.toString().isEmpty ? '—' : value}');
-    } else if (value == null && key == 'note') {
-      values.add('$label: —');
-    }
-  }
-  if (changes['happened_at'] is String) {
-    final time = DateTime.tryParse(changes['happened_at'] as String);
-    if (time != null) {
-      values.add('${l10n.homeDetailDate}: ${_historyDate(time)}');
-    }
-  }
-  if (changes.containsKey('category_id') &&
-      !changes.containsKey('category_name')) {
-    values.add(l10n.homeDetailCategory);
-  }
-  if ([
-    'aa_mode',
-    'aa_participants',
-    'splits',
-    'payer_member_id',
-  ].any(changes.containsKey)) {
-    values.add(l10n.recordHistorySharingValues);
-  }
-  return values.isEmpty ? l10n.recordHistoryUpdated : values.join('\n');
-}
-
 /// 带年份显示本地时间，跨年历史不会混淆。
 String _historyDate(DateTime time) {
   final local = time.toLocal();
@@ -125,15 +154,13 @@ String _historyDate(DateTime time) {
   return '${local.year}-${two(local.month)}-${two(local.day)} ${two(local.hour)}:${two(local.minute)}';
 }
 
-/// 历史原文可完整换行，保留金额精度和长备注的可读性。
+/// 历史摘要可完整换行，不再显示内部版本号。
 class _HistoryRow extends StatelessWidget {
   const _HistoryRow({
-    required this.version,
     required this.operatorName,
     required this.summary,
     required this.createdAt,
   });
-  final int version;
   final String operatorName;
   final String summary;
   final DateTime createdAt;
@@ -145,19 +172,6 @@ class _HistoryRow extends StatelessWidget {
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        DetailListTag(
-          label: 'v$version',
-          foregroundColor: AppTokens.primary(context),
-          backgroundColor: Theme.of(
-            context,
-          ).colorScheme.primary.withValues(alpha: 0.1),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimens.p4,
-            vertical: AppDimens.p4,
-          ),
-          emphasized: true,
-        ),
-        const SizedBox(width: AppDimens.p8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

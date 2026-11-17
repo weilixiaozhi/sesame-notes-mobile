@@ -5283,7 +5283,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recordHistoryCurrencyChanged => '调整账本本位币';
 
   @override
-  String get recordHistorySharingValues => '分摊信息';
+  String get recordHistoryNoteUpdated => '备注已更新';
+
+  @override
+  String get recordHistorySharingUpdated => '分摊已调整';
 
   @override
   String get recordHistoryContextChanged => '账号已变化，请重新打开记录。';
@@ -10830,7 +10833,10 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get recordHistoryCurrencyChanged => '調整帳本本位幣';
 
   @override
-  String get recordHistorySharingValues => '分攤資訊';
+  String get recordHistoryNoteUpdated => '備註已更新';
+
+  @override
+  String get recordHistorySharingUpdated => '分攤已調整';
 
   @override
   String get recordHistoryContextChanged => '帳號已變更，請重新開啟記錄。';

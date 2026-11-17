@@ -44,7 +44,11 @@ final recordEditHistoryProvider = StreamProvider.family
               ref.read(authIdentityGenerationProvider) != generation) {
             throw StateError('历史记录所属账号或账本已变化');
           }
-          yield _mergeHistories(rows.local, rows.cloud);
+          yield _mergeHistories(
+            rows.local,
+            rows.cloud,
+            transaction.serverRevision,
+          );
         }
       } catch (error, stack) {
         logger.error(
@@ -57,14 +61,18 @@ final recordEditHistoryProvider = StreamProvider.family
       }
     });
 
-/// 合并本机行与云端缓存行；云端变更正文在展示层按当前语言描述。
+/// 合并本机行与云端缓存行；云端完整时本机行只是同一编辑的乐观副本。
+///
+/// 服务端每个修订号只有一条历史，客户端只在云端尚未覆盖时展示本机行；
+/// 云端完整后仅保留 `version > serverRevision` 的待同步本机行，避免同一次
+/// 编辑在详情里出现“本机摘要 + 云端详细内容”两条。
 List<RecordEditHistoryDisplay> _mergeHistories(
   List<RecordEditHistorySnapshot> localRows,
   List<CloudRecordEditHistorySnapshot> cloudRows,
+  int? serverRevision,
 ) {
   try {
-    final items = <RecordEditHistoryDisplay>[
-      for (final row in localRows) row.toDisplay(),
+    final cloudItems = <RecordEditHistoryDisplay>[
       for (final row in cloudRows)
         RecordEditHistoryDisplay(
           version: row.version,
@@ -75,6 +83,16 @@ List<RecordEditHistoryDisplay> _mergeHistories(
           createdAt: row.createdAt,
         ),
     ];
+    final cloudComplete = _cloudComplete(cloudRows, serverRevision);
+    final cloudVersions = cloudRows.map((row) => row.version).toSet();
+    final localItems = <RecordEditHistoryDisplay>[
+      for (final row in localRows)
+        if (cloudComplete
+            ? serverRevision != null && row.version > serverRevision
+            : !cloudVersions.contains(row.version))
+          row.toDisplay(),
+    ];
+    final items = <RecordEditHistoryDisplay>[...cloudItems, ...localItems];
     // 时间倒序；同一时刻优先服务端修订，再按版本号保证顺序稳定。
     items.sort((left, right) {
       final time = right.createdAt.compareTo(left.createdAt);
@@ -90,6 +108,23 @@ List<RecordEditHistoryDisplay> _mergeHistories(
     logger.error('RecordHistory', '整理编辑历史失败', safeErrorSummary(error), stack);
     rethrow;
   }
+}
+
+/// 云端历史覆盖到服务端修订号且行数完整时，才允许隐藏本机副本。
+///
+/// 服务端只在更新时写历史，正常数据应有 revision-1 条版本 2..revision 的记录；
+/// 行数校验用于识别中断的批量补拉，避免只拿到最新版本就误判完整。
+bool _cloudComplete(
+  List<CloudRecordEditHistorySnapshot> cloudRows,
+  int? serverRevision,
+) {
+  if (serverRevision == null) return false;
+  if (serverRevision <= 1) return cloudRows.isEmpty;
+  var maxVersion = 0;
+  for (final row in cloudRows) {
+    if (row.version > maxVersion) maxVersion = row.version;
+  }
+  return maxVersion >= serverRevision && cloudRows.length >= serverRevision - 1;
 }
 
 /// 缓存正文损坏时按“已记录一次编辑”降级，不让整段历史读取失败。

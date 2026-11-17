@@ -9926,11 +9926,17 @@ abstract class AppLocalizations {
   /// **'Ledger currency changed'**
   String get recordHistoryCurrencyChanged;
 
-  /// No description provided for @recordHistorySharingValues.
+  /// No description provided for @recordHistoryNoteUpdated.
   ///
   /// In en, this message translates to:
-  /// **'Split information'**
-  String get recordHistorySharingValues;
+  /// **'Note updated'**
+  String get recordHistoryNoteUpdated;
+
+  /// No description provided for @recordHistorySharingUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Split adjusted'**
+  String get recordHistorySharingUpdated;
 
   /// No description provided for @recordHistoryContextChanged.
   ///

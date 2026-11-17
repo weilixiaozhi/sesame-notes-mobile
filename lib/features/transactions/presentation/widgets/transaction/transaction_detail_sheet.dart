@@ -449,6 +449,10 @@ class _TransactionDetailBodyState
         TransactionHistorySection(
           recordId: t.id,
           displayNameOf: resolver.resolve,
+          // 老云端历史缺少展示快照时，用当前交易补齐旧格式摘要。
+          fallbackCategoryName: widget.category?.name,
+          fallbackAmount: t.amount,
+          fallbackHappenedAt: t.happenedAt,
         ),
         const SizedBox(height: AppDimens.p16),
       ],
